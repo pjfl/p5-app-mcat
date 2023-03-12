@@ -1,25 +1,30 @@
 # Name
 
-MCat - One-line description of the modules purpose
+MCat - Music Catalog
 
 # Synopsis
 
     use MCat;
-    # Brief but working code examples
 
 # Description
 
+A demo program for [Web::Components](https://metacpan.org/pod/Web%3A%3AComponents), [HTML::Forms](https://metacpan.org/pod/HTML%3A%3AForms), and [HTML::StateTable](https://metacpan.org/pod/HTML%3A%3AStateTable)
+
 # Configuration and Environment
 
-Defines the following attributes;
+Defines no attributes
 
 # Subroutines/Methods
 
+None
+
 # Diagnostics
+
+None
 
 # Dependencies
 
-- [Class::Usul](https://metacpan.org/pod/Class%3A%3AUsul)
+- [Moo](https://metacpan.org/pod/Moo)
 
 # Incompatibilities
 

@@ -1,12 +1,54 @@
 use strict;
 use warnings;
 
-use Module::Build ##{ $meta2{prereqs}->{configure}->{requires}->{'Module::Build'} ##};
+use Module::Build 0.4004;
 
-my $perl_ver = ##{ $meta2{prereqs}->{runtime}->{requires}->{perl} ##};
-my $name     = '##{ $zilla->name ##}'; $name =~ s{ - }{::}gmx;
+my $perl_ver = 5.010001;
+my $name     = 'MCat'; $name =~ s{ - }{::}gmx;
 my $prereqs  = {
-##{ $plugin->get_prereqs( 1 ) ##}
+  'build_requires' => {
+    'Module::Build' => '0.4004',
+    'version' => '0.88'
+  },
+  'configure_requires' => {
+    'Module::Build' => '0.4004',
+    'version' => '0.88'
+  },
+  'requires' => {
+    'DBIx::Class' => '0.082843',
+    'DateTime' => '1.54',
+    'File::DataClass' => 'v0.73.4',
+    'HTML::Forms::Model::DBIC' => 'v0.1.3',
+    'HTML::StateTable' => 'v0.1.28',
+    'HTTP::Message' => '6.44',
+    'JSON::MaybeXS' => '1.004004',
+    'Moo' => '2.005005',
+    'Plack' => '1.0050',
+    'Ref::Util' => '0.204',
+    'Sub::Exporter' => '0.987',
+    'Try::Tiny' => '0.31',
+    'Type::Tiny' => '2.002001',
+    'URI' => '5.17',
+    'Unexpected' => 'v1.0.5',
+    'Web::Components' => 'v0.11.3',
+    'Web::Components::Role::TT' => 'v0.8.1',
+    'Web::ComposableRequest' => 'v0.20.7',
+    'Web::Simple' => '0.033',
+    'local::lib' => '2.000029',
+    'namespace::autoclean' => '0.29',
+    'parent' => '0.237',
+    'perl' => '5.010001',
+    'strictures' => '2.000006',
+    'version' => '0.88'
+  },
+  'test_requires' => {
+    'File::Spec' => '0',
+    'Module::Build' => '0.4004',
+    'Module::Metadata' => '0',
+    'Sys::Hostname' => '0',
+    'Test::Requires' => '0.06',
+    'version' => '0.88'
+  },
 };
 my $testing  = sub { $ENV{AUTOMATED_TESTING}
                   || $ENV{PERL_CPAN_REPORTER_CONFIG}
@@ -27,7 +69,7 @@ Module::Build->subclass( code => do { local $/; <DATA> } )->new(
    'module_name' => $name,
    'notes'       => { min_perl_version => $perl_ver, testing => $testing->() },
    %{ $prereqs },
-##{ $plugin->get_default('share_dir') ##}
+
 )->create_build_script;
 
 exit 0;
