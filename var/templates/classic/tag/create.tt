@@ -1,0 +1,2 @@
+[% form.render %]
+[% button({ text => 'List Tags', url => uri_for_action('tag/list') }) %]<br/>

@@ -22,3 +22,17 @@ README.pod
 t/ipc_srlock*
 *.tar.gz
 MCat-*
+var/etc/mcat-local.json
+var/etc/mcat-schema.conf
+var/root/css/hstatetable-minimal.css
+var/root/js/hstatetable-0-util.js
+var/root/js/hstatetable-1-renderer.js
+var/root/js/hstatetable-2-role.js
+var/root/js/hstatetable-3-celltrait.js
+var/root/js/hstatetable-4-columntrait.js
+var/root/js/hstatetable-5-rowtrait.js
+var/root/css/hforms-minimal.css
+var/root/js/hforms-repeatable.js
+var/root/js/hforms-toggle.js
+var/root/js/hforms-util.js
+var/tmp

@@ -1,0 +1,14 @@
+Track Id: [% track.trackid %]<br/>
+Title: [% track.title %]<br/>
+[% button({
+      text => 'Edit Track',
+      url  => uri_for_action('track/edit', [track.trackid])
+   })
+%]<br/>
+[% form_button({
+      content => 'Delete Track',
+      url     => uri_for_action('track/delete', [track.trackid])
+   })
+%]<br/>
+[% table.render %]<br/>
+[% button({ text => 'View CD', url => uri_for_action('cd/view', [track.cd.cdid]) }) %]<br/>

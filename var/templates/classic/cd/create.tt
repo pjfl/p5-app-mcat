@@ -1,0 +1,2 @@
+[% form.render %]
+[% button({ text => 'View Artist', url => uri_for_action('artist/view', [form.artistid]) }) %]<br/>

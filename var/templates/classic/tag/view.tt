@@ -1,0 +1,14 @@
+Tag Id: [% tag.id %]<br/>
+Name: [% tag.name %]<br/>
+[% button({
+      text => 'Edit Tag',
+      url  => uri_for_action('tag/edit', [tag.id])
+   })
+%]<br/>
+[% form_button({
+      content => 'Delete Tag',
+      url     => uri_for_action('tag/delete', [tag.id])
+   })
+%]
+[% table.render %]<br/>
+[% button({ text => 'List Tags', url => uri_for_action('tag/list') }) %]<br/>

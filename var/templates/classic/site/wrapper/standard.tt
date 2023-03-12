@@ -1,0 +1,5 @@
+<h3>Music Catalog</h3>
+[% FOR message IN context.messages -%]
+   <div class="messages">[% message %]</div>
+[% END -%]
+[% content %]

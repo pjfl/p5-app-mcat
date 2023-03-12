@@ -1,0 +1,6 @@
+[% table.render %]<br/>
+[% IF artistid -%]
+[%    button({ text => 'Create CD', url => uri_for_action('cd/create', [artistid]) }) %]<br/>
+[% ELSE -%]
+[%    button({ text => 'List Artists', url => uri_for_action('artist/list') }) %]<br/>
+[% END -%]

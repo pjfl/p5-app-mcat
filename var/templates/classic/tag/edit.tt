@@ -1,0 +1,2 @@
+[% form.render %]
+[% button({ text => 'View Tag', url => uri_for_action('tag/view', [form.item.id]) }) %]<br/>

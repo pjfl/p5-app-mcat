@@ -1,0 +1,52 @@
+[%
+MACRO button(options) INCLUDE classic/widgets/button.tt;
+MACRO form_button(options) WRAPPER classic/widgets/form_action.tt;
+   IF options.clear_button;
+      '<button class="inline-clear" type="submit">' _ svg_icon('clear', 'button__icon', { 'aria-label' => 'Reset' }) _ '</button>';
+   ELSE;
+      button({
+         icon_name => options.icon_name,
+         modifiers => options.modifiers,
+         raw_html  => options.raw_html,
+         text      => options.content
+      });
+   END;
+END;
+MACRO form_link(url, content, options) WRAPPER classic/widgets/form_action.tt;
+   button({
+      class          => options.action_class
+      icon_name      => options.icon_name,
+      label_class    => options.label_class,
+      modifiers      => ['link'],
+      onclick        => options.onclick
+      raw_html       => options.raw_html,
+      svg_icon_class => options.svg_icon_class,
+      svg_icon_name  => options.svg_icon_name,
+      text           => content,
+      title          => options.link_title,
+      type           => 'submit'
+   });
+END;
+MACRO html(content) content | html;
+MACRO icon(name, class) BLOCK;
+   IF name;
+      classes = ['sprite', html('sprite-' _ name)];
+      classes.push(class) IF class;
+      '<span class="' _ classes.join(' ') _ '"></span>';
+   END;
+END;
+MACRO svg_icon(name, classes, attrs) BLOCK;
+   UNLESS attrs; attrs = {}; END;
+   aria_attr = 'aria-hidden';
+   UNLESS attrs.$aria_attr.defined; attrs.$aria_attr = 'true'; END;
+   IF name;
+      '<svg class="' _ html(classes) _ '"';
+      FOREACH attr IN attrs.pairs;
+         ' ' _ attr.key _ '="' _ attr.value _ '"';
+      END;
+      '><use xlink:href="#icon-' _ html(name) _ '"></use></svg>';
+   END;
+END;
+MACRO ucfirst(content) content | ucfirst;
+MACRO upper(content) content | upper;
+%]
