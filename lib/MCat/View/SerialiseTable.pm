@@ -18,4 +18,6 @@ sub serialize {
    return [ $stash->{code}, [@header], [$context->response->body] ];
 }
 
+use namespace::autoclean;
+
 1;

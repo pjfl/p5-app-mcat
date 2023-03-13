@@ -99,13 +99,15 @@ sub remove {
    my ($self, $context) = @_;
 
    my $value = $context->request->body_parameters->{data} or return;
+   my $count = 0;
 
    for my $artistid (@{$value->{selector}}) {
       $self->delete($context, $artistid);
       delete $context->stash->{redirect};
+      $count++;
    }
 
-   $context->stash( response => { message => 'Artists deleted' });
+   $context->stash( response => { message => "${count} Artists deleted" } );
    return;
 }
 

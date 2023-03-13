@@ -9,8 +9,7 @@
 #    BEGIN { do catfile( $Bin, q(<appname>_localenv) ) or croak $EVAL_ERROR }
 
 use lib;
-use strict;
-use warnings;
+use strictures;
 
 use Config;
 use Cwd                   qw( abs_path );
@@ -65,13 +64,6 @@ extend( 'PATH', $bindir ) if -d $bindir;
 if (-d $libdir) {
    extend( 'PERL5LIB', $libdir );
    lib->import( $libdir );
-}
-
-my $hfslib = catdir( dirname($basedir), 'lib' );
-
-if (-d $hfslib) {
-   extend( 'PERL5LIB', $hfslib );
-   lib->import( $hfslib );
 }
 
 exec @ARGV if !$was_called && @ARGV;

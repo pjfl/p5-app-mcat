@@ -5,17 +5,63 @@ use File::DataClass::Types qw( Directory File );
 use File::DataClass::Schema;
 use Moo::Role;
 
+=encoding utf-8
+
+=head1 Name
+
+MCat::Config::Loader - Configuration class for the Music Catalog
+
+=head1 Synopsis
+
+   with 'MCat::Config::Loader';
+
+=head1 Description
+
+Finds and loads the configuration file(s)
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item config_file
+
+The configuration file is discovered by the loader once the 'home' attribute
+has been established
+
+=cut
+
 has 'config_file' => is => 'ro', isa => File, predicate => 'has_config_file';
+
+=item config_home
+
+The directory containing the configuration file(s)
+
+=cut
 
 has 'config_home' => is => 'ro', isa => Directory,
    predicate => 'has_config_home';
 
+=item home
+
+This is the directory that the loader has chosen to call 'home'
+
+=cut
+
 has 'home' => is => 'ro', isa => Directory;
+
+=item local_config_file
+
+The name of the local configuration file which is optionally set in the
+main configuration file
+
+=cut
 
 has 'local_config_file' => is => 'ro', isa => File,
    predicate => 'has_local_config_file';
 
-sub config_file_list ($) {
+sub _config_file_list ($) {
    my $attr       = shift;
    my $appclass   = $attr->{appclass};
    my $key        = uc "${appclass}_config";
@@ -25,18 +71,22 @@ sub config_file_list ($) {
    return map { "${file}.${_}" } split m{ \s }mx, $extensions;
 }
 
-sub dist_indicator_file_list () {
+sub _home_indicator_dirs () {
+   return qw( var );
+}
+
+sub _dist_indicator_files () {
    return qw( Makefile.PL Build.PL dist.ini cpanfile );
 }
 
-sub find_config ($) {
+sub _find_config ($) {
    my $attr = shift;
    my $home = $attr->{home};
 
    my ($config_home, $config_file);
 
    for my $dir ($home->catdir('var', 'etc'), $home->catdir('etc'), $home) {
-      for my $file (config_file_list $attr) {
+      for my $file (_config_file_list $attr) {
          if ($dir->catfile($file)->exists) {
             $config_home = $dir;
             $config_file = $dir->catfile($file);
@@ -50,7 +100,7 @@ sub find_config ($) {
    return ($config_home, $config_file);
 }
 
-sub find_home ($) {
+sub _find_home ($) {
    my $attr  = shift;
    my $class = $attr->{appclass};
    (my $file = "$class.pm") =~ s{::}{/}g;
@@ -65,7 +115,9 @@ sub find_home ($) {
 
    return $home if $home =~ m{ xt \z }mx;
 
-   return $home if grep { $home->catfile($_)->exists } dist_indicator_file_list;
+   return $home if grep { $home->catfile($_)->exists } _dist_indicator_files;
+
+   return $home if grep { $home->catdir($_)->exists } _home_indicator_dirs;
 
    ($path = $inc_entry) =~ s{ \.pm \z }{}mx;
    $home = io($path)->absolute;
@@ -74,6 +126,22 @@ sub find_home ($) {
 
    return;
 }
+
+=back
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item BUILDARGS
+
+Modifies the method in the base class. Starting with C<appclass> it discovers
+C<home>, then it discovers C<config_home> and C<config_file>, then it loads the
+configuration file. If this defines C<local_config_file> that to is loaded
+
+=cut
 
 around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;
@@ -85,13 +153,13 @@ around 'BUILDARGS' => sub {
       my $home = io $attr->{home} if defined $attr->{home} and -d $attr->{home};
       my $env_var = $ENV{ uc $attr->{appclass} . '_home' };
 
-      $home = io $env_var     if !$home and $env_var and -d $env_var;
-      $home = find_home $attr if !$home;
-      $attr->{home} = $home   if  $home;
+      $home = io $env_var      if !$home and $env_var and -d $env_var;
+      $home = _find_home $attr if !$home;
+      $attr->{home} = $home    if  $home;
    }
 
    if ($attr->{appclass} && $attr->{home}) {
-      my ($config_home, $config_file) = find_config $attr;
+      my ($config_home, $config_file) = _find_config $attr;
 
       $attr->{config_home} = $config_home if $config_home;
       $attr->{config_file} = $config_file if $config_file;
@@ -120,3 +188,58 @@ around 'BUILDARGS' => sub {
 use namespace::autoclean;
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<Moo>
+
+=item L<File::DataClass>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=MCat.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <lazarus@roxsoft.co.uk> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2023 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

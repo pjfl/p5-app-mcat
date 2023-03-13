@@ -1,18 +1,20 @@
 package MCat::Exception;
 
 use DateTime;
-use HTML::Forms::Types    qw( Object );
+use HTML::Forms::Types    qw( Int Object );
 use HTTP::Status          qw( HTTP_NOT_FOUND );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( has_exception );
 use MCat;
 use Moo;
 
-extends 'HTML::Forms::Exception';
+extends 'HTML::Forms::Exception', 'HTML::StateTable::Exception';
 
 has 'created' => is => 'ro', isa => class_type('DateTime'), default => sub {
    return DateTime->now( locale => 'en_GB', time_zone => 'UTC' );
 };
+
+has 'rv' => is => 'ro', isa => Int, default => 1;
 
 has 'version' => is => 'ro', isa => Object, default => sub { $MCat::VERSION };
 

@@ -1,4 +1,4 @@
-<h3>Music Catalog</h3>
+<h3>[% config.name %]</h3>
 [% FOR message IN context.messages -%]
    <div class="messages">[% message %]</div>
 [% END -%]

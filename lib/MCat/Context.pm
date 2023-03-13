@@ -46,7 +46,9 @@ has 'table_preference_url' => is => 'lazy', isa => class_type('URI'),
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has '_stash' => is => 'ro', isa => HashRef, default => sub { {} };
+has '_stash' => is => 'ro', isa => HashRef, default => sub {
+   return { version => $MCat::VERSION };
+};
 
 sub model {
    my ($self, $rs_name) = @_; return $self->schema->resultset($rs_name);
