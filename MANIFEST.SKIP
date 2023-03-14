@@ -62,3 +62,7 @@ Thumbs.db
 
 # Avoid archives of this distribution
 \bMCat-v?[\d\.\_]+
+
+\bvar/tmp
+\bvar/etc/mcat-local.json
+\bvar/etc/mcat-schema.conf

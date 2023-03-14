@@ -15,6 +15,7 @@ my $prereqs  = {
     'version' => '0.88'
   },
   'requires' => {
+    'Class::Usul' => 'v0.84.2',
     'DBIx::Class' => '0.082843',
     'DateTime' => '1.54',
     'File::DataClass' => 'v0.73.4',
@@ -36,10 +37,8 @@ my $prereqs  = {
     'Web::Simple' => '0.033',
     'local::lib' => '2.000029',
     'namespace::autoclean' => '0.29',
-    'parent' => '0.237',
     'perl' => '5.010001',
-    'strictures' => '2.000006',
-    'version' => '0.88'
+    'strictures' => '2.000006'
   },
   'test_requires' => {
     'File::Spec' => '0',

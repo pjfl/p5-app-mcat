@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Cleaned up meta data
           - Added POD to config files so CLI help works
           - Updated prereqs
           - Copied in xt from HTML-Forms

@@ -1,10 +1,12 @@
 Build.PL
 Changes
 MANIFEST
+bin/mcat-cli
 bin/mcat-localenv
 bin/mcat-server
 lib/MCat.pm
 lib/MCat/API/Table.pm
+lib/MCat/CLI.pm
 lib/MCat/Config.pm
 lib/MCat/Config/Loader.pm
 lib/MCat/Context.pm
@@ -48,8 +50,6 @@ t/06yaml.t
 t/07podspelling.t
 t/10test_script.t
 t/boilerplate.pm
-var/etc/mcat-local.json
-var/etc/mcat-schema.conf
 var/etc/mcat-uml.dia
 var/etc/mcat.json
 var/root/css/hforms-minimal.css
@@ -88,10 +88,3 @@ var/templates/classic/track/list.tt
 var/templates/classic/track/view.tt
 var/templates/classic/widgets/button.tt
 var/templates/classic/widgets/form_action.tt
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/artist/create.ttc
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/artist/list.ttc
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/site/html/base.ttc
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/site/preprocess.ttc
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/site/wrapper.ttc
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/site/wrapper/standard.ttc
-var/tmp/ttc/home/laz/Projects/MCat/master/var/templates/classic/widgets/button.ttc
