@@ -1,7 +1,7 @@
 package MCat::Model::Track;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect register_action_paths );
+use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownTrack Unspecified );
 use Web::Simple;
 
@@ -9,14 +9,6 @@ extends 'MCat::Model';
 with    'Web::Components::Role';
 
 has '+moniker' => default => 'track';
-
-register_action_paths 'track', {
-   create => 'cd/*/track/create',
-   delete => 'track/*/delete',
-   edit   => 'track/*/edit',
-   list   => [ 'cd/*/track', 'track' ],
-   view   => 'track/*',
-};
 
 sub create {
    my ($self, $context, $cdid) = @_;

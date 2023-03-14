@@ -3,6 +3,7 @@ package MCat::Controller::Root;
 use Web::Simple;
 
 with 'Web::Components::Role';
+with 'Web::Components::ReverseMap';
 
 has '+moniker' => default => 'z_root'; # Must sort to last place
 

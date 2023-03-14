@@ -1,7 +1,7 @@
 package MCat::Model::Artist;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect register_action_paths );
+use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownArtist Unspecified );
 use Web::Simple;
 
@@ -9,14 +9,6 @@ extends 'MCat::Model';
 with    'Web::Components::Role';
 
 has '+moniker' => default => 'artist';
-
-register_action_paths 'artist', {
-   create => 'artist/create',
-   delete => 'artist/*/delete',
-   edit   => 'artist/*/edit',
-   list   => 'artist',
-   view   => 'artist/*',
-};
 
 sub create {
    my ($self, $context) = @_;

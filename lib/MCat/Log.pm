@@ -9,7 +9,7 @@ sub error {
    my $message ="${exception}"; chomp $message;
    my $now     = now;
 
-   warn "${now} ${message}\n";
+   warn "${now} ERROR ${message}\n";
 }
 
 sub info {
@@ -17,7 +17,15 @@ sub info {
 
    my $now = now;
 
-   warn "${now} ${message}\n";
+   warn "${now} INFO ${message}\n";
+}
+
+sub warn {
+   my ($self, $message) = @_;
+
+   my $now = now;
+
+   warn "${now} WARNING ${message}\n";
 }
 
 use namespace::autoclean;

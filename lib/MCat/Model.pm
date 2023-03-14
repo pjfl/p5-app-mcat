@@ -14,6 +14,8 @@ use MCat::Context;
 use MCat::Schema;
 use Moo;
 
+has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
+
 has 'form' =>
    is      => 'lazy',
    isa     => class_type('HTML::Forms::Manager'),
@@ -99,17 +101,19 @@ sub get_context { # Creates and returns a new context object from the request
    my ($self, $request, $models) = @_;
 
    return MCat::Context->new(
-      config  => $self->config,
-      models  => $models,
-      request => $request,
-      views   => $self->views
+      config      => $self->config,
+      controllers => $self->controllers,
+      forms       => $self->form,
+      models      => $models,
+      request     => $request,
+      views       => $self->views
    );
 }
 
 sub has_valid_token { # Stash an exception if the CSRF token is bad
    my ($self, $context) = @_;
 
-   my $token = $self->form->get_body_parameters($context)->{_verify};
+   my $token = $context->get_body_parameters->{_verify};
 
    return TRUE if verify_token $context->session->serialise, $token;
 

@@ -4,16 +4,25 @@ use HTML::Forms::Constants qw( FALSE NUL STAR TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Str );
 use HTML::Forms::Util      qw( get_token );
 use List::Util             qw( pairs );
-use MCat::Util             qw( action_path2uri );
 use Ref::Util              qw( is_arrayref is_hashref );
 use Type::Utils            qw( class_type );
 use MCat::Response;
 use MCat::Schema;
 use Moo;
 
-has 'config', is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
+has 'api_routes' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift;
 
-has 'messages' => is => 'lazy', isa => ArrayRef, builder => sub {
+   return exists $self->models->{api} ? $self->models->{api}->routes : {};
+};
+
+has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
+
+has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
+
+has 'forms' => is => 'lazy', isa => class_type('HTML::Forms::Manager');
+
+has 'messages' => is => 'lazy', isa => ArrayRef, default => sub {
    my $self = shift;
 
    return $self->session->collect_status_messages($self->request);
@@ -23,7 +32,7 @@ has 'models' => is => 'ro', isa => HashRef, weak_ref => TRUE,
    default => sub { {} };
 
 has 'posted' => is => 'lazy', isa => Bool,
-   builder => sub { lc shift->request->method eq 'post' ? TRUE : FALSE };
+   default => sub { lc shift->request->method eq 'post' ? TRUE : FALSE };
 
 has 'request' =>
    is       => 'ro',
@@ -31,18 +40,12 @@ has 'request' =>
    required => TRUE;
 
 has 'response' => is => 'ro', isa => class_type('MCat::Response'),
-   builder => sub { MCat::Response->new };
+   default => sub { MCat::Response->new };
 
-has 'session' => is => 'lazy', builder => sub { shift->request->session };
+has 'session' => is => 'lazy', default => sub { shift->request->session };
 
 has 'schema'  => is => 'lazy', isa => class_type('MCat::Schema'),
-   builder => sub { MCat::Schema->connect(@{shift->config->connect_info}) };
-
-has 'table_action_url' => is => 'lazy', isa => class_type('URI'),
-   builder => sub { shift->uri_for_action('api/table_action') };
-
-has 'table_preference_url' => is => 'lazy', isa => class_type('URI'),
-   builder => sub { shift->uri_for_action('api/table_preference') };
+   default => sub { MCat::Schema->connect(@{shift->config->connect_info}) };
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
@@ -50,26 +53,12 @@ has '_stash' => is => 'ro', isa => HashRef, default => sub {
    return { version => $MCat::VERSION };
 };
 
-sub model {
-   my ($self, $rs_name) = @_; return $self->schema->resultset($rs_name);
+sub get_body_parameters {
+   my $self = shift; return $self->forms->get_body_parameters($self);
 }
 
-sub preference { # Accessor/mutator with builtin clearer. Store "" to delete
-   my ($self, $name, $value) = @_;
-
-   return unless $name;
-
-   my $rs = $self->model('Preference');
-
-   return $rs->update_or_create( # Mutator
-      { name => $name, value => $value }, { key => 'preference_name' }
-   ) if $value && $value ne '""';
-
-   my $pref = $rs->find({ name => $name }, { key => 'preference_name' });
-
-   return $pref->delete if defined $pref && defined $value; # Clearer
-
-   return $pref; # Accessor
+sub model {
+   my ($self, $rs_name) = @_; return $self->schema->resultset($rs_name);
 }
 
 sub res { shift->response }
@@ -91,7 +80,7 @@ sub stash {
 sub uri_for_action {
    my ($self, $action, $args, @params) = @_;
 
-   my $uri    = action_path2uri($action) // $action;
+   my $uri    = $self->_action_path2uri($action) // $action;
    my $uris   = is_arrayref $uri ? $uri : [ $uri ];
    my $params = is_hashref $params[0] ? $params[0] : {@params};
 
@@ -127,6 +116,21 @@ sub verification_token {
 
 sub view {
    my ($self, $view) = @_; return $self->views->{$view};
+}
+
+# Private methods
+sub _action_path2uri {
+   my ($self, $action) = @_;
+
+   for my $controller (keys %{$self->controllers}) {
+      my $map = $self->controllers->{$controller}->action_path_map;
+
+      return $map->{$action} if exists $map->{$action};
+   }
+
+   return $self->api_routes->{$action} if exists $self->api_routes->{$action};
+
+   return;
 }
 
 use namespace::autoclean;

@@ -1,7 +1,7 @@
 package MCat::Model::Cd;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect register_action_paths );
+use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownCd Unspecified );
 use Web::Simple;
 
@@ -9,14 +9,6 @@ extends 'MCat::Model';
 with    'Web::Components::Role';
 
 has '+moniker' => default => 'cd';
-
-register_action_paths 'cd', {
-   create => 'artist/*/cd/create',
-   delete => 'cd/*/delete',
-   edit   => 'cd/*/edit',
-   list   => [ 'artist/*/cd', 'cd' ],
-   view   => 'cd/*',
-};
 
 sub create {
    my ($self, $context, $artistid) = @_;

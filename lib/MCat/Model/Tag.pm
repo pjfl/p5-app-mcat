@@ -1,7 +1,7 @@
 package MCat::Model::Tag;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect register_action_paths );
+use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownTag Unspecified );
 use Web::Simple;
 
@@ -9,14 +9,6 @@ extends 'MCat::Model';
 with    'Web::Components::Role';
 
 has '+moniker' => default => 'tag';
-
-register_action_paths 'tag', {
-   create => 'tag/create',
-   delete => 'tag/*/delete',
-   edit   => 'tag/*/edit',
-   list   => 'tag',
-   view   => 'tag/*',
-};
 
 sub create {
    my ($self, $context) = @_;

@@ -6,8 +6,6 @@ use JSON::MaybeXS          qw( encode_json );
 use Unexpected::Functions  qw( throw UnknownModel );
 use Moo;
 
-has 'form' => is => 'ro', isa => Object, required => TRUE;
-
 has 'name' => is => 'ro', isa => Str, required => TRUE;
 
 sub action {
@@ -15,7 +13,7 @@ sub action {
 
    return unless $context->posted;
 
-   my $data = $self->form->get_body_parameters($context)->{data};
+   my $data = $context->get_body_parameters->{data};
    my ($moniker, $method) = split m{ / }mx, $data->{action};
 
    throw UnknownModel, [$moniker] unless exists $context->models->{$moniker};
@@ -27,18 +25,31 @@ sub action {
 sub preference {
    my ($self, $context, @args) = @_;
 
-   my $name = $self->_preference_name;
-   my $pref;
-
-   if ($context->posted) {
-      my $value = $self->form->get_body_parameters($context)->{data};
-
-      $pref = $context->preference($name, $value);
-   }
-   else { $pref = $context->preference($name) }
+   my $name  = $self->_preference_name;
+   my $value = $context->get_body_parameters->{data} if $context->posted;
+   my $pref  = $self->_preference($context, $name, $value);
 
    $context->stash( body => encode_json($pref ? $pref->value : {}) );
    return;
+}
+
+# Private methods
+sub _preference { # Accessor/mutator with builtin clearer. Store "" to delete
+   my ($self, $context, $name, $value) = @_;
+
+   return unless $name;
+
+   my $rs = $context->model('Preference');
+
+   return $rs->update_or_create( # Mutator
+      { name => $name, value => $value }, { key => 'preference_name' }
+   ) if $value && $value ne '""';
+
+   my $pref = $rs->find({ name => $name }, { key => 'preference_name' });
+
+   return $pref->delete if defined $pref && defined $value; # Clearer
+
+   return $pref; # Accessor
 }
 
 sub _preference_name {
