@@ -113,11 +113,12 @@ sub get_context { # Creates and returns a new context object from the request
 sub has_valid_token { # Stash an exception if the CSRF token is bad
    my ($self, $context) = @_;
 
-   my $token = $context->get_body_parameters->{_verify};
+   my $token  = $context->get_body_parameters->{_verify};
+   my $reason = verify_token $token, $context->session->serialise;
 
-   return TRUE if verify_token $context->session->serialise, $token;
+   return TRUE unless $reason;
 
-   $self->error($context, BadToken, level => 3);
+   $self->error($context, BadToken, [$reason], level => 3);
    return FALSE;
 }
 
