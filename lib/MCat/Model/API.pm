@@ -22,7 +22,7 @@ has 'routes' => is => 'ro', isa => HashRef, default => sub {
    };
 };
 
-sub response {
+sub dispatch {
    my ($self, $context, @args) = @_;
 
    throw UnknownView, ['json'] unless exists $context->views->{'json'};

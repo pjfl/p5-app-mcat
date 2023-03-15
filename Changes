@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - URI for action now generates API uris too
           - URI for action now uses reverse controller map
           - Cleaned up meta data
           - Added POD to config files so CLI help works

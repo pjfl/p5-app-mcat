@@ -87,6 +87,11 @@ sub uri_for_action {
    for my $candidate (@{$uris}) {
       my $n_stars =()= $candidate =~ m{ \* }gmx;
 
+      if ($n_stars == 2 and $candidate =~ m{ / \* \* }mx) {
+         ($uri = $candidate) =~ s{ / \* \* }{}mx;
+         last;
+      }
+
       next if $n_stars != 0 and $n_stars > scalar @{$args // []};
 
       while ($candidate =~ m{ \* }mx) {
@@ -96,8 +101,6 @@ sub uri_for_action {
 
          $candidate =~ s{ \* }{$arg}mx;
       }
-
-      while (my $arg = shift @{$args // []}) { $candidate .= "/${arg}" }
 
       $uri = $candidate;
       last;
@@ -122,13 +125,13 @@ sub view {
 sub _action_path2uri {
    my ($self, $action) = @_;
 
+   return $self->api_routes->{$action} if exists $self->api_routes->{$action};
+
    for my $controller (keys %{$self->controllers}) {
       my $map = $self->controllers->{$controller}->action_path_map;
 
       return $map->{$action} if exists $map->{$action};
    }
-
-   return $self->api_routes->{$action} if exists $self->api_routes->{$action};
 
    return;
 }

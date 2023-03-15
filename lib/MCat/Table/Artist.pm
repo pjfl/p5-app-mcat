@@ -39,6 +39,10 @@ has '+form_buttons' => default => sub {
    }];
 };
 
+has '+page_control_location' => default => 'TopLeft';
+
+has '+page_size_control_location' => default => 'TopRight';
+
 set_table_name 'artist';
 
 has_column 'check' =>

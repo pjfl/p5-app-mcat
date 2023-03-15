@@ -9,7 +9,7 @@ has '+moniker' => default => 'z_root'; # Must sort to last place
 
 sub dispatch_request {
    return (
-      'GET | POST + /api/** + ?*'  => sub {['api/response', @_]},
+      'GET | POST + /api/** + ?*'  => sub {['api/dispatch', @_]},
 
       'GET | POST + /tag/create + ?*' => sub {['tag/create', @_]},
       'GET | POST + /tag/*/edit + ?*' => sub {['tag/edit',   @_]},
