@@ -9,17 +9,8 @@
    <meta name="keywords" content="[% config.name %]">
    <meta name="generator" content="[% config.name %] v[% version %]">
    <link href="/favicon.ico" rel="shortcut icon">
-   <link href="/css/hforms-minimal.css" rel="stylesheet" type="text/css">
-   <link href="/css/hstatetable-minimal.css" rel="stylesheet" type="text/css">
-   <script src="/js/hforms-util.js"></script>
-   <script src="/js/hforms-repeatable.js"></script>
-   <script src="/js/hforms-toggle.js"></script>
-   <script src="/js/hstatetable-0-util.js"></script>
-   <script src="/js/hstatetable-1-renderer.js"></script>
-   <script src="/js/hstatetable-2-role.js"></script>
-   <script src="/js/hstatetable-3-celltrait.js"></script>
-   <script src="/js/hstatetable-4-columntrait.js"></script>
-   <script src="/js/hstatetable-5-rowtrait.js"></script>
+   <link href="/css/mcat.css" rel="stylesheet" type="text/css">
+   <script src="/js/mcat.js"></script>
    <script src="https://code.highcharts.com/highcharts.js"></script>
 </head>
 <body id="body">

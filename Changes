@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds logfile viewing
           - Fixes bug in token verification
           - URI for action now generates API uris too
           - URI for action now uses reverse controller map

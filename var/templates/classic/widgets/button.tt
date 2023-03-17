@@ -15,8 +15,7 @@
 [%- IF options.url %] href="[% options.url %]"[% END -%]
 [%- IF options.external %] target="_blank"[% END -%]
 [%- FOR attr IN options.data %] data-[% attr.key %]="[% attr.value %]"[% END -%]
-[%- IF options.onclick %] onclick="[% options.onclick | replace('"', "'") %]"[% END -%]
->
+[%- IF options.onclick %] onclick="[% options.onclick | replace('"', "'") %]"[% END -%]>
 [%- IF options.icon_name || options.svg_icon_name -%]
 [%-    IF use_wrapper %]
       <span class="button__icon-wrapper">

@@ -1,7 +1,30 @@
-package MCat;
+package MCat::Logfile::List;
 
-use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 22 $ =~ /\d+/gmx );
+use HTML::StateTable::Constants qw( FALSE TRUE );
+use Moo;
+
+extends 'MCat::Logfile';
+
+has '+result_class' => default => 'MCat::Logfile::List::Result';
+
+sub build_results {
+   my $self      = shift;
+   my $extension = $self->extension;
+   my $results   = [];
+
+   $self->base->visit(sub {
+      my $path = shift;
+
+      return if $path->is_dir;
+      return if $extension && $path->as_string !~ m{ \. $extension \z }mx;
+
+      push @{$results}, $self->result_class->new(
+         base => $self->base, extension => $extension, path => $path
+      );
+   }, { recurse => TRUE });
+
+   return $self->process($results);
+}
 
 use namespace::autoclean;
 
@@ -15,33 +38,32 @@ __END__
 
 =head1 Name
 
-MCat - Music Catalog
+MCat::Logfile::List - Music Catalog
 
 =head1 Synopsis
 
-   use MCat;
+   use MCat::Logfile::List;
+   # Brief but working code examples
 
 =head1 Description
 
-A demo program for L<Web::Components>, L<HTML::Forms>, and L<HTML::StateTable>
-
 =head1 Configuration and Environment
 
-Defines no attributes
+Defines the following attributes;
+
+=over 3
+
+=back
 
 =head1 Subroutines/Methods
 
-None
-
 =head1 Diagnostics
-
-None
 
 =head1 Dependencies
 
 =over 3
 
-=item L<Moo>
+=item L<Class::Usul>
 
 =back
 

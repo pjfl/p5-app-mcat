@@ -3,7 +3,7 @@ package MCat::Config;
 use Class::Usul::Functions qw( base64_decode_ns );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
-use File::DataClass::Types qw( Directory OctalNum );
+use File::DataClass::Types qw( Path Directory OctalNum Undef );
 use HTML::Forms::Constants qw( FALSE SECRET TRUE );
 use HTML::Forms::Types     qw( ArrayRef HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
@@ -146,6 +146,15 @@ Configuration parameters used by the component loader
 has 'loader_attr' => is => 'ro', isa => HashRef,
    default => sub { { should_log_errors => FALSE } };
 
+=item logfile
+
+Set in the configuration file, the path to the logfile used by the logging
+class
+
+=cut
+
+has 'logfile' => is => 'ro', isa => Path|Undef, coerce => TRUE;
+
 =item mount_point
 
 Where the application mounts on the base of the request
@@ -164,9 +173,20 @@ has 'name' => is => 'ro', isa => Str, default => 'Music Catalog';
 
 =item prefix
 
+Used as a prefix when creating identifiers
+
 =cut
 
 has 'prefix' => is => 'ro', isa => Str, default => 'mcat';
+
+=item redis
+
+Configuration hash reference used to configure the connection to the Redis
+cache
+
+=cut
+
+has 'redis' => is => 'ro', isa => HashRef, default => sub { {} };
 
 =item request_roles
 
@@ -250,7 +270,7 @@ has 'token_lifetime' => is => 'ro', isa => PositiveInt, default => 3_600;
 
 =item vardir
 
-Directory where all non program files and libraries are expected to be found
+Directory where all non program files are expected to be found
 
 =cut
 

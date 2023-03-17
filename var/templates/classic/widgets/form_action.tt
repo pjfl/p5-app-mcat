@@ -1,31 +1,32 @@
-[%- include_field_name = options.callback == 'prompt' || options.callback == 'selector' -%]
+[%- include_field_name = options.cb == 'prompt' || options.cb == 'selector' -%]
    <form method="post" action="[% url || options.url %]" class="u-inline [% options.form_class %]"
 [%- IF options.form_id %] id="[% options.form_id %]"[% END -%]
-[%- IF options.callback -%]
+[%- IF options.cb -%]
  data-c="form-callback-submit"
- data-callback-type="[% options.callback %]"
- data-callback-text="[% options.callback_text | html %]"
-[%-    IF options.callback_title %] data-callback-title="[% options.callback_title | html %]"[% END -%]
+ data-cb-type="[% options.cb %]"
+ data-cb-text="[% options.cb_text | html %]"
+[%-    IF options.cb_title -%]
+ data-cb-title="[% options.cb_title | html %]"
+[%-    END -%]
 [%- END -%]
-[%- IF include_field_name && options.callback_field_name -%]
- data-callback-field-name="[% options.callback_field_name | html %]"
+[%- IF include_field_name && options.cb_field_name -%]
+ data-cb-field-name="[% options.cb_field_name | html %]"
 [%- END -%]
-[%- IF options.callback == "prompt" -%]
-[%-    IF options.callback_field_value %] data-callback-field-value="[% options.callback_field_value | html %]"[% END -%]
-[%-    IF options.callback_field_rows %] data-callback-field-rows="[% options.callback_field_rows | html %]"[% END -%]
-[%-    IF options.callback_field_maxlength %] data-callback-field-maxlength="[% options.callback_field_maxlength | html %]"[% END -%]
+[%- IF options.cb == "prompt" -%]
+[%-    IF options.cb_field_value %] data-cb-field-value="[% options.cb_field_value | html %]"[% END -%]
+[%-    IF options.cb_field_rows %] data-cb-field-rows="[% options.cb_field_rows | html %]"[% END -%]
+[%-    IF options.cb_field_maxlength %] data-cb-field-maxlength="[% options.cb_field_maxlength | html %]"[% END -%]
 [%- END -%]
-[%- IF options.callback == "selector" -%]
-[%-    IF options.callback_selector %] data-callback-selector="[% options.callback_selector %]"[% END -%]
-[%-    IF options.callback_selector_args %] data-callback-selector-args="[% options.callback_selector_args %]"[% END -%]
-[%- END -%]
->
-      <input type="hidden" name="_verify" value="[% get_token(3600, '') %]" />
-[%-  FOREACH hidden IN options.hiddens.pairs -%]
+[%- IF options.cb == "selector" -%]
+[%-    IF options.cb_selector %] data-cb-selector="[% options.cb_selector %]"[% END -%]
+[%-    IF options.cb_selector_args %] data-cb-selector-args="[% options.cb_selector_args %]"[% END -%]
+[%- END -%]>
+      <input type="hidden" name="_verify" value="[% token %]" />
+[%- FOREACH hidden IN options.hiddens.pairs -%]
       <input type="hidden" name="[% hidden.key | html %]" value="[% hidden.value | html %]" />
 [%- END -%]
-[%- IF include_field_name && !options.hiddens.defined(options.callback_field_name) -%]
-      <input type="hidden" name="[% options.callback_field_name %]" value="" />
+[%- IF include_field_name && !options.hiddens.defined(options.cb_field_name) -%]
+      <input type="hidden" name="[% options.cb_field_name %]" value="" />
 [%- END %]
 [% content %]
    </form>

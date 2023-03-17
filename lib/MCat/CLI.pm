@@ -4,6 +4,7 @@ use MCat;
 use Class::Usul::Constants qw( AS_PASSWORD OK );
 use Class::Usul::File;
 use Class::Usul::Functions qw( base64_encode_ns );
+use File::DataClass::IO    qw( io );
 use HTML::Forms::Util      qw( cipher );
 use Moo;
 use Class::Usul::Options;
@@ -24,6 +25,52 @@ has '+config_class' => default => 'MCat::Config';
 
 sub BUILD {}
 
+=item make_css - Make concatenated CSS file
+
+Run automatically if L<App::Burp> is running. It concatenates multiple CSS files
+into a single one
+
+=cut
+
+sub make_css : method {
+   my $self  = shift;
+   my $dir   = io['share', 'css'];
+   my @files = ();
+
+   $dir->filter(sub { m{ \.css \z }mx })->visit(sub { push @files, shift });
+
+   my $file  = 'mcat.css';
+   my $out   = io([qw( var root css ), $file])->assert_open('a')->truncate(0);
+   my $count =()= map  { $out->append($_->slurp) }
+                  sort { $a->name cmp $b->name } @files;
+
+   $self->log->info("CLI.make_css: Concatenated ${count} files to ${file}");
+   return OK;
+}
+
+=item make_js - Make concatenated JS file
+
+Run automatically if L<App::Burp> is running. It concatenates multiple JS files
+into a single one
+
+=cut
+
+sub make_js : method {
+   my $self  = shift;
+   my $dir   = io['share', 'js'];
+   my @files = ();
+
+   $dir->filter(sub { m{ \.js \z }mx })->visit(sub { push @files, shift });
+
+   my $file  = 'mcat.js';
+   my $out   = io([qw( var root js ), $file])->assert_open('a')->truncate(0);
+   my $count =()= map  { $out->append($_->slurp) }
+                  sort { $a->name cmp $b->name } @files;
+
+   $self->log->info("CLI.make_js: Concatenated ${count} files to ${file}");
+   return OK;
+}
+
 =item set_db_password - Sets the database password
 
 Run this before attempting to start the application. It will write an
@@ -40,6 +87,7 @@ sub set_db_password : method {
 
    $data->{db_password} = base64_encode_ns cipher->encrypt($password);
    $fclass->data_dump({ path => $file->assert, data => $data });
+   $self->log->info('CLI.set_db_password: Updated database password');
    return OK;
 }
 

@@ -35,6 +35,7 @@ MACRO icon(name, class) BLOCK;
       '<span class="' _ classes.join(' ') _ '"></span>';
    END;
 END;
+MACRO lower(content) content | lower;
 MACRO svg_icon(name, classes, attrs) BLOCK;
    UNLESS attrs; attrs = {}; END;
    aria_attr = 'aria-hidden';

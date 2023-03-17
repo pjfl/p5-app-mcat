@@ -35,6 +35,9 @@ sub dispatch_request {
       'GET + /artist/* + ?*'             => sub {['artist/view',   @_]},
       'GET + /artist + ?*'               => sub {['artist/list',   @_]},
 
+      'GET + /logfile/* + ?*' => sub {['logfile/view', @_]},
+      'GET + /logfile + ?*'   => sub {['logfile/list', @_]},
+
       'GET + /** + ?*' => sub {['page/not_found', @_]},
       'HEAD + ?*'      => sub {['artist/list',    @_]},
       'GET + ?*'       => sub {['artist/list',    @_]},

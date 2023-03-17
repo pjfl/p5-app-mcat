@@ -1,3 +1,9 @@
 {
-  "local_config_file": "mcat-local.json"
+   "local_config_file": "mcat-local.json",
+   "logfile": "var/log/mcat.log",
+   "redis": {
+      "every": 1000,
+      "reconnect": 20,
+      "server": "localhost:6379"
+   }
 }

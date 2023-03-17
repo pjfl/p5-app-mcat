@@ -70,7 +70,7 @@ sub BUILD {
    my $port   = $ENV{ uc "${class}_port" } // 5_000;
 
    $info .= " started on port ${port}";
-   $self->log->info("${class} ${server} Server ${info}");
+   $self->log->info("Server: ${class} ${server} ${info}");
    return;
 }
 
