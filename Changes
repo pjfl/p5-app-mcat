@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moves logfile resultset classes to own distribution
           - Fixes loose ends in logfile viewing
           - Adds logfile viewing
           - Fixes bug in token verification

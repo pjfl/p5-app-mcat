@@ -2,7 +2,7 @@ package MCat::Table::Logfile::List;
 
 use File::DataClass::Types      qw( Directory );
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
-use MCat::Logfile::List;
+use HTML::StateTable::ResultSet::Logfile::List;
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -10,9 +10,12 @@ extends 'HTML::StateTable';
 
 setup_resultset sub {
    my $self = shift;
-   my $base = $self->context->config->logfile->parent;
 
-   return MCat::Logfile::List->new(base => $base, table => $self);
+   return HTML::StateTable::ResultSet::Logfile::List->new(
+      base         => $self->context->config->logfile->parent,
+      result_class => 'MCat::Logfile::List::Result',
+      table        => $self
+   );
 };
 
 set_table_name 'logfile_list';

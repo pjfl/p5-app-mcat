@@ -2,7 +2,7 @@ package MCat::Table::Logfile::View;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( Str );
-use MCat::Logfile::View;
+use HTML::StateTable::ResultSet::Logfile::View;
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -16,10 +16,11 @@ setup_resultset sub {
    my $self   = shift;
    my $config = $self->context->config;
 
-   return MCat::Logfile::View->new(
+   return HTML::StateTable::ResultSet::Logfile::View->new(
       base         => $config->logfile->parent,
       cache_config => $config->redis,
       logfile      => $self->logfile,
+      result_class => 'MCat::Logfile::View::Result',
       table        => $self,
    );
 };
