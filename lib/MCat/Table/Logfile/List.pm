@@ -9,7 +9,10 @@ use HTML::StateTable::Moo;
 extends 'HTML::StateTable';
 
 setup_resultset sub {
-   MCat::Logfile::List->new(base => shift->context->config->logfile->parent);
+   my $self = shift;
+   my $base = $self->context->config->logfile->parent;
+
+   return MCat::Logfile::List->new(base => $base, table => $self);
 };
 
 set_table_name 'logfile_list';

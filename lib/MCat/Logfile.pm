@@ -2,9 +2,9 @@ package MCat::Logfile;
 
 use Data::Page;
 use File::DataClass::Types      qw( Directory );
-use HTML::StateTable::Constants qw( FALSE TRUE );
+use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR FALSE TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool Int LoadableClass
-                                    ResultRole Str Undef );
+                                    ResultRole Str Table Undef );
 use Ref::Util                   qw( is_arrayref is_hashref );
 use MCat::Logfile::Column;
 use Moo;
@@ -35,8 +35,7 @@ Defines the following attributes;
 =item base
 
 An instance of L<File::DataClass::IO> which represents the directory that
-contains the log files. Defaults to the directory name of the configuration
-object logfile
+contains the log files. Required
 
 =cut
 
@@ -166,6 +165,14 @@ has '_sort_order' =>
    default => 'asc',
    writer  => '_set_sort_order';
 
+=item table
+
+Parent table object reference
+
+=cut
+
+has 'table' => is => 'ro', isa => Table, weak_ref => TRUE;
+
 =item total_results
 
 The total number of objects in the resultset
@@ -204,10 +211,18 @@ column. Think L<DBIx::Class> resultsets
 =cut
 
 sub column_info {
-   my ($self, $column) = @_;
+   my ($self, $name) = @_;
 
-   return { data_type => 'TIMESTAMP' } if $column eq 'timestamp';
-   return { data_type => 'TEXT' };
+   my $attr = COL_INFO_TYPE_ATTR;
+
+   if (my $column = $self->table->get_column($name)) {
+      for my $trait (@{$column->cell_traits}) {
+         return { $attr => 'TIMESTAMP' } if $trait =~ m{ date }imx;
+         return { $attr => 'INTEGER' }   if $trait =~ m{ numeric }imx;
+      }
+   }
+
+   return { $attr => 'TEXT' };
 }
 
 sub _filter_results {
@@ -271,9 +286,10 @@ sub index_start {
 sub _is_numeric {
    my ($self, $col) = @_;
 
-   my $attr = $self->result_class->meta->get_attribute($col);
+   my $attr = COL_INFO_TYPE_ATTR;
+   my $type = $self->column_info($col)->{$attr};
 
-   return $attr && defined $attr->{isa} && $attr->{isa} eq 'Int' ? TRUE : FALSE;
+   return $type && lc $type eq 'integer' ? TRUE : FALSE;
 }
 
 =item next
@@ -347,11 +363,12 @@ sub reset {
 
 =item result_source
 
-Required by L<HTML::StateTable>, does nothing, returns nothing
+Required by L<HTML::StateTable>
 
 =cut
 
 sub result_source {
+   return shift;
 }
 
 =item search( where, options )

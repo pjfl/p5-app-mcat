@@ -3,6 +3,7 @@ package MCat::Redis;
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use HTML::StateTable::Types     qw( HashRef Int Str );
 use List::Util                  qw( shuffle );
+use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );
 use Unexpected::Functions       qw( throw );
 use Redis;
@@ -40,8 +41,7 @@ has 'redis' =>
          my $start_time = time;
 
          while (!$redis->ping) {
-            sleep 1;
-            return FALSE if time - $start_time > 3600;
+            sleep 1; return FALSE if time - $start_time > 3600;
          }
 
          return TRUE;
@@ -54,15 +54,16 @@ has 'redis' =>
    };
 
 sub DEMOLISH {
-    my $self = shift;
+    my ($self, $in_global_destruction) = @_;
 
-    $self->redis->quit if ${^GLOBAL_PHASE} ne 'DESTRUCT';
+    $self->redis->quit unless $in_global_destruction;
+    return;
 }
 
 sub AUTOLOAD {
     my ($self, @args) = @_;
 
-    throw "${self} is not an object" unless ref $self;
+    throw "${self} is not an object" unless blessed $self;
 
     my $name = $AUTOLOAD; $name =~ s{ \A .* :: }{}mx;
 

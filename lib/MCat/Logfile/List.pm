@@ -19,7 +19,9 @@ sub build_results {
       return if $extension && $path->as_string !~ m{ \. $extension \z }mx;
 
       push @{$results}, $self->result_class->new(
-         base => $self->base, extension => $extension, path => $path
+         base      => $self->base,
+         extension => $extension,
+         path      => $path,
       );
    }, { recurse => TRUE });
 

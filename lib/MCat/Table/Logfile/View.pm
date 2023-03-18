@@ -18,8 +18,9 @@ setup_resultset sub {
 
    return MCat::Logfile::View->new(
       base         => $config->logfile->parent,
-      logfile      => $self->logfile,
       cache_config => $config->redis,
+      logfile      => $self->logfile,
+      table        => $self,
    );
 };
 

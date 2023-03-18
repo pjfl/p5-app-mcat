@@ -1,18 +1,38 @@
 package MCat::Log;
 
 use HTML::Forms::Constants qw( FALSE TRUE );
+use HTML::Forms::Types     qw( Bool );
 use HTML::Forms::Util      qw( now );
 use Type::Utils            qw( class_type );
 use Moo;
 
 has 'config' => is => 'ro', isa => class_type('MCat::Config');
 
+has '_debug' => is => 'ro', isa => Bool, init_arg => 'debug', default => FALSE;
+
+around 'BUILDARGS' => sub {
+   my ($orig, $self, @args) = @_;
+
+   my $attr = $orig->($self, @args);
+
+   if (my $builder = delete $attr->{builder}) {
+      $attr->{config} = $builder->config;
+      $attr->{debug} = $builder->debug;
+   }
+
+   return $attr;
+};
+
 sub alert {
    return shift->_log('ALERT', $_[0]);
 }
 
 sub debug {
-   return shift->_log('DEBUG', $_[0]);
+   my $self = shift;
+
+   return unless $self->_debug;
+
+   return $self->_log('DEBUG', $_[0]);
 }
 
 sub error {

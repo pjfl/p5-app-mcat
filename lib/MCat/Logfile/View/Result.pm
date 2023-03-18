@@ -1,10 +1,9 @@
 package MCat::Logfile::View::Result;
 
 use DateTime::Format::Strptime;
-use HTML::StateTable::Constants qw( FALSE SPC TRUE );
-use HTML::StateTable::Types     qw( ArrayRef HashRef Int Str );
+use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
+use HTML::StateTable::Types     qw( ArrayRef Date HashRef Int Str );
 use MCat::Util                  qw( local_tz );
-use Type::Utils                 qw( class_type );
 use Moo;
 
 with 'HTML::StateTable::Result::Role';
@@ -114,13 +113,13 @@ returned instead
 
 has 'timestamp' =>
    is      => 'lazy',
-   isa     => class_type('DateTime')|Str,
+   isa     => Date|Str,
    default => sub {
       my $self = shift;
       my $strp = DateTime::Format::Strptime->new(
          pattern => $self->_timestamp_pattern, time_zone => local_tz
       );
-      my $value     = $self->fields->[0] . SPC . $self->fields->[1];
+      my $value = ($self->fields->[0] // NUL) .SPC. ($self->fields->[1] // NUL);
       my $timestamp = $strp->parse_datetime($value);
 
       unless ($timestamp) {

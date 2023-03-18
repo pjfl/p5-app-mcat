@@ -3,7 +3,7 @@ package MCat::CLI;
 use MCat;
 use Class::Usul::Constants qw( AS_PASSWORD OK );
 use Class::Usul::File;
-use Class::Usul::Functions qw( base64_encode_ns );
+use Class::Usul::Functions qw( base64_encode_ns emit );
 use File::DataClass::IO    qw( io );
 use HTML::Forms::Util      qw( cipher );
 use Moo;
@@ -16,6 +16,8 @@ with    q(Class::Usul::TraitFor::Usage);
 with    q(Class::Usul::TraitFor::RunningMethods);
 
 has '+config_class' => default => 'MCat::Config';
+
+has '+log_class' => default => 'MCat::Log';
 
 =head1 Subroutines/Methods
 
@@ -43,8 +45,9 @@ sub make_css : method {
    my $out   = io([qw( var root css ), $file])->assert_open('a')->truncate(0);
    my $count =()= map  { $out->append($_->slurp) }
                   sort { $a->name cmp $b->name } @files;
+   my $options = { name => 'CLI.make_css' };
 
-   $self->log->info("CLI.make_css: Concatenated ${count} files to ${file}");
+   $self->info("Concatenated ${count} files to ${file}", $options);
    return OK;
 }
 
@@ -66,8 +69,9 @@ sub make_js : method {
    my $out   = io([qw( var root js ), $file])->assert_open('a')->truncate(0);
    my $count =()= map  { $out->append($_->slurp) }
                   sort { $a->name cmp $b->name } @files;
+   my $options = { name => 'CLI.make_js' };
 
-   $self->log->info("CLI.make_js: Concatenated ${count} files to ${file}");
+   $self->info("Concatenated ${count} files to ${file}", $options);
    return OK;
 }
 

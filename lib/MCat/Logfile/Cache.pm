@@ -34,8 +34,8 @@ sub count {
    my $rs   = $self->resultset;
    my $key  = $rs->path->as_string;
 
-   return $rs->result_count if $self->_is_complete;
    return scalar @{$self->_filtered_line_numbers($key)} if $rs->has_filter;
+   return $rs->result_count if $self->_is_complete;
    return scalar @{$self->_read_cache($key, \&_build_index)};
 }
 
@@ -232,7 +232,7 @@ sub _read_column_values {
       return [ split m{ \n }mx, $stdout ];
    });
 
-   return [ map { $class->new(line => q(), $col => $_) } @{$values} ]
+   return [ map { $class->new(line => q(), $col => $_) } @{$values} ];
 }
 
 sub _read_partial {
@@ -260,9 +260,9 @@ sub _read_partial {
 sub _read_some_lines {
    my ($self, $key) = @_;
 
+   my $class = $self->resultset->result_class;
    my $lnums = $self->_filtered_line_numbers($key);
    my $lines = $self->_read_by_line_numbers($key, $lnums);
-   my $class = $self->resultset->result_class;
 
    return [ map { $class->new(line => $_) } @{$lines} ];
 }
