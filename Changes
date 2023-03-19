@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds navigation class
           - Moves logfile resultset classes to own distribution
           - Fixes loose ends in logfile viewing
           - Adds logfile viewing

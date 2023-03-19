@@ -10,6 +10,21 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'track';
 
+sub base {
+   my ($self, $context, $id) = @_;
+
+   my $method  = (split m{ / }mx, $context->stash('action_path'))[-1];
+   my $cdid    = $id if $method eq 'create' || $method eq 'list';
+   my $trackid = $id if $method eq 'edit'   || $method eq 'view';
+   my $nav     = $context->stash('nav');
+
+   $nav->list('track',  'Tracks');
+   $nav->item('Create', 'track/create', [$cdid])    if $cdid;
+   $nav->item('View',   'track/view',   [$trackid]) if $trackid;
+   $nav->item('CD',     'cd/view',      [$cdid])    if $cdid;
+   return;
+}
+
 sub create {
    my ($self, $context, $cdid) = @_;
 
@@ -30,7 +45,7 @@ sub create {
       $context->stash( redirect $track_view, $message );
    }
 
-   $context->stash( form => $form );
+   $context->stash( cdid => $cdid, form => $form );
    return;
 }
 
@@ -81,7 +96,9 @@ sub edit {
       $context->stash( redirect $track_view, $message );
    }
 
-   $context->stash( form => $form );
+   $context->stash('nav')->item('Create', 'track/create', [$cdid]);
+   $context->stash('nav')->item('CD', 'cd/view', [$cdid]);
+   $context->stash( cdid => $cdid, trackid => $trackid, form => $form );
    return;
 }
 
@@ -90,14 +107,14 @@ sub list {
 
    my $track_rs = $context->model('Track');
 
-   $track_rs = $track_rs->search({ artistid => $cdid }) if $cdid;
+   if ($cdid) {
+      $track_rs = $track_rs->search({ artistid => $cdid });
+      $context->stash(cdid => $cdid);
+   }
 
    my $options = { context => $context, resultset => $track_rs };
 
-   $context->stash(
-      cdid  => $cdid,
-      table => $self->table->new_with_context('Track', $options),
-   );
+   $context->stash(table => $self->table->new_with_context('Track', $options));
    return;
 }
 
@@ -110,7 +127,11 @@ sub view {
 
    return $self->error($context, UnknownTrack, [$trackid]) unless $track;
 
-   $context->stash( track => $track );
+   my $cdid = $track->cd->id;
+
+   $context->stash('nav')->item('Create', 'track/create', [$cdid]);
+   $context->stash('nav')->item('CD', 'cd/view', [$cdid]);
+   $context->stash( cdid => $cdid, track => $track );
    return;
 }
 

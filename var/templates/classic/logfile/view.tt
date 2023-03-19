@@ -1,3 +1,2 @@
 <h4>[% ucfirst(table.logfile) %] Logfile</h4>
 [% table.render %]<br/>
-[% button({ text => 'List Logfiles', url => uri_for_action('logfile/list') }) %]<br/>

@@ -1,17 +1,17 @@
-Artist Id: [% artist.id %]<br/>
-Name: [% artist.name %]<br/>
-Active: [% artist.active %]<br/>
-Upvotes:  [% artist.upvotes %]<br/>
+<h4>Artist</h4>
+Id     : [% artist.id %]<br/>
+Name   : [% artist.name %]<br/>
+Active : [% artist.active %]<br/>
+Upvotes: [% artist.upvotes %]<br/>
 [% button({
       text => 'Edit Artist',
       url  => uri_for_action('artist/edit', [artist.id])
    })
-%]<br/>
+%]
 [% form_button({
       content => 'Delete Artist',
       url     => uri_for_action('artist/delete', [artist.id])
    })
 %]
-[% table.render %]<br/>
-[% button({ text => 'Create CD', url => uri_for_action('cd/create', [artist.id]) }) %]<br/>
-[% button({ text => 'List Artists', url => uri_for_action('artist/list') }) %]<br/>
+<h4>CDs</h4>
+[% table.render %]

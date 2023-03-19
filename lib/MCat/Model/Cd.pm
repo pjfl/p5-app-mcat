@@ -10,6 +10,21 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'cd';
 
+sub base {
+   my ($self, $context, $id) = @_;
+
+   my $method   = (split m{ / }mx, $context->stash('action_path'))[-1];
+   my $artistid = $id if $method eq 'create' || $method eq 'list';
+   my $cdid     = $id if $method eq 'edit'   || $method eq 'view';
+   my $nav      = $context->stash('nav');
+
+   $nav->list('cd', 'CDs');
+   $nav->item('Create', 'cd/create',   [$artistid]) if $artistid;
+   $nav->item('View',   'cd/view',     [$cdid])     if $cdid;
+   $nav->item('Artist', 'artist/view', [$artistid]) if $artistid;
+   return;
+}
+
 sub create {
    my ($self, $context, $artistid) = @_;
 
@@ -30,7 +45,7 @@ sub create {
       $context->stash( redirect $cd_view, $message );
    }
 
-   $context->stash( form => $form );
+   $context->stash( artistid => $artistid, form => $form );
    return;
 }
 
@@ -72,7 +87,7 @@ sub edit {
       item     => $cd,
       title    => 'Edit CD'
    };
-   my $form     = $self->form->new_with_context('Cd', $options);
+   my $form = $self->form->new_with_context('Cd', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $cd_view = $context->uri_for_action('cd/view', [$cdid]);
@@ -81,7 +96,9 @@ sub edit {
       $context->stash( redirect $cd_view, $message );
    }
 
-   $context->stash( form => $form );
+   $context->stash('nav')->item('Create', 'cd/create', [$artistid]);
+   $context->stash('nav')->item('Artist', 'artist/view', [$artistid]);
+   $context->stash( artistid => $artistid, cdid => $cdid, form => $form );
    return;
 }
 
@@ -90,14 +107,14 @@ sub list {
 
    my $cd_rs = $context->model('Cd');
 
-   $cd_rs = $cd_rs->search({ artistid => $artistid }) if $artistid;
+   if ($artistid) {
+      $cd_rs = $cd_rs->search({ artistid => $artistid });
+      $context->stash(artistid => $artistid);
+   }
 
    my $options = { context => $context, resultset => $cd_rs };
 
-   $context->stash(
-      artistid => $artistid,
-      table    => $self->table->new_with_context('Cd', $options),
-   );
+   $context->stash(table => $self->table->new_with_context('Cd', $options));
    return;
 }
 
@@ -112,10 +129,14 @@ sub view {
 
    my $track_rs = $context->model('Track')->search({ cdid => $cdid });
    my $options  = { context => $context, resultset => $track_rs };
+   my $artistid = $cd->artist->id;
 
+   $context->stash('nav')->item('Create', 'cd/create', [$artistid]);
+   $context->stash('nav')->item('Artist', 'artist/view', [$artistid]);
    $context->stash(
-      cd    => $cd,
-      table => $self->table->new_with_context('Track', $options)
+      artistid => $artistid,
+      cd       => $cd,
+      table    => $self->table->new_with_context('Track', $options)
    );
    return;
 }

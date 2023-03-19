@@ -10,6 +10,17 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'artist';
 
+sub base {
+   my ($self, $context, $artistid) = @_;
+
+   my $nav = $context->stash('nav');
+
+   $nav->list('artist', 'Artists')
+       ->item('Create', 'artist/create');
+   $nav->item('View',   'artist/view', [$artistid]) if $artistid;
+   return;
+}
+
 sub create {
    my ($self, $context) = @_;
 
@@ -74,7 +85,7 @@ sub edit {
       return;
    }
 
-   $context->stash( form => $form );
+   $context->stash( artistid => $artistid, form => $form );
    return;
 }
 

@@ -10,6 +10,13 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'logfile';
 
+sub base {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->list('logfile', 'Logfiles');
+   return;
+}
+
 sub list {
    my ($self, $context) = @_;
 

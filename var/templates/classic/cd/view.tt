@@ -1,16 +1,16 @@
-CD Id: [% cd.cdid %]<br/>
-Title: [% cd.title %]<br/>
+<h4>CD</h4>
+Id      : [% cd.cdid %]<br/>
+Title   : [% cd.title %]<br/>
 Released: [% cd.year.strftime('%d %b %Y') %]<br/>
 [% button({
       text => 'Edit CD',
       url  => uri_for_action('cd/edit', [cd.cdid])
    })
-%]<br/>
+%]
 [% form_button({
       content => 'Delete CD',
       url     => uri_for_action('cd/delete', [cd.cdid])
    })
-%]<br/>
-[% table.render %]<br/>
-[% button({ text => 'Create Tracks', url => uri_for_action('track/create', [cd.cdid]) }) %]<br/>
-[% button({ text => 'View Artist', url => uri_for_action('artist/view', [cd.artist.id]) }) %]<br/>
+%]
+<h4>Tracks</h4>
+[% table.render %]

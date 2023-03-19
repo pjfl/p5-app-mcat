@@ -10,6 +10,17 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'tag';
 
+sub base {
+   my ($self, $context, $tagid) = @_;
+
+   my $nav = $context->stash('nav');
+
+   $nav->list('tag',    'Tags');
+   $nav->item('Create', 'tag/create');
+   $nav->item('View',   'tag/view', [$tagid]) if $tagid;
+   return;
+}
+
 sub create {
    my ($self, $context) = @_;
 
@@ -72,7 +83,7 @@ sub edit {
       return;
    }
 
-   $context->stash( form => $form );
+   $context->stash( form => $form, tagid => $tagid );
    return;
 }
 

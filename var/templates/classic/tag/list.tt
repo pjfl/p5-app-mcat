@@ -1,3 +1,2 @@
-[% table.render %]<br/>
-[% button({ text => 'Create Tag', url => uri_for_action('tag/create') }) %]<br/>
-[% button({ text => 'List Artists', url => uri_for_action('artist/list') }) %]<br/>
+<h4>Tags</h4>
+[% table.render %]

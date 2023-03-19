@@ -171,6 +171,25 @@ The display name for the applicaton
 
 has 'name' => is => 'ro', isa => Str, default => 'Music Catalog';
 
+=item navigation
+
+Hash reference of configuration attributes applied the the L<MCat::Navigation>
+object
+
+=cut
+
+has 'navigation' => is => 'ro', isa => HashRef, default => sub {
+   return {
+      sections => [
+         ['Artists',  'artist/list'],
+         ['CDs',      'cd/list'],
+         ['Tracks',   'track/list'],
+         ['Tags',     'tag/list'],
+         ['Logfiles', 'logfile/list'],
+      ]
+   };
+};
+
 =item prefix
 
 Used as a prefix when creating identifiers

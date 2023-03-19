@@ -124,7 +124,7 @@ has 'timestamp' =>
 
       unless ($timestamp) {
          $self->_set_remainder_start(0);
-         $timestamp = 'undef';
+         $timestamp = NUL;
       }
 
       return $timestamp;
@@ -170,9 +170,9 @@ has 'status' =>
    default => sub {
       my $self = shift;
 
-      return 'undef' unless $self->remainder_start;
+      return NUL unless $self->remainder_start;
 
-      (my $status = $self->fields->[2] // 'undef') =~ s{ [\[\]] }{}gmx;
+      (my $status = $self->fields->[2] // NUL) =~ s{ [\[\]] }{}gmx;
       return $status;
    };
 
@@ -195,9 +195,9 @@ has 'source' =>
    default => sub {
       my $self = shift;
 
-      return 'undef' unless $self->remainder_start;
+      return NUL unless $self->remainder_start;
 
-      (my $source = $self->fields->[3] // 'undef') =~ s{ : \z }{}mx;
+      (my $source = $self->fields->[3] // NUL) =~ s{ : \z }{}mx;
       return $source;
    };
 

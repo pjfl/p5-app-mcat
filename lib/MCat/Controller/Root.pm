@@ -8,43 +8,42 @@ with 'Web::Components::ReverseMap';
 has '+moniker' => default => 'z_root'; # Must sort to last place
 
 sub dispatch_request {
-   return (
-      'GET | POST + /api/** + ?*'  => sub {['api/dispatch', @_]},
+return (
+   'GET|POST + /api/** + ?*' => sub {['api/dispatch', @_]},
 
-      'GET | POST + /tag/create + ?*' => sub {['tag/create', @_]},
-      'GET | POST + /tag/*/edit + ?*' => sub {['tag/edit',   @_]},
-      'POST + /tag/*/delete + ?*'     => sub {['tag/delete', @_]},
-      'GET + /tag/* + ?*'             => sub {['tag/view',   @_]},
-      'GET + /tag + ?*'               => sub {['tag/list',   @_]},
+   'GET|POST + /tag/create + ?*' => sub {['tag/root/base/create', @_]},
+   'GET|POST + /tag/*/edit + ?*' => sub {['tag/root/base/edit',   @_]},
+   'POST + /tag/*/delete + ?*'   => sub {['tag/delete',           @_]},
+   'GET + /tag/* + ?*'           => sub {['tag/root/base/view',   @_]},
+   'GET + /tag + ?*'             => sub {['tag/root/base/list',   @_]},
 
-      'GET | POST + /cd/*/track/create + ?*' => sub {['track/create', @_]},
-      'GET | POST + /track/*/edit + ?*'      => sub {['track/edit',   @_]},
-      'POST + /track/*/delete + ?*'          => sub {['track/delete', @_]},
-      'GET + /track/* + ?*'                  => sub {['track/view',   @_]},
-      'GET + /cd/*/track | /track + ?*'      => sub {['track/list',   @_]},
+   'GET|POST + /cd/*/track/create + ?*' => sub {['track/root/base/create', @_]},
+   'GET|POST + /track/*/edit + ?*'      => sub {['track/root/base/edit',   @_]},
+   'POST + /track/*/delete + ?*'        => sub {['track/delete',           @_]},
+   'GET + /track/* + ?*'                => sub {['track/root/base/view',   @_]},
+   'GET + /cd/*/track | /track + ?*'    => sub {['track/root/base/list',   @_]},
 
-      'GET | POST + /artist/*/cd/create + ?*' => sub {['cd/create', @_]},
-      'GET | POST + /cd/*/edit + ?*'          => sub {['cd/edit',   @_]},
-      'POST + /cd/*/delete + ?*'              => sub {['cd/delete', @_]},
-      'GET + /cd/* + ?*'                      => sub {['cd/view',   @_]},
-      'GET + /artist/*/cd | /cd + ?*'         => sub {['cd/list',   @_]},
+   'GET|POST + /artist/*/cd/create + ?*' => sub {['cd/root/base/create', @_]},
+   'GET|POST + /cd/*/edit + ?*'          => sub {['cd/root/base/edit',   @_]},
+   'POST + /cd/*/delete + ?*'            => sub {['cd/delete',           @_]},
+   'GET + /cd/* + ?*'                    => sub {['cd/root/base/view',   @_]},
+   'GET + /artist/*/cd | /cd + ?*'       => sub {['cd/root/base/list',   @_]},
 
-      'GET | POST + /artist/create + ?*' => sub {['artist/create', @_]},
-      'GET | POST + /artist/*/edit + ?*' => sub {['artist/edit',   @_]},
-      'POST + /artist/*/delete + ?*'     => sub {['artist/delete', @_]},
-      'GET + /artist/* + ?*'             => sub {['artist/view',   @_]},
-      'GET + /artist + ?*'               => sub {['artist/list',   @_]},
+   'GET|POST + /artist/create + ?*' => sub {['artist/root/base/create', @_]},
+   'GET|POST + /artist/*/edit + ?*' => sub {['artist/root/base/edit',   @_]},
+   'POST + /artist/*/delete + ?*'   => sub {['artist/delete',           @_]},
+   'GET + /artist/* + ?*'           => sub {['artist/root/base/view',   @_]},
+   'GET + /artist + ?*'             => sub {['artist/root/base/list',   @_]},
 
-      'GET + /logfile/* + ?*' => sub {['logfile/view', @_]},
-      'GET + /logfile + ?*'   => sub {['logfile/list', @_]},
+   'GET + /logfile/* + ?*' => sub {['logfile/root/base/view', @_]},
+   'GET + /logfile + ?*'   => sub {['logfile/root/base/list', @_]},
 
-      'GET + /** + ?*' => sub {['page/not_found', @_]},
-      'HEAD + ?*'      => sub {['artist/list',    @_]},
-      'GET + ?*'       => sub {['artist/list',    @_]},
-      'PUT + ?*'       => sub {['page/not_found', @_]},
-      'POST + ?*'      => sub {['page/not_found', @_]},
-      'DELETE + ?*'    => sub {['page/not_found', @_]},
-   );
-}
+   'GET + /** + ?*' => sub {['page/root/not_found', @_]},
+   'HEAD + ?*'      => sub {['page/root/not_found', @_]},
+   'GET + ?*'       => sub {['page/root/not_found', @_]},
+   'PUT + ?*'       => sub {['page/root/not_found', @_]},
+   'POST + ?*'      => sub {['page/root/not_found', @_]},
+   'DELETE + ?*'    => sub {['page/root/not_found', @_]},
+)}
 
 1;

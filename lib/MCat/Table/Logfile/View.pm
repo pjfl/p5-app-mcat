@@ -30,12 +30,13 @@ set_table_name 'logfile_view';
 has_column 'timestamp' =>
    cell_traits => ['DateTime'],
    label       => 'Timestamp',
+   searchable  => TRUE,
    sortable    => TRUE,
    width       => '160px';
 
 has_column 'status' => filterable => TRUE, width => '100px';
 
-has_column 'source' => width => '300px';
+has_column 'source' => width => '300px', searchable => TRUE;
 
 has_column 'remainder' => label => 'Line', searchable => TRUE;
 

@@ -11,6 +11,7 @@ use Unexpected::Functions  qw( exception throw BadToken NoMethod );
 use HTML::Forms::Manager;
 use HTML::StateTable::Manager;
 use MCat::Context;
+use MCat::Navigation;
 use MCat::Schema;
 use Moo;
 
@@ -82,18 +83,27 @@ sub exception_handler { # Also called by component loader if model dies
 }
 
 sub execute { # Called by component loader for all model method calls
-   my ($self, $context, $method) = @_;
+   my ($self, $context, $action_path) = @_;
 
-   throw NoMethod, [ blessed $self, $method ] unless $self->can($method);
+   my $stash = $context->stash;
 
-   $method = $self->allowed($context, $method);
+   $stash->{action_path} = $action_path;
 
-   $self->$method($context, @{$context->request->args}) if $method;
+   my $last_method;
 
-   return $context->stash->{response} if $context->stash->{response};
+   for my $method (split m{ / }mx, $action_path) {
+      throw NoMethod, [ blessed $self, $method ] unless $self->can($method);
 
-   $self->_finalise_stash($context, $method)
-      unless $context->stash->{finalised};
+      $method = $self->allowed($context, $method);
+
+      $self->$method($context, @{$context->request->args}) if $method;
+
+      return $stash->{response} if $stash->{response};
+
+      $last_method = $method;
+   }
+
+   $self->_finalise_stash($context, $last_method) unless $stash->{finalised};
    return;
 }
 
@@ -120,6 +130,15 @@ sub has_valid_token { # Stash an exception if the CSRF token is bad
 
    $self->error($context, BadToken, [$reason], level => 3);
    return FALSE;
+}
+
+sub root {
+   my ($self, $context) = @_;
+
+   my $nav = MCat::Navigation->new({ context => $context, model => $self });
+
+   $context->stash(nav => $nav);
+   return;
 }
 
 # Private methods

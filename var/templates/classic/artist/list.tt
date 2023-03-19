@@ -1,4 +1,1 @@
-[% table.render %]<br/>
-[% button({ text => 'Create Artist', url => uri_for_action('artist/create') }) %]<br/>
-[% button({ text => 'List Tags', url => uri_for_action('tag/list') }) %]<br/>
-[% button({ text => 'List Logfiles', url => uri_for_action('logfile/list') }) %]<br/>
+[% table.render %]

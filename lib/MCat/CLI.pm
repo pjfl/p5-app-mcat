@@ -91,7 +91,7 @@ sub set_db_password : method {
 
    $data->{db_password} = base64_encode_ns cipher->encrypt($password);
    $fclass->data_dump({ path => $file->assert, data => $data });
-   $self->log->info('CLI.set_db_password: Updated database password');
+   $self->info('Updated database password', { name => 'CLI.set_db_password' });
    return OK;
 }
 
