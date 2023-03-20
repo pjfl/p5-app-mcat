@@ -1,14 +1,3 @@
 <h4>Tag</h4>
 Id  : [% tag.id %]<br/>
-Name: [% tag.name %]<br/>
-[% button({
-      text => 'Edit Tag',
-      url  => uri_for_action('tag/edit', [tag.id])
-   })
-%]
-[% form_button({
-      content => 'Delete Tag',
-      url     => uri_for_action('tag/delete', [tag.id])
-   })
-%]
-[% table.render %]
+Name: [% tag.name %]

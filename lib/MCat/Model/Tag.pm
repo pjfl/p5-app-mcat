@@ -15,9 +15,17 @@ sub base {
 
    my $nav = $context->stash('nav');
 
-   $nav->list('tag',    'Tags');
-   $nav->item('Create', 'tag/create');
-   $nav->item('View',   'tag/view', [$tagid]) if $tagid;
+   $nav->list('tag', 'Tags')->item('Create', 'tag/create');
+
+   return unless $tagid;
+
+   $nav->crud('tag', $tagid);
+
+   my $tag = $context->model('Tag')->find($tagid);
+
+   return $self->error($context, UnknownTag, [$tagid]) unless $tag;
+
+   $context->stash(tag => $tag);
    return;
 }
 
@@ -47,12 +55,7 @@ sub delete {
 
    return unless $self->has_valid_token($context);
 
-   return $self->error($context, Unspecified, ['tagid']) unless $tagid;
-
-   my $tag = $context->model('Tag')->find($tagid);
-
-   return $self->error($context, UnknownTag, [$tagid]) unless $tag;
-
+   my $tag  = $context->stash('tag');
    my $name = $tag->name;
 
    $tag->delete;
@@ -66,12 +69,7 @@ sub delete {
 sub edit {
    my ($self, $context, $tagid) = @_;
 
-   return $self->error($context, Unspecified, ['tagid']) unless $tagid;
-
-   my $tag = $context->model('Tag')->find($tagid);
-
-   return $self->error($context, UnknownTag, [$tagid]) unless $tag;
-
+   my $tag     = $context->stash('tag');
    my $options = { context => $context, item => $tag, title => 'Edit tag' };
    my $form    = $self->form->new_with_context('Tag', $options);
 
@@ -83,7 +81,7 @@ sub edit {
       return;
    }
 
-   $context->stash( form => $form, tagid => $tagid );
+   $context->stash( form => $form );
    return;
 }
 
@@ -99,27 +97,24 @@ sub list {
 sub remove {
    my ($self, $context) = @_;
 
-   my $value = $context->request->body_parameters->{data} or return;
+   return unless $self->has_valid_token($context);
 
-   for my $tagid (@{$value->{selector}}) {
-      $self->delete($context, $tagid);
-      delete $context->stash->{redirect};
+   my $value = $context->request->body_parameters->{data} or return;
+   my $rs    = $context->model('Tag');
+   my $count = 0;
+
+   for my $tag (grep { $_ } map { $rs->find($_) } @{$value->{selector}}) {
+      $tag->delete;
+      $count++;
    }
 
-   $context->stash( response => { message => 'Tags deleted' });
+   $context->stash( response => { message => '${count} tag(s) deleted' });
    return;
 }
 
 sub view {
    my ($self, $context, $tagid) = @_;
 
-   return $self->error($context, Unspecified, ['tagid']) unless $tagid;
-
-   my $tag = $context->model('Tag')->find($tagid);
-
-   return $self->error($context, UnknownTag, [$tagid]) unless $tag;
-
-   $context->stash(tag => $tag);
    return;
 }
 

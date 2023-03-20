@@ -25,6 +25,8 @@ t/ipc_srlock*
 MCat-*
 share/css
 share/js
+share/less/hforms-minimal.less
+share/less/hstatetable-minimal.less
 var/etc/mcat-local.json
 var/etc/mcat-schema.conf
 var/log

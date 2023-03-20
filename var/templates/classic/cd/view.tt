@@ -1,16 +1,7 @@
 <h4>CD</h4>
 Id      : [% cd.cdid %]<br/>
+Artist  : [% artist.name %]<br/>
 Title   : [% cd.title %]<br/>
-Released: [% cd.year.strftime('%d %b %Y') %]<br/>
-[% button({
-      text => 'Edit CD',
-      url  => uri_for_action('cd/edit', [cd.cdid])
-   })
-%]
-[% form_button({
-      content => 'Delete CD',
-      url     => uri_for_action('cd/delete', [cd.cdid])
-   })
-%]
+Released: [% cd.year.strftime('%d %b %Y') %]
 <h4>Tracks</h4>
 [% table.render %]

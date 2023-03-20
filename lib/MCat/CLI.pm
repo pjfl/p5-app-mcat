@@ -1,11 +1,12 @@
 package MCat::CLI;
 
 use MCat;
-use Class::Usul::Constants qw( AS_PASSWORD OK );
+use Class::Usul::Constants     qw( AS_PASSWORD OK );
 use Class::Usul::File;
-use Class::Usul::Functions qw( base64_encode_ns emit );
-use File::DataClass::IO    qw( io );
-use HTML::Forms::Util      qw( cipher );
+use Class::Usul::Functions     qw( base64_encode_ns emit );
+use File::DataClass::Functions qw( ensure_class_loaded );
+use File::DataClass::IO        qw( io );
+use HTML::Forms::Util          qw( cipher );
 use Moo;
 use Class::Usul::Options;
 
@@ -70,6 +71,28 @@ sub make_js : method {
    my $count =()= map  { $out->append($_->slurp) }
                   sort { $a->name cmp $b->name } @files;
    my $options = { name => 'CLI.make_js' };
+
+   $self->info("Concatenated ${count} files to ${file}", $options);
+   return OK;
+}
+
+=item make_less - Convert LESS files to CSS
+
+=cut
+
+sub make_less : method {
+   my $self  = shift;
+   my $dir   = io['share', 'less'];
+   my @files = ();
+
+   $dir->filter(sub { m{ \.less \z }mx })->visit(sub { push @files, shift });
+   ensure_class_loaded('CSS::LESSp');
+
+   my $file  = 'mcat.css';
+   my $out   = io([qw( share css ), $file])->assert_open('a')->truncate(0);
+   my $count =()= map  { $out->append(CSS::LESSp->parse($_->all)) }
+                  sort { $a->name cmp $b->name } @files;
+   my $options = { name => 'CLI.make_less' };
 
    $self->info("Concatenated ${count} files to ${file}", $options);
    return OK;

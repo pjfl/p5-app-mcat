@@ -15,9 +15,18 @@ sub base {
 
    my $nav = $context->stash('nav');
 
-   $nav->list('artist', 'Artists')
-       ->item('Create', 'artist/create');
-   $nav->item('View',   'artist/view', [$artistid]) if $artistid;
+   $nav->list('artist', 'Artists')->item('Create', 'artist/create');
+
+   return unless $artistid;
+
+   $nav->crud('artist', $artistid);
+   $nav->item('Create CD', 'cd/create', [$artistid]);
+
+   my $artist = $context->model('Artist')->find($artistid);
+
+   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
+
+   $context->stash(artist => $artist);
    return;
 }
 
@@ -47,13 +56,8 @@ sub delete {
 
    return unless $self->has_valid_token($context);
 
-   return $self->error($context, Unspecified, ['artistid']) unless $artistid;
-
-   my $artist = $context->model('Artist')->find($artistid);
-
-   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
-
-   my $name = $artist->name;
+   my $artist = $context->stash('artist');
+   my $name   = $artist->name;
 
    $artist->delete;
 
@@ -66,12 +70,7 @@ sub delete {
 sub edit {
    my ($self, $context, $artistid) = @_;
 
-   return $self->error($context, Unspecified, ['artistid']) unless $artistid;
-
-   my $artist = $context->model('Artist')->find($artistid);
-
-   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
-
+   my $artist  = $context->stash('artist');
    my $options = {
       context => $context, item => $artist, title => 'Edit artist'
    };
@@ -85,7 +84,7 @@ sub edit {
       return;
    }
 
-   $context->stash( artistid => $artistid, form => $form );
+   $context->stash( form => $form );
    return;
 }
 
@@ -101,35 +100,29 @@ sub list {
 sub remove {
    my ($self, $context) = @_;
 
+   return unless $self->has_valid_token($context);
+
    my $value = $context->request->body_parameters->{data} or return;
+   my $rs    = $context->model('Artist');
    my $count = 0;
 
-   for my $artistid (@{$value->{selector}}) {
-      $self->delete($context, $artistid);
-      delete $context->stash->{redirect};
+   for my $artist (grep { $_ } map { $rs->find($_) } @{$value->{selector}}) {
+      $artist->delete;
       $count++;
    }
 
-   $context->stash( response => { message => "${count} Artists deleted" } );
+   $context->stash( response => { message => "${count} artist(s) deleted" } );
    return;
 }
 
 sub view {
    my ($self, $context, $artistid) = @_;
 
-   return $self->error($context, Unspecified, ['artistid']) unless $artistid;
-
-   my $artist = $context->model('Artist')->find($artistid);
-
-   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
-
+   my $artist  = $context->stash('artist');
    my $cd_rs   = $context->model('Cd')->search({ artistid => $artistid });
    my $options = { context => $context, resultset => $cd_rs };
 
-   $context->stash(
-      artist => $artist,
-      table  => $self->table->new_with_context('Cd', $options)
-   );
+   $context->stash( table => $self->table->new_with_context('Cd', $options));
    return;
 }
 

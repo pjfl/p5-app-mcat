@@ -1,13 +1,4 @@
 <h4>Track</h4>
-Id   : [% track.trackid %]<br/>
-Title: [% track.title %]<br/>
-[% button({
-      text => 'Edit Track',
-      url  => uri_for_action('track/edit', [track.trackid])
-   })
-%]
-[% form_button({
-      content => 'Delete Track',
-      url     => uri_for_action('track/delete', [track.trackid])
-   })
-%]
+Track Id: [% track.trackid %]<br/>
+CD      : [% cd.title %]<br/>
+Title   : [% track.title %]

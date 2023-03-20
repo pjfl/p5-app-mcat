@@ -1,1 +1,2 @@
+Artist: [% artist.name %]
 [% form.render %]

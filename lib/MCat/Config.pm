@@ -180,7 +180,7 @@ object
 
 has 'navigation' => is => 'ro', isa => HashRef, default => sub {
    return {
-      sections => [
+      global => [
          ['Artists',  'artist/list'],
          ['CDs',      'cd/list'],
          ['Tracks',   'track/list'],

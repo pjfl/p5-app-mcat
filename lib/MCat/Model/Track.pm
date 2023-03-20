@@ -2,7 +2,7 @@ package MCat::Model::Track;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect );
-use Unexpected::Functions  qw( UnknownTrack Unspecified );
+use Unexpected::Functions  qw( UnknownCd UnknownTrack Unspecified );
 use Web::Simple;
 
 extends 'MCat::Model';
@@ -18,10 +18,28 @@ sub base {
    my $trackid = $id if $method eq 'edit'   || $method eq 'view';
    my $nav     = $context->stash('nav');
 
-   $nav->list('track',  'Tracks');
-   $nav->item('Create', 'track/create', [$cdid])    if $cdid;
-   $nav->item('View',   'track/view',   [$trackid]) if $trackid;
-   $nav->item('CD',     'cd/view',      [$cdid])    if $cdid;
+   $nav->list('track', 'Tracks');
+
+   if ($cdid) {
+      my $cd = $context->model('Cd')->find($cdid);
+
+      return $self->error($context, UnknownCd, [$cdid]) unless $cd;
+
+      $context->stash(cd => $cd);
+      $nav->item('View CD', 'cd/view', [$cdid]);
+      $nav->item('Create', 'track/create', [$cdid]);
+   }
+
+   if ($trackid) {
+      my $track = $context->model('Track')->find($trackid);
+
+      return $self->error($context, UnknownTrack, [$trackid]) unless $track;
+
+      $context->stash(cd => $track->cd, track => $track);
+      $nav->item('View CD', 'cd/view', [$track->cdid]);
+      $nav->crud('track', $trackid, $track->cdid);
+   }
+
    return;
 }
 
@@ -39,13 +57,14 @@ sub create {
    my $form = $self->form->new_with_context('Track', $options);
 
    if ($form->process( posted => $context->posted )) {
-      my $track_view = $context->uri_for_action('track/view',[$form->item->id]);
+      my $trackid    = $form->item->trackid;
+      my $track_view = $context->uri_for_action('track/view', [$trackid]);
       my $message    = ['Track [_1] created', $form->item->title];
 
       $context->stash( redirect $track_view, $message );
    }
 
-   $context->stash( cdid => $cdid, form => $form );
+   $context->stash( form => $form );
    return;
 }
 
@@ -54,12 +73,7 @@ sub delete {
 
    return unless $self->has_valid_token($context);
 
-   return $self->error($context, Unspecified, ['trackid']) unless $trackid;
-
-   my $track = $context->model('Track')->find($trackid);
-
-   return $self->error($context, UnknownTrack, [$trackid]) unless $track;
-
+   my $track = $context->stash('track');
    my $cdid  = $track->cdid;
    my $title = $track->title;
 
@@ -74,20 +88,14 @@ sub delete {
 sub edit {
    my ($self, $context, $trackid) = @_;
 
-   return $self->error($context, Unspecified, ['trackid']) unless $trackid;
-
-   my $track = $context->model('Track')->find($trackid);
-
-   return $self->error($context, UnknownTrack, [$trackid]) unless $track;
-
-   my $cdid    = $track->cd->cdid;
+   my $track   = $context->stash('track');
    my $options = {
-      cdid    => $cdid,
+      cdid    => $track->cdid,
       context => $context,
       item    => $track,
       title   => 'Edit track'
    };
-   my $form    = $self->form->new_with_context('Track', $options);
+   my $form = $self->form->new_with_context('Track', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $track_view = $context->uri_for_action('track/view', [$trackid]);
@@ -96,9 +104,7 @@ sub edit {
       $context->stash( redirect $track_view, $message );
    }
 
-   $context->stash('nav')->item('Create', 'track/create', [$cdid]);
-   $context->stash('nav')->item('CD', 'cd/view', [$cdid]);
-   $context->stash( cdid => $cdid, trackid => $trackid, form => $form );
+   $context->stash( form => $form );
    return;
 }
 
@@ -107,10 +113,7 @@ sub list {
 
    my $track_rs = $context->model('Track');
 
-   if ($cdid) {
-      $track_rs = $track_rs->search({ artistid => $cdid });
-      $context->stash(cdid => $cdid);
-   }
+   $track_rs = $track_rs->search({ artistid => $cdid }) if $cdid;
 
    my $options = { context => $context, resultset => $track_rs };
 
@@ -121,17 +124,6 @@ sub list {
 sub view {
    my ($self, $context, $trackid) = @_;
 
-   return $self->error($context, Unspecified, ['trackid']) unless $trackid;
-
-   my $track = $context->model('Track')->find($trackid);
-
-   return $self->error($context, UnknownTrack, [$trackid]) unless $track;
-
-   my $cdid = $track->cd->id;
-
-   $context->stash('nav')->item('Create', 'track/create', [$cdid]);
-   $context->stash('nav')->item('CD', 'cd/view', [$cdid]);
-   $context->stash( cdid => $cdid, track => $track );
    return;
 }
 

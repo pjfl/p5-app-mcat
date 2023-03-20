@@ -8,13 +8,17 @@ use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( local_tz new_uri redirect uri_escape )
+   qw( formpost local_tz new_uri redirect uri_escape )
 ]};
 
 my $reserved   = q(;/?:@&=+$,[]);
 my $mark       = q(-_.!~*'());                                   #'; emacs
 my $unreserved = "A-Za-z0-9\Q${mark}\E%\#";
 my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved;
+
+sub formpost ($) {
+   return { method => 'post', name => $_[0] };
+}
 
 sub local_tz () {
    return 'Europe/London';

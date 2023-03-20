@@ -99,6 +99,7 @@ sub execute { # Called by component loader for all model method calls
       $self->$method($context, @{$context->request->args}) if $method;
 
       return $stash->{response} if $stash->{response};
+      last if $stash->{finalised};
 
       $last_method = $method;
    }

@@ -2,16 +2,6 @@
 Id     : [% artist.id %]<br/>
 Name   : [% artist.name %]<br/>
 Active : [% artist.active %]<br/>
-Upvotes: [% artist.upvotes %]<br/>
-[% button({
-      text => 'Edit Artist',
-      url  => uri_for_action('artist/edit', [artist.id])
-   })
-%]
-[% form_button({
-      content => 'Delete Artist',
-      url     => uri_for_action('artist/delete', [artist.id])
-   })
-%]
+Upvotes: [% artist.upvotes %]
 <h4>CDs</h4>
 [% table.render %]
