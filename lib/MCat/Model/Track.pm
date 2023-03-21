@@ -4,6 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownCd UnknownTrack Unspecified );
 use Web::Simple;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
@@ -26,8 +27,7 @@ sub base {
       return $self->error($context, UnknownCd, [$cdid]) unless $cd;
 
       $context->stash(cd => $cd);
-      $nav->item('View CD', 'cd/view', [$cdid]);
-      $nav->item('Create', 'track/create', [$cdid]);
+      $nav->item('cd/view', [$cdid])->item('track/create', [$cdid]);
    }
 
    if ($trackid) {
@@ -36,14 +36,14 @@ sub base {
       return $self->error($context, UnknownTrack, [$trackid]) unless $track;
 
       $context->stash(cd => $track->cd, track => $track);
-      $nav->item('View CD', 'cd/view', [$track->cdid]);
+      $nav->item('cd/view', [$track->cdid]);
       $nav->crud('track', $trackid, $track->cdid);
    }
 
    return;
 }
 
-sub create {
+sub create : Menu('Create Track') {
    my ($self, $context, $cdid) = @_;
 
    return $self->error($context, Unspecified, ['cdid']) unless $cdid;
@@ -68,7 +68,7 @@ sub create {
    return;
 }
 
-sub delete {
+sub delete : Menu('Delete Track') {
    my ($self, $context, $trackid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -85,7 +85,7 @@ sub delete {
    return;
 }
 
-sub edit {
+sub edit : Menu('Edit Track') {
    my ($self, $context, $trackid) = @_;
 
    my $track   = $context->stash('track');
@@ -108,7 +108,7 @@ sub edit {
    return;
 }
 
-sub list {
+sub list : Menu('Tracks') {
    my ($self, $context, $cdid) = @_;
 
    my $track_rs = $context->model('Track');
@@ -121,12 +121,10 @@ sub list {
    return;
 }
 
-sub view {
+sub view : Menu('View Track') {
    my ($self, $context, $trackid) = @_;
 
    return;
 }
-
-use namespace::autoclean;
 
 1;

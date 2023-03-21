@@ -181,12 +181,8 @@ object
 has 'navigation' => is => 'ro', isa => HashRef, default => sub {
    return {
       global => [
-         ['Artists',  'artist/list'],
-         ['CDs',      'cd/list'],
-         ['Tracks',   'track/list'],
-         ['Tags',     'tag/list'],
-         ['Logfiles', 'logfile/list'],
-      ]
+         'artist/list', 'cd/list', 'track/list', 'tag/list', 'logfile/list',
+      ],
    };
 };
 

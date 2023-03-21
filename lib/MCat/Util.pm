@@ -16,8 +16,8 @@ my $mark       = q(-_.!~*'());                                   #'; emacs
 my $unreserved = "A-Za-z0-9\Q${mark}\E%\#";
 my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved;
 
-sub formpost ($) {
-   return { method => 'post', name => $_[0] };
+sub formpost () {
+   return { method => 'post' };
 }
 
 sub local_tz () {

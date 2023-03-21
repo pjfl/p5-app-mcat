@@ -4,6 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownArtist UnknownCd Unspecified );
 use Web::Simple;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
@@ -25,9 +26,8 @@ sub base {
 
       return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-      $context->stash(artist => $artist);
-      $nav->item('View Artist', 'artist/view', [$artistid]);
-      $nav->item('Create', 'cd/create', [$artistid]);
+      $nav->item('artist/view', [$artistid])->item('cd/create', [$artistid]);
+      $context->stash( artist => $artist );
    }
 
    if ($cdid) {
@@ -35,16 +35,15 @@ sub base {
 
       return $self->error($context, UnknownCd, [$cdid]) unless $cd;
 
-      $context->stash(artist => $cd->artist, cd => $cd);
-      $nav->item('View Artist', 'artist/view', [$cd->artistid]);
-      $nav->crud('cd', $cdid, $cd->artistid);
-      $nav->item('Create Track', 'track/create', [$cdid]);
+      $nav->item('artist/view', [$cd->artistid]);
+      $nav->crud('cd', $cdid, $cd->artistid)->item('track/create', [$cdid]);
+      $context->stash( artist => $cd->artist, cd => $cd );
    }
 
    return;
 }
 
-sub create {
+sub create : Menu('Create CD') {
    my ($self, $context, $artistid) = @_;
 
    return $self->error($context, Unspecified, ['artistid']) unless $artistid;
@@ -68,7 +67,7 @@ sub create {
    return;
 }
 
-sub delete {
+sub delete : Menu('Delete CD') {
    my ($self, $context, $cdid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -85,7 +84,7 @@ sub delete {
    return;
 }
 
-sub edit {
+sub edit : Menu('Edit CD') {
    my ($self, $context, $cdid) = @_;
 
    my $cd       = $context->stash('cd');
@@ -108,7 +107,7 @@ sub edit {
    return;
 }
 
-sub list {
+sub list : Menu('CDs') {
    my ($self, $context, $artistid) = @_;
 
    my $cd_rs = $context->model('Cd');
@@ -121,17 +120,15 @@ sub list {
    return;
 }
 
-sub view {
+sub view : Menu('View CD') {
    my ($self, $context, $cdid) = @_;
 
    my $cd       = $context->stash('cd');
-   my $track_rs = $context->model('Track')->search({ cdid => $cdid });
+   my $track_rs = $context->model('Track')->search({ 'me.cdid' => $cdid });
    my $options  = { context => $context, resultset => $track_rs };
 
    $context->stash(table => $self->table->new_with_context('Track', $options));
    return;
 }
-
-use namespace::autoclean;
 
 1;

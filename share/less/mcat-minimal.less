@@ -1,25 +1,40 @@
 #colours() {
     link: green;
+    context-background: linen;
     panel-background: ivory;
-    title-background: linen;
+    title-background: bisque;
     title-border: orange;
 }
+.standard-content {
+    display: inline-block;
+    h4 {
+        margin-bottom: 9px; margin-top: 3px;
+    }
+}
 .state-navigation {
+    display: inline-block;
+    vertical-align: top;
+    .nav-menu {
+        display: inline-block;
+    }
     .nav-control {
-        font-size: larger;
+        font-size: larger; vertical-align: top;
     }
     .nav-panel {
-        background: #colours[panel-background];
-        border: 1px solid; border-radius: 3px;
-        display: none; position: absolute; z-index: 10;
+        background: #colours[panel-background]; border: 1px solid;
+        border-radius: 3px; display: none;
+    }
+    .nav-panel.open {
+        display: block;
     }
     .nav-panel.visible {
-        display: block;
+        display: block;  position: absolute; z-index: 10;
     }
     .nav-title {
         background: #colours[title-background];
         border-bottom: 1px solid; border-bottom-color: #colours[title-border];
-        font-weight: bold; min-width: 80px; padding: 3px; text-align: left;
+        font-family: sans-serif; font-weight: normal; min-width: 80px;
+        padding: 3px; text-align: left;
     }
     .nav-list {
         display: block; list-style: none; margin-top: 0;
@@ -38,5 +53,12 @@
             cursor: pointer; font-family: serif; font-size: 16px;
             padding: 0 !important; text-decoration: none;
         }
+        .context {
+            background: #colours[context-background];
+            padding-left: 12px;
+        }
+    }
+    .nav-list.global {
+        padding-bottom: 3px;
     }
 }

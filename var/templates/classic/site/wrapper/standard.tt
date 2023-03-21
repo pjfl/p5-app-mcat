@@ -3,4 +3,6 @@
 [% FOR message IN context.messages -%]
    <div class="messages">[% message %]</div>
 [% END -%]
+<div class="standard-content">
 [% content %]
+</div>

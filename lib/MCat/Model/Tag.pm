@@ -4,6 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownTag Unspecified );
 use Web::Simple;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
@@ -15,21 +16,20 @@ sub base {
 
    my $nav = $context->stash('nav');
 
-   $nav->list('tag', 'Tags')->item('Create', 'tag/create');
+   $nav->list('tag', 'Tags')->item('tag/create');
 
    return unless $tagid;
-
-   $nav->crud('tag', $tagid);
 
    my $tag = $context->model('Tag')->find($tagid);
 
    return $self->error($context, UnknownTag, [$tagid]) unless $tag;
 
    $context->stash(tag => $tag);
+   $nav->crud('tag', $tagid);
    return;
 }
 
-sub create {
+sub create : Menu('Create Tag') {
    my ($self, $context) = @_;
 
    my $options = {
@@ -50,7 +50,7 @@ sub create {
    return;
 }
 
-sub delete {
+sub delete : Menu('Delete Tag') {
    my ($self, $context, $tagid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -66,7 +66,7 @@ sub delete {
    return;
 }
 
-sub edit {
+sub edit : Menu('Edit Tag') {
    my ($self, $context, $tagid) = @_;
 
    my $tag     = $context->stash('tag');
@@ -85,7 +85,7 @@ sub edit {
    return;
 }
 
-sub list {
+sub list : Menu('Tags') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, resultset => $context->model('Tag') };
@@ -112,12 +112,10 @@ sub remove {
    return;
 }
 
-sub view {
+sub view : Menu('View Tag') {
    my ($self, $context, $tagid) = @_;
 
    return;
 }
-
-use namespace::autoclean;
 
 1;

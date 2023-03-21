@@ -4,6 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownArtist Unspecified );
 use Web::Simple;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
@@ -15,26 +16,24 @@ sub base {
 
    my $nav = $context->stash('nav');
 
-   $nav->list('artist', 'Artists')->item('Create', 'artist/create');
+   $nav->list('artist', 'Artists')->item('artist/create');
 
    return unless $artistid;
-
-   $nav->crud('artist', $artistid);
-   $nav->item('Create CD', 'cd/create', [$artistid]);
 
    my $artist = $context->model('Artist')->find($artistid);
 
    return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-   $context->stash(artist => $artist);
+   $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
+   $context->stash( artist => $artist );
    return;
 }
 
-sub create {
+sub create : Menu('Create Artist') {
    my ($self, $context) = @_;
 
    my $options = {
-      context => $context, item_class => 'Artist', title => 'Create artist'
+      context => $context, item_class => 'Artist', title => 'Create Artist'
    };
    my $form = $self->form->new_with_context('Artist', $options);
 
@@ -51,7 +50,7 @@ sub create {
    return;
 }
 
-sub delete {
+sub delete : Menu('Delete Artist') {
    my ($self, $context, $artistid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -67,7 +66,7 @@ sub delete {
    return;
 }
 
-sub edit {
+sub edit : Menu('Edit Artist') {
    my ($self, $context, $artistid) = @_;
 
    my $artist  = $context->stash('artist');
@@ -81,14 +80,13 @@ sub edit {
       my $message     = ['Artist [_1] updated', $form->item->name];
 
       $context->stash( redirect $artist_view, $message );
-      return;
    }
+   else { $context->stash( form => $form ) }
 
-   $context->stash( form => $form );
    return;
 }
 
-sub list {
+sub list : Menu('Artists') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, resultset => $context->model('Artist')};
@@ -115,17 +113,15 @@ sub remove {
    return;
 }
 
-sub view {
+sub view : Menu('View Artist') {
    my ($self, $context, $artistid) = @_;
 
    my $artist  = $context->stash('artist');
    my $cd_rs   = $context->model('Cd')->search({ artistid => $artistid });
    my $options = { context => $context, resultset => $cd_rs };
 
-   $context->stash( table => $self->table->new_with_context('Cd', $options));
+   $context->stash( table => $self->table->new_with_context('Cd', $options) );
    return;
 }
-
-use namespace::autoclean;
 
 1;

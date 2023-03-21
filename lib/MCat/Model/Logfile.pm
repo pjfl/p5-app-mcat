@@ -4,6 +4,7 @@ use HTML::StateTable::Constants qw( EXCEPTION_CLASS );
 use MCat::Util                  qw( redirect );
 use Unexpected::Functions       qw( Unspecified );
 use Web::Simple;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
@@ -17,7 +18,7 @@ sub base {
    return;
 }
 
-sub list {
+sub list : Menu('Logfiles') {
    my ($self, $context) = @_;
 
    my $options = { context => $context };
@@ -28,7 +29,7 @@ sub list {
    return;
 }
 
-sub view {
+sub view : Menu('View Logfile') {
    my ($self, $context, $logfile) = @_;
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
@@ -40,7 +41,5 @@ sub view {
    );
    return;
 }
-
-use namespace::autoclean;
 
 1;

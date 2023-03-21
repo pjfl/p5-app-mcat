@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds context sensitive navigation
           - Model base methods stash their respective objects
           - Adds navigation class
           - Moves logfile resultset classes to own distribution

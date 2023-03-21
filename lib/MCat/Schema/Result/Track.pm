@@ -16,7 +16,7 @@ $class->add_columns(
    cdid => {
       data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE
    },
-  title => { data_type => 'text', is_nullable => FALSE },
+   title => { data_type => 'text', is_nullable => FALSE },
 );
 
 $class->set_primary_key('trackid');
