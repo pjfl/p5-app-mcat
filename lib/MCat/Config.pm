@@ -1,3 +1,4 @@
+use utf8; # -*- coding: utf-8; -*-
 package MCat::Config;
 
 use Class::Usul::Functions qw( base64_decode_ns );
@@ -59,8 +60,9 @@ and decrypted
 has 'connect_info' => is => 'lazy', isa => ArrayRef, default => sub {
    my $self     = shift;
    my $password = cipher->decrypt(base64_decode_ns $self->db_password);
+   my $extra    = { AutoCommit => TRUE };
 
-   return [$self->dsn, $self->db_username, $password];
+   return [$self->dsn, $self->db_username, $password, $extra];
 };
 
 =item db_password
@@ -178,13 +180,20 @@ object
 
 =cut
 
-has 'navigation' => is => 'ro', isa => HashRef, default => sub {
-   return {
-      global => [
-         'artist/list', 'cd/list', 'track/list', 'tag/list', 'logfile/list',
-      ],
+has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
+   default => sub {
+      my $self = shift;
+
+      return {
+         %{$self->_navigation},
+         global => [
+            'artist/list', 'cd/list', 'track/list', 'tag/list', 'logfile/list',
+         ],
+         title => $self->name . ' v' . $MCat::VERSION,
+      };
    };
-};
+
+has '_navigation' => is => 'ro', isa => HashRef, default => sub { {} };
 
 =item prefix
 

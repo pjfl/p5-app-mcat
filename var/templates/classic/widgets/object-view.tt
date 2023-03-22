@@ -1,0 +1,96 @@
+[%#
+Basic usage:
+
+INCLUDE widgets/summary.tt2
+   edit_href = c.uri_for_action('/foo/bar/baz', [ something.id ])
+   items = [{
+      name => "ID"
+      value => someting.id
+      display => conditions.of.display
+   },{
+      name => "Name"
+      value_raw => '<p>test</p>'
+   }]
+
+Parameters:
+
+edit_href:       String. The URL behind the "Edit" link in the top right
+edit_display:    Boolean. The conditions under which the "Edit" link should display.
+items:          List. An array of hashes containing each of the main items in the summary block.
+classes:       String. A space-delimited list of classnames suitable for use verbatim in a "class" HTML attribute, applied to the main object-view block.
+table_headers:    List. An array of the labels for each column of the table_data provided.
+table_fields:    List. An array of the key names for each of the items in the table_data.
+table_data:    Hash. The actual table data.
+content_raw:    String. Unrestricted, HTML content to appear instead of "items". Used v.rarely.
+
+Item parameters:
+
+name:             String. The label for each item.
+value:             String. A non-escaped string value to be displayed beside the label. Values are automatically formatted with html and html_line_break
+value_raw:          String. A pre-escaped string used in place of "value", where the default formatting is unsuitable, such as where raw HTML is supplied.
+help:             String. Text to appear in a "?" popup beside the label.
+link_href:          String. A URL to be wrapped as a link around the value.
+link_href_display:    Boolean. The condition under which the link_href will be wrapped.
+link_target:       String. Any valid HTML "target" attribute value e.g "_blank"
+value_id:          String. Any valid HTML "id" attribute value, added to the value field. Suitable when JS is hooked into the summary block.
+tooltip:          String. A tooltip to appear on hover of the value.
+display:          Boolean. The condition under which the whole item will be visible, or not.
+%]
+<div class="object-view-wrapper">
+   [%- IF edit_href && (!edit_display.defined || edit_display) -%]
+      [%- INCLUDE widgets/edit_this.tt2 edit_href = edit_href edit_text = edit_text -%]
+   [%- END -%]
+   [%- IF content_raw; content_raw; ELSE -%]
+   <table class="object-view [% IF table_headers && table_data %]object-view-tabular[% END %] [% IF classes %][% classes %][% END %]">
+      [%- IF table_headers && table_data -%]
+         <tr class="object-view-item">
+            [%- FOREACH header IN table_headers -%]
+               <th class="object-view-key" scope="col">[% header | html %]</th>
+            [%- END -%]
+         </tr>
+         [%- FOREACH data = table_data -%]
+            <tr class="object-view-item">
+               [%- FOREACH field IN table_fields -%]
+                  <td class="object-view-value">[% data.$field | html | break_long_words %]</td>
+               [%- END -%]
+            </tr>
+         [%- END -%]
+      [%- ELSIF table_headers -%]
+         <tr class="object-view-item">
+            <td class="object-view-value">
+               (None)
+            </td>
+         </tr>
+      [%- ELSE -%]
+         <col />
+         <col width="100%" />
+         [%- FOREACH item IN items -%]
+            [%- IF !item.display.defined || item.display -%]
+               <tr class="object-view-item">
+                  <th class="object-view-key" scope="row">
+                     [% item.name %]
+                     [%- IF item.help -%]
+                        [%- WRAPPER widgets/tooltip.tt2 -%]
+                           [% item.help %]
+                        [%- END -%]
+                     [%- END -%]
+                  </th>
+                  <td class="object-view-value">
+                     <span id="[% IF item.value_id %][% item.value_id %][% END %]" [% IF item.tooltip %]data-c="tooltip" data-tooltip-text="[% item.tooltip %]"[% END %]>
+                        [%- IF item.link_href && (!item.link_href_display.defined || item.link_href_display) -%]
+                           <a href="[% item.link_href %]" [% IF item.link_target %]target="[% item.link_target %]"[% END %]>
+                        [%- END -%]
+                        [% item.value | html | html_line_break %]
+                        [% item.value_raw %]
+                        [%- IF item.link_href && (!item.link_href_display.defined || item.link_href_display) -%]
+                           </a>
+                        [%- END -%]
+                     </span>
+                  </td>
+               </tr>
+            [%- END -%]
+         [%- END -%]
+      [%- END -%]
+   </table>
+   [%- END -%]
+</div>

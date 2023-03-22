@@ -29,7 +29,7 @@ sub base {
    return;
 }
 
-sub create : Menu('Create Tag') {
+sub create : Nav('Create Tag') {
    my ($self, $context) = @_;
 
    my $options = {
@@ -50,7 +50,7 @@ sub create : Menu('Create Tag') {
    return;
 }
 
-sub delete : Menu('Delete Tag') {
+sub delete : Nav('Delete Tag') {
    my ($self, $context, $tagid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -66,7 +66,7 @@ sub delete : Menu('Delete Tag') {
    return;
 }
 
-sub edit : Menu('Edit Tag') {
+sub edit : Nav('Edit Tag') {
    my ($self, $context, $tagid) = @_;
 
    my $tag     = $context->stash('tag');
@@ -85,7 +85,7 @@ sub edit : Menu('Edit Tag') {
    return;
 }
 
-sub list : Menu('Tags') {
+sub list : Nav('Tags') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, resultset => $context->model('Tag') };
@@ -112,7 +112,7 @@ sub remove {
    return;
 }
 
-sub view : Menu('View Tag') {
+sub view : Nav('View Tag') {
    my ($self, $context, $tagid) = @_;
 
    return;

@@ -1,7 +1,20 @@
-<h4>Artist</h4>
-Id     : [% artist.id %]<br/>
-Name   : [% artist.name %]<br/>
-Active : [% artist.active %]<br/>
-Upvotes: [% artist.upvotes %]
-<h4>CDs</h4>
-[% table.render %]
+<div class="inline-panel">
+[% INCLUDE 'classic/widgets/object-view.tt'
+   items = [{
+      name => 'Artist ID'
+      value => artist.id
+   },{
+      name => 'Name'
+      value => artist.name
+   },{
+      name => 'Active'
+      value => artist.active
+   },{
+      name => 'Upvotes'
+      value => artist.upvotes
+   },{
+      name => 'CDs'
+      value_raw => table.render
+   }]
+%]
+</div>

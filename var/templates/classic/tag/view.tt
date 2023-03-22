@@ -1,3 +1,11 @@
-<h4>Tag</h4>
-Id  : [% tag.id %]<br/>
-Name: [% tag.name %]
+<div class="inline-panel">
+[% INCLUDE 'classic/widgets/object-view.tt'
+   items = [{
+      name => 'Tag ID'
+      value => tag.id
+   },{
+      name => 'Name'
+      value => tag.name
+   }]
+%]
+</div>

@@ -18,7 +18,7 @@ sub base {
    return;
 }
 
-sub list : Menu('Logfiles') {
+sub list : Nav('Logfiles') {
    my ($self, $context) = @_;
 
    my $options = { context => $context };
@@ -29,7 +29,7 @@ sub list : Menu('Logfiles') {
    return;
 }
 
-sub view : Menu('View Logfile') {
+sub view : Nav('View Logfile') {
    my ($self, $context, $logfile) = @_;
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;

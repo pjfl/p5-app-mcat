@@ -43,7 +43,7 @@ sub base {
    return;
 }
 
-sub create : Menu('Create CD') {
+sub create : Nav('Create CD') {
    my ($self, $context, $artistid) = @_;
 
    return $self->error($context, Unspecified, ['artistid']) unless $artistid;
@@ -67,7 +67,7 @@ sub create : Menu('Create CD') {
    return;
 }
 
-sub delete : Menu('Delete CD') {
+sub delete : Nav('Delete CD') {
    my ($self, $context, $cdid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -84,7 +84,7 @@ sub delete : Menu('Delete CD') {
    return;
 }
 
-sub edit : Menu('Edit CD') {
+sub edit : Nav('Edit CD') {
    my ($self, $context, $cdid) = @_;
 
    my $cd       = $context->stash('cd');
@@ -107,7 +107,7 @@ sub edit : Menu('Edit CD') {
    return;
 }
 
-sub list : Menu('CDs') {
+sub list : Nav('CDs') {
    my ($self, $context, $artistid) = @_;
 
    my $cd_rs = $context->model('Cd');
@@ -120,7 +120,7 @@ sub list : Menu('CDs') {
    return;
 }
 
-sub view : Menu('View CD') {
+sub view : Nav('View CD') {
    my ($self, $context, $cdid) = @_;
 
    my $cd       = $context->stash('cd');

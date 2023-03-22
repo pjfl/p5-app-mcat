@@ -1,8 +1,11 @@
-<h3>[% config.name %]</h3>
+<header>
 [% nav.render %]
+</header>
 [% FOR message IN context.messages -%]
    <div class="messages">[% message %]</div>
 [% END -%]
-<div class="standard-content">
+<div class="centred-content">
+   <div class="standard-content">
 [% content %]
+   </div>
 </div>

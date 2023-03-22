@@ -20,7 +20,7 @@ has 'confirm_message' => is => 'ro', isa => Str, default => 'Are you sure ?';
 has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
-   required => TRUE;
+   required => TRUE, weak_ref => TRUE;
 
 has '_global' => is => 'ro', isa => ArrayRef, init_arg => 'global',
    default => sub { [] };
@@ -142,12 +142,12 @@ sub _add_global {
    my $list = $self->list('_global', $self->global_title);
 
    for my $actionp (@{$self->_global}) {
-      $list->item($actionp);
-
       my ($moniker, $method) = split m{ / }mx, $actionp;
 
       push @{$self->_lists->{$self->_name}->[1]}, $moniker
          if exists $self->_lists->{$moniker};
+
+      $list->item($actionp);
    }
 
    return;
@@ -168,7 +168,7 @@ sub _get_attributes {
 sub _get_menu_label {
    my ($self, $actionp) = @_;
 
-   my $menu = $self->_get_attributes($actionp)->{Menu};
+   my $menu = $self->_get_attributes($actionp)->{Nav};
 
    return $menu ? $menu->[0] : NUL;
 }

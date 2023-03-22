@@ -43,7 +43,7 @@ sub base {
    return;
 }
 
-sub create : Menu('Create Track') {
+sub create : Nav('Create Track') {
    my ($self, $context, $cdid) = @_;
 
    return $self->error($context, Unspecified, ['cdid']) unless $cdid;
@@ -68,7 +68,7 @@ sub create : Menu('Create Track') {
    return;
 }
 
-sub delete : Menu('Delete Track') {
+sub delete : Nav('Delete Track') {
    my ($self, $context, $trackid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -85,7 +85,7 @@ sub delete : Menu('Delete Track') {
    return;
 }
 
-sub edit : Menu('Edit Track') {
+sub edit : Nav('Edit Track') {
    my ($self, $context, $trackid) = @_;
 
    my $track   = $context->stash('track');
@@ -108,7 +108,7 @@ sub edit : Menu('Edit Track') {
    return;
 }
 
-sub list : Menu('Tracks') {
+sub list : Nav('Tracks') {
    my ($self, $context, $cdid) = @_;
 
    my $track_rs = $context->model('Track');
@@ -121,7 +121,7 @@ sub list : Menu('Tracks') {
    return;
 }
 
-sub view : Menu('View Track') {
+sub view : Nav('View Track') {
    my ($self, $context, $trackid) = @_;
 
    return;

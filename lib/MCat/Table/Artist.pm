@@ -22,6 +22,8 @@ has '+active_control_location' => default => 'TopRight';
 
 has '+chartable_columns' => default => sub { ['upvotes'] };
 
+has '+chartable_location' => default => 'Right';
+
 has '+chartable_subtitle_link' => default => sub {
    return shift->context->uri_for_action('artist/list');
 };

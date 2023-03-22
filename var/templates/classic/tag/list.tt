@@ -1,2 +1,4 @@
-<h4>Tags</h4>
+<div class="inline-panel">
+   <h4>Tags</h4>
 [% table.render %]
+</div>

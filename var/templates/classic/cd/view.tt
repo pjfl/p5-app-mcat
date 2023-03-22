@@ -1,7 +1,20 @@
-<h4>CD</h4>
-Id      : [% cd.cdid %]<br/>
-Artist  : [% artist.name %]<br/>
-Title   : [% cd.title %]<br/>
-Released: [% cd.year.strftime('%d %b %Y') %]
-<h4>Tracks</h4>
-[% table.render %]
+<div class="inline-panel">
+[% INCLUDE 'classic/widgets/object-view.tt'
+   items = [{
+      name => 'CD ID'
+      value => cd.id
+   },{
+      name => 'Artist'
+      value => artist.name
+   },{
+      name => 'Title'
+      value => cd.title
+   },{
+      name => 'Released'
+      value => cd.year.strftime('%d %b %Y')
+   },{
+      name => 'Tracks'
+      value_raw => table.render
+   }]
+%]
+</div>

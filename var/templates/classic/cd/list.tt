@@ -1,3 +1,2 @@
 <h4>CDs</h4>
-Artist: [% artist.name %]<br/>
 [% table.render %]

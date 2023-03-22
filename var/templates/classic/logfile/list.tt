@@ -1,2 +1,4 @@
-<h4>Logfiles</h4>
+<div class="inline-panel">
+   <h4>Logfiles</h4>
 [% table.render %]
+</div>

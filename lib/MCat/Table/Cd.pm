@@ -8,21 +8,36 @@ extends 'HTML::StateTable';
 
 set_table_name 'cd';
 
-has_column 'cdid' => cell_traits => ['Numeric'], label => 'ID';
+has_column 'artist_name' =>
+   hidden => sub {
+      my $table = shift;
+      my $context = $table->context;
+
+      return $context->stash('artist') ? TRUE : FALSE;
+   },
+   label => 'Artist',
+   link => sub {
+      my $self = shift;
+      my $context = $self->table->context;
+
+      return $context->uri_for_action('artist/view', [$self->result->artistid]);
+   },
+   sortable => TRUE,
+   value => 'artist.name';
 
 has_column 'title' =>
-   sortable => TRUE,
-   link     => sub {
-      my $self    = shift;
+   link => sub {
+      my $self = shift;
       my $context = $self->table->context;
 
       return  $context->uri_for_action('cd/view', [$self->result->cdid]);
-   };
+   },
+   sortable => TRUE;
 
 has_column 'year' =>
    cell_traits => ['Date'],
-   label       => 'Released',
-   sortable    => TRUE;
+   label => 'Released',
+   sortable => TRUE;
 
 use namespace::autoclean -except => TABLE_META;
 

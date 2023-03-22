@@ -29,7 +29,7 @@ sub base {
    return;
 }
 
-sub create : Menu('Create Artist') {
+sub create : Nav('Create Artist') {
    my ($self, $context) = @_;
 
    my $options = {
@@ -50,7 +50,7 @@ sub create : Menu('Create Artist') {
    return;
 }
 
-sub delete : Menu('Delete Artist') {
+sub delete : Nav('Delete Artist') {
    my ($self, $context, $artistid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -66,7 +66,7 @@ sub delete : Menu('Delete Artist') {
    return;
 }
 
-sub edit : Menu('Edit Artist') {
+sub edit : Nav('Edit Artist') {
    my ($self, $context, $artistid) = @_;
 
    my $artist  = $context->stash('artist');
@@ -86,7 +86,7 @@ sub edit : Menu('Edit Artist') {
    return;
 }
 
-sub list : Menu('Artists') {
+sub list : Nav('Artists') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, resultset => $context->model('Artist')};
@@ -113,11 +113,11 @@ sub remove {
    return;
 }
 
-sub view : Menu('View Artist') {
+sub view : Nav('View Artist') {
    my ($self, $context, $artistid) = @_;
 
    my $artist  = $context->stash('artist');
-   my $cd_rs   = $context->model('Cd')->search({ artistid => $artistid });
+   my $cd_rs   = $context->model('Cd')->search({ 'me.artistid' => $artistid });
    my $options = { context => $context, resultset => $cd_rs };
 
    $context->stash( table => $self->table->new_with_context('Cd', $options) );

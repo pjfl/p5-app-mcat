@@ -20,7 +20,7 @@ has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'forms' => is => 'lazy', isa => class_type('HTML::Forms::Manager');
+has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager');
 
 has 'messages' => is => 'lazy', isa => ArrayRef, default => sub {
    my $self = shift;

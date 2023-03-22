@@ -150,10 +150,10 @@ sub _finalise_stash { # Add necessary defaults for the view to render
 
    weaken $context;
    $stash->{code} //= HTTP_OK unless exists $stash->{redirect};
-   $stash->{context} = $context;
    $stash->{finalised} = TRUE;
    $stash->{template} //= {};
    $stash->{template}->{layout} //= $self->moniker . "/${method}";
+   $stash->{version} = $MCat::VERSION;
    $stash->{view} //= $self->config->default_view;
    return;
 }

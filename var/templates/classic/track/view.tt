@@ -1,4 +1,14 @@
-<h4>Track</h4>
-Track Id: [% track.trackid %]<br/>
-CD      : [% cd.title %]<br/>
-Title   : [% track.title %]
+<div class="inline-panel">
+[% INCLUDE 'classic/widgets/object-view.tt'
+   items = [{
+      name => 'Track ID'
+      value => track.trackid
+   },{
+      name => 'CD'
+      value => cd.title
+   },{
+      name => 'Title'
+      value => track.title
+   }]
+%]
+</div>
