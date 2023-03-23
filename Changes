@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - More succinct nav calls. More styling
           - Adds title bar and menu
           - Adds context sensitive navigation
           - Model base methods stash their respective objects

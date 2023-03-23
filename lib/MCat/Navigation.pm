@@ -22,10 +22,7 @@ has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
    required => TRUE, weak_ref => TRUE;
 
-has '_global' => is => 'ro', isa => ArrayRef, init_arg => 'global',
-   default => sub { [] };
-
-has 'global_title' => is => 'ro', isa => Str, default => 'Global';
+has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 has 'label' => is => 'ro', isa => Str, default => '≡';
 
@@ -39,6 +36,8 @@ has '_container' => is => 'lazy', isa => Str, default => sub {
 
    return $self->_html->$tag($self->_data);
 };
+
+has 'control' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 has '_data' => is => 'lazy', isa => HashRef, default => sub {
    my $self = shift;
@@ -112,7 +111,7 @@ sub list {
    my ($self, $name, $title) = @_;
 
    $self->_set__name($name);
-   $self->_lists->{$name} = [ $title, [] ];
+   $self->_lists->{$name} = [ $title // NUL, [] ];
    push @{$self->_order}, $name;
    return $self;
 }
@@ -121,6 +120,7 @@ sub render {
    my $self = shift;
    my $output;
 
+   $self->_add_control;
    $self->_add_global;
 
    try   { $output = $self->_container }
@@ -129,34 +129,38 @@ sub render {
    return $output;
 }
 
-sub global {
-   my ($self, @args) = @_;
+# Private methods
+sub _add_control {
+   my $self = shift;
+   my $list = $self->list('_control');
 
-   push @{$self->_global}, [@args];
-   return $self;
+   for my $action (@{$self->control}) {
+      $list->item($action);
+   }
+
+   return;
 }
 
-# Private methods
 sub _add_global {
    my $self = shift;
-   my $list = $self->list('_global', $self->global_title);
+   my $list = $self->list('_global');
 
-   for my $actionp (@{$self->_global}) {
-      my ($moniker, $method) = split m{ / }mx, $actionp;
+   for my $action (@{$self->global}) {
+      my ($moniker, $method) = split m{ / }mx, $action;
 
       push @{$self->_lists->{$self->_name}->[1]}, $moniker
          if exists $self->_lists->{$moniker};
 
-      $list->item($actionp);
+      $list->item($action);
    }
 
    return;
 }
 
 sub _get_attributes {
-   my ($self, $actionp) = @_;
+   my ($self, $action) = @_;
 
-   my ($moniker, $method) = split m{ / }mx, $actionp;
+   my ($moniker, $method) = split m{ / }mx, $action;
    my $model = $self->context->models->{$moniker}
       or throw 'Moniker [_1] not found in models', [$moniker];
    my $code_ref = $model->can($method)
@@ -166,9 +170,9 @@ sub _get_attributes {
 }
 
 sub _get_menu_label {
-   my ($self, $actionp) = @_;
+   my ($self, $action) = @_;
 
-   my $menu = $self->_get_attributes($actionp)->{Nav};
+   my $menu = $self->_get_attributes($action)->{Nav};
 
    return $menu ? $menu->[0] : NUL;
 }

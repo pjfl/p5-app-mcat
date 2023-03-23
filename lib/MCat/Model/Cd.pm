@@ -17,17 +17,15 @@ sub base {
    my $method   = (split m{ / }mx, $context->stash('action_path'))[-1];
    my $artistid = $id if $method eq 'create' || $method eq 'list';
    my $cdid     = $id if $method eq 'edit'   || $method eq 'view';
-   my $nav      = $context->stash('nav');
-
-   $nav->list('cd', 'CDs');
+   my $nav      = $context->stash('nav')->list('cd');
 
    if ($artistid) {
       my $artist = $context->model('Artist')->find($artistid);
 
       return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-      $nav->item('artist/view', [$artistid])->item('cd/create', [$artistid]);
       $context->stash( artist => $artist );
+      $nav->item('artist/view', [$artistid])->item('cd/create', [$artistid]);
    }
 
    if ($cdid) {
@@ -35,9 +33,9 @@ sub base {
 
       return $self->error($context, UnknownCd, [$cdid]) unless $cd;
 
+      $context->stash( artist => $cd->artist, cd => $cd );
       $nav->item('artist/view', [$cd->artistid]);
       $nav->crud('cd', $cdid, $cd->artistid)->item('track/create', [$cdid]);
-      $context->stash( artist => $cd->artist, cd => $cd );
    }
 
    return;
@@ -48,13 +46,12 @@ sub create : Nav('Create CD') {
 
    return $self->error($context, Unspecified, ['artistid']) unless $artistid;
 
-   my $options = {
+   my $form = $self->form->new_with_context('Cd', {
       artistid   => $artistid,
       context    => $context,
       item_class => 'Cd',
       title      => 'Create CD',
-   };
-   my $form = $self->form->new_with_context('Cd', $options);
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $cd_view = $context->uri_for_action('cd/view', [$form->item->cdid]);
@@ -87,14 +84,13 @@ sub delete : Nav('Delete CD') {
 sub edit : Nav('Edit CD') {
    my ($self, $context, $cdid) = @_;
 
-   my $cd       = $context->stash('cd');
-   my $options  = {
+   my $cd   = $context->stash('cd');
+   my $form = $self->form->new_with_context('Cd', {
       artistid => $cd->artistid,
       context  => $context,
       item     => $cd,
       title    => 'Edit CD'
-   };
-   my $form = $self->form->new_with_context('Cd', $options);
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $cd_view = $context->uri_for_action('cd/view', [$cdid]);
@@ -114,9 +110,9 @@ sub list : Nav('CDs') {
 
    $cd_rs = $cd_rs->search({ artistid => $artistid }) if $artistid;
 
-   my $options = { context => $context, resultset => $cd_rs };
-
-   $context->stash(table => $self->table->new_with_context('Cd', $options));
+   $context->stash(table => $self->table->new_with_context('Cd', {
+      context => $context, resultset => $cd_rs
+   }));
    return;
 }
 
@@ -125,9 +121,10 @@ sub view : Nav('View CD') {
 
    my $cd       = $context->stash('cd');
    my $track_rs = $context->model('Track')->search({ 'me.cdid' => $cdid });
-   my $options  = { context => $context, resultset => $track_rs };
 
-   $context->stash(table => $self->table->new_with_context('Track', $options));
+   $context->stash(table => $self->table->new_with_context('Track', {
+      context => $context, resultset => $track_rs
+   }));
    return;
 }
 

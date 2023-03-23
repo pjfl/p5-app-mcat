@@ -14,9 +14,7 @@ has '+moniker' => default => 'artist';
 sub base {
    my ($self, $context, $artistid) = @_;
 
-   my $nav = $context->stash('nav');
-
-   $nav->list('artist', 'Artists')->item('artist/create');
+   my $nav = $context->stash('nav')->list('artist')->item('artist/create');
 
    return unless $artistid;
 
@@ -24,18 +22,17 @@ sub base {
 
    return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-   $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
    $context->stash( artist => $artist );
+   $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
    return;
 }
 
 sub create : Nav('Create Artist') {
    my ($self, $context) = @_;
 
-   my $options = {
+   my $form = $self->form->new_with_context('Artist', {
       context => $context, item_class => 'Artist', title => 'Create Artist'
-   };
-   my $form = $self->form->new_with_context('Artist', $options);
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $artistid    = $form->item->id;
@@ -43,7 +40,6 @@ sub create : Nav('Create Artist') {
       my $message     = ['Artist [_1] created', $form->item->name];
 
       $context->stash( redirect $artist_view, $message );
-      return;
    }
 
    $context->stash( form => $form );
@@ -69,11 +65,11 @@ sub delete : Nav('Delete Artist') {
 sub edit : Nav('Edit Artist') {
    my ($self, $context, $artistid) = @_;
 
-   my $artist  = $context->stash('artist');
-   my $options = {
-      context => $context, item => $artist, title => 'Edit artist'
-   };
-   my $form = $self->form->new_with_context('Artist', $options);
+   my $form = $self->form->new_with_context('Artist', {
+      context => $context,
+      item    => $context->stash('artist'),
+      title   => 'Edit artist'
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $artist_view = $context->uri_for_action('artist/view', [$artistid]);
@@ -81,17 +77,17 @@ sub edit : Nav('Edit Artist') {
 
       $context->stash( redirect $artist_view, $message );
    }
-   else { $context->stash( form => $form ) }
 
+   $context->stash( form => $form );
    return;
 }
 
 sub list : Nav('Artists') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context, resultset => $context->model('Artist')};
-
-   $context->stash( table => $self->table->new_with_context('Artist',$options));
+   $context->stash( table => $self->table->new_with_context('Artist', {
+      context => $context, resultset => $context->model('Artist')
+   }));
    return;
 }
 
@@ -116,11 +112,11 @@ sub remove {
 sub view : Nav('View Artist') {
    my ($self, $context, $artistid) = @_;
 
-   my $artist  = $context->stash('artist');
-   my $cd_rs   = $context->model('Cd')->search({ 'me.artistid' => $artistid });
-   my $options = { context => $context, resultset => $cd_rs };
+   my $cd_rs = $context->model('Cd')->search({ 'me.artistid' => $artistid });
 
-   $context->stash( table => $self->table->new_with_context('Cd', $options) );
+   $context->stash(table => $self->table->new_with_context('Cd', {
+      context => $context, resultset => $cd_rs
+   }));
    return;
 }
 

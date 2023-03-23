@@ -17,9 +17,7 @@ sub base {
    my $method  = (split m{ / }mx, $context->stash('action_path'))[-1];
    my $cdid    = $id if $method eq 'create' || $method eq 'list';
    my $trackid = $id if $method eq 'edit'   || $method eq 'view';
-   my $nav     = $context->stash('nav');
-
-   $nav->list('track', 'Tracks');
+   my $nav     = $context->stash('nav')->list('track');
 
    if ($cdid) {
       my $cd = $context->model('Cd')->find($cdid);
@@ -48,13 +46,12 @@ sub create : Nav('Create Track') {
 
    return $self->error($context, Unspecified, ['cdid']) unless $cdid;
 
-   my $options = {
+   my $form = $self->form->new_with_context('Track', {
       cdid       => $cdid,
       context    => $context,
       item_class => 'Track',
       title      => 'Create track'
-   };
-   my $form = $self->form->new_with_context('Track', $options);
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $trackid    = $form->item->trackid;
@@ -88,14 +85,13 @@ sub delete : Nav('Delete Track') {
 sub edit : Nav('Edit Track') {
    my ($self, $context, $trackid) = @_;
 
-   my $track   = $context->stash('track');
-   my $options = {
+   my $track = $context->stash('track');
+   my $form  = $self->form->new_with_context('Track', {
       cdid    => $track->cdid,
       context => $context,
       item    => $track,
       title   => 'Edit track'
-   };
-   my $form = $self->form->new_with_context('Track', $options);
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $track_view = $context->uri_for_action('track/view', [$trackid]);
@@ -115,9 +111,9 @@ sub list : Nav('Tracks') {
 
    $track_rs = $track_rs->search({ artistid => $cdid }) if $cdid;
 
-   my $options = { context => $context, resultset => $track_rs };
-
-   $context->stash(table => $self->table->new_with_context('Track', $options));
+   $context->stash(table => $self->table->new_with_context('Track', {
+      context => $context, resultset => $track_rs
+   }));
    return;
 }
 

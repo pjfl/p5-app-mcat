@@ -34,14 +34,21 @@
         float: right;
     }
     .nav-control {
-        font-size: larger; vertical-align: top;
+        cursor: pointer; display: inline-block; font-size: larger;
+        position: relative; vertical-align: top;
+        .nav-panel {
+            background: #colours[panel-background];  max-height: 0;
+            overflow: hidden; position: absolute; right: -10px; top: 33px;
+            transition: max-height ease-in-out 500ms; z-index: 2;
+        }
     }
-    .nav-panel {
-        background: #colours[panel-background];
-        border: 1px solid; border-radius: 3px; display: none;
+    .global .nav-panel {
+        background: #colours[panel-background]; left: -12px; max-height: 0;
+        overflow: hidden; position: absolute; top: 30px;
+        transition: max-height ease-in-out 500ms; z-index: 2;
     }
     .nav-panel.visible {
-        display: block; position: absolute; top: 30px; z-index: 2;
+        max-height: 500px;
     }
     .nav-list {
         display: inline-block; list-style: none; margin: 0; padding: 0;
@@ -62,6 +69,10 @@
         li {
             display: inline-block;
         }
+        li.control {
+            font-size: medium;
+        }
+        li.control,
         li.context {
             padding: 5px; white-space: nowrap;
         }
@@ -69,12 +80,14 @@
             margin-right: 50px; position: relative;
         }
         li.global.selected > a::before {
-            background: #colours[link]; content: ''; display: block;
+            background: #colours[link]; border-radius: 2px;
+            content: ''; display: block;
             height: 5px; position: absolute; top: -12px; width: 100%;
         }
     }
+    .nav-list.control,
     .nav-list.context {
-        padding: 5px;
+        border: 1px solid; border-radius: 3px; display: block; padding: 5px;
     }
     .nav-list.global {
         padding-top: 3px;

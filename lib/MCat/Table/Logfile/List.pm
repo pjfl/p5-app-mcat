@@ -8,6 +8,8 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
+has '+paging' => default => FALSE;
+
 setup_resultset sub {
    my $self = shift;
 

@@ -6,6 +6,13 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
+after 'BUILD' => sub {
+   my $self = shift;
+
+   $self->paging(FALSE) if $self->context->stash('artist');
+   return;
+};
+
 set_table_name 'cd';
 
 has_column 'artist_name' =>

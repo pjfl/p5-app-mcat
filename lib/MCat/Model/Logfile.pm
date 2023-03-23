@@ -14,18 +14,16 @@ has '+moniker' => default => 'logfile';
 sub base {
    my ($self, $context) = @_;
 
-   $context->stash('nav')->list('logfile', 'Logfiles');
+   $context->stash('nav')->list('logfile');
    return;
 }
 
 sub list : Nav('Logfiles') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context };
-
-   $context->stash(
-      table => $self->table->new_with_context('Logfile::List', $options)
-   );
+   $context->stash(table => $self->table->new_with_context('Logfile::List', {
+      context => $context
+   }));
    return;
 }
 
@@ -34,11 +32,9 @@ sub view : Nav('View Logfile') {
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
-   my $options = { context => $context, logfile => $logfile };
-
-   $context->stash(
-      table => $self->table->new_with_context('Logfile::View', $options)
-   );
+   $context->stash(table => $self->table->new_with_context('Logfile::View', {
+      context => $context, logfile => $logfile
+   }));
    return;
 }
 

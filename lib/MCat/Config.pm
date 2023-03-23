@@ -185,15 +185,16 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
       my $self = shift;
 
       return {
+         title => $self->name . ' v' . $MCat::VERSION,
          %{$self->_navigation},
          global => [
             'artist/list', 'cd/list', 'track/list', 'tag/list', 'logfile/list',
          ],
-         title => $self->name . ' v' . $MCat::VERSION,
       };
    };
 
-has '_navigation' => is => 'ro', isa => HashRef, default => sub { {} };
+has '_navigation' => is => 'ro', isa => HashRef, init_arg => 'navigation',
+   default => sub { {} };
 
 =item prefix
 

@@ -14,9 +14,7 @@ has '+moniker' => default => 'tag';
 sub base {
    my ($self, $context, $tagid) = @_;
 
-   my $nav = $context->stash('nav');
-
-   $nav->list('tag', 'Tags')->item('tag/create');
+   my $nav = $context->stash('nav')->list('tag')->item('tag/create');
 
    return unless $tagid;
 
@@ -32,10 +30,9 @@ sub base {
 sub create : Nav('Create Tag') {
    my ($self, $context) = @_;
 
-   my $options = {
+   my $form = $self->form->new_with_context('Tag', {
       context => $context, item_class => 'Tag', title => 'Create Tag'
-   };
-   my $form = $self->form->new_with_context('Tag', $options);
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $tagid    = $form->item->id;
@@ -43,7 +40,6 @@ sub create : Nav('Create Tag') {
       my $message  = ['Tag [_1] created', $form->item->name];
 
       $context->stash( redirect $tag_view, $message );
-      return;
    }
 
    $context->stash( form => $form );
@@ -69,16 +65,15 @@ sub delete : Nav('Delete Tag') {
 sub edit : Nav('Edit Tag') {
    my ($self, $context, $tagid) = @_;
 
-   my $tag     = $context->stash('tag');
-   my $options = { context => $context, item => $tag, title => 'Edit tag' };
-   my $form    = $self->form->new_with_context('Tag', $options);
+   my $form = $self->form->new_with_context('Tag', {
+      context => $context, item => $context->stash('tag'), title => 'Edit tag'
+   });
 
    if ($form->process( posted => $context->posted )) {
       my $tag_view = $context->uri_for_action('tag/view', [$tagid]);
       my $message  = ['Tag [_1] updated', $form->item->name];
 
       $context->stash( redirect $tag_view, $message );
-      return;
    }
 
    $context->stash( form => $form );
@@ -88,9 +83,9 @@ sub edit : Nav('Edit Tag') {
 sub list : Nav('Tags') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context, resultset => $context->model('Tag') };
-
-   $context->stash( table => $self->table->new_with_context('Tag', $options) );
+   $context->stash(table => $self->table->new_with_context('Tag', {
+      context => $context, resultset => $context->model('Tag')
+   }));
    return;
 }
 
