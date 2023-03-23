@@ -83,15 +83,15 @@ sub exception_handler { # Also called by component loader if model dies
 }
 
 sub execute { # Called by component loader for all model method calls
-   my ($self, $context, $action_path) = @_;
+   my ($self, $context, $methods) = @_;
 
    my $stash = $context->stash;
 
-   $stash->{action_path} = $action_path;
+   $stash->{method_chain} = $methods;
 
    my $last_method;
 
-   for my $method (split m{ / }mx, $action_path) {
+   for my $method (split m{ / }mx, $methods) {
       throw NoMethod, [ blessed $self, $method ] unless $self->can($method);
 
       $method = $self->allowed($context, $method);
@@ -151,8 +151,8 @@ sub _finalise_stash { # Add necessary defaults for the view to render
    weaken $context;
    $stash->{code} //= HTTP_OK unless exists $stash->{redirect};
    $stash->{finalised} = TRUE;
-   $stash->{template} //= {};
-   $stash->{template}->{layout} //= $self->moniker . "/${method}";
+   $stash->{page} //= { %{$self->config->page} };
+   $stash->{page}->{layout} //= $self->moniker . "/${method}";
    $stash->{version} = $MCat::VERSION;
    $stash->{view} //= $self->config->default_view;
    return;

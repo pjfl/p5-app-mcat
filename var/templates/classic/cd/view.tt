@@ -1,4 +1,3 @@
-<div class="inline-panel">
 [% INCLUDE 'classic/widgets/object-view.tt'
    items = [{
       name => 'CD ID'
@@ -17,4 +16,3 @@
       value_raw => table.render
    }]
 %]
-</div>

@@ -16,14 +16,16 @@ sub base {
 
    my $nav = $context->stash('nav')->list('tag')->item('tag/create');
 
-   return unless $tagid;
+   if ($tagid) {
+      my $tag = $context->model('Tag')->find($tagid);
 
-   my $tag = $context->model('Tag')->find($tagid);
+      return $self->error($context, UnknownTag, [$tagid]) unless $tag;
 
-   return $self->error($context, UnknownTag, [$tagid]) unless $tag;
+      $context->stash(tag => $tag);
+      $nav->crud('tag', $tagid);
+   }
 
-   $context->stash(tag => $tag);
-   $nav->crud('tag', $tagid);
+   $nav->finalise;
    return;
 }
 

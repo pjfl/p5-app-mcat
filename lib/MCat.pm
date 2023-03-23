@@ -1,7 +1,7 @@
 package MCat;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 29 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 30 $ =~ /\d+/gmx );
 
 use namespace::autoclean;
 

@@ -1,5 +1,5 @@
 [%
-   wrapper = template.defined('wrapper') ? template.wrapper : 'standard';
-   html = template.defined('html') ? template.html : 'base';
+   html = page.html;
+   wrapper = page.wrapper;
    content WRAPPER "classic/site/wrapper/${wrapper}.tt" WRAPPER "classic/site/html/${html}.tt";
 -%]

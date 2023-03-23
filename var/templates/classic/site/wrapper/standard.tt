@@ -5,7 +5,7 @@
    <div class="messages">[% message %]</div>
 [% END -%]
 <div class="centred-content">
-   <div class="standard-content">
+   <div id="[% nav.container_name %]" class="standard-content">
 [% content %]
    </div>
 </div>

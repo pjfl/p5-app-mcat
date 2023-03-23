@@ -14,7 +14,7 @@ has '+moniker' => default => 'cd';
 sub base {
    my ($self, $context, $id) = @_;
 
-   my $method   = (split m{ / }mx, $context->stash('action_path'))[-1];
+   my $method   = (split m{ / }mx, $context->stash('method_chain'))[-1];
    my $artistid = $id if $method eq 'create' || $method eq 'list';
    my $cdid     = $id if $method eq 'edit'   || $method eq 'view';
    my $nav      = $context->stash('nav')->list('cd');
@@ -38,6 +38,7 @@ sub base {
       $nav->crud('cd', $cdid, $cd->artistid)->item('track/create', [$cdid]);
    }
 
+   $nav->finalise;
    return;
 }
 

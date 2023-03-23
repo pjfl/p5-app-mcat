@@ -1,4 +1,2 @@
-<div class="inline-panel">
 <h4>[% ucfirst(table.logfile) %] Logfile</h4>
 [% table.render %]<br/>
-</div>

@@ -5,6 +5,7 @@ use attributes ();
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef HashRef Str );
+use HTTP::Status                qw( HTTP_OK );
 use MCat::Util                  qw( formpost );
 use Ref::Util                   qw( is_hashref );
 use Scalar::Util                qw( blessed );
@@ -16,6 +17,8 @@ use Unexpected::Functions       qw( throw );
 use Moo;
 
 has 'confirm_message' => is => 'ro', isa => Str, default => 'Are you sure ?';
+
+has 'container_name' => is => 'ro', isa => Str, default => 'standard-content';
 
 has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 
@@ -45,13 +48,14 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
    return {
       'class' => 'state-navigation',
       'data-navigation-config' => $self->_json->encode({
-         'menus'      => { map { $_ => $self->_lists->{$_} } @{$self->_order} },
+         'menus'      => $self->_menus,
          'moniker'    => $self->model->moniker,
          'properties' => {
-            'confirm'      => $self->confirm_message,
-            'label'        => $self->label,
-            'title'        => $self->title,
-            'verify-token' => $self->context->verification_token,
+            'confirm'        => $self->confirm_message,
+            'container-name' => $self->container_name,
+            'label'          => $self->label,
+            'title'          => $self->title,
+            'verify-token'   => $self->context->verification_token,
          },
       }),
    };
@@ -69,6 +73,12 @@ has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
 
 has '_lists' => is => 'ro', isa => HashRef, default => sub { {} };
 
+has '_menus' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift;
+
+   return { map { $_ => $self->_lists->{$_} } @{$self->_order} };
+};
+
 has '_name' => is => 'rwp', isa => Str, default => NUL;
 
 has '_order' => is => 'ro', isa => ArrayRef, default => sub { [] };
@@ -82,6 +92,19 @@ around 'BUILDARGS' => sub {
    return { %{$attr}, %{$config} };
 };
 
+sub BUILD {
+   my $self    = shift;
+   my $context = $self->context;
+   my $req     = $context->request;
+   my $header  = $req->header('prefer') // NUL;
+
+   if ($header eq 'render=partial') {
+      $context->stash(page => { wrapper => 'none', html => 'none' });
+   }
+
+   return;
+}
+
 sub crud {
    my ($self, $moniker, $existing_id, $create_id) = @_;
 
@@ -90,6 +113,26 @@ sub crud {
    $self->item("${moniker}/edit", [$existing_id]);
    $self->item("${moniker}/view", [$existing_id]);
    return $self;
+}
+
+sub finalise {
+   my $self    = shift;
+   my $context = $self->context;
+   my $req     = $context->request;
+   my $header  = $req->header('x-requested-with') // NUL;
+
+   return unless $header eq 'XMLHttpRequest'
+      && $req->query_parameters->{navigation};
+
+   $self->_add_control;
+   $self->_add_global;
+
+   my $body = $self->_json->encode($self->_menus);
+
+   $context->stash(
+      code => HTTP_OK, finalised => TRUE, body => $body, view => 'json'
+   );
+   return;
 }
 
 sub item {

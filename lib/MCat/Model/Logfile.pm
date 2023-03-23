@@ -14,7 +14,7 @@ has '+moniker' => default => 'logfile';
 sub base {
    my ($self, $context) = @_;
 
-   $context->stash('nav')->list('logfile');
+   $context->stash('nav')->list('logfile')->finalise;
    return;
 }
 

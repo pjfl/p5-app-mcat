@@ -16,14 +16,16 @@ sub base {
 
    my $nav = $context->stash('nav')->list('artist')->item('artist/create');
 
-   return unless $artistid;
+   if ($artistid) {
+      my $artist = $context->model('Artist')->find($artistid);
 
-   my $artist = $context->model('Artist')->find($artistid);
+      return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
+      $context->stash( artist => $artist );
+      $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
+   }
 
-   $context->stash( artist => $artist );
-   $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
+   $nav->finalise;
    return;
 }
 

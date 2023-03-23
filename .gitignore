@@ -24,7 +24,8 @@ t/ipc_srlock*
 *.tar.gz
 MCat-*
 share/css
-share/js
+share/js/hforms-*
+share/js/hstatetable-*
 share/less/hforms-minimal.less
 share/less/hstatetable-minimal.less
 var/etc/mcat-local.json

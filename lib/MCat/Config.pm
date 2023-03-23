@@ -196,6 +196,16 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
 has '_navigation' => is => 'ro', isa => HashRef, init_arg => 'navigation',
    default => sub { {} };
 
+=item page
+
+Defines the names of the C<site/html> and C<site/wrapper> templates used to
+produce all the pages
+
+=cut
+
+has 'page' => is => 'ro', isa => HashRef,
+   default => sub { { html => 'base', wrapper => 'standard' } };
+
 =item prefix
 
 Used as a prefix when creating identifiers
