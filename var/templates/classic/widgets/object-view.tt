@@ -14,27 +14,42 @@ INCLUDE widgets/summary.tt2
 
 Parameters:
 
-edit_href:       String. The URL behind the "Edit" link in the top right
-edit_display:    Boolean. The conditions under which the "Edit" link should display.
-items:          List. An array of hashes containing each of the main items in the summary block.
-classes:       String. A space-delimited list of classnames suitable for use verbatim in a "class" HTML attribute, applied to the main object-view block.
-table_headers:    List. An array of the labels for each column of the table_data provided.
-table_fields:    List. An array of the key names for each of the items in the table_data.
+classes:       String. A space-delimited list of classnames suitable for use
+               verbatim in a "class" HTML attribute, applied to the main
+               object-view block.
+content_raw:   String. Unrestricted, HTML content to appear instead of
+               "items". Used v.rarely.
+edit_display:  Boolean. The conditions under which the "Edit" link should
+               display.
+edit_href:     String. The URL behind the "Edit" link in the top right
+items:         List. An array of hashes containing each of the main items in
+               the summary block.
 table_data:    Hash. The actual table data.
-content_raw:    String. Unrestricted, HTML content to appear instead of "items". Used v.rarely.
+table_fields:  List. An array of the key names for each of the items in the
+               table_data.
+table_headers: List. An array of the labels for each column of the table_data
+               provided.
 
 Item parameters:
 
-name:             String. The label for each item.
-value:             String. A non-escaped string value to be displayed beside the label. Values are automatically formatted with html and html_line_break
-value_raw:          String. A pre-escaped string used in place of "value", where the default formatting is unsuitable, such as where raw HTML is supplied.
-help:             String. Text to appear in a "?" popup beside the label.
-link_href:          String. A URL to be wrapped as a link around the value.
-link_href_display:    Boolean. The condition under which the link_href will be wrapped.
+display:           Boolean. The condition under which the whole item will be
+                   visible, or not.
+help:              String. Text to appear in a "?" popup beside the label.
+link_href:         String. A URL to be wrapped as a link around the value.
+link_href_display: Boolean. The condition under which the link_href will be
+                   wrapped.
 link_target:       String. Any valid HTML "target" attribute value e.g "_blank"
-value_id:          String. Any valid HTML "id" attribute value, added to the value field. Suitable when JS is hooked into the summary block.
-tooltip:          String. A tooltip to appear on hover of the value.
-display:          Boolean. The condition under which the whole item will be visible, or not.
+name:              String. The label for each item.
+tooltip:           String. A tooltip to appear on hover of the value.
+value:             String. A non-escaped string value to be displayed beside
+                   the label. Values are automatically formatted with html and
+                   html_line_break
+value_raw:         String. A pre-escaped string used in place of "value", where
+                   the default formatting is unsuitable, such as where raw HTML
+                   is supplied.
+value_id:          String. Any valid HTML "id" attribute value, added to the
+                   value field. Suitable when JS is hooked into the summary
+                   block.
 %]
 <div class="object-view-wrapper">
    [%- IF edit_href && (!edit_display.defined || edit_display) -%]

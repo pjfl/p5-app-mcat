@@ -1,2 +1,2 @@
-<h4>CDs</h4>
+[% subheader('CDs') %]
 [% table.render %]

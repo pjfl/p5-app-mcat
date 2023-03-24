@@ -4,7 +4,7 @@ package MCat::Navigation;
 use attributes ();
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::StateTable::Types     qw( ArrayRef HashRef Str );
+use HTML::StateTable::Types     qw( ArrayRef HashRef Str URI );
 use HTTP::Status                qw( HTTP_OK );
 use MCat::Util                  qw( formpost );
 use Ref::Util                   qw( is_hashref );
@@ -33,6 +33,10 @@ has 'model' => is => 'ro', isa => class_type('MCat::Model'), required => TRUE;
 
 has 'title' => is => 'ro', isa => Str, default => 'Navigation';
 
+has '_base_url' => is => 'lazy', isa => URI, default => sub {
+   return shift->context->request->uri_for(NUL);
+};
+
 has '_container' => is => 'lazy', isa => Str, default => sub {
    my $self = shift;
    my $tag  = $self->container_tag;
@@ -51,6 +55,7 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
          'menus'      => $self->_menus,
          'moniker'    => $self->model->moniker,
          'properties' => {
+            'base-url'       => $self->_base_url,
             'confirm'        => $self->confirm_message,
             'container-name' => $self->container_name,
             'label'          => $self->label,
@@ -87,9 +92,9 @@ around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;
 
    my $attr   = $orig->($self, @args);
-   my $config = $attr->{context}->config->navigation;
+   my $config = $attr->{context}->config;
 
-   return { %{$attr}, %{$config} };
+   return { %{$attr}, %{$config->navigation} };
 };
 
 sub BUILD {

@@ -1,2 +1,2 @@
-<h4>Tracks</h4>
+[% subheader('Tracks') %]
 [% table.render %]

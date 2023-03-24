@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Replaces links with JS handlers that fetch content
           - Navigation reloads content not pages
           - More succinct nav calls. More styling
           - Adds title bar and menu

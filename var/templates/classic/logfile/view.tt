@@ -1,2 +1,2 @@
-<h4>[% ucfirst(table.logfile) %] Logfile</h4>
+[% subheader(ucfirst(table.logfile) _ ' Logfile') %]
 [% table.render %]<br/>

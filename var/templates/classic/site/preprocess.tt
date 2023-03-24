@@ -1,4 +1,9 @@
 [%
+MACRO boolean(value, true_text, false_text, false_class) BLOCK;
+   IF value; string = true_text || 'Yes';
+   ELSE; string = false_text || 'No'; END;
+   string;
+END;
 MACRO button(options) INCLUDE classic/widgets/button.tt;
 MACRO form_button(options) WRAPPER classic/widgets/form_action.tt;
    IF options.clear_button;
@@ -26,6 +31,12 @@ MACRO form_link(url, content, options) WRAPPER classic/widgets/form_action.tt;
       title          => options.link_title,
       type           => 'submit'
    });
+END;
+MACRO header(content, classes) BLOCK;
+   '<h2 class="' _ classes _ '">'; content | html; '</h2>';
+END;
+MACRO subheader(content, classes) BLOCK;
+   '<h3 class="' _ classes _ '">'; content | html; '</h3>';
 END;
 MACRO html(content) content | html;
 MACRO icon(name, class) BLOCK;

@@ -1,2 +1,2 @@
-Artist: [% artist.name %]
+[% subheader('Artist: ' _ artist.name) %]
 [% form.render %]

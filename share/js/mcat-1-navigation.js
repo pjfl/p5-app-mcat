@@ -9,14 +9,17 @@ MCat.Navigation = (function() {
          this.menus        = config['menus'];
          this.moniker      = config['moniker'];
          this.properties   = config['properties'];
+         this.baseURL      = this.properties['base-url'];
          this.confirm      = this.properties['confirm'];
          this.controlLabel = this.properties['label'] || '≡';
          this.title        = this.properties['title'];
          this.token        = this.properties['verify-token'];
+         this.st           = HStateTable.Renderer.manager;
          this.menu;
          this.content;
          const containerName = this.properties['container-name'];
          this.contentContainer = document.getElementById(containerName);
+         this.contentPanel;
          this.contextPanel;
          this.controlPanel;
          this.controlOver  = function(event) {
@@ -47,7 +50,10 @@ MCat.Navigation = (function() {
          }
          return await new Response(await response.blob()).text();
       }
-      async fetchJSON(url) {
+      async fetchMenus(href) {
+         const url = new URL(href);
+         const params = url.searchParams;
+         params.set('navigation', true);
          const headers = new Headers();
          headers.set('X-Requested-With', 'XMLHttpRequest');
          const options = { headers: headers, method: 'GET' };
@@ -57,7 +63,7 @@ MCat.Navigation = (function() {
          }
          return await response.json();
       }
-      itemSelect(url) {
+      loadContent(url) {
          return function(event) {
             event.preventDefault();
             this.renderContent(url);
@@ -65,7 +71,7 @@ MCat.Navigation = (function() {
       }
       listItem(item, menuName, hasHandler) {
          if (typeof item[0] != 'object') {
-            const attr = { href: '#', onclick: this.itemSelect(item[1]) };
+            const attr = { href: '#', onclick: this.loadContent(item[1]) };
             if (hasHandler) attr['onmouseover'] = this.globalOver;
             return this.h.li({ className: menuName }, this.h.a(attr, item[0]));
          }
@@ -79,15 +85,28 @@ MCat.Navigation = (function() {
          }, this.h.span(name)));
          return this.h.li({ className: menuName }, form);
       }
+      redraw() {
+         const menu = this.h.nav({ className: 'nav-menu' }, [
+            this.renderList(this.menus['_global'], 'global'),
+            this.renderControl(this.menus['_control'], 'control')
+         ]);
+         this.menu = this.display(this.container, 'menu', menu);
+      }
       async renderContent(href) {
-         this.contentContainer.innerHTML = await this.fetchHTML(href);
-         HStateTable.Renderer.manager.scan(this.contentContainer);
-         history.pushState({}, '', href);
-         const url = new URL(href);
-         const params = url.searchParams;
-         params.set('navigation', true);
-         this.menus = await this.fetchJSON(url);
-         this.render();
+         const panel = this.h.div({
+            id: 'panel-content', className: 'panel-content'
+         });
+         panel.innerHTML = await this.fetchHTML(href);
+         this.st.scan(panel);
+         await this.st.isRendering();
+         this.replaceLinks(panel);
+         this.contentPanel = document.getElementById('panel-content');
+         this.contentPanel = this.display(
+            this.contentContainer, 'contentPanel', panel
+         );
+         history.pushState({}, 'Unused', href); // API Darwin award
+         this.menus = await this.fetchMenus(href);
+         this.redraw();
       }
       renderControl(list, menuName) {
          this.controlPanel = this.h.div({
@@ -126,12 +145,20 @@ MCat.Navigation = (function() {
       renderTitle(title) {
          return this.h.div({ className: 'nav-title' }, title);
       }
-      render() {
-         const menu = this.h.nav({ className: 'nav-menu' }, [
-            this.renderList(this.menus['_global'], 'global'),
-            this.renderControl(this.menus['_control'], 'control')
-         ]);
-         this.menu = this.display(this.container, 'menu', menu);
+      async render() {
+         this.redraw();
+         await this.st.isConstructing();
+         this.replaceLinks(document);
+      }
+      replaceLinks(panel) {
+         const url = this.baseURL;
+         for (const link of panel.getElementsByTagName('a')) {
+            const href = link.href + '';
+            if (href.length && url == href.substring(0, url.length)) {
+               link.addEventListener('click', this.loadContent(href));
+               link.href = '#';
+            }
+         }
       }
       submitHandler(form, name) {
          return function(event) {
@@ -149,11 +176,10 @@ MCat.Navigation = (function() {
          this.navigators = {};
       }
       createNavigation() {
-         for (const el of document.getElementsByClassName(triggerClass)) {
-            const nav = new Navigation(el, JSON.parse(el.dataset[dsName]));
-            this.navigators[nav.name] = nav;
-            nav.render();
-         }
+         const el = document.getElementsByClassName(triggerClass)[0];
+         const nav = new Navigation(el, JSON.parse(el.dataset[dsName]));
+         this.navigators[nav.name] = nav;
+         nav.render();
       }
       onReady(callback) {
          if (document.readyState != 'loading') callback();

@@ -7,7 +7,7 @@
       value => artist.name
    },{
       name => 'Active'
-      value => artist.active
+      value => boolean(artist.active)
    },{
       name => 'Upvotes'
       value => artist.upvotes

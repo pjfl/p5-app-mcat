@@ -1,2 +1,2 @@
-<h4>Logfiles</h4>
+[% subheader('Logfiles') %]
 [% table.render %]

@@ -1,2 +1,2 @@
-<h4>Tags</h4>
+[% subheader('Tags') %]
 [% table.render %]
