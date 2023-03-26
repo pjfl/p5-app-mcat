@@ -70,7 +70,10 @@ sub delete : Nav('Delete CD') {
 
    return unless $self->has_valid_token($context);
 
-   my $cd       = $context->stash('cd');
+   my $cd = $context->model('Cd')->find($cdid);
+
+   return $self->error($context, UnknownCd, [$cdid]) unless $cd;
+
    my $artistid = $cd->artistid;
    my $title    = $cd->title;
 

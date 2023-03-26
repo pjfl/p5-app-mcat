@@ -29,6 +29,8 @@ has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 has 'label' => is => 'ro', isa => Str, default => '≡';
 
+has 'messages' => is => 'ro', isa => HashRef, default => sub { {} };
+
 has 'model' => is => 'ro', isa => class_type('MCat::Model'), required => TRUE;
 
 has 'title' => is => 'ro', isa => Str, default => 'Navigation';
@@ -59,6 +61,8 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'confirm'        => $self->confirm_message,
             'container-name' => $self->container_name,
             'label'          => $self->label,
+            'messages'       => $self->messages,
+            'messages-url'   => $self->_messages_url,
             'title'          => $self->title,
             'verify-token'   => $self->context->verification_token,
          },
@@ -82,6 +86,10 @@ has '_menus' => is => 'lazy', isa => HashRef, default => sub {
    my $self = shift;
 
    return { map { $_ => $self->_lists->{$_} } @{$self->_order} };
+};
+
+has '_messages_url' => is => 'lazy', isa => URI, default => sub {
+   return shift->context->request->uri_for('api/navigation/collect/messages');
 };
 
 has '_name' => is => 'rwp', isa => Str, default => NUL;

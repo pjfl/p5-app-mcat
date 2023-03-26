@@ -53,8 +53,11 @@ sub delete : Nav('Delete Artist') {
 
    return unless $self->has_valid_token($context);
 
-   my $artist = $context->stash('artist');
-   my $name   = $artist->name;
+   my $artist = $context->model('Artist')->find($artistid);
+
+   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
+
+   my $name = $artist->name;
 
    $artist->delete;
 

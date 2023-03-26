@@ -22,12 +22,6 @@ has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager');
 
-has 'messages' => is => 'lazy', isa => ArrayRef, default => sub {
-   my $self = shift;
-
-   return $self->session->collect_status_messages($self->request);
-};
-
 has 'models' => is => 'ro', isa => HashRef, weak_ref => TRUE,
    default => sub { {} };
 

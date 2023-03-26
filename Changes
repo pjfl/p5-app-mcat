@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Now a one page application
           - Replaces links with JS handlers that fetch content
           - Navigation reloads content not pages
           - More succinct nav calls. More styling

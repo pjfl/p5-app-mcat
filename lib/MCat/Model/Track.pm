@@ -71,7 +71,10 @@ sub delete : Nav('Delete Track') {
 
    return unless $self->has_valid_token($context);
 
-   my $track = $context->stash('track');
+   my $track = $context->model('Track')->find($trackid);
+
+   return $self->error($context, UnknownTrack, [$trackid]) unless $track;
+
    my $cdid  = $track->cdid;
    my $title = $track->title;
 

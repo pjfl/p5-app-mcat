@@ -12,10 +12,12 @@ MCat.Navigation = (function() {
          this.baseURL      = this.properties['base-url'];
          this.confirm      = this.properties['confirm'];
          this.controlLabel = this.properties['label'] || '≡';
+         this.messagesURL  = new URL(this.properties['messages-url']);
          this.title        = this.properties['title'];
          this.token        = this.properties['verify-token'];
-         this.st           = HStateTable.Renderer.manager;
+         this.stateTable   = HStateTable.Renderer.manager;
          this.menu;
+         this.messages     = new Messages(this);
          this.content;
          const containerName = this.properties['container-name'];
          this.contentContainer = document.getElementById(containerName);
@@ -26,7 +28,7 @@ MCat.Navigation = (function() {
             event.preventDefault();
             this.controlPanel.classList.toggle('visible');
          }.bind(this);
-         this.globalOver  = function(event) {
+         this.globalOver = function(event) {
             event.preventDefault();
             this.contextPanel.classList.toggle('visible');
          }.bind(this);
@@ -38,6 +40,9 @@ MCat.Navigation = (function() {
             event.preventDefault();
             this.contextPanel.classList.remove('visible');
          }.bind(this);
+         window.addEventListener('popstate', function(event) {
+            if (event.state.href) this.renderContent(event.state.href);
+         }.bind(this));
          container.append(this.renderTitle(this.title));
       }
       async fetchHTML(url) {
@@ -50,10 +55,7 @@ MCat.Navigation = (function() {
          }
          return await new Response(await response.blob()).text();
       }
-      async fetchMenus(href) {
-         const url = new URL(href);
-         const params = url.searchParams;
-         params.set('navigation', true);
+      async fetchJSON(url) {
          const headers = new Headers();
          headers.set('X-Requested-With', 'XMLHttpRequest');
          const options = { headers: headers, method: 'GET' };
@@ -61,29 +63,70 @@ MCat.Navigation = (function() {
          if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
          }
-         return await response.json();
+         return response.json();
       }
-      loadContent(url) {
-         return function(event) {
-            event.preventDefault();
-            this.renderContent(url);
-         }.bind(this);
+      fetchMenus(url) {
+         url.searchParams.set('navigation', true);
+         return this.fetchJSON(url);
+      }
+      fetchMessages(href) {
+         const url = new URL(href);
+         this.messagesURL.searchParams.set('mid', url.searchParams.get('mid'));
+         return this.fetchJSON(this.messagesURL);
       }
       listItem(item, menuName, hasHandler) {
          if (typeof item[0] != 'object') {
-            const attr = { href: '#', onclick: this.loadContent(item[1]) };
+            const href = 'data://' + item[1].substring(this.baseURL.length);
+            const attr = {
+               href: href, listener: true, onclick: this.loadContent(item[1])
+            };
             if (hasHandler) attr['onmouseover'] = this.globalOver;
             return this.h.li({ className: menuName }, this.h.a(attr, item[0]));
          }
          if (item[0]['method'] != 'post') return;
          const form = this.h.form({
-            action: item[1], className: 'inline', method: 'post'
+            action: item[1], className: 'inline', listener: true, method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
+         form.addEventListener('submit', this.submitFormHandler(form));
          const name = item[0]['name'];
          form.append(this.h.button({
             className: 'form-button', onclick: this.submitHandler(form, name)
          }, this.h.span(name)));
          return this.h.li({ className: menuName }, form);
+      }
+      loadContent(href) {
+         return function(event) {
+            event.preventDefault();
+            this.renderContent(href);
+         }.bind(this);
+      }
+      async postForm(url, form) {
+         const params = new URLSearchParams(new FormData(form));
+         const headers = new Headers();
+         headers.set('Content-Type', 'application/x-www-form-urlencoded');
+         headers.set('Prefer', 'render=partial');
+         headers.set('X-Requested-With', 'XMLHttpRequest');
+         const options = {
+            body: params.toString(), cache: 'no-store',
+            credentials: 'same-origin', headers: headers, method: 'POST'
+         };
+         const response = await fetch(url, options);
+         if (response.headers.get('location')) {
+            return { href: response.headers.get('location') };
+         }
+         if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+         }
+         return { html: await response.text() };
+      }
+      async process(action, form) {
+         const { href, html } = await this.postForm(action, form);
+         if (html) await this.renderHTML(html);
+         else if (href) {
+            this.messages.render(this.fetchMessages(href));
+            await this.renderContent(href);
+         }
+         else { console.warn('No understand post response') }
       }
       redraw() {
          const menu = this.h.nav({ className: 'nav-menu' }, [
@@ -92,20 +135,19 @@ MCat.Navigation = (function() {
          ]);
          this.menu = this.display(this.container, 'menu', menu);
       }
-      async renderContent(href) {
-         const panel = this.h.div({
-            id: 'panel-content', className: 'panel-content'
-         });
-         panel.innerHTML = await this.fetchHTML(href);
-         this.st.scan(panel);
-         await this.st.isRendering();
-         this.replaceLinks(panel);
+      async render() {
+         this.redraw();
+         await this.stateTable.isConstructing();
          this.contentPanel = document.getElementById('panel-content');
-         this.contentPanel = this.display(
-            this.contentContainer, 'contentPanel', panel
-         );
-         history.pushState({}, 'Unused', href); // API Darwin award
-         this.menus = await this.fetchMenus(href);
+         this.replaceLinks(this.contentPanel);
+      }
+      async renderContent(href) {
+         const url = new URL(href);
+         url.searchParams.delete('mid');
+         this.renderHTML(await this.fetchHTML(url));
+         // TODO: See if setting header title will fix browser back strings
+         history.pushState({ href: href }, 'Unused', url); // API Darwin award
+         this.menus = await this.fetchMenus(url);
          this.redraw();
       }
       renderControl(list, menuName) {
@@ -117,6 +159,19 @@ MCat.Navigation = (function() {
             this.controlPanel
          ]);
          return control;
+      }
+      async renderHTML(html) {
+         const panel = this.h.div({
+            id: 'panel-content', className: 'panel-content'
+         });
+         panel.innerHTML = html;
+         this.stateTable.scan(panel);
+         await this.stateTable.isRendering();
+         this.replaceLinks(panel);
+         this.contentPanel = document.getElementById('panel-content');
+         this.contentPanel = this.display(
+            this.contentContainer, 'contentPanel', panel
+         );
       }
       renderList(list, menuName) {
          const items = [];
@@ -145,32 +200,80 @@ MCat.Navigation = (function() {
       renderTitle(title) {
          return this.h.div({ className: 'nav-title' }, title);
       }
-      async render() {
-         this.redraw();
-         await this.st.isConstructing();
-         this.replaceLinks(document);
-      }
       replaceLinks(panel) {
          const url = this.baseURL;
          for (const link of panel.getElementsByTagName('a')) {
             const href = link.href + '';
-            if (href.length && url == href.substring(0, url.length)) {
+            if (href.length && url == href.substring(0, url.length)
+                && !link.getAttribute('listener')) {
+               link.setAttribute('listener', true);
                link.addEventListener('click', this.loadContent(href));
-               link.href = '#';
+               link.href = 'data://' + href.substring(url.length);
+            }
+         }
+         for (const form of panel.getElementsByTagName('form')) {
+            const action = form.action + '';
+            if (action.length && url == action.substring(0, url.length)
+                && !form.getAttribute('listener')) {
+               form.addEventListener('submit', this.submitFormHandler(form));
+               form.action = 'data://' + action.substring(url.length);
             }
          }
       }
-      submitHandler(form, name) {
+      submitFormHandler(form) {
+         form.setAttribute('listener', true);
+         const action = form.action;
          return function(event) {
             event.preventDefault();
+            this.process(action, form);
+         }.bind(this);
+      }
+      submitHandler(form, name) {
+         return function(event) {
             if (this.confirm) {
-               if (confirm(this.confirm.replace(/\*/, name))) form.submit();
+               if (confirm(this.confirm.replace(/\*/, name))) return true;
             }
-            else if (confirm()) form.submit();
+            else if (confirm()) return true;
+            return false;
          }.bind(this);
       }
    }
    Object.assign(Navigation.prototype, MCat.Util.Markup);
+   class Messages {
+      constructor(nav) {
+         const config = nav.properties['messages']
+         this.bufferLimit = config['buffer-limit'] || 3;
+         this.displayTime = config['display-time'] || 20;
+         this.items = [];
+         this.panel = this.h.div({ className: 'messages-panel' });
+         document.body.append(this.panel);
+      }
+      animate(item) {
+         setTimeout(function() {
+            let opacity = 1;
+            const fadeOut = function() {
+               if (opacity <= 0) return;
+               opacity -= 0.01;
+               item.style.opacity = opacity;
+               requestAnimationFrame(fadeOut);
+            };
+            requestAnimationFrame(fadeOut);
+         }, 1000 * this.displayTime);
+      }
+      async render(promise) {
+         const messages = await promise;
+         for (const message of messages) {
+            const item = this.h.div({ className: 'message-item' }, message);
+            this.panel.prepend(item);
+            this.items.unshift(item);
+            this.animate(item);
+         }
+         while (this.items.length > this.bufferLimit) {
+            this.items.pop().remove();
+         }
+      }
+   }
+   Object.assign(Messages.prototype, MCat.Util.Markup);
    class Manager {
       constructor() {
          this.navigators = {};

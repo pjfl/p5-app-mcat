@@ -53,7 +53,10 @@ sub delete : Nav('Delete Tag') {
 
    return unless $self->has_valid_token($context);
 
-   my $tag  = $context->stash('tag');
+   my $tag = $context->model('Tag')->find($tagid);
+
+   return $self->error($context, UnknownTag, [$tagid]) unless $tag;
+
    my $name = $tag->name;
 
    $tag->delete;

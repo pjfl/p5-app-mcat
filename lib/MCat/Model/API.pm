@@ -1,7 +1,7 @@
 package MCat::Model::API;
 
 use File::DataClass::Functions qw( ensure_class_loaded );
-use HTML::Forms::Constants     qw( EXCEPTION_CLASS );
+use HTML::Forms::Constants     qw( FALSE EXCEPTION_CLASS TRUE );
 use HTML::Forms::Types         qw( HashRef );
 use MCat::Util                 qw( redirect );
 use Unexpected::Functions      qw( catch_class throw APIMethodFailed

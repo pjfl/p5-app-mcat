@@ -185,10 +185,13 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
       my $self = shift;
 
       return {
+         messages => {
+            'buffer-limit' => $self->request->{max_messages}
+         },
          title => $self->name . ' v' . $MCat::VERSION,
          %{$self->_navigation},
          global => [
-            'artist/list', 'cd/list', 'track/list', 'tag/list', 'logfile/list',
+            qw( artist/list cd/list track/list tag/list logfile/list )
          ],
       };
    };
@@ -223,14 +226,53 @@ cache
 
 has 'redis' => is => 'ro', isa => HashRef, default => sub { {} };
 
+=item request
+
+Hash reference passed to the request object factory constructor by the
+component loader. Includes;
+
+=over 3
+
+=item max_messages
+
+The maximum number of response to post messages to buffer both in the session
+object where they are stored and the JS object where they are displayed
+
+=item prefix
+
+See 'prefix'
+
 =item request_roles
 
 List of roles to be applied to the request class base
 
+=item serialise_session_attr
+
+List of session attributes that are included for serialisation to the CSRF
+token
+
+=item session_attr
+
+A list of names, types, and default values. These are composed into the
+session object
+
+=back
+
 =cut
 
-has 'request_roles' => is => 'ro', isa => ArrayRef[Str],
-   default => sub { ['L10N', 'Session', 'JSON', 'Cookie', 'Headers', 'Compat']};
+has 'request' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift;
+
+   return {
+      max_messages => 3,
+      prefix => $self->prefix,
+      request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
+      serialise_session_attr => [ qw( id ) ],
+      session_attr => {
+         id => [ PositiveInt, 0 ],
+      },
+   };
+};
 
 =item root
 
@@ -242,28 +284,6 @@ has 'root' => is => 'lazy', isa => Directory,
    default => sub { shift->vardir->catdir('root') };
 
 has 'secret' => is => 'ro', isa => Str, default => SECRET;
-
-=item serialise_session_attr
-
-List of session attribute names that are included for serialisation to the
-CSRF token
-
-=cut
-
-has 'serialise_session_attr' => is => 'ro', isa => ArrayRef,
-   default => sub { [ qw( id ) ] };
-
-=item session_attr
-
-A list of names, types, and default values. These are composed into the
-session object
-
-=cut
-
-has 'session_attr' => is => 'lazy', isa => HashRef[ArrayRef],
-   default => sub { {
-      id => [ PositiveInt, 0 ],
-   } };
 
 =item skin
 

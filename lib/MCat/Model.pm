@@ -99,12 +99,15 @@ sub execute { # Called by component loader for all model method calls
       $self->$method($context, @{$context->request->args}) if $method;
 
       return $stash->{response} if $stash->{response};
-      last if $stash->{finalised};
+
+      $self->_fix_fetch_redirect($context) if exists $stash->{redirect};
+
+      return if $stash->{finalised} || exists $stash->{redirect};
 
       $last_method = $method;
    }
 
-   $self->_finalise_stash($context, $last_method) unless $stash->{finalised};
+   $self->_finalise_stash($context, $last_method);
    return;
 }
 
@@ -155,6 +158,19 @@ sub _finalise_stash { # Add necessary defaults for the view to render
    $stash->{page}->{layout} //= $self->moniker . "/${method}";
    $stash->{version} = $MCat::VERSION;
    $stash->{view} //= $self->config->default_view;
+   return;
+}
+
+sub _fix_fetch_redirect {
+   my ($self, $context) = @_;
+
+   warn $context->request->header('x-requested-with');
+
+   my $header = $context->request->header('x-requested-with') // NUL;
+
+   return unless $header eq 'XMLHttpRequest';
+   warn 'herer';
+   $context->stash->{code} = HTTP_OK;
    return;
 }
 

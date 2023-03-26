@@ -74,6 +74,15 @@ sub BUILD {
    return;
 }
 
+sub _build__factory {
+   my $self = shift;
+
+   return Web::ComposableRequest->new(
+      buildargs => $self->factory_args,
+      config    => $self->config->request,
+   );
+}
+
 use namespace::autoclean;
 
 1;

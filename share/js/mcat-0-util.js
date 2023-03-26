@@ -16,6 +16,71 @@ MCat.Util = (function() {
       'ondragover', 'ondragstart', 'ondrop', 'onmouseenter', 'onmouseleave',
       'onmouseover', 'onsubmit'
    ];
+   class Bitch {
+      _new_headers() {
+         const headers = new Headers();
+         headers.set('X-Requested-With', 'XMLHttpRequest');
+         return headers;
+      }
+      _set_headers(options) {
+         if (!options.headers) options.headers = this._new_headers();
+         if (!options.headers instanceof Headers) {
+            const headers = options.headers;
+            options.headers = this._new_headers();
+            for (const [k, v] of Object.entries(headers))
+               options.headers.set(k, v);
+         }
+      }
+      async blows(url, options) {
+         options ||= {};
+         const wait = options.wait; delete options.wait;
+         const want = options.response || 'text'; delete options.response;
+         this._set_headers(options);
+         if (options.form) {
+            options.headers.set(
+               'Content-Type', 'application/x-www-form-urlencoded'
+            );
+            const form = options.form; delete options.form;
+            const params = new URLSearchParams(new FormData(form));
+            options.body = params.toString();
+         }
+         options.cache ||= 'no-store';
+         options.credentials ||= 'same-origin';
+         options.method ||= 'POST';
+         const response = await fetch(url, options);
+         if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+         }
+         if (response.headers.get('location')) {
+            return { location: response.headers.get('location') };
+         }
+         if (want == 'text') {
+            if (wait) return { text: await response.text() };
+            return { text: response.text() };
+         }
+         return response;
+      }
+      async sucks(url, options) {
+         options ||= {};
+         const wait = options.wait; delete options.wait;
+         const want = options.response || 'json'; delete options.response;
+         this._set_headers(options);
+         options.method ||= 'GET';
+         const response = await fetch(url, options);
+         if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.statusText}`);
+         }
+         if (want == 'blob') {
+            if (wait) return await new Response(await response.blob()).text();
+            else return response.blob();
+         }
+         if (want == 'json') {
+            if (wait) return await response.json();
+            else return response.json();
+         }
+         return response;
+      }
+   }
    class HtmlTiny {
       _tag(tag, attr, content) {
          const el = document.createElement(tag);
@@ -90,6 +155,7 @@ MCat.Util = (function() {
             if (existingValue) existingValue += ' ';
             obj[key] = existingValue + newValue;
          },
+         bitch: new Bitch(),
          display: function(container, attribute, obj) {
             if (this[attribute] && container.contains(this[attribute])) {
                container.replaceChild(obj, this[attribute]);
