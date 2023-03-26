@@ -1,12 +1,13 @@
 package MCat::Server;
 
 use MCat;
+use MCat::Config;
+use MCat::Log;
+use MCat::Session;
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTML::Forms::Types     qw( HashRef Object Str );
 use HTTP::Status           qw( HTTP_FOUND );
 use Type::Utils            qw( class_type );
-use MCat::Config;
-use MCat::Log;
 use Plack::Builder;
 use Web::Simple;
 
@@ -19,12 +20,17 @@ has '_config_attr' =>
 has 'config' =>
    is      => 'lazy',
    isa     => class_type('MCat::Config'),
-   builder => sub { MCat::Config->new(shift->_config_attr) };
+   builder => sub { MCat::Config->new( shift->_config_attr ) };
 
 has 'log' =>
    is      => 'lazy',
    isa     => class_type('MCat::Log'),
    builder => sub { MCat::Log->new( config => shift->config ) };
+
+has 'session' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::Session'),
+   builder => sub { MCat::Session->new( config => shift->config ) };
 
 with 'Web::Components::Loader';
 
@@ -46,14 +52,7 @@ around 'to_psgi_app' => sub {
       enable 'Static',
          path => qr{ \A / (?: $static) }mx, root => $config->root;
       mount $config->mount_point => builder {
-         enable 'Session::Cookie',
-            expires     => 7_776_000,
-            httponly    => TRUE,
-            path        => $config->mount_point,
-            samesite    => 'None',
-            secret      => $config->secret,
-            secure      => TRUE,
-            session_key => $config->prefix.'_session';
+         enable 'Session', $self->session->middleware_config;
          $psgi_app;
       };
       mount '/' => builder {

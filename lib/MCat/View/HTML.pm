@@ -43,6 +43,7 @@ sub _add_tt_defaults {
    my ($self, $context) = @_; weaken $context;
 
    return {
+      context        => $context,
       process_attrs  => \&process_attrs,
       token          => sub { $context->verification_token },
       uri_for_action => sub { $context->uri_for_action(@_) },

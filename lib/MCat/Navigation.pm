@@ -6,7 +6,7 @@ use attributes ();
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef HashRef Str URI );
 use HTTP::Status                qw( HTTP_OK );
-use MCat::Util                  qw( formpost );
+use MCat::Util                  qw( formpost maybe_render_partial );
 use Ref::Util                   qw( is_hashref );
 use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );
@@ -25,6 +25,8 @@ has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
    required => TRUE, weak_ref => TRUE;
 
+has 'control' => is => 'ro', isa => ArrayRef, default => sub { [] };
+
 has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 has 'label' => is => 'ro', isa => Str, default => '≡';
@@ -34,6 +36,8 @@ has 'messages' => is => 'ro', isa => HashRef, default => sub { {} };
 has 'model' => is => 'ro', isa => class_type('MCat::Model'), required => TRUE;
 
 has 'title' => is => 'ro', isa => Str, default => 'Navigation';
+
+has 'title_abbrev' => is => 'ro', isa => Str, default => 'Nav';
 
 has '_base_url' => is => 'lazy', isa => URI, default => sub {
    return shift->context->request->uri_for(NUL);
@@ -46,25 +50,24 @@ has '_container' => is => 'lazy', isa => Str, default => sub {
    return $self->_html->$tag($self->_data);
 };
 
-has 'control' => is => 'ro', isa => ArrayRef, default => sub { [] };
-
 has '_data' => is => 'lazy', isa => HashRef, default => sub {
    my $self = shift;
 
    return {
       'class' => 'state-navigation',
       'data-navigation-config' => $self->_json->encode({
-         'menus'      => $self->_menus,
-         'moniker'    => $self->model->moniker,
-         'properties' => {
+         'menus'        => $self->_menus,
+         'messages'     => $self->_messages,
+         'moniker'      => $self->model->moniker,
+         'properties'   => {
             'base-url'       => $self->_base_url,
             'confirm'        => $self->confirm_message,
             'container-name' => $self->container_name,
             'label'          => $self->label,
-            'messages'       => $self->messages,
-            'messages-url'   => $self->_messages_url,
             'title'          => $self->title,
+            'title-abbrev'   => $self->title_abbrev,
             'verify-token'   => $self->context->verification_token,
+            'version'        => $MCat::VERSION,
          },
       }),
    };
@@ -88,8 +91,14 @@ has '_menus' => is => 'lazy', isa => HashRef, default => sub {
    return { map { $_ => $self->_lists->{$_} } @{$self->_order} };
 };
 
-has '_messages_url' => is => 'lazy', isa => URI, default => sub {
-   return shift->context->request->uri_for('api/navigation/collect/messages');
+has '_messages' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift;
+   my $req  = $self->context->request;
+
+   return {
+      %{$self->messages},
+      'messages-url' => $req->uri_for('api/navigation/collect/messages')
+   };
 };
 
 has '_name' => is => 'rwp', isa => Str, default => NUL;
@@ -106,14 +115,9 @@ around 'BUILDARGS' => sub {
 };
 
 sub BUILD {
-   my $self    = shift;
-   my $context = $self->context;
-   my $req     = $context->request;
-   my $header  = $req->header('prefer') // NUL;
+   my $self = shift;
 
-   if ($header eq 'render=partial') {
-      $context->stash(page => { wrapper => 'none', html => 'none' });
-   }
+   maybe_render_partial $self->context;
 
    return;
 }

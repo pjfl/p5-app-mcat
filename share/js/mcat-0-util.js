@@ -17,25 +17,24 @@ MCat.Util = (function() {
       'onmouseover', 'onsubmit'
    ];
    class Bitch {
-      _new_headers() {
+      _newHeaders() {
          const headers = new Headers();
          headers.set('X-Requested-With', 'XMLHttpRequest');
          return headers;
       }
-      _set_headers(options) {
-         if (!options.headers) options.headers = this._new_headers();
-         if (!options.headers instanceof Headers) {
+      _setHeaders(options) {
+         if (!options.headers) options.headers = this._newHeaders();
+         if (!(options.headers instanceof Headers)) {
             const headers = options.headers;
-            options.headers = this._new_headers();
+            options.headers = this._newHeaders();
             for (const [k, v] of Object.entries(headers))
                options.headers.set(k, v);
          }
       }
       async blows(url, options) {
          options ||= {};
-         const wait = options.wait; delete options.wait;
          const want = options.response || 'text'; delete options.response;
-         this._set_headers(options);
+         this._setHeaders(options);
          if (options.form) {
             options.headers.set(
                'Content-Type', 'application/x-www-form-urlencoded'
@@ -44,41 +43,46 @@ MCat.Util = (function() {
             const params = new URLSearchParams(new FormData(form));
             options.body = params.toString();
          }
-         options.cache ||= 'no-store';
-         options.credentials ||= 'same-origin';
          options.method ||= 'POST';
-         const response = await fetch(url, options);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+         if (options.method == 'POST') {
+            options.cache ||= 'no-store';
+            options.credentials ||= 'same-origin';
          }
-         if (response.headers.get('location')) {
-            return { location: response.headers.get('location') };
-         }
-         if (want == 'text') {
-            if (wait) return { text: await response.text() };
-            return { text: response.text() };
-         }
-         return response;
-      }
-      async sucks(url, options) {
-         options ||= {};
-         const wait = options.wait; delete options.wait;
-         const want = options.response || 'json'; delete options.response;
-         this._set_headers(options);
-         options.method ||= 'GET';
          const response = await fetch(url, options);
          if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
-         if (want == 'blob') {
-            if (wait) return await new Response(await response.blob()).text();
-            else return response.blob();
+         if (response.headers.get('location')) return {
+            location: response.headers.get('location'), status: 302
+         };
+         if (want == 'text') return {
+            status: response.status, text: await response.text()
+         };
+         return { response: response };
+      }
+      async sucks(url, options) {
+         options ||= {};
+         const want = options.response || 'object'; delete options.response;
+         this._setHeaders(options);
+         options.method ||= 'GET';
+         const response = await fetch(url, options);
+         if (!response.ok) {
+            if (response.status == 404) {
+               if (want == 'object') return { object: false, status: 404 };
+            }
+            else throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
-         if (want == 'json') {
-            if (wait) return await response.json();
-            else return response.json();
-         }
-         return response;
+         if (want == 'blob') return {
+            blob: await response.blob(), status: response.status
+         };
+         if (want == 'object') return {
+            object: await response.json(), status: response.status
+         };
+         if (want == 'text') return {
+            status: response.status,
+            text: await new Response(await response.blob()).text()
+         };
+         return { response: response };
       }
    }
    class HtmlTiny {

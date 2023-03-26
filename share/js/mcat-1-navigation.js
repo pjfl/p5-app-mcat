@@ -3,28 +3,29 @@
 MCat.Navigation = (function() {
    const dsName       = 'navigationConfig';
    const triggerClass = 'state-navigation';
+   const StateTable   = HStateTable.Renderer.manager;
    class Navigation {
       constructor(container, config) {
          this.container    = container;
          this.menus        = config['menus'];
+         this.messages     = new Messages(config['messages']);
          this.moniker      = config['moniker'];
          this.properties   = config['properties'];
          this.baseURL      = this.properties['base-url'];
          this.confirm      = this.properties['confirm'];
          this.controlLabel = this.properties['label'] || '≡';
-         this.messagesURL  = new URL(this.properties['messages-url']);
          this.title        = this.properties['title'];
+         this.titleAbbrev  = this.properties['title-abbrev'];
          this.token        = this.properties['verify-token'];
-         this.stateTable   = HStateTable.Renderer.manager;
-         this.menu;
-         this.messages     = new Messages(this);
+         this.version      = this.properties['version'];
          this.content;
          const containerName = this.properties['container-name'];
          this.contentContainer = document.getElementById(containerName);
          this.contentPanel;
          this.contextPanel;
          this.controlPanel;
-         this.controlOver  = function(event) {
+         this.menu;
+         this.controlOver = function(event) {
             event.preventDefault();
             this.controlPanel.classList.toggle('visible');
          }.bind(this);
@@ -42,37 +43,19 @@ MCat.Navigation = (function() {
          }.bind(this);
          window.addEventListener('popstate', function(event) {
             if (event.state.href) this.renderContent(event.state.href);
+            console.log('Popstate ' + event.state.href);
          }.bind(this));
-         container.append(this.renderTitle(this.title));
+         const title = this.version
+               ? this.title + ' v' + this.version : this.title;
+         container.append(this.renderTitle(title));
       }
-      async fetchHTML(url) {
-         const headers = new Headers();
-         headers.set('Prefer', 'render=partial');
-         const options = { headers: headers, method: 'GET' };
-         const response = await fetch(url, options);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         return await new Response(await response.blob()).text();
-      }
-      async fetchJSON(url) {
-         const headers = new Headers();
-         headers.set('X-Requested-With', 'XMLHttpRequest');
-         const options = { headers: headers, method: 'GET' };
-         const response = await fetch(url, options);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         return response.json();
-      }
-      fetchMenus(url) {
-         url.searchParams.set('navigation', true);
-         return this.fetchJSON(url);
-      }
-      fetchMessages(href) {
-         const url = new URL(href);
-         this.messagesURL.searchParams.set('mid', url.searchParams.get('mid'));
-         return this.fetchJSON(this.messagesURL);
+      finagleHistory(url) {
+         const href = url + '';
+         history.pushState({ href: href }, 'Unused', url); // API Darwin award
+         const head = (document.getElementsByTagName('head'))[0];
+         const title = head.querySelector('title');
+         const tag = this.ucfirst(href.substring(this.baseURL.length));
+         title.innerHTML = this.titleAbbrev + ' - ' + tag.replace(/\//g, ' ');
       }
       listItem(item, menuName, hasHandler) {
          if (typeof item[0] != 'object') {
@@ -100,31 +83,13 @@ MCat.Navigation = (function() {
             this.renderContent(href);
          }.bind(this);
       }
-      async postForm(url, form) {
-         const params = new URLSearchParams(new FormData(form));
-         const headers = new Headers();
-         headers.set('Content-Type', 'application/x-www-form-urlencoded');
-         headers.set('Prefer', 'render=partial');
-         headers.set('X-Requested-With', 'XMLHttpRequest');
-         const options = {
-            body: params.toString(), cache: 'no-store',
-            credentials: 'same-origin', headers: headers, method: 'POST'
-         };
-         const response = await fetch(url, options);
-         if (response.headers.get('location')) {
-            return { href: response.headers.get('location') };
-         }
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         return { html: await response.text() };
-      }
       async process(action, form) {
-         const { href, html } = await this.postForm(action, form);
-         if (html) await this.renderHTML(html);
-         else if (href) {
-            this.messages.render(this.fetchMessages(href));
-            await this.renderContent(href);
+         const options = { headers: { prefer: 'render=partial' }, form: form };
+         const { location, text } = await this.bitch.blows(action, options);
+         if (text) await this.renderHTML(text);
+         else if (location) {
+            this.messages.render(location);
+            await this.renderContent(location);
          }
          else { console.warn('No understand post response') }
       }
@@ -137,17 +102,21 @@ MCat.Navigation = (function() {
       }
       async render() {
          this.redraw();
-         await this.stateTable.isConstructing();
+         await StateTable.isConstructing();
          this.contentPanel = document.getElementById('panel-content');
          this.replaceLinks(this.contentPanel);
       }
       async renderContent(href) {
          const url = new URL(href);
          url.searchParams.delete('mid');
-         this.renderHTML(await this.fetchHTML(url));
-         // TODO: See if setting header title will fix browser back strings
-         history.pushState({ href: href }, 'Unused', url); // API Darwin award
-         this.menus = await this.fetchMenus(url);
+         const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
+         const { status, text } = await this.bitch.sucks(url, opt);
+         this.renderHTML(text);
+         if (status == 404) return;
+         this.finagleHistory(url);
+         url.searchParams.set('navigation', true);
+         const { object } = await this.bitch.sucks(url);
+         if (object) this.menus = object;
          this.redraw();
       }
       renderControl(list, menuName) {
@@ -165,13 +134,14 @@ MCat.Navigation = (function() {
             id: 'panel-content', className: 'panel-content'
          });
          panel.innerHTML = html;
-         this.stateTable.scan(panel);
-         await this.stateTable.isRendering();
+         StateTable.scan(panel);
+         await StateTable.isRendering();
          this.replaceLinks(panel);
          this.contentPanel = document.getElementById('panel-content');
          this.contentPanel = this.display(
             this.contentContainer, 'contentPanel', panel
          );
+         HForms.Util.focusFirst();
       }
       renderList(list, menuName) {
          const items = [];
@@ -234,16 +204,17 @@ MCat.Navigation = (function() {
                if (confirm(this.confirm.replace(/\*/, name))) return true;
             }
             else if (confirm()) return true;
+            event.preventDefault();
             return false;
          }.bind(this);
       }
    }
    Object.assign(Navigation.prototype, MCat.Util.Markup);
    class Messages {
-      constructor(nav) {
-         const config = nav.properties['messages']
+      constructor(config) {
          this.bufferLimit = config['buffer-limit'] || 3;
          this.displayTime = config['display-time'] || 20;
+         this.messagesURL = config['messages-url'];
          this.items = [];
          this.panel = this.h.div({ className: 'messages-panel' });
          document.body.append(this.panel);
@@ -260,11 +231,15 @@ MCat.Navigation = (function() {
             requestAnimationFrame(fadeOut);
          }, 1000 * this.displayTime);
       }
-      async render(promise) {
-         const messages = await promise;
-         for (const message of messages) {
+      async render(href) {
+         const url = new URL(href);
+         const messagesURL = new URL(this.messagesURL);
+         messagesURL.searchParams.set('mid', url.searchParams.get('mid'));
+         const { object } = await this.bitch.sucks(messagesURL);
+         if (!object) return;
+         for (const message of object) {
             const item = this.h.div({ className: 'message-item' }, message);
-            this.panel.prepend(item);
+            this.panel.append(item);
             this.items.unshift(item);
             this.animate(item);
          }

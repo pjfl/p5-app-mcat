@@ -4,6 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types     qw( HashRef );
 use HTML::Forms::Util      qw( verify_token );
 use HTTP::Status           qw( HTTP_OK );
+use MCat::Util             qw( maybe_render_partial );
 use Ref::Util              qw( is_arrayref );
 use Scalar::Util           qw( blessed weaken );
 use Type::Utils            qw( class_type );
@@ -76,7 +77,7 @@ sub exception_handler { # Also called by component loader if model dies
    $context->stash(
       code      => $code > HTTP_OK ? $code : HTTP_OK,
       exception => $exception,
-      template  => { layout => 'exception' },
+      page      => { %{$self->config->page}, layout => 'exception' },
    );
    $self->_finalise_stash($context);
    return;
@@ -158,18 +159,17 @@ sub _finalise_stash { # Add necessary defaults for the view to render
    $stash->{page}->{layout} //= $self->moniker . "/${method}";
    $stash->{version} = $MCat::VERSION;
    $stash->{view} //= $self->config->default_view;
+   maybe_render_partial $context;
    return;
 }
 
 sub _fix_fetch_redirect {
    my ($self, $context) = @_;
 
-   warn $context->request->header('x-requested-with');
-
    my $header = $context->request->header('x-requested-with') // NUL;
 
    return unless $header eq 'XMLHttpRequest';
-   warn 'herer';
+
    $context->stash->{code} = HTTP_OK;
    return;
 }

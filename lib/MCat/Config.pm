@@ -188,7 +188,8 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
-         title => $self->name . ' v' . $MCat::VERSION,
+         title => $self->name,
+         title_abbrev => $self->appclass,
          %{$self->_navigation},
          global => [
             qw( artist/list cd/list track/list tag/list logfile/list )
