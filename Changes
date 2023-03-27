@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds state table object view
           - Session store uses Redis
           - Now a one page application
           - Replaces links with JS handlers that fetch content

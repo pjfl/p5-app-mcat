@@ -72,6 +72,9 @@ MCat.Util = (function() {
             }
             else throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
+         if (response.headers.get('location')) return {
+            location: response.headers.get('location'), status: 302
+         };
          if (want == 'blob') return {
             blob: await response.blob(), status: response.status
          };

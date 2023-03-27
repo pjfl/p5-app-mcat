@@ -1,20 +1,20 @@
 package MCat::Session;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
-use HTML::StateTable::ResultSet::Redis;
-use JSON::MaybeXS qw( decode_json encode_json );
+use JSON::MaybeXS               qw( decode_json encode_json );
+use Type::Utils                 qw( class_type );
+use MCat::Redis;
 use Plack::Session::State::Cookie;
 use Plack::Session::Store::Cache;
-use Type::Utils qw( class_type );
 use Moo;
 
 has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
-has 'redis' => is => 'lazy', default => sub {
+has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
    my $self = shift;
 
-   return HTML::StateTable::ResultSet::Redis->new(
-      client_name => 'session_store', config => $self->config->redis,
+   return MCat::Redis->new(
+      client_name => 'session_store', config => $self->config->redis
    );
 };
 

@@ -2,6 +2,7 @@ package MCat::Table::Logfile::View;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( Str );
+use Type::Utils                 qw( class_type );
 use HTML::StateTable::ResultSet::Logfile::View;
 use Moo;
 use HTML::StateTable::Moo;
@@ -12,14 +13,16 @@ with    'HTML::StateTable::Role::Searchable';
 
 has 'logfile' => is => 'ro', isa => Str, required => TRUE;
 
+has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
+
 setup_resultset sub {
    my $self   = shift;
    my $config = $self->context->config;
 
    return HTML::StateTable::ResultSet::Logfile::View->new(
       base         => $config->logfile->parent,
-      cache_config => $config->redis,
       logfile      => $self->logfile,
+      redis        => $self->redis,
       result_class => 'MCat::Logfile::View::Result',
       table        => $self,
    );

@@ -12,14 +12,17 @@ $class->table('cd');
 
 $class->add_columns(
    cdid => {
-      data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE
+      data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE,
+      label => 'CD ID'
    },
    artistid => {
-      data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE
+      data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE,
+      label => 'Artist', display => 'artist.name'
    },
-   title => { data_type => 'text', is_nullable => FALSE },
+   title => { data_type => 'text', is_nullable => FALSE, label => 'Title' },
    year => {
-      data_type => 'timestamp', is_nullable => TRUE, timezone => 'UTC'
+      data_type => 'timestamp', is_nullable => TRUE, timezone => 'UTC',
+      label => 'Released', cell_traits => ['Date']
    },
 );
 

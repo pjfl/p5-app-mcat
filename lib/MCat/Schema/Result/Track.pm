@@ -11,12 +11,14 @@ $class->table('track');
 
 $class->add_columns(
    trackid => {
-      data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE
+      data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE,
+      label => 'Track ID'
    },
    cdid => {
-      data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE
+      data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE,
+      label => 'CD', display => 'cd.title'
    },
-   title => { data_type => 'text', is_nullable => FALSE },
+   title => { data_type => 'text', is_nullable => FALSE, label => 'Title' },
 );
 
 $class->set_primary_key('trackid');

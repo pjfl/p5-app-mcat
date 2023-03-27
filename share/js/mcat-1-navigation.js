@@ -42,8 +42,10 @@ MCat.Navigation = (function() {
             this.contextPanel.classList.remove('visible');
          }.bind(this);
          window.addEventListener('popstate', function(event) {
-            if (event.state.href) this.renderContent(event.state.href);
-            console.log('Popstate ' + event.state.href);
+            if (event.state && event.state.href) {
+               console.log('Popstate to ' + event.state.href);
+               this.renderContent(event.state.href);
+            }
          }.bind(this));
          const title = this.version
                ? this.title + ' v' + this.version : this.title;
@@ -110,14 +112,35 @@ MCat.Navigation = (function() {
          const url = new URL(href);
          url.searchParams.delete('mid');
          const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
-         const { status, text } = await this.bitch.sucks(url, opt);
-         this.renderHTML(text);
-         if (status == 404) return;
-         this.finagleHistory(url);
-         url.searchParams.set('navigation', true);
-         const { object } = await this.bitch.sucks(url);
-         if (object) this.menus = object;
-         this.redraw();
+         const { location, text } = await this.bitch.sucks(url, opt);
+         if (text && text.length > 0) {
+            await this.renderHTML(text);
+            this.finagleHistory(url);
+            url.searchParams.set('navigation', true);
+            const { object } = await this.bitch.sucks(url);
+            if (object) this.menus = object;
+            this.redraw();
+         }
+         else if (location) {
+            this.messages.render(location);
+            const locationURL = new URL(location);
+            locationURL.searchParams.delete('mid');
+            if (locationURL != href) {
+               console.log('Redirected to ' + location);
+               await this.renderContent(location);
+            }
+            else {
+               console.log('Redirect to self ' + href + ' ' + location);
+               console.log('Current state ' + history.state.href);
+               let count = 0;
+               while (href == history.state.href) {
+                  history.back();
+                  if (++count > 3) break;
+               }
+               console.log('Current state ' + count + ' ' + history.state.href);
+            }
+         }
+         else { console.warn('No understand get response') }
       }
       renderControl(list, menuName) {
          this.controlPanel = this.h.div({

@@ -125,9 +125,12 @@ sub view : Nav('View CD') {
 
    my $cd       = $context->stash('cd');
    my $track_rs = $context->model('Track')->search({ 'me.cdid' => $cdid });
-
-   $context->stash(table => $self->table->new_with_context('Track', {
+   my $tracks   = $self->table->new_with_context('Track', {
       context => $context, resultset => $track_rs
+   });
+
+   $context->stash(table => $self->table->new_with_context('Object::View', {
+      add_columns => [ 'Tracks' => $tracks ], context => $context, result => $cd
    }));
    return;
 }

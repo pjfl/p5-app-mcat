@@ -1,12 +1,1 @@
-[% INCLUDE 'classic/widgets/object-view.tt'
-   items = [{
-      name => 'Track ID'
-      value => track.trackid
-   },{
-      name => 'CD'
-      value => cd.title
-   },{
-      name => 'Title'
-      value => track.title
-   }]
-%]
+[% table.render %]

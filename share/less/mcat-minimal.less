@@ -4,6 +4,7 @@
     message-border: red;
     navigation-background: bisque;
     panel-background: linen;
+    text: black;
 }
 body {
     margin: 0;
@@ -23,13 +24,23 @@ header {
     .object-view-value {
         padding-left: 5px;
     }
+    td:first-child {
+        border-right: 1px solid; font-family: sans-serif;
+        font-weight: normal; padding-right: 5px; white-space: nowrap;
+    }
+    .state-table td:first-child {
+        border: 0; font-family: serif;
+    }
+    .state-table th:first-child a {
+        color: #colours[text];
+    }
 }
 .messages-panel {
     bottom: 10px; position: absolute; right: 10px; z-index: 10;
     .message-item {
         background: #colours[message-background];
         border: 2px solid; border-color: #colours[message-border];
-        border-radius: 5px; margin-top: 10px; padding: 5px;
+        border-radius: 5px; margin-top: 10px; max-width: 250px; padding: 5px;
     }
 }
 .standard-content {

@@ -1,18 +1,1 @@
-[% INCLUDE 'classic/widgets/object-view.tt'
-   items = [{
-      name => 'CD ID'
-      value => cd.id
-   },{
-      name => 'Artist'
-      value => artist.name
-   },{
-      name => 'Title'
-      value => cd.title
-   },{
-      name => 'Released'
-      value => cd.year.strftime('%d %b %Y')
-   },{
-      name => 'Tracks'
-      value_raw => table.render
-   }]
-%]
+[% table.render %]

@@ -1,8 +1,9 @@
 package MCat::Model::Logfile;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS );
-use MCat::Util                  qw( redirect );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use Type::Utils                 qw( class_type );
 use Unexpected::Functions       qw( Unspecified );
+use MCat::Redis;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -10,6 +11,14 @@ extends 'MCat::Model';
 with    'Web::Components::Role';
 
 has '+moniker' => default => 'logfile';
+
+has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
+   my $self = shift;
+
+   return MCat::Redis->new(
+      client_name => 'logfile_cache', config => $self->config->redis
+   );
+};
 
 sub base {
    my ($self, $context) = @_;
@@ -33,7 +42,7 @@ sub view : Nav('View Logfile') {
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
    $context->stash(table => $self->table->new_with_context('Logfile::View', {
-      context => $context, logfile => $logfile
+      context => $context, logfile => $logfile, redis => $self->redis
    }));
    return;
 }

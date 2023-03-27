@@ -1,18 +1,1 @@
-[% INCLUDE 'classic/widgets/object-view.tt'
-   items = [{
-      name => 'Artist ID'
-      value => artist.id
-   },{
-      name => 'Name'
-      value => artist.name
-   },{
-      name => 'Active'
-      value => boolean(artist.active)
-   },{
-      name => 'Upvotes'
-      value => artist.upvotes
-   },{
-      name => 'CDs'
-      value_raw => table.render
-   }]
-%]
+[% table.render %]

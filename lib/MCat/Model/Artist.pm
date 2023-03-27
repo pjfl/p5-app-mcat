@@ -117,10 +117,14 @@ sub remove {
 sub view : Nav('View Artist') {
    my ($self, $context, $artistid) = @_;
 
-   my $cd_rs = $context->model('Cd')->search({ 'me.artistid' => $artistid });
-
-   $context->stash(table => $self->table->new_with_context('Cd', {
+   my $artist = $context->stash('artist');
+   my $cd_rs  = $context->model('Cd')->search({ 'me.artistid' => $artistid });
+   my $cds    = $self->table->new_with_context('Cd', {
       context => $context, resultset => $cd_rs
+   });
+
+   $context->stash(table => $self->table->new_with_context('Object::View', {
+      add_columns => [ 'CDs' => $cds ], context => $context, result => $artist
    }));
    return;
 }
