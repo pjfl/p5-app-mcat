@@ -79,7 +79,7 @@ sub delete : Nav('Delete CD') {
 
    $cd->delete;
 
-   my $cd_list = $context->uri_for_action('cd/list', [$artistid]);
+   my $cd_list = $context->uri_for_action('artist/view', [$artistid]);
 
    $context->stash( redirect $cd_list, ['CD [_1] deleted', $title] );
    return;
@@ -112,7 +112,7 @@ sub list : Nav('CDs') {
 
    my $cd_rs = $context->model('Cd');
 
-   $cd_rs = $cd_rs->search({ artistid => $artistid }) if $artistid;
+   $cd_rs = $cd_rs->search({ 'me.artistid' => $artistid }) if $artistid;
 
    $context->stash(table => $self->table->new_with_context('Cd', {
       context => $context, resultset => $cd_rs

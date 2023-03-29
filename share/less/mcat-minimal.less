@@ -1,13 +1,18 @@
 #colours() {
+    body-grad: linear-gradient(to bottom right, rgba(250,240,230,0), rgba(255,228,196,1));
     link: green;
-    message-background: bisque;
+    message-background: linen;
     message-border: red;
     navigation-background: bisque;
     panel-background: linen;
     text: black;
 }
+html {
+    height: 100%;
+}
 body {
-    margin: 0;
+    background-image: #colours[body-grad];
+    margin: 0; padding-left: 5px; padding-right: 5px;
 }
 header {
     position: sticky; top: 0px; z-index: 10;
@@ -17,13 +22,6 @@ header {
 }
 .object-view {
     display: inline-block; text-align: left;
-    .object-view-key {
-        border-right: 1px solid; font-family: sans-serif;
-        font-weight: normal; padding-right: 5px; white-space: nowrap;
-    }
-    .object-view-value {
-        padding-left: 5px;
-    }
     td:first-child {
         border-right: 1px solid; font-family: sans-serif;
         font-weight: normal; padding-right: 5px; white-space: nowrap;
@@ -44,9 +42,9 @@ header {
     }
 }
 .standard-content {
-    display: inline-block; text-align: left;
-    h4 {
-        margin-bottom: 9px; margin-top: 3px;
+    display: inline-block; padding-top: 10px; text-align: left;
+    h1, h2, h3, h4, h5 {
+        font-family: sans-serif;
     }
     .inline-panel {
         display: inline-block; vertical-align: top;

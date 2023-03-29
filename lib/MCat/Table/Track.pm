@@ -22,24 +22,27 @@ has_column 'cd_title' =>
 
       return $context->stash('cd') ? TRUE : FALSE;
    },
+   label    => 'CD Title',
    link => sub {
       my $self = shift;
       my $context = $self->table->context;
 
       return $context->uri_for_action('cd/view', [$self->result->cdid]);
    },
-   label    => 'CD Title',
    sortable => TRUE,
+   title    => 'Sort by title',
    value    => 'cd.title';
 
 has_column 'title' =>
-   sortable => TRUE,
+   label    => 'Track Title',
    link     => sub {
       my $self    = shift;
       my $context = $self->table->context;
 
       return  $context->uri_for_action('track/view', [$self->result->trackid]);
-   };
+   },
+   sortable => TRUE,
+   title    => 'Sort by title';
 
 use namespace::autoclean -except => TABLE_META;
 

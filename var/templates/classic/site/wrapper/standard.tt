@@ -1,7 +1,4 @@
 <header>[% nav.render %]</header>
-[% FOR message IN context.messages -%]
-   <div class="messages">[% message %]</div>
-[% END -%]
 <div class="centred-content">
    <div id="[% nav.container_name %]" class="standard-content">
       <div id="panel-content" class="panel-content">

@@ -115,6 +115,9 @@ sub remove {
 sub view : Nav('View Tag') {
    my ($self, $context, $tagid) = @_;
 
+   $context->stash(table => $self->table->new_with_context('Object::View', {
+      context => $context, result => $context->stash('tag')
+   }));
    return;
 }
 

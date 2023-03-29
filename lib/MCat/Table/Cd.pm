@@ -30,21 +30,25 @@ has_column 'artist_name' =>
       return $context->uri_for_action('artist/view', [$self->result->artistid]);
    },
    sortable => TRUE,
+   title => 'Sort by artist',
    value => 'artist.name';
 
 has_column 'title' =>
-   link => sub {
+   label => 'CD Title',
+   link  => sub {
       my $self = shift;
       my $context = $self->table->context;
 
       return  $context->uri_for_action('cd/view', [$self->result->cdid]);
    },
-   sortable => TRUE;
+   sortable => TRUE,
+   title    => 'Sort by title';
 
 has_column 'year' =>
    cell_traits => ['Date'],
-   label => 'Released',
-   sortable => TRUE;
+   label       => 'Released',
+   sortable    => TRUE,
+   title       => 'Sort by year';
 
 use namespace::autoclean -except => TABLE_META;
 

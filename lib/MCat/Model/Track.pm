@@ -113,7 +113,7 @@ sub list : Nav('Tracks') {
 
    my $track_rs = $context->model('Track');
 
-   $track_rs = $track_rs->search({ artistid => $cdid }) if $cdid;
+   $track_rs = $track_rs->search({ 'me.artistid' => $cdid }) if $cdid;
 
    $context->stash(table => $self->table->new_with_context('Track', {
       context => $context, resultset => $track_rs

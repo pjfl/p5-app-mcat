@@ -72,9 +72,7 @@ value_id:          String. Any valid HTML "id" attribute value, added to the
          [%- END -%]
       [%- ELSIF table_headers -%]
          <tr class="object-view-item">
-            <td class="object-view-value">
-               (None)
-            </td>
+            <td class="object-view-value">(None)</td>
          </tr>
       [%- ELSE -%]
          <col />

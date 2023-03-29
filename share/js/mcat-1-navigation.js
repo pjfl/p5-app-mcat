@@ -61,7 +61,7 @@ MCat.Navigation = (function() {
       }
       listItem(item, menuName, hasHandler) {
          if (typeof item[0] != 'object') {
-            const href = 'data://' + item[1].substring(this.baseURL.length);
+            const href = item[1];
             const attr = {
                href: href, listener: true, onclick: this.loadContent(item[1])
             };
@@ -201,7 +201,6 @@ MCat.Navigation = (function() {
                 && !link.getAttribute('listener')) {
                link.setAttribute('listener', true);
                link.addEventListener('click', this.loadContent(href));
-               link.href = 'data://' + href.substring(url.length);
             }
          }
          for (const form of panel.getElementsByTagName('form')) {
@@ -209,7 +208,6 @@ MCat.Navigation = (function() {
             if (action.length && url == action.substring(0, url.length)
                 && !form.getAttribute('listener')) {
                form.addEventListener('submit', this.submitFormHandler(form));
-               form.action = 'data://' + action.substring(url.length);
             }
          }
       }

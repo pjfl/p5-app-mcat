@@ -117,7 +117,7 @@ has 'timestamp' =>
    default => sub {
       my $self = shift;
       my $strp = DateTime::Format::Strptime->new(
-         pattern => $self->_timestamp_pattern, time_zone => local_tz
+         pattern => $self->_timestamp_pattern, time_zone => 'UTC'
       );
       my $value = ($self->fields->[0] // NUL) .SPC. ($self->fields->[1] // NUL);
       my $timestamp = $strp->parse_datetime($value);

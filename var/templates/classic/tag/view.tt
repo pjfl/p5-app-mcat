@@ -1,9 +1,2 @@
-[% INCLUDE 'classic/widgets/object-view.tt'
-   items = [{
-      name => 'Tag ID'
-      value => tag.id
-   },{
-      name => 'Name'
-      value => tag.name
-   }]
-%]
+[% subheader('Tag') %]
+[% table.render %]

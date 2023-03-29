@@ -4,6 +4,7 @@ use HTML::Forms::Constants qw( FALSE NUL STAR TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Str );
 use HTML::Forms::Util      qw( get_token );
 use List::Util             qw( pairs );
+use MCat::Util             qw( local_tz );
 use Ref::Util              qw( is_arrayref is_hashref );
 use Type::Utils            qw( class_type );
 use MCat::Response;
@@ -40,6 +41,8 @@ has 'session' => is => 'lazy', default => sub { shift->request->session };
 
 has 'schema'  => is => 'lazy', isa => class_type('MCat::Schema'),
    default => sub { MCat::Schema->connect(@{shift->config->connect_info}) };
+
+has 'time_zone' => is => 'ro', isa => Str, default => sub { local_tz };
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
