@@ -31,6 +31,7 @@ share/less/hstatetable-minimal.less
 var/backup
 var/etc/mcat-local.json
 var/etc/mcat-schema.conf
+var/etc/mcat-profile
 var/log
 var/root/css/mcat.css
 var/root/js/mcat.js

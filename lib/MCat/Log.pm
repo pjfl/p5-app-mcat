@@ -6,9 +6,14 @@ use MCat::Util             qw( now );
 use Type::Utils            qw( class_type );
 use Moo;
 
-has 'config' => is => 'ro', isa => class_type('MCat::Config');
+has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
-has '_debug' => is => 'ro', isa => Bool, init_arg => 'debug', default => FALSE;
+has '_debug' => is => 'lazy', isa => Bool, init_arg => 'debug', default => sub {
+   my $self = shift;
+   my $env  = $ENV{ uc $self->config->appclass . '_debug' };
+
+   return defined $env ? !!$env : FALSE;
+};
 
 around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;

@@ -11,6 +11,19 @@ $class->load_namespaces;
 $class->load_components('Schema::Versioned');
 $class->upgrade_directory('var/sql');
 
+sub create_ddl_dir {
+   my ($self, @args) = @_;
+
+   local $SIG{__WARN__} = sub {
+      my $error = shift;
+      warn "${error}\n"
+         unless $error =~ m{ Overwriting \s existing \s DDL \s file }mx;
+      return 1;
+   };
+
+   return $self->SUPER::create_ddl_dir(@args);
+}
+
 sub deploy {
    my ($self, $sqltargs, $dir) = @_;
 

@@ -47,7 +47,7 @@ has 'time_zone' => is => 'ro', isa => Str, default => sub { local_tz };
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has '_stash' => is => 'ro', isa => HashRef, default => sub {
-   return { version => $MCat::VERSION };
+   return { version => MCat->VERSION };
 };
 
 sub get_body_parameters {

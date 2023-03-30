@@ -49,6 +49,19 @@ models, and views
 
 has 'appclass' => is => 'ro', isa => Str, required => TRUE;
 
+=item bin
+
+A directory object which locates the applications executable files
+
+=cut
+
+has 'bin' => is => 'lazy', isa => Directory, default => sub {
+   my $name = '-' eq substr($PROGRAM_NAME, 0, 1)
+      ? $EXECUTABLE_NAME : $PROGRAM_NAME;
+
+   return io((split m{ [ ][\-][ ] }mx, $name)[0])->parent->absolute;
+};
+
 =item connect_info
 
 Used to connect to the database, the 'dsn', 'db_username', and 'db_password'
@@ -395,14 +408,13 @@ Name of the program being used here. Appears on the manual page output
 
 =cut
 
-has 'script' => is => 'lazy', isa => Str,
-   default => sub {
-      my $name = '-' eq substr($PROGRAM_NAME, 0, 1)
-         ? $EXECUTABLE_NAME : $PROGRAM_NAME;
-      my $script = io((split m{ [ ][\-][ ] }mx, $name)[0])->basename;
+has 'script' => is => 'lazy', isa => Str, default => sub {
+   my $name = '-' eq substr($PROGRAM_NAME, 0, 1)
+      ? $EXECUTABLE_NAME : $PROGRAM_NAME;
+   my $script = io((split m{ [ ][\-][ ] }mx, $name)[0])->basename;
 
-      return "${script}";
-   };
+   return "${script}";
+};
 
 =item umask
 

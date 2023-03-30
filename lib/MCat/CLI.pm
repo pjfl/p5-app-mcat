@@ -1,13 +1,10 @@
 package MCat::CLI;
 
 use MCat;
-use Class::Usul::Constants     qw( AS_PASSWORD FALSE NUL OK TRUE );
-use Class::Usul::File;
-use Class::Usul::Functions     qw( base64_encode_ns emit );
+use Class::Usul::Constants     qw( FALSE NUL OK TRUE );
 use English                    qw( -no_match_vars );
 use File::DataClass::Functions qw( ensure_class_loaded );
 use File::DataClass::IO        qw( io );
-use HTML::Forms::Util          qw( cipher );
 use Moo;
 use Class::Usul::Options;
 
@@ -28,6 +25,32 @@ has '+log_class' => default => 'MCat::Log';
 =cut
 
 sub BUILD {}
+
+=item install - Creates directories and starts schema installation
+
+Creates directories and starts schema installation. Needs to run before
+the schema admin program creates the database so that the config object
+sees the right directories
+
+=cut
+
+sub install : method {
+   my $self = shift;
+
+   for my $dir (qw( backup log tmp )) {
+      my $path = $self->config->vardir->catdir($dir);
+
+      $path->mkpath(oct '0770') unless $path->exists;
+   }
+
+   $self->_create_profile;
+
+   my $cmd = $self->config->bin->catfile('mcat-schema');
+
+   $self->_install_schema($cmd) if $cmd->exists;
+
+   return OK;
+}
 
 =item make_css - Make concatenated CSS file
 
@@ -99,74 +122,27 @@ sub make_less : method {
    return OK;
 }
 
-sub post_install : method {
-   my $self     = shift;
-   my $conf     = $self->config;
-   my $localdir = $conf->home->catdir('local');
-
-   $self->_check_env_vars;
-
-   for my $dir (qw( backup log tmp )) {
-      my $path = $localdir->exists
-         ? $localdir->catdir('var', $dir) : $conf->vardir->catdir($dir);
-
-      $path->mkpath(oct '0770') unless $path->exists;
-   }
-
-   $self->_create_profile($localdir);
-
-   my $cmd = $conf->binsdir->catfile('mcat-schema');
-
-   $self->_deploy_schema($cmd) if $cmd->exists;
-
-   return OK;
-}
-
-=item set_db_password - Sets the database password
-
-Run this before attempting to start the application. It will write an
-encrypted copy of the database password to the local configuration file
-
-=cut
-
-sub set_db_password : method {
-   my $self     = shift;
-   my $fclass   = 'Class::Usul::File';
-   my $file     = $self->config->local_config_file;
-   my $data     = $fclass->data_load( paths => [$file] ) // {} if $file->exists;
-   my $password = $self->get_line('+Enter DB password', AS_PASSWORD);
-
-   $data->{db_password} = base64_encode_ns cipher->encrypt($password);
-   $fclass->data_dump({ path => $file->assert, data => $data });
-   $self->info('Updated database password', { name => 'CLI.set_db_password' });
-   return OK;
-}
-
 # Private methods
-sub _check_env_vars {
+sub _create_profile {
    my $self = shift;
 
    $self->output('Env var PERL5LIB is '.$ENV{PERL5LIB});
    $self->yorn('+Is this correct', FALSE, TRUE, 0) or return;
    $self->output('Env var PERL_LOCAL_LIB_ROOT is '.$ENV{PERL_LOCAL_LIB_ROOT});
    $self->yorn('+Is this correct', FALSE, TRUE, 0) or return;
-   return;
-}
 
-sub _create_profile {
-   my ($self, $localdir) = @_;
-
+   my $localdir = $self->config->home->catdir('local');
    my $profile;
 
    if ($localdir->exists) {
-      $profile = $localdir->catfile(qw( var etc profile ));
+      $profile = $localdir->catfile(qw( var etc mcat-profile ));
    }
    elsif ($localdir = io['~', 'local'] and $localdir->exists) {
-      $profile = $self->config->vardir->catfile('etc', 'profile');
+      $profile = $self->config->vardir->catfile('etc', 'mcat-profile');
    }
    elsif ($localdir = io($ENV{PERL_LOCAL_LIB_ROOT} // NUL)
           and $localdir->exists) {
-      $profile = $self->config->vardir->catfile('etc', 'profile');
+      $profile = $self->config->vardir->catfile('etc', 'mcat-profile');
    }
 
    return if !$profile || $profile->exists;
@@ -182,13 +158,12 @@ sub _create_profile {
    return;
 }
 
-sub _deploy_schema {
+sub _install_schema {
    my ($self, $cmd) = @_;
 
    my $opts = { err => 'stderr', in => 'stdin', out => 'stdout' };
 
-   # TODO: Add -a option to create the usertable schema also
-   $self->run_cmd([$cmd, '-o', 'bootstrap=1', 'deploy'], $opts);
+   $self->run_cmd([$cmd, '-o', 'bootstrap=1', 'install'], $opts);
    return;
 }
 
