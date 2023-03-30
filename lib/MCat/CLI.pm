@@ -1,9 +1,10 @@
 package MCat::CLI;
 
 use MCat;
-use Class::Usul::Constants     qw( AS_PASSWORD OK );
+use Class::Usul::Constants     qw( AS_PASSWORD FALSE NUL OK TRUE );
 use Class::Usul::File;
 use Class::Usul::Functions     qw( base64_encode_ns emit );
+use English                    qw( -no_match_vars );
 use File::DataClass::Functions qw( ensure_class_loaded );
 use File::DataClass::IO        qw( io );
 use HTML::Forms::Util          qw( cipher );
@@ -98,6 +99,29 @@ sub make_less : method {
    return OK;
 }
 
+sub post_install : method {
+   my $self     = shift;
+   my $conf     = $self->config;
+   my $localdir = $conf->home->catdir('local');
+
+   $self->_check_env_vars;
+
+   for my $dir (qw( backup log tmp )) {
+      my $path = $localdir->exists
+         ? $localdir->catdir('var', $dir) : $conf->vardir->catdir($dir);
+
+      $path->mkpath(oct '0770') unless $path->exists;
+   }
+
+   $self->_create_profile($localdir);
+
+   my $cmd = $conf->binsdir->catfile('mcat-schema');
+
+   $self->_deploy_schema($cmd) if $cmd->exists;
+
+   return OK;
+}
+
 =item set_db_password - Sets the database password
 
 Run this before attempting to start the application. It will write an
@@ -116,6 +140,56 @@ sub set_db_password : method {
    $fclass->data_dump({ path => $file->assert, data => $data });
    $self->info('Updated database password', { name => 'CLI.set_db_password' });
    return OK;
+}
+
+# Private methods
+sub _check_env_vars {
+   my $self = shift;
+
+   $self->output('Env var PERL5LIB is '.$ENV{PERL5LIB});
+   $self->yorn('+Is this correct', FALSE, TRUE, 0) or return;
+   $self->output('Env var PERL_LOCAL_LIB_ROOT is '.$ENV{PERL_LOCAL_LIB_ROOT});
+   $self->yorn('+Is this correct', FALSE, TRUE, 0) or return;
+   return;
+}
+
+sub _create_profile {
+   my ($self, $localdir) = @_;
+
+   my $profile;
+
+   if ($localdir->exists) {
+      $profile = $localdir->catfile(qw( var etc profile ));
+   }
+   elsif ($localdir = io['~', 'local'] and $localdir->exists) {
+      $profile = $self->config->vardir->catfile('etc', 'profile');
+   }
+   elsif ($localdir = io($ENV{PERL_LOCAL_LIB_ROOT} // NUL)
+          and $localdir->exists) {
+      $profile = $self->config->vardir->catfile('etc', 'profile');
+   }
+
+   return if !$profile || $profile->exists;
+
+   my $inc     = $localdir->catdir('lib', 'perl5');
+   my $cmd     = [$EXECUTABLE_NAME, '-I', "${inc}", "-Mlocal::lib=${localdir}"];
+   my $p5lib   = delete $ENV{PERL5LIB};
+   my $libroot = delete $ENV{PERL_LOCAL_LIB_ROOT};
+
+   $self->run_cmd($cmd, { err => 'stderr', out => $profile });
+   $ENV{PERL5LIB} = $p5lib;
+   $ENV{PERL_LOCAL_LIB_ROOT} = $libroot;
+   return;
+}
+
+sub _deploy_schema {
+   my ($self, $cmd) = @_;
+
+   my $opts = { err => 'stderr', in => 'stdin', out => 'stdout' };
+
+   # TODO: Add -a option to create the usertable schema also
+   $self->run_cmd([$cmd, '-o', 'bootstrap=1', 'deploy'], $opts);
+   return;
 }
 
 use namespace::autoclean;

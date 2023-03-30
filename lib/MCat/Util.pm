@@ -2,13 +2,15 @@ package MCat::Util;
 
 use strictures;
 
+use DateTime;
 use Ref::Util   qw( is_hashref );
 use URI::Escape qw( );
 use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( formpost local_tz maybe_render_partial new_uri redirect uri_escape )
+   qw( formpost local_tz maybe_render_partial
+       new_uri now redirect trim uri_escape )
 ]};
 
 my $reserved   = q(;/?:@&=+$,[]);
@@ -28,8 +30,36 @@ sub new_uri ($$) {
    my $v = uri_escape($_[1]); return bless \$v, 'URI::'.$_[0];
 }
 
+sub now (;$$) {
+   my ($tz, $locale) = @_;
+
+   my $args = { locale => 'en_GB', time_zone => 'UTC' };
+
+   $args->{locale}    = $locale if $locale;
+   $args->{time_zone} = $tz     if $tz;
+
+   return DateTime->now(%{$args});
+}
+
 sub redirect ($$) {
    return redirect => { location => $_[0], message => $_[1] };
+}
+
+=item trim( string, characters )
+
+Trims whitespace characters from both ends of the supplied string and returns
+it. The list of C<characters> to remove is optional and defaults to space and
+tab. Newlines at the end of the string are also removed
+
+=cut
+
+sub trim (;$$) {
+   my $chars = $_[1] // " \t";
+   (my $value = $_[0] // q()) =~ s{ \A [$chars]+ }{}mx;
+
+   chomp $value;
+   $value =~ s{ [$chars]+ \z }{}mx;
+   return $value;
 }
 
 sub uri_escape ($;$) {

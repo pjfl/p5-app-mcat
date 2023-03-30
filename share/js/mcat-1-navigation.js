@@ -191,7 +191,9 @@ MCat.Navigation = (function() {
          return navList;
       }
       renderTitle(title) {
-         return this.h.div({ className: 'nav-title' }, title);
+         return this.h.div({
+            className: 'nav-title'
+         }, this.h.span({ className: 'title-text'}, title));
       }
       replaceLinks(panel) {
          const url = this.baseURL;

@@ -2,7 +2,7 @@ package MCat::Log;
 
 use HTML::Forms::Constants qw( FALSE TRUE );
 use HTML::Forms::Types     qw( Bool );
-use HTML::Forms::Util      qw( now );
+use MCat::Util             qw( now );
 use Type::Utils            qw( class_type );
 use Moo;
 

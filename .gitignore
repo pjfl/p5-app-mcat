@@ -28,6 +28,7 @@ share/js/hforms-*
 share/js/hstatetable-*
 share/less/hforms-minimal.less
 share/less/hstatetable-minimal.less
+var/backup
 var/etc/mcat-local.json
 var/etc/mcat-schema.conf
 var/log

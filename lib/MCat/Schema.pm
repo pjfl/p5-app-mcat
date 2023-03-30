@@ -3,9 +3,13 @@ package MCat::Schema;
 use strictures;
 use parent 'DBIx::Class::Schema';
 
-use MCat;
+use MCat; our $VERSION = MCat->schema_version;
 
-__PACKAGE__->load_namespaces;
+my $class = __PACKAGE__;
+
+$class->load_namespaces;
+$class->load_components('Schema::Versioned');
+$class->upgrade_directory('var/sql');
 
 sub deploy {
    my ($self, $sqltargs, $dir) = @_;
@@ -20,10 +24,6 @@ sub deploy {
    $self->throw_exception("Can't deploy without storage") unless $self->storage;
    $self->storage->deploy($self, undef, $sqltargs, $dir);
    return;
-}
-
-sub get_db_version {
-   return $MCat::VERSION;
 }
 
 1;

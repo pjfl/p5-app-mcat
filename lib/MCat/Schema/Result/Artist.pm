@@ -19,7 +19,7 @@ $class->add_columns(
    name => { data_type => 'text', is_nullable => FALSE, label => 'Name' },
    active => {
       data_type => 'boolean', is_nullable => FALSE, default => TRUE,
-      label => 'Active', cell_traits => ['Bool']
+      label => 'Still Active', cell_traits => ['Bool']
    },
    upvotes => {
       data_type => 'integer', is_nullable => FALSE, default => 0,

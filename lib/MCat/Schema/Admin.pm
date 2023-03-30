@@ -1,0 +1,404 @@
+package MCat::Schema::Admin;
+
+use Archive::Tar::Constant     qw( COMPRESS_GZIP );
+use Class::Usul::Constants     qw( AS_PASSWORD COMMA OK QUOTED_RE );
+use Class::Usul::Functions     qw( base64_decode_ns base64_encode_ns emit );
+use File::DataClass::Functions qw( ensure_class_loaded );
+use File::DataClass::IO        qw( io );
+use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
+use HTML::Forms::Util          qw( cipher );
+use MCat::Util                 qw( now trim );
+use Unexpected::Functions      qw( throw PathNotFound Unspecified );
+use Class::Usul::File;
+use Data::Record;
+use Format::Human::Bytes;
+use Archive::Tar;
+use MCat::Schema;
+use Try::Tiny;
+use Moo;
+use Class::Usul::Options;
+
+extends q(Class::Usul);
+with    q(Class::Usul::TraitFor::OutputLogging);
+with    q(Class::Usul::TraitFor::Prompting);
+with    q(Class::Usul::TraitFor::Usage);
+with    q(Class::Usul::TraitFor::RunningMethods);
+
+has '+config_class' => default => 'MCat::Config';
+
+has '+log_class' => default => 'MCat::Log';
+
+has 'admin_password' => is => 'lazy', default => sub {
+   my $self = shift;
+   my $password = $self->_local_config->{db_admin_password};
+
+   throw 'No database admin password in local config file' unless $password;
+
+   return cipher->decrypt(base64_decode_ns $password);
+};
+
+has 'config_extension' => is => 'ro', default => '.json';
+
+has 'deploy_classes' => is => 'ro', default => sub { ['MCat::Schema'] };
+
+has 'host' => is => 'ro', default => 'localhost';
+
+has 'producers' => is => 'ro', default => sub {
+   return { mysql => 'MySQL', pg => 'PostgreSQL', sqlite => 'SQLite' };
+};
+
+has 'schema' => is => 'lazy', default => sub {
+   my $self = shift;
+   my $info = [ @{$self->config->connect_info} ];
+
+   $info->[3] = _connect_attr();
+
+   return MCat::Schema->connect(@{$info});
+};
+
+sub BUILD {}
+
+=item backup_data - Backs up the database
+
+Backs up the database
+
+=cut
+
+sub backup_data : method {
+   my $self = shift;
+   my $now  = now;
+   my $conf = $self->config;
+   my $date = $now->ymd(NUL).'-'.$now->hms(NUL);
+   my $db   = $self->_get_dbname;
+   my $file = "${db}-${date}.sql";
+   my $path = $conf->tempdir->catfile($file);
+   my $bdir = $conf->vardir->catdir('backup');
+   my $tarb = "${db}-${date}.tgz";
+   my $out  = $bdir->catfile($tarb)->assert_filepath;
+
+   $self->_create_ddl_file;
+   $self->run_cmd($self->_backup_command($path));
+
+   chdir $conf->home;
+   ensure_class_loaded 'Archive::Tar';
+
+   my $arc = Archive::Tar->new;
+
+   $self->_add_backup_files($arc);
+
+   $arc->add_files($path->abs2rel($conf->home)) if $path->exists;
+
+   $self->info('Generating backup [_1]', {
+      args => [$tarb], name => 'Admin.backup_data'
+   });
+   $arc->write($out->pathname, COMPRESS_GZIP);
+   $path->unlink;
+   $file = $out->basename;
+
+   my $size = Format::Human::Bytes->new()->base2($out->stat->{size});
+
+   $self->info('Backup complete. File [_1] size [_2]', {
+      args => [$file, $size], name => 'Admin.backup_data'
+   });
+   return OK;
+}
+
+=item deploy - Deploy and populate schema
+
+Deploy and populate schema
+
+=cut
+
+sub deploy : method {
+   my $self = shift;
+
+   my $dir = $self->config->vardir->catdir('sql');
+   my $result_objects;
+
+   for my $schema_class (@{$self->deploy_classes}) {
+      $self->info('Deploy and populate [_1]', {
+         args => [$schema_class], name => 'Admin.deploy' }
+      );
+      $self->yorn('+Continue', TRUE, TRUE, 0) or next;
+      ensure_class_loaded $schema_class;
+      $schema_class->config($self->config) if $schema_class->can('config');
+      $self->info('Deploying schema [_1] and populating', {
+         args => [$schema_class], name => 'Admin.deploy' }
+      );
+      $result_objects = $self->_deploy_and_populate($schema_class, $dir);
+   }
+
+   return OK;
+}
+
+=item restore_data - Restores the database from a backup
+
+Restores the database from a backup
+
+=cut
+
+sub restore_data : method {
+   my $self = shift;
+   my $conf = $self->config;
+   my $path = $self->next_argv or throw Unspecified, ['file name'];
+
+   $path = io $path;
+   throw PathNotFound, [$path] unless $path->exists;
+   chdir $conf->home;
+   ensure_class_loaded 'Archive::Tar';
+
+   my $arc = Archive::Tar->new;
+
+   $arc->read($path->pathname);
+   $arc->extract();
+
+   my $file = $path->basename('.tgz');
+   my (undef, $date) = split m{ - }mx, $file, 2;
+   my $db   = $self->_get_dbname;
+   my $sql  = $conf->tempdir->catfile("${db}-${date}.sql");
+
+   if ($sql->exists) {
+      $self->run_cmd($self->_restore_command($sql));
+      $sql->unlink;
+   }
+
+   my $ver = $self->schema->get_db_version;
+
+   $self->info('Restored backup [_1] schema [_1]', {
+      args => [$file, $ver], name => 'Admin.restore_data'
+   });
+
+   return OK;
+}
+
+=item store_password - Store database admin password
+
+Store database admin password
+
+=cut
+
+sub store_password : method {
+   my $self     = shift;
+   my $password = $self->get_line('+Enter DB admin password', AS_PASSWORD);
+   my $data     = $self->_local_config;
+
+   $data->{db_admin_password} = base64_encode_ns cipher->encrypt($password);
+   $self->_local_config($data);
+   $self->info('Updated admin password', { name => 'Admin.store_password' });
+   return OK;
+}
+
+# Private functions
+sub _connect_attr () {
+   return {
+      AutoCommit        => TRUE,
+      PrintError        => FALSE,
+      RaiseError        => TRUE,
+      add_drop_table    => TRUE,
+      ignore_version    => TRUE,
+      no_comments       => TRUE,
+      quote_identifiers => TRUE,
+   };
+}
+
+sub _distname (;$) {
+   (my $v = $_[0] // NUL) =~ s{ :: }{-}gmx; return $v;
+}
+
+sub _unquote ($) {
+   local $_ = $_[0]; s{ \A [\'\"] }{}mx; s{ [\'\"] \z }{}mx; return $_;
+}
+
+# Private methods
+sub _add_backup_files {
+   my ($self, $arc) = @_;
+
+   my $conf = $self->config;
+
+   for my $file (map { io $_ } $conf->local_config_file) {
+      $arc->add_files($file->abs2rel($conf->home));
+   }
+
+   $arc->add_files($self->_ddl_path->abs2rel($conf->home));
+
+   return;
+}
+
+sub _backup_command {
+   my ($self, $path) = @_;
+
+   my $driver = $self->_get_driver;
+   my $db     = $self->_get_dbname;
+   my $host   = $self->_get_host;
+   my $cmd;
+
+   if ($driver eq 'pg') {
+      $cmd = 'PGPASSWORD=' . $self->admin_password . ' pg_dump '
+         . "--file=${path} -h ${host} -U postgres ${db}";
+   }
+
+   throw 'No backup command for driver [_1]', [$driver] unless $cmd;
+
+   return $cmd;
+}
+
+sub _create_ddl_file {
+   my $self    = shift;
+   my $schema  = $self->schema;
+   my $type    = $self->_get_type;
+   my $version = $schema->schema_version;
+   my $dir     = $self->config->vardir->catdir('sql');
+
+   $schema->create_ddl_dir($type, $version, $dir);
+   return;
+}
+
+sub _ddl_path {
+   my $self    = shift;
+   my $schema  = $self->schema;
+   my $type    = $self->_get_type;
+   my $version = $schema->schema_version;
+   my $dir     = $self->config->vardir->catdir('sql');
+
+   return io($schema->ddl_filename($type, $version, $dir));
+}
+
+sub _deploy_and_populate {
+   my ($self, $schema_class, $dir) = @_;
+
+   my $schema = $self->schema;
+
+   $schema->storage->ensure_connected;
+   $schema->deploy(_connect_attr, $dir);
+
+   my $split = Data::Record->new({ split => COMMA, unless => QUOTED_RE });
+   my $res;
+
+   for my $tuple (@{$self->_list_population_classes($schema_class, $dir)}) {
+      $res->{$tuple->[0]} = $self->_populate_class($schema, $split, @{$tuple});
+   }
+
+   return $res;
+}
+
+sub _get_dbname {
+   my $self = shift;
+   my $dbname;
+
+   if ($self->config->dsn =~ m{ dbname[=] }mx) {
+      $dbname = (map  { s{ \A dbname [=] }{}mx; $_ }
+                 grep { m{ \A dbname [=] }mx }
+                 split  m{           [:] }mx, $self->config->dsn)[0];
+   }
+
+   return $dbname;
+}
+
+sub _get_driver {
+   my $self   = shift;
+   my $driver = (split m{ : }mx, $self->config->dsn)[1];
+
+   return lc $driver;
+}
+
+sub _get_host {
+   my $self = shift;
+   my $host = $self->host;
+
+   unless ($self->options && $self->options->{bootstrap}) {
+      if ($self->config->dsn =~ m{ host[=] }mx) {
+         $host = (map  { s{ \A host [=] }{}mx; $_ }
+                  grep { m{ \A host [=] }mx }
+                  split  m{         [;] }mx, $self->config->dsn)[0];
+      }
+   }
+
+   return $host;
+}
+
+sub _get_type {
+   my $self = shift; return $self->producers->{ $self->_get_driver };
+}
+
+sub _list_population_classes {
+   my ($self, $schema_class, $dir) = @_;
+
+   my $dist = _distname $schema_class;
+   my $extn = $self->config_extension;
+   my $re   = qr{ \A $dist [-] \d+ [-] (.*) \Q$extn\E \z }mx;
+   my $io   = io($dir)->filter(sub { $_->filename =~ $re });
+   my $res  = [];
+
+   for my $path ($io->all_files) {
+      my ($class) = $path->filename =~ $re;
+
+      push @{$res}, [$class, $path];
+   }
+
+   return $res;
+}
+
+sub _local_config {
+   my ($self, $data) = @_;
+
+   my $fclass = 'Class::Usul::File';
+   my $file   = $self->config->local_config_file;
+
+   if ($data) {
+      $fclass->data_dump({ path => $file->assert, data => $data });
+      return $data;
+   }
+
+   return $fclass->data_load( paths => [$file] ) // {} if $file->exists;
+   return {};
+}
+
+sub _populate_class {
+   my ($self, $schema, $split, $class, $path) = @_;
+
+   unless ($class) {
+      $self->fatal('No class in [_1]', {
+         args => [$path->filename], name => 'Admin._populate_class'
+      });
+   }
+
+   $self->output("Populating ${class}");
+
+   my $data   = Class::Usul::File->data_load( paths => [$path] ) // {};
+   my $fields = [split SPC, $data->{fields}];
+   my @rows   = map { [ map { _unquote(trim $_) } $split->records($_) ] }
+                   @{ $data->{rows} };
+   my $res;
+
+   try   { $res = $schema->populate($class, [$fields, @rows]) }
+   catch {
+      if ($_->can('class') and $_->class eq 'ValidationErrors') {
+         $self->warning("${_}") for (@{$_->args});
+      }
+
+      throw $_;
+   };
+
+   return $res;
+}
+
+sub _restore_command {
+   my ($self, $sql) = @_;
+
+   my $driver = $self->_get_driver;
+   my $host   = $self->_get_host;
+   my $cmd;
+
+   if ($driver eq 'pg') {
+      $cmd  = 'PGPASSWORD=' . $self->admin_password . ' pg_restore '
+            . "-C -d postgres -h ${host} -U postgres ${sql}";
+   }
+
+   throw 'No restore command for driver [_1]', [$driver] unless $cmd;
+
+   return $cmd;
+}
+
+use namespace::autoclean;
+
+1;

@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+
+use English qw( -no_match_vars );
+use FindBin qw( $Bin );
+use File::Spec;
+
+BEGIN {
+   my $bind = $Bin; $bind = $1 if $bind =~ m{ \A ([^\$%&\*;<>\`|]+) \z }mx;
+   my $path = File::Spec->catfile($bind, 'mcat-localenv');
+   (do $path or die $EVAL_ERROR || "Path ${path} not done\n") if -f $path;
+}
+
+use MCat::Schema::Admin;
+
+exit MCat::Schema::Admin->new_with_options(config => {appclass => 'MCat'})->run;

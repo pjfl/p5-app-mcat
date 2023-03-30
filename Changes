@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds Schema::Admin for deploy, backups, and restore
           - Fixes lack of action attribute on forms
           - Adds state table object view
           - Session store uses Redis
