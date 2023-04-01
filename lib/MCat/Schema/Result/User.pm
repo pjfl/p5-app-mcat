@@ -30,21 +30,21 @@ $class->add_columns(
       data_type => 'text', is_nullable => FALSE, label => 'Password',
       display => sub { _truncate(shift->result->password, 20) }
    },
-   password_expired {
+   password_expired => {
       data_type => 'boolean', is_nullable => FALSE, default => FALSE,
       label => 'Password Expired', cell_traits => ['Bool']
    },
-   role_id {
+   role_id => {
       data_type => 'integer', is_nullable => FALSE,
       label => 'Role', display => 'role.name'
-   }
+   },
 );
 
 $class->set_primary_key('id');
 
 $class->add_unique_constraint('user_name_uniq', ['name']);
 
-$class->belongs_to('role' => 'MCat::Schema::Result:Role', 'role_id');
+$class->belongs_to('role' => 'MCat::Schema::Result::Role', 'role_id');
 
 # Private functions
 sub _get_salt ($) {

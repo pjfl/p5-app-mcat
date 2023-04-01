@@ -5,7 +5,7 @@ use Class::Usul::Functions qw( base64_decode_ns );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
 use File::DataClass::Types qw( Path Directory OctalNum Undef );
-use HTML::Forms::Constants qw( FALSE SECRET TRUE );
+use HTML::Forms::Constants qw( FALSE NUL SECRET TRUE );
 use HTML::Forms::Types     qw( ArrayRef HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
 use MCat::Exception;
@@ -283,7 +283,8 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
       serialise_session_attr => [ qw( id ) ],
       session_attr => {
-         id => [ PositiveInt, 0 ],
+         id   => [ PositiveInt, 0 ],
+         role => [ Str, NUL ],
       },
    };
 };

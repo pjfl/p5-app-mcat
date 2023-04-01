@@ -11,7 +11,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'user';
 
-sub base {
+sub base : Auth('admin') {
    my ($self, $context, $userid) = @_;
 
    my $nav = $context->stash('nav')->list('user')->item('user/create');
@@ -48,7 +48,7 @@ sub create : Nav('Create User') {
    return;
 }
 
-sub delete : Nav('Delete User') {
+sub delete : Nav('Delete User') Auth('admin') {
    my ($self, $context, $userid) = @_;
 
    return unless $self->has_valid_token($context);

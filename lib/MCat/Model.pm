@@ -3,7 +3,7 @@ package MCat::Model;
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types     qw( HashRef );
 use HTML::Forms::Util      qw( verify_token );
-use HTTP::Status           qw( HTTP_OK );
+use HTTP::Status           qw( HTTP_NOT_FOUND HTTP_OK );
 use MCat::Util             qw( formpost maybe_render_partial );
 use Ref::Util              qw( is_arrayref );
 use Scalar::Util           qw( blessed weaken );
@@ -15,6 +15,9 @@ use MCat::Context;
 use MCat::Navigation;
 use MCat::Schema;
 use Moo;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
+
+with 'MCat::Role::Authorisation';
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
@@ -54,16 +57,17 @@ sub allowed { # Allows all. Apply a role to modify this for permissions
 }
 
 sub error { # Stash exception handler output to print an exception page
-   my ($self, $context, $class, @args) = @_;
+   my ($self, $context, $class, $bindv, @args) = @_;
 
    my $exception;
 
-   if (blessed $class) { $exception = $class }
-   else {
-      my $bindv = shift @args;
+   if (!blessed $class) {
+      my $nav = $context->stash('nav');
+      my $rv  = $nav && $nav->is_script_request ? HTTP_OK : HTTP_NOT_FOUND;
 
-      $exception = exception $class, $bindv, level => 2, @args;
+      $exception = exception $class, $bindv, level => 2, rv => $rv, @args;
    }
+   else { $exception = $class }
 
    $self->exception_handler($context, $exception);
    return;
@@ -139,7 +143,7 @@ sub has_valid_token { # Stash an exception if the CSRF token is bad
    return FALSE;
 }
 
-sub root {
+sub root : Auth('none') {
    my ($self, $context) = @_;
 
    my $nav = MCat::Navigation->new({ context => $context, model => $self });
@@ -183,7 +187,5 @@ sub _fix_fetch_redirect {
    $context->stash->{code} = HTTP_OK;
    return;
 }
-
-use namespace::autoclean;
 
 1;

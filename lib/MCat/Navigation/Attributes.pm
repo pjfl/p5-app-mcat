@@ -43,6 +43,20 @@ Defines the following methods;
 my $Code_Attr = {};
 
 # Public
+sub attr_for {
+   my ($class, $components, $actionp) = @_;
+
+   $components //= {};
+
+   return 0 unless $actionp;
+
+   my ($moniker, $method) = split m{ / }mx, $actionp;
+   my $component = $components->{$moniker} or return 0;
+   my $code_ref = $component->can($method) or return 0;
+
+   return attributes::get($code_ref) // {};
+}
+
 sub import {
    my ($class, @wanted) = @_;
 
@@ -50,13 +64,12 @@ sub import {
    my $target = caller;
 
    namespace::autoclean->import( -cleanee => $target, -except => [@export] );
+
+   return unless !defined $wanted[0] || $wanted[0];
+
    install_sub { as => $export[0], into => $target, code => \&fetch };
    install_sub { as => $export[1], into => $target, code => \&modify };
    return;
-}
-
-sub is_action ($$) {
-   return _attr_for($_[0], $_[1])->{Action} ? 1 : 0;
 }
 
 sub fetch {
@@ -82,20 +95,6 @@ sub modify {
    }
 
    return ();
-}
-
-sub _attr_for {
-   my ($components, $actionp) = @_;
-
-   $components //= {};
-
-   return 0 unless $actionp;
-
-   my ($moniker, $method) = split m{ / }mx, $actionp;
-   my $component = $components->{$moniker} or return 0;
-   my $code_ref = $component->can($method) or return 0;
-
-   return attributes::get($code_ref) // {};
 }
 
 1;

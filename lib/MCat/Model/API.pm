@@ -8,6 +8,7 @@ use Unexpected::Functions      qw( catch_class throw APIMethodFailed
                                    UnknownView );
 use Try::Tiny;
 use Web::Simple;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
@@ -22,7 +23,7 @@ has 'routes' => is => 'ro', isa => HashRef, default => sub {
    };
 };
 
-sub dispatch {
+sub dispatch : Auth('none') {
    my ($self, $context, @args) = @_;
 
    throw UnknownView, ['json'] unless exists $context->views->{'json'};
@@ -57,7 +58,5 @@ sub dispatch {
    $context->stash(view => 'json');
    return;
 }
-
-use namespace::autoclean;
 
 1;

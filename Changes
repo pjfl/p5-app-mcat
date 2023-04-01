@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds authentication and authorisation
           - Adds and exposes user object
           - Schema admin mostly working
           - Adds Schema::Admin for deploy, backups, and restore

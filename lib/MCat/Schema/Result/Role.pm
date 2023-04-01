@@ -13,7 +13,7 @@ use Unexpected::Functions      qw( throw AccountInactive IncorrectPassword
 
 my $class = __PACKAGE__;
 
-$class->table('public.user');
+$class->table('public.role');
 
 $class->add_columns(
    id => {

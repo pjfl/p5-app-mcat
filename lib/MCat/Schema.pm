@@ -4,7 +4,7 @@ use strictures;
 use parent 'DBIx::Class::Schema';
 
 use MCat; our $VERSION = MCat->schema_version;
-
+use MCat::Config; # Set exception class
 use Scalar::Util qw( weaken );
 
 my $class = __PACKAGE__;

@@ -77,6 +77,9 @@ has_exception 'UnknownTrack' => parent => [$class],
 has_exception 'UnknownUser' => parent => [$class],
    error => 'User [_1] not found', rv => HTTP_NOT_FOUND;
 
+has_exception 'NoUserRole' => parent => [$class],
+   error => 'User [_1] no role found on session', rv => HTTP_NOT_FOUND;
+
 use namespace::autoclean;
 
 1;

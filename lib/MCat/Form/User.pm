@@ -22,6 +22,8 @@ has_field 'password' => type => 'Password';
 has_field '_password' => type => 'PasswordConf', label => 'and again',
    password_field => 'password';
 
+has_field 'role' => type => 'Select';
+
 has_field 'submit' => type => 'Submit';
 
 use namespace::autoclean -except => META;
