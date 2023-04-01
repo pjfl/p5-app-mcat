@@ -5,11 +5,23 @@ use parent 'DBIx::Class::Schema';
 
 use MCat; our $VERSION = MCat->schema_version;
 
+use Scalar::Util qw( weaken );
+
 my $class = __PACKAGE__;
 
 $class->load_namespaces;
 $class->load_components('Schema::Versioned');
 $class->upgrade_directory('var/sql');
+
+my $config;
+
+sub config {
+   my ($self, $value) = @_;
+
+   $config = $value if $value;
+
+   return $config;
+}
 
 sub create_ddl_dir {
    my ($self, @args) = @_;

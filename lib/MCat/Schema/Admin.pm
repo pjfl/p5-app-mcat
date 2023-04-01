@@ -9,10 +9,10 @@ use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
 use HTML::Forms::Util          qw( cipher );
 use MCat::Util                 qw( now trim );
 use Unexpected::Functions      qw( throw PathNotFound Unspecified );
+use Archive::Tar;
 use Class::Usul::File;
 use Data::Record;
 use Format::Human::Bytes;
-use Archive::Tar;
 use MCat::Schema;
 use Try::Tiny;
 use Moo;
@@ -29,12 +29,12 @@ has '+config_class' => default => 'MCat::Config';
 has '+log_class' => default => 'MCat::Log';
 
 has 'admin_password' => is => 'lazy', default => sub {
-   my $self = shift;
-   my $password = $self->_local_config->{db_admin_password};
+   my $self     = shift;
+   my $password = $self->get_line('+Enter DB admin password', AS_PASSWORD);
 
-   throw 'No database admin password in local config file' unless $password;
+   throw 'No database admin password supplied' unless $password;
 
-   return $ENV{PGPASSWORD} = cipher->decrypt(base64_decode_ns $password);
+   return $ENV{PGPASSWORD} = $password;
 };
 
 has 'config_extension' => is => 'ro', default => '.json';
@@ -175,13 +175,13 @@ sub install : method {
 
    $self->output($text, AS_PARA);
    $self->yorn('+Create database', TRUE, TRUE, 0) or return OK;
-   $self->store_admin_password;
-   $self->store_user_password;
+   $self->admin_password;
+   $self->store_password;
    $self->_drop_database;
    $self->_drop_user;
    $self->_create_user;
    $self->_create_database;
-   $self->_deploy_schemas;
+   $self->_deploy_and_populate_classes;
    return OK;
 }
 
@@ -225,38 +225,21 @@ sub restore : method {
    return OK;
 }
 
-=item store_admin_password - Store database admin password
-
-Store database admin password
-
-=cut
-
-sub store_admin_password : method {
-   my $self     = shift;
-   my $password = $self->get_line('+Enter DB admin password', AS_PASSWORD);
-   my $data     = $self->_local_config;
-
-   $data->{db_admin_password} = base64_encode_ns cipher->encrypt($password);
-   $self->_local_config($data);
-   $self->info('Updated admin password',{name => 'Admin.store_admin_password'});
-   return OK;
-}
-
-=item store_user_password - Stores the application users database password
+=item store_password - Stores the application users database password
 
 It will write an encrypted copy of the database password to the local
 configuration file
 
 =cut
 
-sub store_user_password : method {
+sub store_password : method {
    my $self     = shift;
    my $password = $self->get_line('+Enter DB user password', AS_PASSWORD);
    my $data     = $self->_local_config;
 
    $data->{db_password} = base64_encode_ns cipher->encrypt($password);
    $self->_local_config($data);
-   $self->info('Updated user password', { name => 'Admin.store_user_password'});
+   $self->info('Updated user password', { name => 'Admin.store_password'});
    return OK;
 }
 
@@ -298,14 +281,15 @@ sub _add_backup_files {
 sub _backup_command {
    my ($self, $path) = @_;
 
-   my $db     = $self->_dbname;
+   my $dbname = $self->_dbname;
    my $host   = $self->_host;
-   my $passwd = $self->admin_password;
+   my $user   = $self->config->db_username;
    my $driver = $self->_driver;
    my $cmd;
 
    if ($driver eq 'pg') {
-      $cmd = "pg_dump --file=${path} -h ${host} -U postgres ${db}";
+      $ENV{PGPASSWORD} = $self->user_password;
+      $cmd = "pg_dump --file=${path} -h ${host} -U ${user} ${dbname}";
    }
 
    throw 'No backup command for driver [_1]', [$driver] unless $cmd;
@@ -317,7 +301,6 @@ sub _create_database {
    my $self   = shift;
    my $dbname = $self->_dbname;
    my $host   = $self->_host;
-   my $passwd = $self->admin_password;
    my $user   = $self->config->db_username;
    my $driver = $self->_driver;
    my $cmd;
@@ -347,7 +330,6 @@ sub _create_user {
    my $self    = shift;
    my $host    = $self->_host;
    my $dbname  = $self->_dbname;
-   my $passwd  = $self->admin_password;
    my $user    = $self->config->db_username;
    my $upasswd = $self->user_password;
    my $driver  = $self->_driver;
@@ -363,7 +345,7 @@ sub _create_user {
    return $self->run_cmd($cmd, { out => 'stdout' });
 }
 
-sub _deploy_schemas {
+sub _deploy_and_populate_classes {
    my $self = shift;
    my $dir  = $self->config->vardir->catdir('sql');
 
@@ -407,7 +389,6 @@ sub _drop_database {
    my $self   = shift;
    my $dbname = $self->_dbname;
    my $host   = $self->_host;
-   my $passwd = $self->admin_password;
    my $driver = $self->_driver;
    my $cmd;
 
@@ -424,7 +405,6 @@ sub _drop_database {
 sub _drop_user {
    my $self   = shift;
    my $host   = $self->_host;
-   my $passwd = $self->admin_password;
    my $user   = $self->config->db_username;
    my $driver = $self->_driver;
    my $cmd;
@@ -508,12 +488,13 @@ sub _restore_command {
    my ($self, $sql) = @_;
 
    my $host   = $self->_host;
-   my $passwd = $self->admin_password;
+   my $user   = $self->config->db_username;
    my $driver = $self->_driver;
    my $cmd;
 
    if ($driver eq 'pg') {
-      $cmd = "pg_restore -C -d postgres -h ${host} -U postgres ${sql}";
+      $ENV{PGPASSWORD} = $self->user_password;
+      $cmd = "pg_restore -C -d postgres -h ${host} -U ${user} ${sql}";
    }
 
    throw 'No restore command for driver [_1]', [$driver] unless $cmd;

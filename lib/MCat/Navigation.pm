@@ -25,8 +25,6 @@ has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
    required => TRUE, weak_ref => TRUE;
 
-has 'control' => is => 'ro', isa => ArrayRef, default => sub { [] };
-
 has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 has 'label' => is => 'ro', isa => Str, default => '≡';
@@ -135,13 +133,10 @@ sub crud {
 sub finalise {
    my $self    = shift;
    my $context = $self->context;
-   my $req     = $context->request;
-   my $header  = $req->header('x-requested-with') // NUL;
 
-   return unless $header eq 'XMLHttpRequest'
-      && $req->query_parameters->{navigation};
+   return unless $self->is_script_request
+      && $context->request->query_parameters->{navigation};
 
-   $self->_add_control;
    $self->_add_global;
 
    my $body = $self->_json->encode($self->_menus);
@@ -150,6 +145,13 @@ sub finalise {
       code => HTTP_OK, finalised => TRUE, body => $body, view => 'json'
    );
    return;
+}
+
+sub is_script_request {
+   my $self   = shift;
+   my $header = $self->context->request->header('x-requested-with') // NUL;
+
+   return lc $header eq 'xmlhttprequest' ? TRUE : FALSE;
 }
 
 sub item {
@@ -180,7 +182,6 @@ sub render {
    my $self = shift;
    my $output;
 
-   $self->_add_control;
    $self->_add_global;
 
    try   { $output = $self->_container }
@@ -190,17 +191,6 @@ sub render {
 }
 
 # Private methods
-sub _add_control {
-   my $self = shift;
-   my $list = $self->list('_control');
-
-   for my $action (@{$self->control}) {
-      $list->item($action);
-   }
-
-   return;
-}
-
 sub _add_global {
    my $self = shift;
    my $list = $self->list('_global');

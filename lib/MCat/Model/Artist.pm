@@ -33,7 +33,7 @@ sub create : Nav('Create Artist') {
    my ($self, $context) = @_;
 
    my $form = $self->form->new_with_context('Artist', {
-      context => $context, item_class => 'Artist', title => 'Create Artist'
+      context => $context, title => 'Create Artist'
    });
 
    if ($form->process( posted => $context->posted )) {

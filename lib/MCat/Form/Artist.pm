@@ -10,7 +10,8 @@ with    'HTML::Forms::Role::Defaults';
 has '+title'               => default => 'Artist';
 has '+default_wrapper_tag' => default => 'fieldset';
 has '+do_form_wrapper'     => default => TRUE;
-has '+info_message'        => default => 'You know what to do';
+has '+info_message'        => default => 'Create or edit artists';
+has '+item_class'          => default => 'Artist';
 
 has_field 'name', required => 1;
 

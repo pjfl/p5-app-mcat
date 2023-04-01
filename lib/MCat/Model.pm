@@ -4,7 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types     qw( HashRef );
 use HTML::Forms::Util      qw( verify_token );
 use HTTP::Status           qw( HTTP_OK );
-use MCat::Util             qw( maybe_render_partial );
+use MCat::Util             qw( formpost maybe_render_partial );
 use Ref::Util              qw( is_arrayref );
 use Scalar::Util           qw( blessed weaken );
 use Type::Utils            qw( class_type );
@@ -26,6 +26,8 @@ has 'form' =>
       my $appclass = $self->config->appclass;
       my $schema   = MCat::Schema->connect(@{$self->config->connect_info});
       my $options  = { namespace => "${appclass}::Form", schema => $schema };
+
+      MCat::Schema->config($self->config) if MCat::Schema->can('config');
 
       return HTML::Forms::Manager->new($options);
    };
@@ -142,6 +144,14 @@ sub root {
 
    my $nav = MCat::Navigation->new({ context => $context, model => $self });
 
+   $nav->list('_control');
+
+   if ($context->session->authenticated) {
+      $nav->item('page/change_password', [$context->session->id]);
+      $nav->item(formpost, 'page/logout');
+   }
+   else { $nav->item('page/login') }
+
    $context->stash(nav => $nav);
    return;
 }
@@ -166,9 +176,9 @@ sub _finalise_stash { # Add necessary defaults for the view to render
 sub _fix_fetch_redirect {
    my ($self, $context) = @_;
 
-   my $header = $context->request->header('x-requested-with') // NUL;
+   my $nav = $context->stash('nav');
 
-   return unless $header eq 'XMLHttpRequest';
+   return unless $nav && $nav->is_script_request;
 
    $context->stash->{code} = HTTP_OK;
    return;

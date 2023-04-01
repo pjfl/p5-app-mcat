@@ -24,6 +24,26 @@ has '+class' => default => $class;
 
 has_exception $class;
 
+has_exception 'Authentication' => parents => [$class];
+
+has_exception 'AccountInactive' => parents => ['Authentication'],
+   error   => 'User [_1] authentication failed';
+
+has_exception 'AuthenticationRequired' => parents => ['Authentication'],
+   error   => 'Resource [_1] authentication required';
+
+has_exception 'FailedSecurityCheck' => parents => ['Authentication'],
+   error   => 'User [_1] authentication failed';
+
+has_exception 'IncorrectAuthCode' => parents => ['Authentication'],
+   error   => 'User [_1] authentication failed';
+
+has_exception 'IncorrectPassword' => parents => ['Authentication'],
+   error   => 'User [_1] authentication failed';
+
+has_exception 'PasswordExpired' => parents => ['Authentication'],
+   error   => 'User [_1] authentication failed';
+
 has_exception 'APIMethodFailed', parent => [$class],
    error => 'API class [_1] method [_2] call failed: [_3]';
 
@@ -53,6 +73,9 @@ has_exception 'UnknownTag' => parent => [$class],
 
 has_exception 'UnknownTrack' => parent => [$class],
    error => 'Track [_1] not found', rv => HTTP_NOT_FOUND;
+
+has_exception 'UnknownUser' => parent => [$class],
+   error => 'User [_1] not found', rv => HTTP_NOT_FOUND;
 
 use namespace::autoclean;
 

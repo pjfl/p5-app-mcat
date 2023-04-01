@@ -40,7 +40,14 @@ has 'response' => is => 'ro', isa => class_type('MCat::Response'),
 has 'session' => is => 'lazy', default => sub { shift->request->session };
 
 has 'schema'  => is => 'lazy', isa => class_type('MCat::Schema'),
-   default => sub { MCat::Schema->connect(@{shift->config->connect_info}) };
+   default => sub {
+      my $self   = shift;
+      my $schema = MCat::Schema->connect(@{$self->config->connect_info});
+
+      MCat::Schema->config($self->config) if MCat::Schema->can('config');
+
+      return $schema;
+};
 
 has 'time_zone' => is => 'ro', isa => Str, default => sub { local_tz };
 

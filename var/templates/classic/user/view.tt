@@ -1,0 +1,2 @@
+[% subheader('User') %]
+[% table.render %]

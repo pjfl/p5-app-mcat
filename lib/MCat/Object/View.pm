@@ -4,6 +4,7 @@ use Data::Page;
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Int ResultRole Table Undef );
 use List::Util                  qw( pairs );
+use Ref::Util                   qw( is_coderef );
 use MCat::Object::Result;
 use Moo;
 use MooX::HandlesVia;
@@ -65,10 +66,13 @@ sub build_results {
       my $value;
 
       if (my $display = $info->{display}) {
-         $value = $table->result;
+         if (is_coderef $display) { $value = $display->($table) }
+         else {
+            $value = $table->result;
 
-         for my $component (split m{ \. }mx, $display) {
-            $value = $value->$component;
+            for my $component (split m{ \. }mx, $display) {
+               $value = $value->$component;
+            }
          }
       }
       else { $value = $table->result->$colname }

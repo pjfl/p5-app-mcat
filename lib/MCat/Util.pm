@@ -3,20 +3,46 @@ package MCat::Util;
 use strictures;
 
 use DateTime;
-use Ref::Util   qw( is_hashref );
-use URI::Escape qw( );
+use Digest                qw( );
+use English               qw( -no_match_vars );
+use File::DataClass::IO   qw( io );
+use Ref::Util             qw( is_hashref );
+use Unexpected::Functions qw( throw );
+use URI::Escape           qw( );
 use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( formpost local_tz maybe_render_partial
-       new_uri now redirect trim uri_escape )
+   qw( digest formpost local_tz maybe_render_partial
+       new_uri now redirect trim urandom uri_escape )
 ]};
 
+my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);
 my $mark       = q(-_.!~*'());                                   #'; emacs
 my $unreserved = "A-Za-z0-9\Q${mark}\E%\#";
 my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved;
+
+sub digest ($) {
+   my $seed = shift;
+
+   my ($candidate, $digest);
+
+   if ($digest_cache) { $digest = Digest->new($digest_cache) }
+   else {
+      for (qw( SHA-512 SHA-256 SHA-1 MD5 )) {
+         $candidate = $_;
+         last if $digest = eval { Digest->new($candidate) };
+      }
+
+      throw 'Digest algorithm not found' unless $digest;
+      $digest_cache = $candidate;
+   }
+
+   $digest->add($seed);
+
+   return $digest;
+}
 
 sub formpost () {
    return { method => 'post' };
@@ -62,6 +88,25 @@ sub trim (;$$) {
    return $value;
 }
 
+sub urandom (;$$) {
+   my ($wanted, $opts) = @_;
+
+   $wanted //= 64; $opts //= {};
+
+   my $default = [q(), 'dev', $OSNAME eq 'freebsd' ? 'random' : 'urandom'];
+   my $io      = io($opts->{source} // $default)->block_size($wanted);
+
+   if ($io->exists and $io->is_readable and my $red = $io->read) {
+      return ${ $io->buffer } if $red == $wanted;
+   }
+
+   my $res = q();
+
+   while (length $res < $wanted) { $res .= _pseudo_random() }
+
+   return substr $res, 0, $wanted;
+}
+
 sub uri_escape ($;$) {
    my ($v, $pattern) = @_; $pattern //= $uric;
 
@@ -89,6 +134,10 @@ sub maybe_render_partial ($) {
    $page->{wrapper} = 'none';
    $context->stash( page => $page );
    return;
+}
+
+sub _pseudo_random {
+   return join q(), time, rand 10_000, $PID, {};
 }
 
 1;

@@ -260,9 +260,11 @@ MCat.Navigation = (function() {
          messagesURL.searchParams.set('mid', url.searchParams.get('mid'));
          const { object } = await this.bitch.sucks(messagesURL);
          if (!object) return;
+         let count = 0;
          for (const message of object) {
             const item = this.h.div({ className: 'message-item' }, message);
-            this.panel.append(item);
+            if (count++ > 0) this.panel.prepend(item);
+            else this.panel.append(item)
             this.items.unshift(item);
             this.animate(item);
          }

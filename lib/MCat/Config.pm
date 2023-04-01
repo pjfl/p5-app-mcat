@@ -205,7 +205,7 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
          global => [
-            qw( artist/list cd/list track/list tag/list logfile/list )
+            qw( artist/list cd/list track/list tag/list user/list logfile/list )
          ],
       };
    };
@@ -336,6 +336,16 @@ Time in seconds the CSRF token has to live before it is declared invalid
 =cut
 
 has 'token_lifetime' => is => 'ro', isa => PositiveInt, default => 3_600;
+
+=item user
+
+Configuration options for the 'User' result class. Includes 'load_factor'
+used in the encrypting of passwords
+
+=cut
+
+has 'user' => is => 'ro', isa => HashRef,
+   default => sub { { load_factor => 14 } };
 
 =item vardir
 

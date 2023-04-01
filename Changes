@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds and exposes user object
           - Schema admin mostly working
           - Adds Schema::Admin for deploy, backups, and restore
           - Fixes lack of action attribute on forms
