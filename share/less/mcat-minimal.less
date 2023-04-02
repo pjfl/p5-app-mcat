@@ -79,18 +79,37 @@ header {
             text-align: left; top: 33px;
             transition: max-height ease-in-out 500ms; z-index: 2;
         }
+        .nav-panel.visible {
+            max-height: 500px;
+        }
     }
-    .global .nav-panel {
-        background: #colours[panel-background]; left: -12px; max-height: 0;
-        overflow: hidden; position: absolute; text-align: left; top: 30px;
-        transition: max-height ease-in-out 500ms; z-index: 2;
-    }
-    .nav-panel.visible {
-        max-height: 500px;
+    .global {
+        .nav-panel {
+            background: #colours[panel-background]; left: -12px; max-height: 0;
+            overflow: hidden; position: absolute; text-align: left; top: 30px;
+            transition: max-height ease-in-out 500ms; z-index: 10;
+        }
+        .nav-panel.visible {
+            max-height: 500px;
+        }
+        .nav-panel:active, .nav-panel:hover {
+            overflow: visible;
+        }
+        .slide-out {
+            left: 0; max-width: 0; overflow: hidden; position: absolute;
+            top: -5px; transform: translate(-100%, 0);
+            transition: max-width ease-in-out 500ms;
+            .nav-list li {
+                display: block;
+            }
+        }
+        .slide-out.visible {
+            max-width: 300px;
+        }
     }
     .nav-list {
         display: inline-block; list-style: none; margin: 0; padding: 0;
-        a {
+        a, span.drop-menu {
             color: #colours[link]; font-family: sans-serif;
         }
         a:link {
@@ -112,11 +131,17 @@ header {
         }
         li.control,
         li.context {
-            padding: 5px; white-space: nowrap;
+            box-sizing: border-box; padding: 5px; padding-left: 10px;
+            padding-right: 10px; white-space: nowrap; width: 100%;
+        }
+        li.context.selected {
+            border-right: 5px solid; border-color: #colours[link];
+            position: relative;
         }
         li.global {
             margin-right: 50px; position: relative;
         }
+        li.global.selected > span::before,
         li.global.selected > a::before {
             background: #colours[link]; border-radius: 2px;
             content: ''; display: block;
@@ -125,7 +150,8 @@ header {
     }
     .nav-list.control,
     .nav-list.context {
-        border: 1px solid; border-radius: 3px; display: block; padding: 5px;
+        border: 1px solid; border-radius: 3px; padding-bottom: 5px;
+        padding-top: 5px;
     }
     .nav-list.global {
         padding-top: 3px;

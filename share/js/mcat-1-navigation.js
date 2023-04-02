@@ -22,24 +22,16 @@ MCat.Navigation = (function() {
          const containerName = this.properties['container-name'];
          this.contentContainer = document.getElementById(containerName);
          this.contentPanel;
-         this.contextPanel;
+         this.contextPanels = {};
          this.controlPanel;
          this.menu;
          this.controlOver = function(event) {
             event.preventDefault();
             this.controlPanel.classList.toggle('visible');
          }.bind(this);
-         this.globalOver = function(event) {
-            event.preventDefault();
-            this.contextPanel.classList.toggle('visible');
-         }.bind(this);
          this.controlLeave = function(event) {
             event.preventDefault();
             this.controlPanel.classList.remove('visible');
-         }.bind(this);
-         this.contextLeave = function(event) {
-            event.preventDefault();
-            this.contextPanel.classList.remove('visible');
          }.bind(this);
          window.addEventListener('popstate', function(event) {
             if (event.state && event.state.href) {
@@ -51,6 +43,12 @@ MCat.Navigation = (function() {
                ? this.title + ' v' + this.version : this.title;
          container.append(this.renderTitle(title));
       }
+      contextLeave(context) {
+         return function(event) {
+            event.preventDefault();
+            this.contextPanels[context].classList.remove('visible');
+         }.bind(this);
+      }
       finagleHistory(url) {
          const href = url + '';
          history.pushState({ href: href }, 'Unused', url); // API Darwin award
@@ -59,14 +57,26 @@ MCat.Navigation = (function() {
          const tag = this.ucfirst(href.substring(this.baseURL.length));
          title.innerHTML = this.titleAbbrev + ' - ' + tag.replace(/\//g, ' ');
       }
-      listItem(item, menuName, hasHandler) {
+      globalOver(context) {
+         return function(event) {
+            event.preventDefault();
+            this.contextPanels[context].classList.toggle('visible');
+         }.bind(this);
+      }
+      listItem(item, menuName, context) {
          if (typeof item[0] != 'object') {
+            const label = item[0];
             const href = item[1];
+            if (!href) return this.h.li({ className: menuName }, this.h.span(
+               { className: 'drop-menu', listener: true,
+                 onmouseover: this.globalOver(context)
+               }, label
+            ));
             const attr = {
-               href: href, listener: true, onclick: this.loadContent(item[1])
+               href: href, listener: true, onclick: this.loadContent(href)
             };
-            if (hasHandler) attr['onmouseover'] = this.globalOver;
-            return this.h.li({ className: menuName }, this.h.a(attr, item[0]));
+            if (context) attr['onmouseover'] = this.globalOver(context);
+            return this.h.li({ className: menuName }, this.h.a(attr, label));
          }
          if (item[0]['method'] != 'post') return;
          const form = this.h.form({
@@ -144,7 +154,8 @@ MCat.Navigation = (function() {
       }
       renderControl(list, menuName) {
          this.controlPanel = this.h.div({
-            className: 'nav-panel', onmouseleave: this.controlLeave
+            className: 'nav-panel control-panel',
+            onmouseleave: this.controlLeave
          }, this.renderList(list, menuName));
          const control = this.h.div({ className: 'nav-control' }, [
             this.h.a({ onmouseover: this.controlOver }, this.controlLabel),
@@ -171,17 +182,20 @@ MCat.Navigation = (function() {
          let context = false;
          for (const item of list[1]) {
             if (typeof item == 'string' && this.menus[item]) {
-               this.contextPanel = this.h.div({
-                  className: 'nav-panel', onmouseleave: this.contextLeave
+               const className
+                     = menuName == 'context' ? 'slide-out' : 'nav-panel';
+               const panel = this.h.div({
+                  className: className, onmouseleave: this.contextLeave(item)
                }, this.renderList(this.menus[item], 'context'));
-               context = true;
+               this.contextPanels[item] = panel;
+               context = item;
             }
             else {
                const listItem = this.listItem(item, menuName, context);
                items.push(listItem);
                if (context) {
                   listItem.classList.add('selected');
-                  listItem.append(this.contextPanel);
+                  listItem.append(this.contextPanels[context]);
                   context = false;
                }
             }

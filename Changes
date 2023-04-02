@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds admin menu and user time zone
           - Adds authentication and authorisation
           - Adds and exposes user object
           - Schema admin mostly working

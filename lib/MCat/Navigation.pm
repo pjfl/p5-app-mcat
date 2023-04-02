@@ -178,6 +178,15 @@ sub list {
    return $self;
 }
 
+sub menu {
+   my ($self, $name) = @_;
+
+   my $lists = $self->_lists;
+
+   push @{$lists->{$self->_name}->[1]}, $name if exists $lists->{$name};
+   return $self;
+}
+
 sub render {
    my $self = shift;
    my $output;
@@ -197,6 +206,11 @@ sub _add_global {
 
    for my $action (@{$self->global}) {
       my ($moniker, $method) = split m{ / }mx, $action;
+
+      if ($method eq 'menu') {
+         $self->context->models->{$moniker}->menu($self->context);
+         $self->_set__name('_global');
+      }
 
       push @{$self->_lists->{$self->_name}->[1]}, $moniker
          if exists $self->_lists->{$moniker};
@@ -229,6 +243,10 @@ sub _get_menu_label {
 
 sub _uri {
    my ($self, @args) = @_;
+
+   my $action = $args[0];
+
+   return NUL if $action =~ m{ /menu \z }mx;
 
    return $self->context->uri_for_action(@args);
 }

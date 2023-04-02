@@ -38,6 +38,10 @@ $class->add_columns(
       data_type => 'integer', is_nullable => FALSE,
       label => 'Role', display => 'role.name'
    },
+   timezone => {
+      data_type => 'text', is_nullable => TRUE, default => local_tz,
+      label => 'Time Zone'
+   }
 );
 
 $class->set_primary_key('id');
