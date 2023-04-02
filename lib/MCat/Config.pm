@@ -8,6 +8,7 @@ use File::DataClass::Types qw( Path Directory OctalNum Undef );
 use HTML::Forms::Constants qw( FALSE NUL SECRET TRUE );
 use HTML::Forms::Types     qw( ArrayRef HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
+use MCat::Util             qw( local_tz );
 use MCat::Exception;
 use HTML::StateTable::Constants qw();
 use Web::ComposableRequest::Constants qw();
@@ -283,8 +284,9 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
       serialise_session_attr => [ qw( id ) ],
       session_attr => {
-         id   => [ PositiveInt, 0 ],
-         role => [ Str, NUL ],
+         id       => [ PositiveInt, 0 ],
+         role     => [ Str, NUL ],
+         timezone => [ Str, local_tz ],
       },
    };
 };

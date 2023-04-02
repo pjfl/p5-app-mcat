@@ -146,12 +146,14 @@ sub has_valid_token { # Stash an exception if the CSRF token is bad
 sub root : Auth('none') {
    my ($self, $context) = @_;
 
-   my $nav = MCat::Navigation->new({ context => $context, model => $self });
+   my $session = $context->session;
+   my $nav     = MCat::Navigation->new({ context => $context, model => $self });
 
    $nav->list('_control');
 
    if ($context->session->authenticated) {
-      $nav->item('page/change_password', [$context->session->id]);
+      $nav->item('page/profile', [$session->id]);
+      $nav->item('page/change_password', [$session->id]);
       $nav->item(formpost, 'page/logout');
    }
    else { $nav->item('page/login') }

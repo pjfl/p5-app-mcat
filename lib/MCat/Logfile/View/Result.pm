@@ -3,7 +3,6 @@ package MCat::Logfile::View::Result;
 use DateTime::Format::Strptime;
 use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Date HashRef Int Str );
-use MCat::Util                  qw( local_tz );
 use Moo;
 
 with 'HTML::StateTable::Result::Role';
@@ -176,12 +175,16 @@ has 'status' =>
       return $status;
    };
 
-has 'status_filter' =>
-   is      => 'ro',
-   isa     => ArrayRef[Str],
-   default => sub {
-      return [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ];
-   };
+# has 'status_filter' =>
+#    is      => 'ro',
+#    isa     => ArrayRef[Str],
+#    default => sub {
+#       return [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ];
+#    };
+
+has 'status_filter' => is => 'ro', isa => ArrayRef[Str], default => sub {
+   return [qw( ALERT CRITICAL DEBUG ERROR FATAL INFO WARNING )];
+};
 
 =item source
 

@@ -8,7 +8,7 @@ use parent 'DBIx::Class::Core';
 
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE TRUE );
-use MCat::Util                 qw( digest urandom );
+use MCat::Util                 qw( digest local_tz urandom );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectPassword
                                    PasswordExpired );
 

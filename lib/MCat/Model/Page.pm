@@ -63,6 +63,7 @@ sub login : Nav('Login') Auth('none') {
       $session->id($user->id);
       $session->authenticated(TRUE);
       $session->role($user->role->name);
+      $session->timezone($user->timezone);
       $session->username($name);
       $context->stash( redirect $default, $message );
    }
@@ -90,6 +91,25 @@ sub not_found : Auth('none') {
    my ($self, $context) = @_;
 
    return $self->error($context, PageNotFound, [$context->request->path]);
+}
+
+sub profile : Nav('Profile') {
+   my ($self, $context, $userid) = @_;
+
+   my $form = $self->form->new_with_context('Profile', {
+      context => $context, item => $context->stash('user')
+   });
+
+   if ($form->process( posted => $context->posted )) {
+      my $name    = $form->item->name;
+      my $default = $context->uri_for_action('artist/list');
+      my $message = ['User [_1] profile updated', $name];
+
+      $context->stash( redirect $default, $message );
+   }
+
+   $context->stash( form => $form );
+   return;
 }
 
 1;

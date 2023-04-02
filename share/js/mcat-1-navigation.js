@@ -6,88 +6,38 @@ MCat.Navigation = (function() {
    const StateTable   = HStateTable.Renderer.manager;
    class Navigation {
       constructor(container, config) {
-         this.container    = container;
-         this.menus        = config['menus'];
-         this.messages     = new Messages(config['messages']);
-         this.moniker      = config['moniker'];
-         this.properties   = config['properties'];
-         this.baseURL      = this.properties['base-url'];
-         this.confirm      = this.properties['confirm'];
-         this.controlLabel = this.properties['label'] || '≡';
-         this.title        = this.properties['title'];
-         this.titleAbbrev  = this.properties['title-abbrev'];
-         this.token        = this.properties['verify-token'];
-         this.version      = this.properties['version'];
+         this.container        = container;
+         this.menus            = config['menus'];
+         this.messages         = new Messages(config['messages']);
+         this.moniker          = config['moniker'];
+         this.properties       = config['properties'];
+         this.baseURL          = this.properties['base-url'];
+         this.confirm          = this.properties['confirm'];
+         this.containerName    = this.properties['container-name'];
+         this.controlLabel     = this.properties['label'] || '≡';
+         this.title            = this.properties['title'];
+         this.titleAbbrev      = this.properties['title-abbrev'];
+         this.token            = this.properties['verify-token'];
+         this.version          = this.properties['version'];
+         this.contentContainer = document.getElementById(this.containerName);
          this.content;
-         const containerName = this.properties['container-name'];
-         this.contentContainer = document.getElementById(containerName);
          this.contentPanel;
          this.contextPanels = {};
-         this.controlPanel;
          this.menu;
-         this.controlOver = function(event) {
-            event.preventDefault();
-            this.controlPanel.classList.toggle('visible');
-         }.bind(this);
-         this.controlLeave = function(event) {
-            event.preventDefault();
-            this.controlPanel.classList.remove('visible');
-         }.bind(this);
+         container.append(this.renderTitle());
          window.addEventListener('popstate', function(event) {
-            if (event.state && event.state.href) {
-               console.log('Popstate to ' + event.state.href);
+            if (event.state && event.state.href)
                this.renderContent(event.state.href);
-            }
          }.bind(this));
-         const title = this.version
-               ? this.title + ' v' + this.version : this.title;
-         container.append(this.renderTitle(title));
-      }
-      contextLeave(context) {
-         return function(event) {
-            event.preventDefault();
-            this.contextPanels[context].classList.remove('visible');
-         }.bind(this);
       }
       finagleHistory(url) {
-         const href = url + '';
+         const href  = url + '';
          history.pushState({ href: href }, 'Unused', url); // API Darwin award
-         const head = (document.getElementsByTagName('head'))[0];
+         const head  = (document.getElementsByTagName('head'))[0];
          const title = head.querySelector('title');
-         const tag = this.ucfirst(href.substring(this.baseURL.length));
-         title.innerHTML = this.titleAbbrev + ' - ' + tag.replace(/\//g, ' ');
-      }
-      globalOver(context) {
-         return function(event) {
-            event.preventDefault();
-            this.contextPanels[context].classList.toggle('visible');
-         }.bind(this);
-      }
-      listItem(item, menuName, context) {
-         if (typeof item[0] != 'object') {
-            const label = item[0];
-            const href = item[1];
-            if (!href) return this.h.li({ className: menuName }, this.h.span(
-               { className: 'drop-menu', listener: true,
-                 onmouseover: this.globalOver(context)
-               }, label
-            ));
-            const attr = {
-               href: href, listener: true, onclick: this.loadContent(href)
-            };
-            if (context) attr['onmouseover'] = this.globalOver(context);
-            return this.h.li({ className: menuName }, this.h.a(attr, label));
-         }
-         if (item[0]['method'] != 'post') return;
-         const form = this.h.form({
-            action: item[1], className: 'inline', listener: true, method: 'post'
-         }, this.h.hidden({ name: '_verify', value: this.token }));
-         form.addEventListener('submit', this.submitFormHandler(form));
-         const name = item[0]['name'];
-         form.append(this.h.button({
-            className: 'form-button', onclick: this.submitHandler(form, name)
-         }, this.h.span(name)));
-         return this.h.li({ className: menuName }, form);
+         const tag   = this.ucfirst(href.substring(this.baseURL.length));
+         const entry = tag.replace(/\//g, ' ').replace(/\d/g, '');
+         title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
       loadContent(href) {
          return function(event) {
@@ -95,20 +45,32 @@ MCat.Navigation = (function() {
             this.renderContent(href);
          }.bind(this);
       }
+      menuLeave(context) {
+         return function(event) {
+            event.preventDefault();
+            this.contextPanels[context].classList.remove('visible');
+         }.bind(this);
+      }
+      menuOver(context) {
+         return function(event) {
+            event.preventDefault();
+            this.contextPanels[context].classList.toggle('visible');
+         }.bind(this);
+      }
       async process(action, form) {
          const options = { headers: { prefer: 'render=partial' }, form: form };
          const { location, text } = await this.bitch.blows(action, options);
-         if (text) await this.renderHTML(text);
+         if (text) this.renderHTML(text);
          else if (location) {
             this.messages.render(location);
-            await this.renderContent(location);
+            this.renderContent(location);
          }
          else { console.warn('No understand post response') }
       }
       redraw() {
          const menu = this.h.nav({ className: 'nav-menu' }, [
             this.renderList(this.menus['_global'], 'global'),
-            this.renderControl(this.menus['_control'], 'control')
+            this.renderControl()
          ]);
          this.menu = this.display(this.container, 'menu', menu);
       }
@@ -150,18 +112,19 @@ MCat.Navigation = (function() {
                console.log('Current state ' + count + ' ' + history.state.href);
             }
          }
-         else { console.warn('No understand get response') }
+         else { console.warn('No response to get request') }
       }
-      renderControl(list, menuName) {
-         this.controlPanel = this.h.div({
+      renderControl() {
+         this.contextPanels['control'] = this.h.div({
             className: 'nav-panel control-panel',
-            onmouseleave: this.controlLeave
-         }, this.renderList(list, menuName));
-         const control = this.h.div({ className: 'nav-control' }, [
-            this.h.a({ onmouseover: this.controlOver }, this.controlLabel),
-            this.controlPanel
+            onmouseleave: this.menuLeave('control')
+         }, this.renderList(this.menus['_control'], 'control'));
+         return this.h.div({ className: 'nav-control' }, [
+            this.h.a({
+               onmouseover: this.menuOver('control')
+            }, this.controlLabel),
+            this.contextPanels['control']
          ]);
-         return control;
       }
       async renderHTML(html) {
          const panel = this.h.div({
@@ -177,34 +140,73 @@ MCat.Navigation = (function() {
          );
          HForms.Util.focusFirst();
       }
+      renderItem(item, menuName, context) {
+         const [label, href] = item;
+         if (typeof label != 'object') {
+            if (href) {
+               const attr = {
+                  href: href, listener: true, onclick: this.loadContent(href)
+               };
+               if (context) attr['onmouseover'] = this.menuOver(context);
+               return this.h.li({ className: menuName }, this.h.a(attr, label));
+            }
+            const spanAttr = { className: 'drop-menu', listener: true };
+            if (context) spanAttr['onmouseover'] = this.menuOver(context);
+            return this.h.li({
+               className: menuName
+            }, this.h.span(spanAttr, label));
+         }
+         if (label['method'] != 'post') return;
+         const form = this.h.form({
+            action: href, className: 'inline', listener: true, method: 'post'
+         }, this.h.hidden({ name: '_verify', value: this.token }));
+         form.addEventListener('submit', this.submitFormHandler(form));
+         const name = label['name'];
+         form.append(this.h.button({
+            className: 'form-button', onclick: this.submitHandler(form, name)
+         }, this.h.span(name)));
+         return this.h.li({ className: menuName }, form);
+      }
       renderList(list, menuName) {
+         const [title, itemList] = list;
          const items = [];
          let context = false;
-         for (const item of list[1]) {
+         let containsSelected = false;
+         for (const item of itemList) {
             if (typeof item == 'string' && this.menus[item]) {
                const className
                      = menuName == 'context' ? 'slide-out' : 'nav-panel';
-               const panel = this.h.div({
-                  className: className, onmouseleave: this.contextLeave(item)
+               this.contextPanels[item] = this.h.div({
+                  className: className, onmouseleave: this.menuLeave(item)
                }, this.renderList(this.menus[item], 'context'));
-               this.contextPanels[item] = panel;
                context = item;
             }
             else {
-               const listItem = this.listItem(item, menuName, context);
+               const listItem = this.renderItem(item, menuName, context);
                items.push(listItem);
                if (context) {
-                  listItem.classList.add('selected');
-                  listItem.append(this.contextPanels[context]);
+                  const panel = this.contextPanels[context];
+                  listItem.append(panel);
                   context = false;
+                  if (panel.firstChild.classList.contains('selected')) {
+                     listItem.classList.add('selected');
+                     containsSelected = true;
+                  }
+               }
+               if (history.state.href == item[1]) {
+                  listItem.classList.add('selected');
+                  containsSelected = true;
                }
             }
          }
          const navList = this.h.ul({ className: 'nav-list' }, items);
          if (menuName) navList.classList.add(menuName);
+         if (containsSelected) navList.classList.add('selected');
          return navList;
       }
-      renderTitle(title) {
+      renderTitle() {
+         const title = this.version
+               ? this.title + ' v' + this.version : this.title;
          return this.h.div({
             className: 'nav-title'
          }, this.h.span({ className: 'title-text'}, title));
@@ -278,7 +280,7 @@ MCat.Navigation = (function() {
          for (const message of object) {
             const item = this.h.div({ className: 'message-item' }, message);
             if (count++ > 0) this.panel.prepend(item);
-            else this.panel.append(item)
+            else this.panel.append(item);
             this.items.unshift(item);
             this.animate(item);
          }
