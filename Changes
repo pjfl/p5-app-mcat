@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds authorisation to menu items
           - Adds user profile form. Creates catalog controller
           - Adds admin menu and user time zone
           - Adds authentication and authorisation

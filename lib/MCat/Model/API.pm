@@ -50,7 +50,7 @@ sub dispatch : Auth('none') {
       '*' => sub { $self->error($context, APIMethodFailed, [$class,$method,$_])}
    ];
 
-   $context->stash( json => delete($context->stash->{response}) || {} )
+   $context->stash( json => (delete($context->stash->{response}) || {}) )
       unless $context->stash('json');
 
    return if $context->stash->{finalised};

@@ -48,7 +48,7 @@ sub create : Nav('Create User') {
    return;
 }
 
-sub delete : Nav('Delete User') Auth('admin') {
+sub delete : Nav('Delete User') {
    my ($self, $context, $userid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -94,7 +94,7 @@ sub list : Nav('Users') {
    return;
 }
 
-sub remove {
+sub remove : Auth('admin') {
    my ($self, $context) = @_;
 
    return unless $self->has_valid_token($context);

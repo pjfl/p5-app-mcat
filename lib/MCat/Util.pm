@@ -14,7 +14,7 @@ use URI::https;
 
 use Sub::Exporter -setup => { exports => [
    qw( digest formpost local_tz maybe_render_partial
-       new_uri now redirect trim urandom uri_escape )
+       new_uri now redirect redirect2referer trim urandom uri_escape )
 ]};
 
 my $digest_cache;
@@ -71,6 +71,14 @@ sub redirect ($$) {
    return redirect => { location => $_[0], message => $_[1] };
 }
 
+sub redirect2referer ($;$) {
+   my ($context, $message) = @_;
+
+   my $referer = new_uri 'http', $context->request->referer;
+
+   return redirect $referer, $message;
+}
+
 =item trim( string, characters )
 
 Trims whitespace characters from both ends of the supplied string and returns
@@ -122,9 +130,7 @@ sub maybe_render_partial ($) {
    return unless $header eq 'render=partial';
 
    if (my $exception = $context->stash('exception')) {
-      my $referer = new_uri 'http', $context->request->referer;
-
-      $context->stash( redirect $referer, [$exception->original] );
+      $context->stash(redirect2referer $context, [$exception->original]);
       return;
    }
 

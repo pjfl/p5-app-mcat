@@ -175,14 +175,14 @@ has 'status' =>
       return $status;
    };
 
-# has 'status_filter' =>
-#    is      => 'ro',
-#    isa     => ArrayRef[Str],
-#    default => sub {
-#       return [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ];
-#    };
+has 'status_filter' =>
+   is      => 'ro',
+   isa     => ArrayRef[Str],
+   default => sub {
+      return [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ];
+   };
 
-has 'status_filter' => is => 'ro', isa => ArrayRef[Str], default => sub {
+has 'status_filter_values' => is => 'ro', isa => ArrayRef[Str], default => sub {
    return [qw( ALERT CRITICAL DEBUG ERROR FATAL INFO WARNING )];
 };
 

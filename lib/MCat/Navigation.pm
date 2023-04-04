@@ -207,15 +207,18 @@ sub _add_global {
    for my $action (@{$self->global}) {
       my ($moniker, $method) = split m{ / }mx, $action;
 
-      if ($method eq 'menu') {
-         $self->context->models->{$moniker}->menu($self->context);
-         $self->_set__name('_global');
+      if ($self->model->allowed($self->context, $moniker, $method)) {
+         if ($method eq 'menu') {
+            $self->context->models->{$moniker}->menu($self->context);
+            $self->_set__name('_global');
+         }
+
+         push @{$self->_lists->{$self->_name}->[1]}, $moniker
+            if exists $self->_lists->{$moniker};
+
+         $list->item($action);
       }
-
-      push @{$self->_lists->{$self->_name}->[1]}, $moniker
-         if exists $self->_lists->{$moniker};
-
-      $list->item($action);
+      else { delete $self->context->stash->{redirect} }
    }
 
    return;

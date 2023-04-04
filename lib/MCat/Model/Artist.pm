@@ -110,7 +110,7 @@ sub remove {
       $count++;
    }
 
-   $context->stash( response => { message => "${count} artist(s) deleted" } );
+   $context->stash(redirect2referer $context, ["${count} artist(s) deleted"]);
    return;
 }
 

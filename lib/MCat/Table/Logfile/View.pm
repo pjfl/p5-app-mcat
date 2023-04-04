@@ -10,10 +10,26 @@ use HTML::StateTable::Moo;
 extends 'HTML::StateTable';
 with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::Searchable';
+with    'HTML::StateTable::Role::Form';
 
 has 'logfile' => is => 'ro', isa => Str, required => TRUE;
 
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
+
+has '+form_buttons' => default => sub {
+   return [{
+      action    => 'logfile/clear_cache',
+      class     => 'remove-item',
+      selection => 'disable_on_select',
+      value     => 'Clear Cache',
+   }];
+};
+
+has '+form_control_location' => default => 'TopRight';
+
+has '+form_messages' => default => 'MCat.Navigation.manager';
+
+has '+name' => default => sub { shift->logfile };
 
 setup_resultset sub {
    my $self   = shift;
@@ -27,8 +43,6 @@ setup_resultset sub {
       table        => $self,
    );
 };
-
-set_table_name 'logfile_view';
 
 has_column 'timestamp' =>
    cell_traits => ['DateTime'],

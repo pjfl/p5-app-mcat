@@ -11,7 +11,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'tag';
 
-sub base {
+sub base : Auth('admin') {
    my ($self, $context, $tagid) = @_;
 
    my $nav = $context->stash('nav')->list('tag')->item('tag/create');
@@ -94,7 +94,7 @@ sub list : Nav('Tags') {
    return;
 }
 
-sub remove {
+sub remove : Auth('admin') {
    my ($self, $context) = @_;
 
    return unless $self->has_valid_token($context);
@@ -108,7 +108,7 @@ sub remove {
       $count++;
    }
 
-   $context->stash( response => { message => '${count} tag(s) deleted' });
+   $context->stash(redirect2referer $context, ["${count} tag(s) deleted"]);
    return;
 }
 

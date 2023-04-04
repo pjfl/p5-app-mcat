@@ -50,7 +50,7 @@ has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
 # Public methods
 sub allowed { # Allows all. Apply a role to modify this for permissions
-   my ($self, $context, $method) = @_;
+   my ($self, $context, $moniker, $method) = @_;
 
    # Return false and stash a redirect to skip calling requested method
    return $method;
@@ -101,7 +101,7 @@ sub execute { # Called by component loader for all model method calls
    for my $method (split m{ / }mx, $methods) {
       throw NoMethod, [ blessed $self, $method ] unless $self->can($method);
 
-      $method = $self->allowed($context, $method);
+      $method = $self->allowed($context, $self->moniker, $method);
 
       $self->$method($context, @{$context->request->args}) if $method;
 

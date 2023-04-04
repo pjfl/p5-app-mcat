@@ -65,7 +65,9 @@ MCat.Navigation = (function() {
             this.messages.render(location);
             this.renderContent(location);
          }
-         else { console.warn('No understand post response') }
+         else {
+            console.warn('Neither content nor redirect in response to post');
+         }
       }
       redraw() {
          const menu = this.h.nav({ className: 'nav-menu' }, [
@@ -98,21 +100,24 @@ MCat.Navigation = (function() {
             const locationURL = new URL(location);
             locationURL.searchParams.delete('mid');
             if (locationURL != href) {
-               console.log('Redirected to ' + location);
+               console.log('Redirect after get to ' + location);
                await this.renderContent(location);
             }
             else {
-               console.log('Redirect to self ' + href + ' ' + location);
-               console.log('Current state ' + history.state.href);
+               const state = history.state;
+               console.log('Redirect after get to self ' + location);
+               console.log('Current state ' + state.href);
                let count = 0;
-               while (href == history.state.href) {
+               while (href == state.href) {
                   history.back();
                   if (++count > 3) break;
                }
-               console.log('Current state ' + count + ' ' + history.state.href);
+               console.log('Recovered state ' + count + ' ' + state.href);
             }
          }
-         else { console.warn('No response to get request') }
+         else {
+            console.warn('Neither content nor redirect in response to get');
+         }
       }
       renderControl() {
          this.contextPanels['control'] = this.h.div({
@@ -193,7 +198,7 @@ MCat.Navigation = (function() {
                      containsSelected = true;
                   }
                }
-               if (history.state.href == item[1]) {
+               if (history.state && history.state.href == item[1]) {
                   listItem.classList.add('selected');
                   containsSelected = true;
                }
@@ -292,12 +297,12 @@ MCat.Navigation = (function() {
    Object.assign(Messages.prototype, MCat.Util.Markup);
    class Manager {
       constructor() {
-         this.navigators = {};
+         this.navigator;
       }
       createNavigation() {
          const el = document.getElementsByClassName(triggerClass)[0];
          const nav = new Navigation(el, JSON.parse(el.dataset[dsName]));
-         this.navigators[nav.name] = nav;
+         this.navigator = nav;
          nav.render();
       }
       onReady(callback) {
@@ -308,7 +313,13 @@ MCat.Navigation = (function() {
             if (document.readyState == 'complete') callback();
          });
       }
+      renderMessage(href) {
+         this.navigator.messages.render(href);
+      }
    }
    const manager = new Manager();
    manager.onReady(function() { manager.createNavigation(); });
+   return {
+      manager: manager
+   };
 })();
