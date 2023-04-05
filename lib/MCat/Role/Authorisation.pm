@@ -9,12 +9,22 @@ use Moo::Role;
 around 'allowed' => sub {
    my ($orig, $self, $context, $moniker, $method) = @_;
 
-   my $models  = $context->models;
-   my $action  = "${moniker}/${method}";
-   my $attr    = MCat::Navigation::Attributes->attr_for($models, $action);
-   my $role    = $attr->{Auth}->[-1] // 'edit';
+   my $models = $context->models;
+   my $action = "${moniker}/${method}";
+   my $attr   = MCat::Navigation::Attributes->attr_for($models, $action);
 
-   return $orig->($self, $context, $moniker, $method) if $role eq 'none';
+   return $orig->($self, $context, $moniker, $method)
+      if $self->is_authorised($context, $attr);
+
+   return;
+};
+
+sub is_authorised {
+   my ($self, $context, $attr) = @_;
+
+   my $role = $attr->{Auth}->[-1] // 'edit';
+
+   return TRUE if $role eq 'none';
 
    my $session = $context->session;
 
@@ -22,19 +32,18 @@ around 'allowed' => sub {
       my $location = $context->uri_for_action('page/login');
 
       $context->stash(redirect $location, ['Authentication required']);
-      return;
+      return FALSE;
    }
 
-   return $orig->($self, $context, $moniker, $method) if $role eq 'view';
+   return TRUE if $role eq 'view';
 
    my $user_role = $session->role or throw NoUserRole, [$session->username];
 
-   return $orig->($self, $context, $moniker, $method)
-      if $role eq $user_role or $user_role eq 'admin';
+   return TRUE if $role eq $user_role or $user_role eq 'admin';
 
    $context->stash(redirect $context->uri_for_action('page/access_denied'), []);
-   return;
-};
+   return FALSE;
+}
 
 use namespace::autoclean;
 

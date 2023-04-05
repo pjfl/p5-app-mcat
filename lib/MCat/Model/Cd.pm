@@ -11,7 +11,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'cd';
 
-sub base {
+sub base : Auth('view') {
    my ($self, $context, $id) = @_;
 
    my $method   = (split m{ / }mx, $context->stash('method_chain'))[-1];
@@ -107,7 +107,7 @@ sub edit : Nav('Edit CD') {
    return;
 }
 
-sub list : Nav('CDs') {
+sub list : Nav('CDs') Auth('view') {
    my ($self, $context, $artistid) = @_;
 
    my $cd_rs = $context->model('Cd');
@@ -120,14 +120,13 @@ sub list : Nav('CDs') {
    return;
 }
 
-sub view : Nav('View CD') {
+sub view : Nav('View CD') Auth('view') {
    my ($self, $context, $cdid) = @_;
 
    my $cd       = $context->stash('cd');
    my $track_rs = $context->model('Track')->search({ 'me.cdid' => $cdid });
-   my $tracks   = $self->table->new_with_context('Track', {
-      context => $context, resultset => $track_rs
-   });
+   my $options  = { context => $context, resultset => $track_rs };
+   my $tracks   = $self->table->new_with_context('Track', $options);
 
    $context->stash(table => $self->table->new_with_context('Object::View', {
       add_columns => [ 'Tracks' => $tracks ], context => $context, result => $cd

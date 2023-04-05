@@ -178,13 +178,32 @@ has 'status' =>
 has 'status_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
-   default => sub {
-      return [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ];
-   };
+   default => sub { [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ] };
 
 has 'status_filter_values' => is => 'ro', isa => ArrayRef[Str], default => sub {
    return [qw( ALERT CRITICAL DEBUG ERROR FATAL INFO WARNING )];
 };
+
+=item username
+
+=cut
+
+has 'username' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      my $self = shift;
+
+      return NUL unless $self->remainder_start;
+
+      (my $username = $self->fields->[3] // NUL) =~ s{ [\(\)] }{}gmx;
+      return $username;
+   };
+
+has 'username_filter' =>
+   is      => 'ro',
+   isa     => ArrayRef[Str],
+   default => sub { [ qw(cut -f 5 -d), q( ), qw(| sort | uniq) ] };
 
 =item source
 
@@ -200,7 +219,7 @@ has 'source' =>
 
       return NUL unless $self->remainder_start;
 
-      (my $source = $self->fields->[3] // NUL) =~ s{ : \z }{}mx;
+      (my $source = $self->fields->[4] // NUL) =~ s{ : \z }{}mx;
       return $source;
    };
 
@@ -231,7 +250,7 @@ stop and the list of key/value pairs begins
 has 'remainder_start' =>
    is      => 'ro',
    isa     => Int,
-   default => 4,
+   default => 5,
    writer  => '_set_remainder_start';
 
 # Returns the default if the field is undefined. Returns the field value if

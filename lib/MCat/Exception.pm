@@ -53,6 +53,9 @@ has_exception 'NoMethod' => parent => [$class],
 has_exception 'PageNotFound' => parent => [$class],
    error => 'Page [_1] not found', rv => HTTP_NOT_FOUND;
 
+has_exception 'UnauthorisedAPICall' => parent => [$class],
+   error => 'Class [_1] method [_2] unauthorised call attempt';
+
 has_exception 'UnknownAPIClass' => parent => [$class],
    error => 'API class [_1] not found', rv => HTTP_NOT_FOUND;
 
@@ -66,7 +69,7 @@ has_exception 'UnknownCd' => parent => [$class],
    error => 'CD [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownModel' => parent => [$class],
-   error => 'Model [_1] (moniker) unknown', rv => HTTP_NOT_FOUND;
+   error => 'Model [_1] (moniker) not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownTag' => parent => [$class],
    error => 'Tag [_1] not found', rv => HTTP_NOT_FOUND;

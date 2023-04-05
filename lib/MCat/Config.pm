@@ -232,6 +232,14 @@ Used as a prefix when creating identifiers
 
 has 'prefix' => is => 'ro', isa => Str, default => 'mcat';
 
+=item redirect
+
+The default action path to redirect to after logging in, changing password etc.
+
+=cut
+
+has 'redirect' => is => 'ro', isa => Str, default => 'artist/list';
+
 =item redis
 
 Configuration hash reference used to configure the connection to the Redis

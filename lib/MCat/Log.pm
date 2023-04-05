@@ -1,6 +1,6 @@
 package MCat::Log;
 
-use HTML::Forms::Constants qw( FALSE TRUE );
+use HTML::Forms::Constants qw( FALSE TRUE USERNAME );
 use HTML::Forms::Types     qw( Bool );
 use MCat::Util             qw( now );
 use Ref::Util              qw( is_arrayref is_coderef );
@@ -30,7 +30,7 @@ around 'BUILDARGS' => sub {
 };
 
 sub alert {
-   return shift->_log('ALERT', $_[0]);
+   return shift->_log('ALERT', @_);
 }
 
 sub debug {
@@ -38,19 +38,19 @@ sub debug {
 
    return unless $self->_debug;
 
-   return $self->_log('DEBUG', $_[0]);
+   return $self->_log('DEBUG', @_);
 }
 
 sub error {
-   return shift->_log('ERROR', $_[0]);
+   return shift->_log('ERROR', @_);
 }
 
 sub fatal {
-   return shift->_log('FATAL', $_[0]);
+   return shift->_log('FATAL', @_);
 }
 
 sub info {
-   return shift->_log('INFO', $_[0]);
+   return shift->_log('INFO', @_);
 }
 
 sub log { # For benefit of P::M::LogDispatch
@@ -69,16 +69,17 @@ sub log { # For benefit of P::M::LogDispatch
 }
 
 sub warn {
-   return shift->_log('WARNING', $_[0]);
+   return shift->_log('WARNING', @_);
 }
 
 sub _log {
-   my ($self, $level, $message) = @_;
+   my ($self, $level, $message, $context) = @_;
 
-   my $now = now->strftime('%Y/%m/%d %T');
+   my $username = $context ? $context->session->username : USERNAME;
+   my $now      = now->strftime('%Y/%m/%d %T');
 
    $message = "${message}"; chomp $message;
-   $message = "${now} [${level}] ${message}\n";
+   $message = "${now} [${level}] (${username}) ${message}\n";
 
    if ($self->config->logfile) {
       $self->config->logfile->append($message)->flush;

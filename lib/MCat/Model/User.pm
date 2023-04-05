@@ -32,14 +32,13 @@ sub base : Auth('admin') {
 sub create : Nav('Create User') {
    my ($self, $context) = @_;
 
-   my $form = $self->form->new_with_context('User', {
-      context => $context, title => 'Create User'
-   });
+   my $options = { context => $context, title => 'Create User' };
+   my $form    = $self->form->new_with_context('User', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $userid    = $form->item->id;
       my $user_view = $context->uri_for_action('user/view', [$userid]);
-      my $message  = ['User [_1] created', $form->item->name];
+      my $message   = ['User [_1] created', $form->item->name];
 
       $context->stash( redirect $user_view, $message );
    }

@@ -6,7 +6,8 @@ use attributes ();
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef HashRef Str URI );
 use HTTP::Status                qw( HTTP_OK );
-use MCat::Util                  qw( formpost maybe_render_partial );
+use MCat::Util                  qw( clear_redirect formpost
+                                    maybe_render_partial );
 use Ref::Util                   qw( is_hashref );
 use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );
@@ -90,12 +91,12 @@ has '_menus' => is => 'lazy', isa => HashRef, default => sub {
 };
 
 has '_messages' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift;
-   my $req  = $self->context->request;
+   my $self    = shift;
+   my $context = $self->context;
 
    return {
       %{$self->messages},
-      'messages-url' => $req->uri_for('api/navigation/collect/messages')
+      'messages-url' => $context->uri_for_action('api/navigation_messages')
    };
 };
 
@@ -139,7 +140,10 @@ sub finalise {
 
    $self->_add_global;
 
-   my $body = $self->_json->encode($self->_menus);
+   my $body = $self->_json->encode({
+      'menus'        => $self->_menus,
+      'verify-token' => $self->context->verification_token,
+   });
 
    $context->stash(
       code => HTTP_OK, finalised => TRUE, body => $body, view => 'json'
@@ -165,7 +169,15 @@ sub item {
    }
    else { $label = $self->_get_menu_label($args[0]) }
 
-   push @{$self->_lists->{$self->_name}->[1]}, [$label => $self->_uri(@args)];
+   my ($moniker, $method) = split m{ / }mx, $args[0];
+
+   if ($self->model->allowed($self->context, $moniker, $method)) {
+      my $list = $self->_lists->{$self->_name}->[1];
+
+      push @{$list}, [$label => $self->_uri(@args)];
+   }
+   else { clear_redirect $self->context }
+
    return $self;
 }
 
@@ -218,7 +230,7 @@ sub _add_global {
 
          $list->item($action);
       }
-      else { delete $self->context->stash->{redirect} }
+      else { clear_redirect $self->context }
    }
 
    return;

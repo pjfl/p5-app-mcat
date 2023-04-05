@@ -11,7 +11,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'artist';
 
-sub base {
+sub base : Auth('view') {
    my ($self, $context, $artistid) = @_;
 
    my $nav = $context->stash('nav')->list('artist')->item('artist/create');
@@ -32,9 +32,8 @@ sub base {
 sub create : Nav('Create Artist') {
    my ($self, $context) = @_;
 
-   my $form = $self->form->new_with_context('Artist', {
-      context => $context, title => 'Create Artist'
-   });
+   my $options = { context => $context, title => 'Create Artist' };
+   my $form    = $self->form->new_with_context('Artist', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $artistid    = $form->item->id;
@@ -87,7 +86,7 @@ sub edit : Nav('Edit Artist') {
    return;
 }
 
-sub list : Nav('Artists') {
+sub list : Nav('Artists') Auth('view') {
    my ($self, $context) = @_;
 
    $context->stash( table => $self->table->new_with_context('Artist', {
@@ -114,14 +113,13 @@ sub remove {
    return;
 }
 
-sub view : Nav('View Artist') {
+sub view : Nav('View Artist') Auth('view') {
    my ($self, $context, $artistid) = @_;
 
-   my $artist = $context->stash('artist');
-   my $cd_rs  = $context->model('Cd')->search({ 'me.artistid' => $artistid });
-   my $cds    = $self->table->new_with_context('Cd', {
-      context => $context, resultset => $cd_rs
-   });
+   my $artist  = $context->stash('artist');
+   my $cd_rs   = $context->model('Cd')->search({ 'me.artistid' => $artistid });
+   my $options = { context => $context, resultset => $cd_rs };
+   my $cds     = $self->table->new_with_context('Cd', $options);
 
    $context->stash(table => $self->table->new_with_context('Object::View', {
       add_columns => [ 'CDs' => $cds ], context => $context, result => $artist

@@ -50,6 +50,10 @@ $class->add_unique_constraint('user_name_uniq', ['name']);
 
 $class->belongs_to('role' => 'MCat::Schema::Result::Role', 'role_id');
 
+$class->has_many(
+   'preferences' => 'MCat::Schema::Result::Preference', 'user_id'
+);
+
 # Private functions
 sub _get_salt ($) {
    my @parts = split m{ [\$] }mx, $_[0];

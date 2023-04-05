@@ -76,7 +76,7 @@ sub error { # Stash exception handler output to print an exception page
 sub exception_handler { # Also called by component loader if model dies
    my ($self, $context, $exception) = @_;
 
-   $self->log->error($exception);
+   $self->log->error($exception, $context);
 
    my $code = $exception->rv // 0;
 
@@ -107,7 +107,7 @@ sub execute { # Called by component loader for all model method calls
 
       return $stash->{response} if $stash->{response};
 
-      $self->_fix_fetch_redirect($context) if exists $stash->{redirect};
+      $self->_fix_redirect_for_fetch($context) if exists $stash->{redirect};
 
       return if $stash->{finalised} || exists $stash->{redirect};
 
@@ -179,7 +179,7 @@ sub _finalise_stash { # Add necessary defaults for the view to render
    return;
 }
 
-sub _fix_fetch_redirect {
+sub _fix_redirect_for_fetch {
    my ($self, $context) = @_;
 
    my $nav = $context->stash('nav');

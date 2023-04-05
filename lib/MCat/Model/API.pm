@@ -3,9 +3,10 @@ package MCat::Model::API;
 use File::DataClass::Functions qw( ensure_class_loaded );
 use HTML::Forms::Constants     qw( FALSE EXCEPTION_CLASS TRUE );
 use HTML::Forms::Types         qw( HashRef );
+use MCat::Util                 qw( clear_redirect );
 use Unexpected::Functions      qw( catch_class throw APIMethodFailed
-                                   UnknownAPIClass UnknownAPIMethod
-                                   UnknownView );
+                                   UnauthorisedAPICall UnknownAPIClass
+                                   UnknownAPIMethod UnknownView );
 use Try::Tiny;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -38,11 +39,15 @@ sub dispatch : Auth('none') {
    return if $context->stash->{finalised};
 
    my $handler = $class->new(name => $name);
+   my $coderef = $handler->can($method);
 
    return $self->error($context, UnknownAPIMethod, [$class, $method])
-      unless $handler->can($method);
+      unless $coderef;
 
    return if $context->posted && !$self->has_valid_token($context);
+
+   return $self->error($context, UnauthorisedAPICall, [$class, $method])
+      unless $self->_allowed($context, $coderef);
 
    try { $handler->$method($context, @args) }
    catch_class [
@@ -57,6 +62,17 @@ sub dispatch : Auth('none') {
 
    $context->stash(view => 'json');
    return;
+}
+
+sub _allowed {
+   my ($self, $context, $coderef) = @_;
+
+   my $attr = MCat::Navigation::Attributes->fetch($coderef) // {};
+
+   return TRUE if $self->is_authorised($context, $attr);
+
+   clear_redirect $context;
+   return FALSE;
 }
 
 1;

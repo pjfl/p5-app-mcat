@@ -11,7 +11,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'track';
 
-sub base {
+sub base : Auth('view') {
    my ($self, $context, $id) = @_;
 
    my $method  = (split m{ / }mx, $context->stash('method_chain'))[-1];
@@ -108,7 +108,7 @@ sub edit : Nav('Edit Track') {
    return;
 }
 
-sub list : Nav('Tracks') {
+sub list : Nav('Tracks') Auth('view') {
    my ($self, $context, $cdid) = @_;
 
    my $track_rs = $context->model('Track');
@@ -121,7 +121,7 @@ sub list : Nav('Tracks') {
    return;
 }
 
-sub view : Nav('View Track') {
+sub view : Nav('View Track') Auth('view') {
    my ($self, $context, $trackid) = @_;
 
    $context->stash(table => $self->table->new_with_context('Object::View', {

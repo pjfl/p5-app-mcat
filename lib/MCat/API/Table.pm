@@ -6,13 +6,14 @@ use JSON::MaybeXS          qw( );
 use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( throw UnknownModel );
 use Moo;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 has 'name' => is => 'ro', isa => Str, required => TRUE;
 
 has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
    default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
 
-sub action {
+sub action : Auth('view') {
    my ($self, $context, @args) = @_;
 
    return unless $context->posted;
@@ -26,7 +27,7 @@ sub action {
    return;
 }
 
-sub preference {
+sub preference : Auth('view') {
    my ($self, $context, @args) = @_;
 
    my $name  = $self->_preference_name;
@@ -59,7 +60,5 @@ sub _preference { # Accessor/mutator with builtin clearer. Store "" to delete
 sub _preference_name {
    return 'table' . DOT . shift->name . DOT . 'preference';
 }
-
-use namespace::autoclean;
 
 1;

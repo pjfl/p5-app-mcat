@@ -13,7 +13,7 @@ use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( digest formpost local_tz maybe_render_partial
+   qw( clear_redirect digest formpost local_tz maybe_render_partial
        new_uri now redirect redirect2referer trim urandom uri_escape )
 ]};
 
@@ -22,6 +22,10 @@ my $reserved   = q(;/?:@&=+$,[]);
 my $mark       = q(-_.!~*'());                                   #'; emacs
 my $unreserved = "A-Za-z0-9\Q${mark}\E%\#";
 my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved;
+
+sub clear_redirect ($) {
+   return delete shift->stash->{redirect};
+}
 
 sub digest ($) {
    my $seed = shift;

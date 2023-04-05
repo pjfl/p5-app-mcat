@@ -154,15 +154,22 @@ MCat.Util = (function() {
       }
    }
    const esc = encodeURIComponent;
+   const ucfirst = function(s) {
+      return s && s[0].toUpperCase() + s.slice(1) || '';
+   };
    return {
       Markup: { // A role
-         h: new HtmlTiny(),
          appendValue: function(obj, key, newValue) {
             let existingValue = obj[key] || '';
             if (existingValue) existingValue += ' ';
             obj[key] = existingValue + newValue;
          },
          bitch: new Bitch(),
+         capitalise: function(s) {
+            const words = [];
+            for (const word of s.split(' ')) words.push(ucfirst(word));
+            return words.join(' ');
+         },
          display: function(container, attribute, obj) {
             if (this[attribute] && container.contains(this[attribute])) {
                container.replaceChild(obj, this[attribute]);
@@ -170,9 +177,8 @@ MCat.Util = (function() {
             else { container.append(obj) }
             return obj;
          },
-         ucfirst: function(s) {
-            return s && s[0].toUpperCase() + s.slice(1) || '';
-         }
+         h: new HtmlTiny(),
+         ucfirst: ucfirst
       },
       Modifiers: { // Another role
          applyTraits: function(obj, namespace, traits, args) {

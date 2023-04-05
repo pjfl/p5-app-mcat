@@ -5,13 +5,14 @@ use HTML::Forms::Types     qw( Str );
 use JSON::MaybeXS          qw( );
 use Type::Utils            qw( class_type );
 use Moo;
+use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 has 'name' => is => 'ro', isa => Str; # collect
 
 has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
    default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
 
-sub messages {
+sub messages : Auth('none') {
    my ($self, $context, @args) = @_;
 
    my $messages = $context->session->collect_status_messages($context->request);
@@ -19,7 +20,5 @@ sub messages {
    $context->stash( body => $self->_json->encode($messages) );
    return;
 }
-
-use namespace::autoclean;
 
 1;

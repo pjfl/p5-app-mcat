@@ -33,10 +33,11 @@ MCat.Navigation = (function() {
       finagleHistory(url) {
          const href  = url + '';
          history.pushState({ href: href }, 'Unused', url); // API Darwin award
+         let entry = href.substring(this.baseURL.length);
+         entry = entry.replace(/[_\/]/g, ' ').replace(/\d+$/, 'View');
+         entry = this.capitalise(entry.replace(/\d/g, '').replace(/  /g, ' '));
          const head  = (document.getElementsByTagName('head'))[0];
          const title = head.querySelector('title');
-         const tag   = this.ucfirst(href.substring(this.baseURL.length));
-         const entry = tag.replace(/\//g, ' ').replace(/\d/g, '');
          title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
       loadContent(href) {
@@ -92,7 +93,10 @@ MCat.Navigation = (function() {
             this.finagleHistory(url);
             url.searchParams.set('navigation', true);
             const { object } = await this.bitch.sucks(url);
-            if (object) this.menus = object;
+            if (object) {
+               this.menus = object['menus'];
+               this.token = object['verify-token'];
+            }
             this.redraw();
          }
          else if (location) {

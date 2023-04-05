@@ -17,6 +17,8 @@ sub base : Auth('none') {
    if ($userid) {
       my $user = $context->model('User')->find($userid);
 
+      return $self->error($context, UnknownUser, [$userid]) unless $user;
+
       $context->stash( user => $user );
    }
 
@@ -26,16 +28,16 @@ sub base : Auth('none') {
 
 sub access_denied : Auth('none') {}
 
-sub change_password : Nav('Change Password') Auth('none') {
+sub change_password : Nav('Change Password') Auth('view') {
    my ($self, $context, $userid) = @_;
 
    my $form = $self->form->new_with_context('ChangePassword', {
-      context => $context, item => $context->stash('user')
+      context => $context, item => $context->stash('user'), log => $self->log
    });
 
    if ($form->process( posted => $context->posted )) {
       my $name    = $form->item->name;
-      my $default = $context->uri_for_action('artist/list');
+      my $default = $context->uri_for_action($self->config->redirect);
       my $message = ['User [_1] changed password', $name];
 
       $context->stash( redirect $default, $message );
@@ -48,15 +50,14 @@ sub change_password : Nav('Change Password') Auth('none') {
 sub login : Nav('Login') Auth('none') {
    my ($self, $context) = @_;
 
-   my $form = $self->form->new_with_context('Login', {
-      context => $context, log => $self->log
-   });
+   my $options = { context => $context, log => $self->log };
+   my $form    = $self->form->new_with_context('Login', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $name    = $form->field('name')->value;
       my $user    = $context->model('User')->find({ name => $name })
          or return $self->error($context, UnknownUser, [$name]);
-      my $default = $context->uri_for_action('artist/list');
+      my $default = $context->uri_for_action($self->config->redirect);
       my $message = ['User [_1] logged in', $name];
       my $session = $context->session;
 
@@ -93,16 +94,15 @@ sub not_found : Auth('none') {
    return $self->error($context, PageNotFound, [$context->request->path]);
 }
 
-sub profile : Nav('Profile') {
+sub profile : Nav('Profile') Auth('view') {
    my ($self, $context, $userid) = @_;
 
-   my $form = $self->form->new_with_context('Profile', {
-      context => $context, item => $context->stash('user')
-   });
+   my $options = { context => $context, item => $context->stash('user') };
+   my $form    = $self->form->new_with_context('Profile', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $name    = $form->item->name;
-      my $default = $context->uri_for_action('artist/list');
+      my $default = $context->uri_for_action($self->config->redirect);
       my $message = ['User [_1] profile updated', $name];
 
       $context->stash( redirect $default, $message );

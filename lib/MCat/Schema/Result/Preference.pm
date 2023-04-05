@@ -11,16 +11,22 @@ my $class = __PACKAGE__;
 $class->table('preference');
 
 $class->add_columns(
-   id    => {
+   id      => {
       data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE
    },
-   name  => { data_type => 'text', is_nullable => FALSE },
-   value => { data_type => 'text', is_nullable => TRUE },
+   user_id => {
+      data_type => 'integer', is_nullable => FALSE, label => 'User',
+      display   => 'user.name'
+   },
+   name    => { data_type => 'text', is_nullable => FALSE },
+   value   => { data_type => 'text', is_nullable => TRUE },
 );
 
 $class->set_primary_key('id');
 
 $class->add_unique_constraint('preference_name', ['name']);
+
+$class->belongs_to('user' => 'MCat::Schema::Result::User', 'user_id');
 
 $class->inflate_column('value', {
    deflate => sub { encode_json(shift) },
@@ -28,4 +34,3 @@ $class->inflate_column('value', {
 });
 
 1;
-
