@@ -10,6 +10,8 @@ use MCat::Response;
 use MCat::Schema;
 use Moo;
 
+has 'action' => is => 'ro', isa => Str, predicate => 'has_action';
+
 has 'api_routes' => is => 'lazy', isa => HashRef, default => sub {
    my $self = shift;
 

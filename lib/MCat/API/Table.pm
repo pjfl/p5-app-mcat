@@ -46,9 +46,9 @@ sub _preference { # Accessor/mutator with builtin clearer. Store "" to delete
 
    my $rs = $context->model('Preference');
 
-   return $rs->update_or_create( # Mutator
-      { name => $name, value => $value }, { key => 'preference_name' }
-   ) if $value && $value ne '""';
+   return $rs->update_or_create({ # Mutator
+      name => $name, user_id => $context->session->id, value => $value
+   }, { key => 'preference_name' }) if $value && $value ne '""';
 
    my $pref = $rs->find({ name => $name }, { key => 'preference_name' });
 

@@ -108,7 +108,7 @@ sub edit : Nav('Edit Track') {
    return;
 }
 
-sub list : Nav('Tracks') Auth('view') {
+sub list : Auth('view') Nav('Tracks') {
    my ($self, $context, $cdid) = @_;
 
    my $track_rs = $context->model('Track');
@@ -121,7 +121,7 @@ sub list : Nav('Tracks') Auth('view') {
    return;
 }
 
-sub view : Nav('View Track') Auth('view') {
+sub view : Auth('view') Nav('View Track') {
    my ($self, $context, $trackid) = @_;
 
    $context->stash(table => $self->table->new_with_context('Object::View', {

@@ -28,7 +28,7 @@ sub base : Auth('none') {
 
 sub access_denied : Auth('none') {}
 
-sub change_password : Nav('Change Password') Auth('view') {
+sub change_password : Auth('view') Nav('Change Password') {
    my ($self, $context, $userid) = @_;
 
    my $form = $self->form->new_with_context('ChangePassword', {
@@ -47,7 +47,7 @@ sub change_password : Nav('Change Password') Auth('view') {
    return;
 }
 
-sub login : Nav('Login') Auth('none') {
+sub login : Auth('none') Nav('Login') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, log => $self->log };
@@ -73,7 +73,7 @@ sub login : Nav('Login') Auth('none') {
    return;
 }
 
-sub logout : Nav('Logout') Auth('view') {
+sub logout : Auth('view') Nav('Logout') {
    my ($self, $context) = @_;
 
    return unless $self->has_valid_token($context);
@@ -94,7 +94,7 @@ sub not_found : Auth('none') {
    return $self->error($context, PageNotFound, [$context->request->path]);
 }
 
-sub profile : Nav('Profile') Auth('view') {
+sub profile : Auth('view') Nav('Profile') {
    my ($self, $context, $userid) = @_;
 
    my $options = { context => $context, item => $context->stash('user') };

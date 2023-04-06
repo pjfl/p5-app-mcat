@@ -119,9 +119,10 @@ sub execute { # Called by component loader for all model method calls
 }
 
 sub get_context { # Creates and returns a new context object from the request
-   my ($self, $request, $models) = @_;
+   my ($self, $request, $models, $action) = @_;
 
    return MCat::Context->new(
+      action      => $action,
       config      => $self->config,
       controllers => $self->controllers,
       forms       => $self->form,

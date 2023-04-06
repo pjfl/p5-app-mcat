@@ -36,7 +36,7 @@ $class->add_columns(
    },
    role_id => {
       data_type => 'integer', is_nullable => FALSE,
-      label => 'Role', display => 'role.name'
+      label => 'Role', cell_traits => ['Capitalise'], display => 'role.name'
    },
    timezone => {
       data_type => 'text', is_nullable => TRUE, default => local_tz,

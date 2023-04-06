@@ -55,7 +55,7 @@ has_column 'status' => filterable => TRUE, width => '100px';
 
 has_column 'username' => filterable => TRUE, searchable => TRUE;
 
-has_column 'source' => width => '300px', searchable => TRUE;
+has_column 'source' => width => '200px', searchable => TRUE;
 
 has_column 'remainder' => label => 'Line', searchable => TRUE;
 

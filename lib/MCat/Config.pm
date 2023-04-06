@@ -159,8 +159,9 @@ Configuration parameters used by the component loader
 
 =cut
 
-has 'loader_attr' => is => 'ro', isa => HashRef,
-   default => sub { { should_log_errors => FALSE } };
+has 'loader_attr' => is => 'ro', isa => HashRef, default => sub {
+   return { should_log_errors => FALSE, should_log_messages => TRUE };
+};
 
 =item logfile
 

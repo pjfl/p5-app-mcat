@@ -1,6 +1,6 @@
 package MCat::Log;
 
-use HTML::Forms::Constants qw( FALSE TRUE USERNAME );
+use HTML::Forms::Constants qw( DOT FALSE TRUE USERNAME );
 use HTML::Forms::Types     qw( Bool );
 use MCat::Util             qw( now );
 use Ref::Util              qw( is_arrayref is_coderef );
@@ -79,6 +79,15 @@ sub _log {
    my $now      = now->strftime('%Y/%m/%d %T');
 
    $message = "${message}"; chomp $message;
+
+   if ($message !~ m{ : }mx) {
+      my $action = $context->has_action ? ucfirst $context->action : 'Unknown';
+      my @parts  = split m{ / }mx, $action;
+
+      $action  = $parts[0] . DOT . $parts[-1];
+      $message = "${action}: ${message}";
+   }
+
    $message = "${now} [${level}] (${username}) ${message}\n";
 
    if ($self->config->logfile) {

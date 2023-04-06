@@ -107,7 +107,7 @@ sub edit : Nav('Edit CD') {
    return;
 }
 
-sub list : Nav('CDs') Auth('view') {
+sub list : Auth('view') Nav('CDs') {
    my ($self, $context, $artistid) = @_;
 
    my $cd_rs = $context->model('Cd');
@@ -120,7 +120,7 @@ sub list : Nav('CDs') Auth('view') {
    return;
 }
 
-sub view : Nav('View CD') Auth('view') {
+sub view : Auth('view') Nav('View CD') {
    my ($self, $context, $cdid) = @_;
 
    my $cd       = $context->stash('cd');

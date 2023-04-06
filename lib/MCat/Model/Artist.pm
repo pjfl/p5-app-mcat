@@ -86,7 +86,7 @@ sub edit : Nav('Edit Artist') {
    return;
 }
 
-sub list : Nav('Artists') Auth('view') {
+sub list : Auth('view') Nav('Artists') {
    my ($self, $context) = @_;
 
    $context->stash( table => $self->table->new_with_context('Artist', {
@@ -113,7 +113,7 @@ sub remove {
    return;
 }
 
-sub view : Nav('View Artist') Auth('view') {
+sub view : Auth('view') Nav('View Artist') {
    my ($self, $context, $artistid) = @_;
 
    my $artist  = $context->stash('artist');

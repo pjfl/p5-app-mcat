@@ -9,7 +9,6 @@ with    'HTML::StateTable::Role::Active';
 with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Downloadable';
-with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
 with    'HTML::StateTable::Role::HighlightRow';
@@ -41,6 +40,8 @@ has '+form_buttons' => default => sub {
    }];
 };
 
+has '+tag_section' => default => TRUE;
+
 set_table_name 'artist';
 
 has_column 'check' =>
@@ -54,8 +55,15 @@ has_column 'artistid' =>
    label       => 'ID',
    width       => '40px';
 
+has_column 'tags' =>
+#    append_to   => 'name',
+#    search_type => 'tag',
+   displayed   => FALSE,
+   searchable  => TRUE,
+   sortable    => TRUE,
+   value       => 'tag_string.name';
+
 has_column 'name' =>
-   filterable => TRUE,
    label      => 'Artist Name',
    link       => sub {
       my $self    = shift;
@@ -66,14 +74,6 @@ has_column 'name' =>
    searchable => TRUE,
    sortable   => TRUE,
    title      => 'Sort by artist';
-
-has_column 'tags' =>
-#    append_to   => 'name',
-#    cell_traits => ['Tag'],
-#    search_type => 'tag',
-   displayed   => FALSE,
-   searchable  => TRUE,
-   value       => 'tag_string.name';
 
 has_column 'upvotes' =>
    cell_traits => ['Numeric'],

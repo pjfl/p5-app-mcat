@@ -29,7 +29,7 @@ sub base : Auth('admin') {
    return;
 }
 
-sub create : Nav('Create User') {
+sub create : Auth('admin') Nav('Create User') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, title => 'Create User' };
@@ -47,7 +47,7 @@ sub create : Nav('Create User') {
    return;
 }
 
-sub delete : Nav('Delete User') {
+sub delete : Auth('admin') Nav('Delete User') {
    my ($self, $context, $userid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -66,7 +66,7 @@ sub delete : Nav('Delete User') {
    return;
 }
 
-sub edit : Nav('Edit User') {
+sub edit : Auth('admin') Nav('Edit User') {
    my ($self, $context, $userid) = @_;
 
    my $form = $self->form->new_with_context('User', {
@@ -84,7 +84,7 @@ sub edit : Nav('Edit User') {
    return;
 }
 
-sub list : Nav('Users') {
+sub list : Auth('admin') Nav('Users') {
    my ($self, $context) = @_;
 
    $context->stash(table => $self->table->new_with_context('User', {
@@ -111,7 +111,7 @@ sub remove : Auth('admin') {
    return;
 }
 
-sub view : Nav('View User') {
+sub view : Auth('admin') Nav('View User') {
    my ($self, $context, $userid) = @_;
 
    $context->stash(table => $self->table->new_with_context('Object::View', {

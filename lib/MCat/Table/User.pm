@@ -5,11 +5,13 @@ use Moo;
 use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
-with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Configurable';
-with    'HTML::StateTable::Role::Filterable';
+with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
+with    'HTML::StateTable::Role::Reorderable';
+
+has '+configurable_control_location' => default => 'TopLeft';
 
 has '+form_buttons' => default => sub {
    return [{
@@ -20,13 +22,11 @@ has '+form_buttons' => default => sub {
    }];
 };
 
-set_table_name 'user';
+has '+form_control_location' => default => 'BottomRight';
 
-has_column 'check' =>
-   cell_traits => ['Checkbox'],
-   label       => SPC,
-   options     => { checkall => TRUE },
-   value       => 'id';
+has '+page_size_control_location' => default => 'BottomLeft';
+
+set_table_name 'user';
 
 has_column 'id' =>
    cell_traits => ['Numeric'],
@@ -34,7 +34,6 @@ has_column 'id' =>
    width       => '40px';
 
 has_column 'name' =>
-   filterable => TRUE,
    label      => 'User Name',
    link       => sub {
       my $self    = shift;
@@ -45,6 +44,25 @@ has_column 'name' =>
    searchable => TRUE,
    sortable   => TRUE,
    title      => 'Sort by user';
+
+has_column 'role_id' =>
+   cell_traits => ['Capitalise'],
+   label       => 'Role',
+   searchable  => TRUE,
+   sortable    => TRUE,
+   title       => 'Sort by role',
+   value       => 'role.name';
+
+has_column 'timezone' =>
+   label      => 'Time Zone',
+   searchable => TRUE,
+   sortable   => TRUE,
+   title      => 'Sort by time zone';
+
+has_column 'check' =>
+   cell_traits => ['Checkbox'],
+   label       => SPC,
+   value       => 'id';
 
 use namespace::autoclean -except => TABLE_META;
 

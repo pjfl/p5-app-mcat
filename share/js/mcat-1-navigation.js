@@ -153,13 +153,13 @@ MCat.Navigation = (function() {
          const [label, href] = item;
          if (typeof label != 'object') {
             if (href) {
-               const attr = {
-                  href: href, listener: true, onclick: this.loadContent(href)
-               };
+               const attr = { href: href, onclick: this.loadContent(href) };
                if (context) attr['onmouseover'] = this.menuOver(context);
-               return this.h.li({ className: menuName }, this.h.a(attr, label));
+               const link = this.h.a(attr, label);
+               link.setAttribute('listener', true);
+               return this.h.li({ className: menuName }, link);
             }
-            const spanAttr = { className: 'drop-menu', listener: true };
+            const spanAttr = { className: 'drop-menu' };
             if (context) spanAttr['onmouseover'] = this.menuOver(context);
             return this.h.li({
                className: menuName
@@ -167,8 +167,9 @@ MCat.Navigation = (function() {
          }
          if (label['method'] != 'post') return;
          const form = this.h.form({
-            action: href, className: 'inline', listener: true, method: 'post'
+            action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
+         form.setAttribute('listener', true);
          form.addEventListener('submit', this.submitFormHandler(form));
          const name = label['name'];
          form.append(this.h.button({

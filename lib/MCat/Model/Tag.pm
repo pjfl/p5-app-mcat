@@ -29,7 +29,7 @@ sub base : Auth('admin') {
    return;
 }
 
-sub create : Nav('Create Tag') {
+sub create : Auth('admin') Nav('Create Tag') {
    my ($self, $context) = @_;
 
    my $form = $self->form->new_with_context('Tag', {
@@ -48,7 +48,7 @@ sub create : Nav('Create Tag') {
    return;
 }
 
-sub delete : Nav('Delete Tag') {
+sub delete : Auth('admin') Nav('Delete Tag') {
    my ($self, $context, $tagid) = @_;
 
    return unless $self->has_valid_token($context);
@@ -67,7 +67,7 @@ sub delete : Nav('Delete Tag') {
    return;
 }
 
-sub edit : Nav('Edit Tag') {
+sub edit : Auth('admin') Nav('Edit Tag') {
    my ($self, $context, $tagid) = @_;
 
    my $form = $self->form->new_with_context('Tag', {
@@ -85,7 +85,7 @@ sub edit : Nav('Edit Tag') {
    return;
 }
 
-sub list : Nav('Tags') {
+sub list : Auth('admin') Nav('Tags') {
    my ($self, $context) = @_;
 
    $context->stash(table => $self->table->new_with_context('Tag', {
@@ -112,7 +112,7 @@ sub remove : Auth('admin') {
    return;
 }
 
-sub view : Nav('View Tag') {
+sub view : Auth('admin') Nav('View Tag') {
    my ($self, $context, $tagid) = @_;
 
    $context->stash(table => $self->table->new_with_context('Object::View', {

@@ -31,7 +31,7 @@ sub validate {
    try   { $self->item->authenticate($passwd->value) }
    catch {
       $passwd->add_error($_->original);
-      $self->log->alert($_) if $self->has_log;
+      $self->log->alert($_, $self->context) if $self->has_log;
    };
 
    return;
