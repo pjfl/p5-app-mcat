@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Meta data updated
           - Messaging and loggin improvements
           - Adds columns to user table
           - Adds authorisation to api. Adds user to preference object

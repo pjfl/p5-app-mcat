@@ -63,6 +63,16 @@ Thumbs.db
 # Avoid archives of this distribution
 \bMCat-v?[\d\.\_]+
 
-\bvar/tmp
+\bshare/js/hforms
+\bshare/js/hstatetable
+\bshare/less/hforms
+\bshare/less/hstatetable
+
+\bvar/backup
 \bvar/etc/mcat-local.json
+\bvar/etc/mcat-profile
 \bvar/etc/mcat-schema.conf
+\bvar/log
+\bvar/tmp
+
+\bvar/sql/MCat-Schema-[\d\.]+-[\d\.]+-PostgreSQL.sql
