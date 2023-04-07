@@ -1,4 +1,3 @@
-use utf8; # -*- coding: utf-8; -*-
 package MCat::Schema::Result::User;
 
 use strictures;
@@ -8,7 +7,7 @@ use parent 'DBIx::Class::Core';
 
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE TRUE );
-use MCat::Util                 qw( digest local_tz urandom );
+use MCat::Util                 qw( digest local_tz truncate urandom );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectPassword
                                    PasswordExpired );
 
@@ -28,7 +27,7 @@ $class->add_columns(
    },
    password => {
       data_type => 'text', is_nullable => FALSE, label => 'Password',
-      display => sub { _truncate(shift->result->password, 20) }
+      display => sub { truncate shift->result->password, 20 }
    },
    password_expired => {
       data_type => 'boolean', is_nullable => FALSE, default => FALSE,
@@ -73,13 +72,6 @@ sub _new_salt ($$) {
    my $token = digest(urandom())->hexdigest;
 
    return "\$${type}\$${lf}\$" . (en_base64(pack('H*', substr($token, 0, 32))));
-}
-
-sub _truncate ($;$) {
-   my ($string, $length) = @_;
-
-   $length //= 80;
-   return substr($string, 0, $length - 1) . '…';
 }
 
 # Public methods

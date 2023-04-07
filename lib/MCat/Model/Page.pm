@@ -1,7 +1,7 @@
 package MCat::Model::Page;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use MCat::Util             qw( new_uri redirect );
+use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( PageNotFound UnknownUser );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -15,9 +15,8 @@ sub base : Auth('none') {
    my ($self, $context, $userid) = @_;
 
    if ($userid) {
-      my $user = $context->model('User')->find($userid);
-
-      return $self->error($context, UnknownUser, [$userid]) unless $user;
+      my $user = $context->model('User')->find($userid)
+         or return $self->error($context, UnknownUser, [$userid]);
 
       $context->stash( user => $user );
    }
@@ -28,7 +27,7 @@ sub base : Auth('none') {
 
 sub access_denied : Auth('none') {}
 
-sub change_password : Auth('view') Nav('Change Password') {
+sub change_password : Auth('none') Nav('Change Password') {
    my ($self, $context, $userid) = @_;
 
    my $form = $self->form->new_with_context('ChangePassword', {
@@ -55,17 +54,9 @@ sub login : Auth('none') Nav('Login') {
 
    if ($form->process( posted => $context->posted )) {
       my $name    = $form->field('name')->value;
-      my $user    = $context->model('User')->find({ name => $name })
-         or return $self->error($context, UnknownUser, [$name]);
       my $default = $context->uri_for_action($self->config->redirect);
       my $message = ['User [_1] logged in', $name];
-      my $session = $context->session;
 
-      $session->id($user->id);
-      $session->authenticated(TRUE);
-      $session->role($user->role->name);
-      $session->timezone($user->timezone);
-      $session->username($name);
       $context->stash( redirect $default, $message );
    }
 
@@ -92,24 +83,6 @@ sub not_found : Auth('none') {
    my ($self, $context) = @_;
 
    return $self->error($context, PageNotFound, [$context->request->path]);
-}
-
-sub profile : Auth('view') Nav('Profile') {
-   my ($self, $context, $userid) = @_;
-
-   my $options = { context => $context, item => $context->stash('user') };
-   my $form    = $self->form->new_with_context('Profile', $options);
-
-   if ($form->process( posted => $context->posted )) {
-      my $name    = $form->item->name;
-      my $default = $context->uri_for_action($self->config->redirect);
-      my $message = ['User [_1] profile updated', $name];
-
-      $context->stash( redirect $default, $message );
-   }
-
-   $context->stash( form => $form );
-   return;
 }
 
 1;

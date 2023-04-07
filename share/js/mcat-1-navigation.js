@@ -24,21 +24,12 @@ MCat.Navigation = (function() {
          this.contentPanel;
          this.contextPanels = {};
          this.menu;
+         this.titleEntry;
          container.append(this.renderTitle());
          window.addEventListener('popstate', function(event) {
             if (event.state && event.state.href)
                this.renderContent(event.state.href);
          }.bind(this));
-      }
-      finagleHistory(url) {
-         const href  = url + '';
-         history.pushState({ href: href }, 'Unused', url); // API Darwin award
-         let entry = href.substring(this.baseURL.length);
-         entry = entry.replace(/[_\/]/g, ' ').replace(/\d+$/, 'View');
-         entry = this.capitalise(entry.replace(/\d/g, '').replace(/  /g, ' '));
-         const head  = (document.getElementsByTagName('head'))[0];
-         const title = head.querySelector('title');
-         title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
       loadContent(href) {
          return function(event) {
@@ -90,13 +81,16 @@ MCat.Navigation = (function() {
          const { location, text } = await this.bitch.sucks(url, opt);
          if (text && text.length > 0) {
             await this.renderHTML(text);
-            this.finagleHistory(url);
+            // API Darwin award
+            history.pushState({ href: url + '' }, 'Unused', url);
             url.searchParams.set('navigation', true);
             const { object } = await this.bitch.sucks(url);
             if (object) {
                this.menus = object['menus'];
                this.token = object['verify-token'];
+               this.titleEntry = object['title-entry'];
             }
+            this.setHeadTitle();
             this.redraw();
          }
          else if (location) {
@@ -238,6 +232,12 @@ MCat.Navigation = (function() {
                form.addEventListener('submit', this.submitFormHandler(form));
             }
          }
+      }
+      setHeadTitle() {
+         const head  = (document.getElementsByTagName('head'))[0];
+         const title = head.querySelector('title');
+         const entry = this.capitalise(this.titleEntry);
+         title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
       submitFormHandler(form) {
          form.setAttribute('listener', true);

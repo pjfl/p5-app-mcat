@@ -1,20 +1,19 @@
 use utf8; # -*- coding: utf-8; -*-
 package MCat::Navigation;
 
-use attributes ();
-
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::StateTable::Types     qw( ArrayRef HashRef Str URI );
-use HTTP::Status                qw( HTTP_OK );
-use MCat::Util                  qw( clear_redirect formpost
-                                    maybe_render_partial );
-use Ref::Util                   qw( is_hashref );
-use Scalar::Util                qw( blessed );
-use Type::Utils                 qw( class_type );
+use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTML::StateTable::Types      qw( ArrayRef HashRef Str URI );
+use HTTP::Status                 qw( HTTP_OK );
+use MCat::Util                   qw( clear_redirect formpost
+                                     maybe_render_partial );
+use Ref::Util                    qw( is_hashref );
+use Scalar::Util                 qw( blessed );
+use Type::Utils                  qw( class_type );
+use Unexpected::Functions        qw( throw NoMethod UnknownModel );
+use MCat::Navigation::Attributes qw();
 use HTML::Tiny;
 use JSON::MaybeXS;
 use Try::Tiny;
-use Unexpected::Functions       qw( throw );
 use Moo;
 
 has 'confirm_message' => is => 'ro', isa => Str, default => 'Are you sure ?';
@@ -55,10 +54,10 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
    return {
       'class' => 'state-navigation',
       'data-navigation-config' => $self->_json->encode({
-         'menus'        => $self->_menus,
-         'messages'     => $self->_messages,
-         'moniker'      => $self->model->moniker,
-         'properties'   => {
+         'menus'      => $self->_menus,
+         'messages'   => $self->_messages,
+         'moniker'    => $self->model->moniker,
+         'properties' => {
             'base-url'       => $self->_base_url,
             'confirm'        => $self->confirm_message,
             'container-name' => $self->container_name,
@@ -134,15 +133,17 @@ sub crud {
 sub finalise {
    my $self    = shift;
    my $context = $self->context;
+   my $request = $context->request;
 
    return unless $self->is_script_request
-      && $context->request->query_parameters->{navigation};
+      && $request->query_parameters->{navigation};
 
    $self->_add_global;
 
    my $body = $self->_json->encode({
       'menus'        => $self->_menus,
-      'verify-token' => $self->context->verification_token,
+      'title-entry'  => $self->_title_entry($request),
+      'verify-token' => $context->verification_token,
    });
 
    $context->stash(
@@ -241,11 +242,11 @@ sub _get_attributes {
 
    my ($moniker, $method) = split m{ / }mx, $action;
    my $model = $self->context->models->{$moniker}
-      or throw 'Moniker [_1] not found in models', [$moniker];
+      or throw UnknownModel, [$moniker];
    my $code_ref = $model->can($method)
-      or throw 'Class [_1] has no method [_2]', [ blessed $model, $method ];
+      or throw NoMethod, [ blessed $model, $method ];
 
-   return attributes::get($code_ref) // {};
+   return MCat::Navigation::Attributes->fetch($code_ref) // {};
 }
 
 sub _get_menu_label {
@@ -254,6 +255,16 @@ sub _get_menu_label {
    my $menu = $self->_get_attributes($action)->{Nav};
 
    return $menu ? $menu->[0] : NUL;
+}
+
+sub _title_entry {
+   my ($self, $request) = @_;
+
+   (my $entry = $request->path) =~ s{ [_/] }{ }gmx;
+   $entry =~ s{ \d+ \z }{view}mx;
+   $entry =~ s{ \d }{}gmx;
+   $entry =~ s{ [ ][ ] }{ }gmx;
+   return $entry;
 }
 
 sub _uri {
@@ -265,7 +276,5 @@ sub _uri {
 
    return $self->context->uri_for_action(@args);
 }
-
-use namespace::autoclean;
 
 1;

@@ -178,7 +178,7 @@ has 'status' =>
 has 'status_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
-   default => sub { [ qw(cut -f 4 -d), q( ), qw(| sort | uniq) ] };
+   default => sub { [ qw(cut -f 3 -d), q( ), qw(| sort | uniq) ] };
 
 has 'status_filter_values' => is => 'ro', isa => ArrayRef[Str], default => sub {
    return [qw( ALERT CRITICAL DEBUG ERROR FATAL INFO WARNING )];
@@ -203,7 +203,7 @@ has 'username' =>
 has 'username_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
-   default => sub { [ qw(cut -f 5 -d), q( ), qw(| sort | uniq) ] };
+   default => sub { [ qw(cut -f 4 -d), q( ), qw(| tr -d \(\) | sort | uniq) ] };
 
 =item source
 

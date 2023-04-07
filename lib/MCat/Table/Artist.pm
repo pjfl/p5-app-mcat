@@ -73,7 +73,8 @@ has_column 'name' =>
    },
    searchable => TRUE,
    sortable   => TRUE,
-   title      => 'Sort by artist';
+   title      => 'Sort by artist',
+   width      => '80%';
 
 has_column 'upvotes' =>
    cell_traits => ['Numeric'],

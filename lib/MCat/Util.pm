@@ -1,3 +1,4 @@
+use utf8; # -*- coding: utf-8; -*-
 package MCat::Util;
 
 use strictures;
@@ -14,7 +15,7 @@ use URI::https;
 
 use Sub::Exporter -setup => { exports => [
    qw( clear_redirect digest formpost local_tz maybe_render_partial
-       new_uri now redirect redirect2referer trim urandom uri_escape )
+       new_uri now redirect redirect2referer trim truncate urandom uri_escape )
 ]};
 
 my $digest_cache;
@@ -98,6 +99,13 @@ sub trim (;$$) {
    chomp $value;
    $value =~ s{ [$chars]+ \z }{}mx;
    return $value;
+}
+
+sub truncate ($;$) {
+   my ($string, $length) = @_;
+
+   $length //= 80;
+   return substr($string, 0, $length - 1) . '…';
 }
 
 sub urandom (;$$) {

@@ -8,7 +8,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'admin';
 
-sub menu : Nav('Admin') Auth('admin') {
+sub menu : Auth('admin') Nav('Admin') {
    my ($self, $context) = @_;
 
    my $nav = $context->stash('nav')->list('admin');

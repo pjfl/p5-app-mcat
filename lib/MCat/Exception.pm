@@ -42,7 +42,7 @@ has_exception 'IncorrectPassword' => parents => ['Authentication'],
    error   => 'User [_1] authentication failed';
 
 has_exception 'PasswordExpired' => parents => ['Authentication'],
-   error   => 'User [_1] authentication failed';
+   error   => 'User [_1] password expired';
 
 has_exception 'APIMethodFailed', parent => [$class],
    error => 'API class [_1] method [_2] call failed: [_3]';

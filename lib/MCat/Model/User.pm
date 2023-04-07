@@ -11,7 +11,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'user';
 
-sub base : Auth('admin') {
+sub base : Auth('view') {
    my ($self, $context, $userid) = @_;
 
    my $nav = $context->stash('nav')->list('user')->item('user/create');
@@ -78,6 +78,24 @@ sub edit : Auth('admin') Nav('Edit User') {
       my $message  = ['User [_1] updated', $form->item->name];
 
       $context->stash( redirect $user_view, $message );
+   }
+
+   $context->stash( form => $form );
+   return;
+}
+
+sub profile : Auth('view') Nav('Profile') {
+   my ($self, $context, $userid) = @_;
+
+   my $options = { context => $context, item => $context->stash('user') };
+   my $form    = $self->form->new_with_context('Profile', $options);
+
+   if ($form->process( posted => $context->posted )) {
+      my $name    = $form->item->name;
+      my $default = $context->uri_for_action($self->config->redirect);
+      my $message = ['User [_1] profile updated', $name];
+
+      $context->stash( redirect $default, $message );
    }
 
    $context->stash( form => $form );

@@ -19,6 +19,8 @@ has_field 'active' => type => 'Boolean', default => TRUE;
 
 has_field 'password' => type => 'Password';
 
+has_field 'password_expired' => type => 'Boolean', default => FALSE;
+
 has_field 'role' => type => 'Select';
 
 has_field 'timezone' => type => 'Timezone';
