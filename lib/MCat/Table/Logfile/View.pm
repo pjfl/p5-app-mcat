@@ -26,8 +26,6 @@ has '+form_buttons' => default => sub {
 
 has '+form_control_location' => default => 'TopRight';
 
-has '+form_messages' => default => sub { shift->context->config->page_manager };
-
 has '+name' => default => sub { shift->logfile };
 
 setup_resultset sub {

@@ -43,6 +43,11 @@ MCat.Util = (function() {
             const params = new URLSearchParams(new FormData(form));
             options.body = params.toString();
          }
+         if (options.json) {
+            options.headers.set('Content-Type', 'application/json');
+            options.body = options.json; delete options.json;
+            want = 'object';
+         }
          options.method ||= 'POST';
          if (options.method == 'POST') {
             options.cache ||= 'no-store';
@@ -54,6 +59,9 @@ MCat.Util = (function() {
          }
          if (response.headers.get('location')) return {
             location: response.headers.get('location'), status: 302
+         };
+         if (want == 'object') return {
+            object: await response.json(), status: response.status
          };
          if (want == 'text') return {
             status: response.status, text: await response.text()
@@ -73,12 +81,16 @@ MCat.Util = (function() {
             }
             throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
-         if (response.headers.get('location')) return {
-            location: response.headers.get('location'), status: 302
+         const headers = response.headers;
+         if (headers.get('location')) return {
+            location: headers.get('location'), status: 302
          };
-         if (want == 'blob') return {
-            blob: await response.blob(), status: response.status
-         };
+         if (want == 'blob') {
+            const key = 'content-disposition';
+            const filename = headers.get(key).split('filename=')[1];
+            const blob = await response.blob();
+            return { blob: blob, filename: filename, status: response.status };
+         }
          if (want == 'object') return {
             object: await response.json(), status: response.status
          };
