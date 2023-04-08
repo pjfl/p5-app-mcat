@@ -67,10 +67,11 @@ MCat.Util = (function() {
          options.method ||= 'GET';
          const response = await fetch(url, options);
          if (!response.ok) {
-            if (response.status == 404) {
-               if (want == 'object') return { object: false, status: 404 };
+            if (want == 'object') {
+               console.warn(`HTTP error! Status: ${response.statusText}`);
+               return { object: false, status: response.status };
             }
-            else throw new Error(`HTTP error! Status: ${response.statusText}`);
+            throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
          if (response.headers.get('location')) return {
             location: response.headers.get('location'), status: 302

@@ -20,9 +20,9 @@ MCat.Navigation = (function() {
          this.token            = this.properties['verify-token'];
          this.version          = this.properties['version'];
          this.contentContainer = document.getElementById(this.containerName);
+         this.contentPanel     = document.getElementById('panel-content');
+         this.contextPanels    = {};
          this.content;
-         this.contentPanel;
-         this.contextPanels = {};
          this.menu;
          this.titleEntry;
          container.append(this.renderTitle());
@@ -36,6 +36,16 @@ MCat.Navigation = (function() {
             event.preventDefault();
             this.renderContent(href);
          }.bind(this);
+      }
+      async loadMenuData(url) {
+         const state = { href: url + '' };
+         history.pushState(state, 'Unused', url); // API Darwin award
+         url.searchParams.set('navigation', true);
+         const { object } = await this.bitch.sucks(url);
+         if (!object) return;
+         this.menus = object['menus'];
+         this.token = object['verify-token'];
+         this.titleEntry = object['title-entry'];
       }
       menuLeave(context) {
          return function(event) {
@@ -61,6 +71,24 @@ MCat.Navigation = (function() {
             console.warn('Neither content nor redirect in response to post');
          }
       }
+      async redirectAfterGet(href, location) {
+         const locationURL = new URL(location);
+         locationURL.searchParams.delete('mid');
+         if (locationURL != href) {
+            console.log('Redirect after get to ' + location);
+            await this.renderContent(location);
+            return;
+         }
+         const state = history.state;
+         console.log('Redirect after get to self ' + location);
+         console.log('Current state ' + state.href);
+         let count = 0;
+         while (href == state.href) {
+            history.back();
+            if (++count > 3) break;
+         }
+         console.log('Recovered state ' + count + ' ' + state.href);
+      }
       redraw() {
          const menu = this.h.nav({ className: 'nav-menu' }, [
             this.renderList(this.menus['_global'], 'global'),
@@ -71,8 +99,7 @@ MCat.Navigation = (function() {
       async render() {
          this.redraw();
          await StateTable.isConstructing();
-         this.contentPanel = document.getElementById('panel-content');
-         this.replaceLinks(this.contentPanel);
+         this.replaceLinks(document.getElementById('panel-content'));
       }
       async renderContent(href) {
          const url = new URL(href);
@@ -81,37 +108,13 @@ MCat.Navigation = (function() {
          const { location, text } = await this.bitch.sucks(url, opt);
          if (text && text.length > 0) {
             await this.renderHTML(text);
-            // API Darwin award
-            history.pushState({ href: url + '' }, 'Unused', url);
-            url.searchParams.set('navigation', true);
-            const { object } = await this.bitch.sucks(url);
-            if (object) {
-               this.menus = object['menus'];
-               this.token = object['verify-token'];
-               this.titleEntry = object['title-entry'];
-            }
+            await this.loadMenuData(url);
             this.setHeadTitle();
             this.redraw();
          }
          else if (location) {
             this.messages.render(location);
-            const locationURL = new URL(location);
-            locationURL.searchParams.delete('mid');
-            if (locationURL != href) {
-               console.log('Redirect after get to ' + location);
-               await this.renderContent(location);
-            }
-            else {
-               const state = history.state;
-               console.log('Redirect after get to self ' + location);
-               console.log('Current state ' + state.href);
-               let count = 0;
-               while (href == state.href) {
-                  history.back();
-                  if (++count > 3) break;
-               }
-               console.log('Recovered state ' + count + ' ' + state.href);
-            }
+            this.redirectAfterGet(href, location);
          }
          else {
             console.warn('Neither content nor redirect in response to get');
@@ -134,8 +137,7 @@ MCat.Navigation = (function() {
             id: 'panel-content', className: 'panel-content'
          });
          panel.innerHTML = html;
-         StateTable.scan(panel);
-         await StateTable.isRendering();
+         await StateTable.scan(panel);
          this.replaceLinks(panel);
          this.contentPanel = document.getElementById('panel-content');
          this.contentPanel = this.display(
@@ -215,9 +217,9 @@ MCat.Navigation = (function() {
             className: 'nav-title'
          }, this.h.span({ className: 'title-text'}, title));
       }
-      replaceLinks(panel) {
+      replaceLinks(container) {
          const url = this.baseURL;
-         for (const link of panel.getElementsByTagName('a')) {
+         for (const link of container.getElementsByTagName('a')) {
             const href = link.href + '';
             if (href.length && url == href.substring(0, url.length)
                 && !link.getAttribute('listener')) {
@@ -225,7 +227,7 @@ MCat.Navigation = (function() {
                link.addEventListener('click', this.loadContent(href));
             }
          }
-         for (const form of panel.getElementsByTagName('form')) {
+         for (const form of container.getElementsByTagName('form')) {
             const action = form.action + '';
             if (action.length && url == action.substring(0, url.length)
                 && !form.getAttribute('listener')) {
@@ -320,6 +322,11 @@ MCat.Navigation = (function() {
       }
       renderMessage(href) {
          this.navigator.messages.render(href);
+      }
+      onContentLoad() {
+         if (this.navigator) this.navigator.replaceLinks(
+            document.getElementById('panel-content')
+         );
       }
    }
    const manager = new Manager();

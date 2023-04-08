@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds custom user object view with action buttons
           - Meta data updated
           - Messaging and loggin improvements
           - Adds columns to user table

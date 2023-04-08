@@ -8,6 +8,7 @@ use MooX::HandlesVia;
 use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
+with    'HTML::StateTable::Role::Form';
 
 has '+no_count' => default => TRUE;
 

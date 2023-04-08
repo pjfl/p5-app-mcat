@@ -225,6 +225,15 @@ produce all the pages
 has 'page' => is => 'ro', isa => HashRef,
    default => sub { { html => 'base', wrapper => 'standard' } };
 
+=item page_manager
+
+Name of the JS page management object
+
+=cut
+
+has 'page_manager' => is => 'ro', isa => Str,
+   default => 'MCat.Navigation.manager';
+
 =item prefix
 
 Used as a prefix when creating identifiers

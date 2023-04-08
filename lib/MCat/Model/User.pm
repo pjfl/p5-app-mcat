@@ -132,7 +132,7 @@ sub remove : Auth('admin') {
 sub view : Auth('admin') Nav('View User') {
    my ($self, $context, $userid) = @_;
 
-   $context->stash(table => $self->table->new_with_context('Object::View', {
+   $context->stash(table => $self->table->new_with_context('User::View', {
       context => $context, result => $context->stash('user')
    }));
    return;

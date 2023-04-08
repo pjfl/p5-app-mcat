@@ -66,7 +66,8 @@ sub make_css : method {
 
    $dir->filter(sub { m{ \.css \z }mx })->visit(sub { push @files, shift });
 
-   my $file  = 'mcat.css';
+   my $skin  = $self->config->skin;
+   my $file  = "mcat-${skin}.css";
    my $out   = io([qw( var root css ), $file])->assert_open('a')->truncate(0);
    my $count =()= map  { $out->append($_->slurp) }
                   sort { $a->name cmp $b->name } @files;

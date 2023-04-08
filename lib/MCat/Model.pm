@@ -41,7 +41,10 @@ has 'table' =>
    builder => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
-      my $options  = { namespace => "${appclass}::Table" };
+      my $options  = {
+         namespace    => "${appclass}::Table",
+         page_manager => $self->config->page_manager,
+      };
 
       return HTML::StateTable::Manager->new($options);
    };
@@ -83,7 +86,7 @@ sub exception_handler { # Also called by component loader if model dies
    $context->stash(
       code      => $code > HTTP_OK ? $code : HTTP_OK,
       exception => $exception,
-      page      => { %{$self->config->page}, layout => 'exception' },
+      page      => { %{$self->config->page}, layout => 'page/exception' },
    );
    $self->_finalise_stash($context);
    return;

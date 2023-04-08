@@ -19,7 +19,6 @@ has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 has '+form_buttons' => default => sub {
    return [{
       action    => 'logfile/clear_cache',
-      class     => 'remove-item',
       selection => 'disable_on_select',
       value     => 'Clear Cache',
    }];
@@ -27,7 +26,7 @@ has '+form_buttons' => default => sub {
 
 has '+form_control_location' => default => 'TopRight';
 
-has '+form_messages' => default => 'MCat.Navigation.manager';
+has '+form_messages' => default => sub { shift->context->config->page_manager };
 
 has '+name' => default => sub { shift->logfile };
 

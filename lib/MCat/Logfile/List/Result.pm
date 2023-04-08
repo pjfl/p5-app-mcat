@@ -21,7 +21,7 @@ has 'modified' =>
       my $self = shift;
 
       return DateTime->from_epoch(
-         epoch     => $self->path->stat->{mtime}, time_zone => local_tz
+         epoch => $self->path->stat->{mtime}, time_zone => local_tz
       );
    };
 

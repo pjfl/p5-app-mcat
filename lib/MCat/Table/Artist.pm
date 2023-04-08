@@ -34,13 +34,12 @@ has '+download_display' => default => FALSE;
 has '+form_buttons' => default => sub {
    return [{
       action    => 'artist/remove',
-      class     => 'remove-item',
       selection => 'select_one',
       value     => 'Remove Artist',
    }];
 };
 
-has '+tag_section' => default => TRUE;
+has '+tag_section' => default => FALSE;
 
 set_table_name 'artist';
 

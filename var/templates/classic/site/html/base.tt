@@ -9,7 +9,7 @@
    <meta name="keywords" content="[% config.name %]">
    <meta name="generator" content="[% config.name %] v[% version %]">
    <link href="/favicon.ico" rel="shortcut icon">
-   <link href="/css/mcat.css" rel="stylesheet" type="text/css">
+   <link href="/css/mcat-[% config.skin %].css" rel="stylesheet" type="text/css">
    <script src="/js/mcat.js"></script>
    <script src="https://code.highcharts.com/highcharts.js"></script>
 </head>
