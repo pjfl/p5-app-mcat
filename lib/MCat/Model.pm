@@ -42,8 +42,8 @@ has 'table' =>
       my $self     = shift;
       my $appclass = $self->config->appclass;
       my $options  = {
-         namespace    => "${appclass}::Table",
-         page_manager => $self->config->page_manager,
+         namespace   => "${appclass}::Table",
+         nav_manager => $self->config->navigation_manager,
       };
 
       return HTML::StateTable::Manager->new($options);

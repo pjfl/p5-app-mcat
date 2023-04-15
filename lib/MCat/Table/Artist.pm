@@ -16,6 +16,7 @@ with    'HTML::StateTable::Role::ForceRowLimit';
 with    'HTML::StateTable::Role::Tag';
 with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Chartable';
+with    'HTML::StateTable::Role::Animation';
 
 has '+active_control_location' => default => 'TopRight';
 
@@ -52,11 +53,11 @@ has_column 'check' =>
 has_column 'artistid' =>
    cell_traits => ['Numeric'],
    label       => 'ID',
-   width       => '40px';
+   width       => '2rem';
 
 has_column 'tags' =>
-#    append_to   => 'name',
-#    search_type => 'tag',
+#   append_to   => 'name',
+#   search_type => 'tag',
    displayed   => FALSE,
    searchable  => TRUE,
    sortable    => TRUE,
@@ -73,7 +74,7 @@ has_column 'name' =>
    searchable => TRUE,
    sortable   => TRUE,
    title      => 'Sort by artist',
-   width      => '80%';
+   width      => '25rem';
 
 has_column 'upvotes' =>
    cell_traits => ['Numeric'],

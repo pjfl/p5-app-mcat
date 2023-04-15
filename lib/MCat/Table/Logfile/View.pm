@@ -28,6 +28,8 @@ has '+form_control_location' => default => 'TopRight';
 
 has '+name' => default => sub { shift->logfile };
 
+has '+title_location' => default => 'outer';
+
 setup_resultset sub {
    my $self   = shift;
    my $config = $self->context->config;
@@ -46,13 +48,13 @@ has_column 'timestamp' =>
    label       => 'Timestamp',
    searchable  => TRUE,
    sortable    => TRUE,
-   width       => '160px';
+   width       => '16ch';
 
-has_column 'status' => filterable => TRUE, width => '100px';
+has_column 'status' => filterable => TRUE, width => '8ch';
 
 has_column 'username' => filterable => TRUE, searchable => TRUE;
 
-has_column 'source' => width => '200px', searchable => TRUE;
+has_column 'source' => width => '15rem', searchable => TRUE;
 
 has_column 'remainder' => label => 'Line', searchable => TRUE;
 

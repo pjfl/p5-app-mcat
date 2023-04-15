@@ -22,6 +22,8 @@ has 'container_name' => is => 'ro', isa => Str, default => 'standard-content';
 
 has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 
+has 'content_name' => is => 'ro', isa => Str, default => 'panel-content';
+
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
    required => TRUE, weak_ref => TRUE;
 
@@ -61,11 +63,12 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'base-url'       => $self->_base_url,
             'confirm'        => $self->confirm_message,
             'container-name' => $self->container_name,
+            'content-name'   => $self->content_name,
             'label'          => $self->label,
             'title'          => $self->title,
             'title-abbrev'   => $self->title_abbrev,
             'verify-token'   => $self->context->verification_token,
-            'version'        => $MCat::VERSION,
+            'version'        => MCat->VERSION,
          },
       }),
    };
@@ -142,7 +145,7 @@ sub finalise {
 
    my $body = $self->_json->encode({
       'menus'        => $self->_menus,
-      'title-entry'  => $self->_title_entry($request),
+      'title-entry'  => $self->_title_entry($context),
       'verify-token' => $context->verification_token,
    });
 
@@ -258,13 +261,11 @@ sub _get_menu_label {
 }
 
 sub _title_entry {
-   my ($self, $request) = @_;
+   my ($self, $context) = @_;
 
-   (my $entry = $request->path) =~ s{ [_/] }{ }gmx;
-   $entry =~ s{ \d+ \z }{view}mx;
-   $entry =~ s{ \d }{}gmx;
-   $entry =~ s{ [ ][ ] }{ }gmx;
-   return $entry;
+   my @parts = split m{ / }mx, $context->action;
+
+   return $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
 }
 
 sub _uri {

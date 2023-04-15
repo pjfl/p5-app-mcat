@@ -11,7 +11,8 @@ use MCat::Util                 qw( digest local_tz truncate urandom );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectPassword
                                    PasswordExpired );
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->table('public.user');
 
@@ -47,11 +48,9 @@ $class->set_primary_key('id');
 
 $class->add_unique_constraint('user_name_uniq', ['name']);
 
-$class->belongs_to('role' => 'MCat::Schema::Result::Role', 'role_id');
+$class->belongs_to('role' => "${result}::Role", 'role_id');
 
-$class->has_many(
-   'preferences' => 'MCat::Schema::Result::Preference', 'user_id'
-);
+$class->has_many('preferences' => "${result}::Preference", 'user_id');
 
 # Private functions
 sub _get_salt ($) {
@@ -82,8 +81,9 @@ sub authenticate {
 
    throw PasswordExpired, [$self] if $self->password_expired && !$for_update;
 
-   throw IncorrectPassword, [$self]
-      unless $self->password eq bcrypt($password, _get_salt $self->password);
+   my $encrypted = bcrypt($password, _get_salt $self->password);
+
+   throw IncorrectPassword, [$self] unless $self->password eq $encrypted;
 
    return TRUE;
 }

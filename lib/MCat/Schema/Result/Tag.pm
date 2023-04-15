@@ -5,7 +5,8 @@ use parent 'DBIx::Class::Core';
 
 use HTML::Forms::Constants qw( FALSE TRUE );
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->table('tag');
 
@@ -22,8 +23,7 @@ $class->set_primary_key('id');
 $class->add_unique_constraint('tag_name_uniq', ['name']);
 
 $class->has_many(
-   artist_tags => 'MCat::Schema::Result::TagArtist',
-   { 'foreign.tag_id' => 'self.id' },
+   artist_tags => "${result}::TagArtist", { 'foreign.tag_id' => 'self.id' },
 );
 
 1;

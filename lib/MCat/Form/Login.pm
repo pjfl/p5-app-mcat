@@ -13,11 +13,12 @@ has '+title'               => default => 'Login';
 has '+default_wrapper_tag' => default => 'fieldset';
 has '+do_form_wrapper'     => default => TRUE;
 has '+info_message'        => default => 'Enter your username and password';
+has '+is_html5'            => default => TRUE;
 has '+item_class'          => default => 'User';
 
 has 'log' => is => 'ro', predicate => 'has_log';
 
-has_field 'name', required => TRUE;
+has_field 'name', required => TRUE, title => 'Enter your user name';
 
 has_field 'password', type => 'Password', required => TRUE;
 

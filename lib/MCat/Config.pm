@@ -203,7 +203,7 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
-         title => $self->name,
+         title => $self->name . ' v' . MCat->VERSION,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
          global => [
@@ -215,6 +215,15 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
 has '_navigation' => is => 'ro', isa => HashRef, init_arg => 'navigation',
    default => sub { {} };
 
+=item navigation_manager
+
+Name of the JS navigation management object
+
+=cut
+
+has 'navigation_manager' => is => 'ro', isa => Str,
+   default => 'MCat.Navigation.manager';
+
 =item page
 
 Defines the names of the C<site/html> and C<site/wrapper> templates used to
@@ -224,15 +233,6 @@ produce all the pages
 
 has 'page' => is => 'ro', isa => HashRef,
    default => sub { { html => 'base', wrapper => 'standard' } };
-
-=item page_manager
-
-Name of the JS page management object
-
-=cut
-
-has 'page_manager' => is => 'ro', isa => Str,
-   default => 'MCat.Navigation.manager';
 
 =item prefix
 

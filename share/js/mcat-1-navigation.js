@@ -14,13 +14,14 @@ MCat.Navigation = (function() {
          this.baseURL          = this.properties['base-url'];
          this.confirm          = this.properties['confirm'];
          this.containerName    = this.properties['container-name'];
+         this.contentName      = this.properties['content-name'];
          this.controlLabel     = this.properties['label'] || '≡';
          this.title            = this.properties['title'];
          this.titleAbbrev      = this.properties['title-abbrev'];
          this.token            = this.properties['verify-token'];
          this.version          = this.properties['version'];
          this.contentContainer = document.getElementById(this.containerName);
-         this.contentPanel     = document.getElementById('panel-content');
+         this.contentPanel     = document.getElementById(this.contentName);
          this.contextPanels    = {};
          this.content;
          this.menu;
@@ -28,13 +29,13 @@ MCat.Navigation = (function() {
          container.append(this.renderTitle());
          window.addEventListener('popstate', function(event) {
             if (event.state && event.state.href)
-               this.renderContent(event.state.href);
+               this.renderLocation(event.state.href);
          }.bind(this));
       }
-      loadContent(href) {
+      loadLocation(href) {
          return function(event) {
             event.preventDefault();
-            this.renderContent(href);
+            this.renderLocation(href);
          }.bind(this);
       }
       async loadMenuData(url) {
@@ -65,7 +66,7 @@ MCat.Navigation = (function() {
          if (text) this.renderHTML(text);
          else if (location) {
             this.messages.render(location);
-            this.renderContent(location);
+            this.renderLocation(location);
          }
          else {
             console.warn('Neither content nor redirect in response to post');
@@ -76,7 +77,7 @@ MCat.Navigation = (function() {
          locationURL.searchParams.delete('mid');
          if (locationURL != href) {
             console.log('Redirect after get to ' + location);
-            await this.renderContent(location);
+            await this.renderLocation(location);
             return;
          }
          const state = history.state;
@@ -99,26 +100,7 @@ MCat.Navigation = (function() {
       async render() {
          this.redraw();
          await StateTable.isConstructing();
-         this.replaceLinks(document.getElementById('panel-content'));
-      }
-      async renderContent(href) {
-         const url = new URL(href);
-         url.searchParams.delete('mid');
-         const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
-         const { location, text } = await this.bitch.sucks(url, opt);
-         if (text && text.length > 0) {
-            await this.renderHTML(text);
-            await this.loadMenuData(url);
-            this.setHeadTitle();
-            this.redraw();
-         }
-         else if (location) {
-            this.messages.render(location);
-            this.redirectAfterGet(href, location);
-         }
-         else {
-            console.warn('Neither content nor redirect in response to get');
-         }
+         this.replaceLinks(document.getElementById(this.contentName));
       }
       renderControl() {
          this.contextPanels['control'] = this.h.div({
@@ -133,13 +115,12 @@ MCat.Navigation = (function() {
          ]);
       }
       async renderHTML(html) {
-         const panel = this.h.div({
-            id: 'panel-content', className: 'panel-content'
-         });
+         const attr  = { id: this.contentName, className: this.contentName };
+         const panel = this.h.div(attr);
          panel.innerHTML = html;
          await StateTable.scan(panel);
          this.replaceLinks(panel);
-         this.contentPanel = document.getElementById('panel-content');
+         this.contentPanel = document.getElementById(this.contentName);
          this.contentPanel = this.display(
             this.contentContainer, 'contentPanel', panel
          );
@@ -149,7 +130,7 @@ MCat.Navigation = (function() {
          const [label, href] = item;
          if (typeof label != 'object') {
             if (href) {
-               const attr = { href: href, onclick: this.loadContent(href) };
+               const attr = { href: href, onclick: this.loadLocation(href) };
                if (context) attr['onmouseover'] = this.menuOver(context);
                const link = this.h.a(attr, label);
                link.setAttribute('listener', true);
@@ -210,12 +191,29 @@ MCat.Navigation = (function() {
          if (containsSelected) navList.classList.add('selected');
          return navList;
       }
+      async renderLocation(href) {
+         const url = new URL(href);
+         url.searchParams.delete('mid');
+         const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
+         const { location, text } = await this.bitch.sucks(url, opt);
+         if (text && text.length > 0) {
+            await this.renderHTML(text);
+            await this.loadMenuData(url);
+            this.setHeadTitle();
+            this.redraw();
+         }
+         else if (location) {
+            this.messages.render(location);
+            this.redirectAfterGet(href, location);
+         }
+         else {
+            console.warn('Neither content nor redirect in response to get');
+         }
+      }
       renderTitle() {
-         const title = this.version
-               ? this.title + ' v' + this.version : this.title;
          return this.h.div({
             className: 'nav-title'
-         }, this.h.span({ className: 'title-text'}, title));
+         }, this.h.span({ className: 'title-text'}, this.title));
       }
       replaceLinks(container) {
          const url = this.baseURL;
@@ -224,7 +222,7 @@ MCat.Navigation = (function() {
             if (href.length && url == href.substring(0, url.length)
                 && !link.getAttribute('listener')) {
                link.setAttribute('listener', true);
-               link.addEventListener('click', this.loadContent(href));
+               link.addEventListener('click', this.loadLocation(href));
             }
          }
          for (const form of container.getElementsByTagName('form')) {
@@ -325,7 +323,7 @@ MCat.Navigation = (function() {
       }
       onContentLoad() {
          if (this.navigator) this.navigator.replaceLinks(
-            document.getElementById('panel-content')
+            document.getElementById(this.navigator.contentName)
          );
       }
    }

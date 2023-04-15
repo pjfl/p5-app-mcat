@@ -5,7 +5,8 @@ use parent 'DBIx::Class::Core';
 
 use HTML::Forms::Constants qw( FALSE TRUE );
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->load_components('InflateColumn::DateTime');
 
@@ -32,20 +33,20 @@ $class->set_primary_key('artistid');
 $class->add_unique_constraint('artist_name_uniq', ['name']);
 
 $class->has_many(
-  cds => 'MCat::Schema::Result::Cd',
+  cds => "${result}::Cd",
   { 'foreign.artistid' => 'self.artistid' },
   { cascade_copy => FALSE, cascade_delete => FALSE },
 );
 
 $class->has_many(
-   artist_tags => 'MCat::Schema::Result::TagArtist',
+   artist_tags => "${result}::TagArtist",
    { 'foreign.artistid' => 'self.artistid' }
 );
 
 $class->many_to_many('tags', 'artist_tags', 'tag');
 
 $class->might_have(
-   tag_string => 'MCat::Schema::Result::TagArtistString',
+   tag_string => "${result}::TagArtistString",
    { 'foreign.artistid' => 'self.artistid' }
 );
 

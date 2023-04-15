@@ -5,11 +5,13 @@ use Moo;
 use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
-with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Configurable';
+with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
+
+has '+configurable_control_location' => default => 'TopLeft';
 
 has '+form_buttons' => default => sub {
    return [{
@@ -20,18 +22,16 @@ has '+form_buttons' => default => sub {
    }];
 };
 
-set_table_name 'tag';
+has '+form_control_location' => default => 'BottomRight';
 
-has_column 'check' =>
-   cell_traits => ['Checkbox'],
-   label       => SPC,
-   options     => { checkall => TRUE },
-   value       => 'id';
+has '+page_size_control_location' => default => 'BottomLeft';
+
+set_table_name 'tag';
 
 has_column 'id' =>
    cell_traits => ['Numeric'],
    label       => 'ID',
-   width       => '40px';
+   width       => '2rem';
 
 has_column 'name' =>
    filterable => TRUE,
@@ -44,7 +44,13 @@ has_column 'name' =>
    },
    searchable => TRUE,
    sortable   => TRUE,
-   title      => 'Sort by tag';
+   title      => 'Sort by tag',
+   width      => '20rem';
+
+has_column 'check' =>
+   cell_traits => ['Checkbox'],
+   label       => SPC,
+   value       => 'id';
 
 use namespace::autoclean -except => TABLE_META;
 

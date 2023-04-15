@@ -12,6 +12,7 @@ has '+title'               => default => 'Change Password';
 has '+default_wrapper_tag' => default => 'fieldset';
 has '+do_form_wrapper'     => default => TRUE;
 has '+info_message'        => default => 'Authenticate using your old password';
+has '+is_html5'            => default => TRUE;
 has '+no_update'           => default => TRUE;
 
 has 'log' => is => 'ro', predicate => 'has_log';
@@ -20,7 +21,8 @@ has_field 'name' => type => 'Display', label => 'User Name';
 
 has_field 'old_password' => type => 'Password', label => 'Old Password';
 
-has_field 'password' => type => 'Password', label => 'New Password';
+has_field 'password' => type => 'Password', label => 'New Password',
+   title => 'Password must be at least 8 characters';
 
 has_field '_password' => type => 'PasswordConf', label => 'and again',
    password_field => 'password';

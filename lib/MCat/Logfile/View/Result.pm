@@ -186,6 +186,8 @@ has 'status_filter_values' => is => 'ro', isa => ArrayRef[Str], default => sub {
 
 =item username
 
+Name of user causing this log entry
+
 =cut
 
 has 'username' =>

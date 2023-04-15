@@ -1,7 +1,7 @@
 <header>[% nav.render %]</header>
 <div class="centred-content">
-   <div id="[% nav.container_name %]" class="standard-content">
-      <div id="panel-content" class="panel-content">
+   <div id="[% nav.container_name %]" class="[% nav.container_name %]">
+      <div id="[% nav.content_name %]" class="[% nav.content_name %]">
 [% content %]
       </div>
    </div>

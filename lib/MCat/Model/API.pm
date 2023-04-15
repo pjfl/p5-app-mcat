@@ -44,10 +44,10 @@ sub dispatch : Auth('none') {
    return $self->error($context, UnknownAPIMethod, [$class, $method])
       unless $coderef;
 
-   return if $context->posted && !$self->has_valid_token($context);
-
    return $self->error($context, UnauthorisedAPICall, [$class, $method])
       unless $self->_allowed($context, $coderef);
+
+   return if $context->posted && !$self->has_valid_token($context);
 
    try { $handler->$method($context, @args) }
    catch_class [
