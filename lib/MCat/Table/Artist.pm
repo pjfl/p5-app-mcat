@@ -5,12 +5,12 @@ use Moo;
 use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable'; # Buddhist table - One with everything
+with    'HTML::StateTable::Role::Form';
 with    'HTML::StateTable::Role::Active';
 with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Downloadable';
 with    'HTML::StateTable::Role::CheckAll';
-with    'HTML::StateTable::Role::Form';
 with    'HTML::StateTable::Role::HighlightRow';
 with    'HTML::StateTable::Role::ForceRowLimit';
 with    'HTML::StateTable::Role::Tag';
@@ -18,7 +18,7 @@ with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Chartable';
 with    'HTML::StateTable::Role::Animation';
 
-has '+active_control_location' => default => 'TopRight';
+has '+active_control_location' => default => 'BottomLeft';
 
 has '+chartable_columns' => default => sub { ['upvotes'] };
 
@@ -30,7 +30,17 @@ has '+chartable_subtitle_link' => default => sub {
 
 has '+chartable_type' => default => 'pie';
 
+has '+configurable_dialog_close' => default => sub {
+   return shift->context->request->uri_for('img/cancel.svg')->as_string;
+};
+
+has '+configurable_label' => default => sub {
+   return shift->context->request->uri_for('img/tune.svg')->as_string;
+};
+
 has '+download_display' => default => FALSE;
+
+has '+form_control_location' => default => 'BottomLeft';
 
 has '+form_buttons' => default => sub {
    return [{
@@ -40,7 +50,13 @@ has '+form_buttons' => default => sub {
    }];
 };
 
+has '+page_control_location' => default => 'TopRight';
+
+has '+tag_control_location' => default => 'Credit';
+
 has '+tag_section' => default => FALSE;
+
+has '+title_location' => default => 'outer';
 
 set_table_name 'artist';
 

@@ -4,18 +4,25 @@ package MCat::Config;
 use Class::Usul::Functions qw( base64_decode_ns );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
-use File::DataClass::Types qw( Path Directory OctalNum Undef );
-use HTML::Forms::Constants qw( FALSE NUL SECRET TRUE );
+use File::DataClass::Types qw( Path Directory File OctalNum Undef );
+use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTML::Forms::Types     qw( ArrayRef HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
 use MCat::Util             qw( local_tz );
 use MCat::Exception;
+use Class::Usul::Constants qw();
 use HTML::StateTable::Constants qw();
 use Web::ComposableRequest::Constants qw();
 use Moo;
 
 with 'MCat::Config::Loader';
 
+my $except = [
+   qw( BUILDARGS BUILD DOES connect_info has_config_file has_config_home
+       has_local_config_file new )
+];
+
+Class::Usul::Constants->Dump_Except($except);
 HTML::Forms::Constants->Exception_Class('MCat::Exception');
 HTML::StateTable::Constants->Exception_Class('MCat::Exception');
 Web::ComposableRequest::Constants->Exception_Class('MCat::Exception');
@@ -50,18 +57,22 @@ models, and views
 
 has 'appclass' => is => 'ro', isa => Str, required => TRUE;
 
+=item appldir
+
+A synonym for 'home'
+
+=cut
+
+has 'appldir' => is => 'lazy', isa => Directory, default => sub { shift->home };
+
 =item bin
 
 A directory object which locates the applications executable files
 
 =cut
 
-has 'bin' => is => 'lazy', isa => Directory, default => sub {
-   my $name = '-' eq substr($PROGRAM_NAME, 0, 1)
-      ? $EXECUTABLE_NAME : $PROGRAM_NAME;
-
-   return io((split m{ [ ][\-][ ] }mx, $name)[0])->parent->absolute;
-};
+has 'bin' => is => 'lazy', isa => Directory,
+   default => sub { shift->pathname->parent };
 
 =item connect_info
 
@@ -74,10 +85,18 @@ and decrypted
 has 'connect_info' => is => 'lazy', isa => ArrayRef, default => sub {
    my $self     = shift;
    my $password = cipher->decrypt(base64_decode_ns $self->db_password);
-   my $extra    = { AutoCommit => TRUE };
 
-   return [$self->dsn, $self->db_username, $password, $extra];
+   return [$self->dsn, $self->db_username, $password, $self->db_extra];
 };
+
+=item db_extra
+
+Additional attributes passed to the database connection method
+
+=cut
+
+has 'db_extra' => is => 'ro', isa => HashRef,
+   default => sub { { AutoCommit => TRUE } };
 
 =item db_password
 
@@ -96,6 +115,14 @@ The username used to connect to the database
 =cut
 
 has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
+
+=item default_password
+
+The password used when creating new users
+
+=cut
+
+has 'default_password' => is => 'ro', isa => Str, default => 'welcome';
 
 =item default_route
 
@@ -122,12 +149,17 @@ request allow for it
 
 =cut
 
-has 'deflate_types' =>
-   is      => 'ro',
-   isa     => ArrayRef[Str],
-   default => sub {
-      [ qw( text/css text/html text/javascript application/javascript ) ]
-   };
+has 'deflate_types' => is => 'ro', isa => ArrayRef[Str], default => sub {
+   [ qw( text/css text/html text/javascript application/javascript ) ]
+};
+
+=item doc_title
+
+Title used in the production of manual pages
+
+=cut
+
+has 'doc_title' => is => 'ro', isa => Str, default => 'User Documentation';
 
 =item dsn
 
@@ -160,8 +192,16 @@ Configuration parameters used by the component loader
 =cut
 
 has 'loader_attr' => is => 'ro', isa => HashRef, default => sub {
-   return { should_log_errors => FALSE, should_log_messages => TRUE };
+   { should_log_errors => FALSE, should_log_messages => TRUE }
 };
+
+=item locale
+
+Locale used if an attempt is made to localise error messages
+
+=cut
+
+has 'locale' => is => 'ro', isa => Str, default => 'en_GB';
 
 =item logfile
 
@@ -171,6 +211,15 @@ class
 =cut
 
 has 'logfile' => is => 'ro', isa => Path|Undef, coerce => TRUE;
+
+=item man_page_cmd
+
+Command used to invoke the native manual page viewer
+
+=cut
+
+has 'man_page_cmd' => is => 'ro', isa => ArrayRef,
+   default => sub { ['nroff', '-man'] };
 
 =item mount_point
 
@@ -203,6 +252,7 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
+         skin => $self->skin,
          title => $self->name . ' v' . MCat->VERSION,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
@@ -234,6 +284,20 @@ produce all the pages
 has 'page' => is => 'ro', isa => HashRef,
    default => sub { { html => 'base', wrapper => 'standard' } };
 
+=item pathname
+
+File object for absolute pathname to the running program
+
+=cut
+
+has 'pathname' => is => 'ro', isa => File, default => sub {
+   my $name = $PROGRAM_NAME;
+
+   $name = '-' eq substr($name, 0, 1) ? $EXECUTABLE_NAME : $name;
+
+   return io((split m{ [ ][\-][ ] }mx, $name)[0])->absolute;
+};
+
 =item prefix
 
 Used as a prefix when creating identifiers
@@ -241,6 +305,15 @@ Used as a prefix when creating identifiers
 =cut
 
 has 'prefix' => is => 'ro', isa => Str, default => 'mcat';
+
+=item pwidth
+
+The width of the prompt to use (in characters) when asking for input on the
+command line
+
+=cut
+
+has 'pwidth' => is => 'ro', isa => PositiveInt, default => 60;
 
 =item redirect
 
@@ -305,6 +378,7 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
          id       => [ PositiveInt, 0 ],
          role     => [ Str, NUL ],
          timezone => [ Str, local_tz ],
+         wanted   => [ Object|Str, NUL ],
       },
    };
 };
@@ -318,7 +392,23 @@ Directory which is the document root for assets being served by the application
 has 'root' => is => 'lazy', isa => Directory,
    default => sub { shift->vardir->catdir('root') };
 
-has 'secret' => is => 'ro', isa => Str, default => SECRET;
+=item rundir
+
+Defaults the the 'tempdir'. Used to store runtime files
+
+=cut
+
+has 'rundir' => is => 'lazy', isa => Directory,
+   default => sub { shift->tempdir };
+
+=item script
+
+Name of the program being executed. Appears on the manual page output
+
+=cut
+
+has 'script' => is => 'lazy', isa => Str,
+   default => sub { shift->pathname->basename };
 
 =item skin
 
@@ -329,6 +419,16 @@ multiple sets. This is the name of the default set of templates
 
 has 'skin' => is => 'ro', isa => Str, default => 'classic';
 
+=item sqldir
+
+Directory object which contains the SQL DDL files used to create, populate
+and upgrade the database
+
+=cut
+
+has 'sqldir' => is => 'lazy', isa => Directory,
+   default => sub { shift->vardir->catdir('sql') };
+
 =item static
 
 Pipe separated list of files and directories under the document root that
@@ -336,10 +436,8 @@ should be served statically by the middleware
 
 =cut
 
-has 'static' =>
-   is      => 'ro',
-   isa     => Str,
-   default => 'css | favicon.ico | fonts | img | js | less';
+has 'static' => is => 'ro', isa => Str,
+   default => 'css | favicon.ico | font | img | js | less';
 
 =item tempdir
 
@@ -358,6 +456,14 @@ Time in seconds the CSRF token has to live before it is declared invalid
 
 has 'token_lifetime' => is => 'ro', isa => PositiveInt, default => 3_600;
 
+=item umask
+
+Umask set before any methods are executed by the command line dispatcher
+
+=cut
+
+has 'umask' => is => 'ro', isa => OctalNum, coerce => TRUE, default => '027';
+
 =item user
 
 Configuration options for the 'User' result class. Includes 'load_factor'
@@ -370,90 +476,12 @@ has 'user' => is => 'ro', isa => HashRef,
 
 =item vardir
 
-Directory where all non program files are expected to be found
+Directory where all non program files and directories are expected to be found
 
 =cut
 
-has 'vardir' =>
-   is      => 'ro',
-   isa     => Directory,
-   coerce  => TRUE,
+has 'vardir' => is => 'ro', isa => Directory, coerce => TRUE,
    default => sub { io[qw( var )] };
-
-# For the command line help methods to work
-
-=item appldir
-
-A synonym for 'home'
-
-=cut
-
-has 'appldir' => is => 'lazy', isa => Directory, default => sub { shift->home };
-
-=item doc_title
-
-Title used in the production of manual pages
-
-=cut
-
-has 'doc_title' => is => 'ro', isa => Str, default => 'User Documentation';
-
-=item locale
-
-Locale used if an attempt is made to localise error messages
-
-=cut
-
-has 'locale' => is => 'ro', isa => Str, default => 'en_GB';
-
-=item man_page_cmd
-
-Command used to invoke the native manual page viewer
-
-=cut
-
-has 'man_page_cmd' => is => 'ro', isa => ArrayRef,
-   default => sub { ['nroff', '-man'] };
-
-=item pwidth
-
-The width of the prompt to use (in characters) when asking for input on the
-command line
-
-=cut
-
-has 'pwidth' => is => 'ro', isa => PositiveInt, default => 60;
-
-=item rundir
-
-Defaults the the 'tempdir'. Used to store runtime files
-
-=cut
-
-has 'rundir' => is => 'lazy', isa => Directory,
-   default => sub { shift->tempdir };
-
-=item script
-
-Name of the program being used here. Appears on the manual page output
-
-=cut
-
-has 'script' => is => 'lazy', isa => Str, default => sub {
-   my $name = '-' eq substr($PROGRAM_NAME, 0, 1)
-      ? $EXECUTABLE_NAME : $PROGRAM_NAME;
-   my $script = io((split m{ [ ][\-][ ] }mx, $name)[0])->basename;
-
-   return "${script}";
-};
-
-=item umask
-
-Umask set before any methods are executed by the command line dispatcher
-
-=cut
-
-has 'umask' => is => 'ro', isa => OctalNum, coerce => TRUE, default => '027';
 
 use namespace::autoclean;
 

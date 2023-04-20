@@ -1,7 +1,7 @@
 package MCat::Model::Page;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use MCat::Util             qw( redirect );
+use MCat::Util             qw( new_uri redirect );
 use Unexpected::Functions  qw( PageNotFound UnknownUser );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -53,11 +53,14 @@ sub login : Auth('none') Nav('Login') {
    my $form    = $self->form->new_with_context('Login', $options);
 
    if ($form->process( posted => $context->posted )) {
-      my $name    = $form->field('name')->value;
-      my $default = $context->uri_for_action($self->config->redirect);
-      my $message = ['User [_1] logged in', $name];
+      my $name     = $form->field('name')->value;
+      my $default  = $context->uri_for_action($self->config->redirect);
+      my $wanted   = $context->session->wanted;
+      my $location = new_uri $context->request->scheme, $wanted if $wanted;
+      my $message  = ['User [_1] logged in', $name];
 
-      $context->stash( redirect $default, $message );
+      $context->stash( redirect $location || $default, $message );
+      $context->session->wanted(NUL);
    }
 
    $context->stash( form => $form );
@@ -75,6 +78,7 @@ sub logout : Auth('view') Nav('Logout') {
 
    $session->authenticated(FALSE);
    $session->role(NUL);
+   $session->wanted(NUL);
    $context->stash( redirect $default, $message );
    return;
 }

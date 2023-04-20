@@ -2,15 +2,16 @@
 <html lang="en">
 <head>
    <meta charset="utf-8">
-   <title>[% config.name %]</title>
+   <title>[% nav.title_abbrev _ ' - ' _ nav.title_entry %]</title>
    <meta name="viewport" content="width=device-width,initial-scale=1.0">
    <meta name="apple-mobile-web-app-capable" content="yes">
    <meta name="description" content="[% config.name %]">
    <meta name="keywords" content="[% config.name %]">
    <meta name="generator" content="[% config.name %] v[% version %]">
-   <link href="/favicon.ico" rel="shortcut icon">
-   <link href="/css/mcat-[% config.skin %].css" rel="stylesheet" type="text/css">
-   <script src="/js/mcat.js"></script>
+   <link rel="shortcut icon" href="[% uri_for('favicon.ico') %]">
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab">
+   <link rel="stylesheet" href="[% uri_for('css/mcat-' _ nav.skin _ '.css') %]" type="text/css">
+   <script src="[% uri_for('js/mcat.js') %]"></script>
    <script src="https://code.highcharts.com/highcharts.js"></script>
 </head>
 <body id="body">

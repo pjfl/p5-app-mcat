@@ -1,0 +1,6 @@
+{
+   "fields": "name active password role_id timezone",
+   "rows": [
+      "mcat, 1, mcat, 1, London/Europe"
+   ]
+}

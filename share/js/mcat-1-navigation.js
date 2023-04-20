@@ -15,7 +15,9 @@ MCat.Navigation = (function() {
          this.confirm          = this.properties['confirm'];
          this.containerName    = this.properties['container-name'];
          this.contentName      = this.properties['content-name'];
-         this.controlLabel     = this.properties['label'] || '≡';
+         this.controlLabel     = this.properties['label'];
+         this.logo             = this.properties['logo'];
+         this.skin             = this.properties['skin'];
          this.title            = this.properties['title'];
          this.titleAbbrev      = this.properties['title-abbrev'];
          this.token            = this.properties['verify-token'];
@@ -107,10 +109,15 @@ MCat.Navigation = (function() {
             className: 'nav-panel control-panel',
             onmouseleave: this.menuLeave('control')
          }, this.renderList(this.menus['_control'], 'control'));
+         const attr  = { className: 'nav-control-label' };
+         const isURL = this.controlLabel.match(/:/) ? true : false;
+         if (!isURL) attr.className = 'nav-control-label text';
+         const label = isURL
+               ? this.h.img({ src: this.controlLabel }) : this.controlLabel;
          return this.h.div({ className: 'nav-control' }, [
             this.h.a({
                onmouseover: this.menuOver('control')
-            }, this.controlLabel),
+            }, this.h.span(attr, label)),
             this.contextPanels['control']
          ]);
       }
@@ -124,7 +131,7 @@ MCat.Navigation = (function() {
          this.contentPanel = this.display(
             this.contentContainer, 'contentPanel', panel
          );
-         HForms.Util.focusFirst();
+         HForms.Util.focusFirst(this.skin);
       }
       renderItem(item, menuName, context) {
          const [label, href] = item;
@@ -211,9 +218,9 @@ MCat.Navigation = (function() {
          }
       }
       renderTitle() {
-         return this.h.div({
-            className: 'nav-title'
-         }, this.h.span({ className: 'title-text'}, this.title));
+         const title = this.logo.length ? [this.h.img({ src: this.logo })] : [];
+         title.push(this.h.span({ className: 'title-text' }, this.title));
+         return this.h.div({ className: 'nav-title' }, title);
       }
       replaceLinks(container) {
          const url = this.baseURL;
@@ -317,6 +324,9 @@ MCat.Navigation = (function() {
          else document.attachEvent('onreadystatechange', function() {
             if (document.readyState == 'complete') callback();
          });
+      }
+      renderLocation(href) {
+         this.navigator.renderLocation(href);
       }
       renderMessage(href) {
          this.navigator.messages.render(href);

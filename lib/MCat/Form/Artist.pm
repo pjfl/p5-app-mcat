@@ -13,7 +13,7 @@ has '+do_form_wrapper'     => default => TRUE;
 has '+info_message'        => default => 'Create or edit artists';
 has '+item_class'          => default => 'Artist';
 
-has_field 'name', required => 1;
+has_field 'name', required => TRUE;
 
 has_field 'tags' => type => 'Select', multiple => TRUE, size => 4;
 

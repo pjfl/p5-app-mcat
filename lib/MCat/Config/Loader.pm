@@ -9,7 +9,7 @@ use Moo::Role;
 
 =head1 Name
 
-MCat::Config::Loader - Configuration class for the Music Catalog
+MCat::Config::Loader - Configuration file loading role for the Music Catalog
 
 =head1 Synopsis
 

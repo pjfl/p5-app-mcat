@@ -11,7 +11,6 @@ my $class = __PACKAGE__;
 
 $class->load_namespaces;
 $class->load_components('Schema::Versioned');
-$class->upgrade_directory('var/sql');
 
 my $config;
 
@@ -19,6 +18,8 @@ sub config {
    my ($self, $value) = @_;
 
    $config = $value if $value;
+
+   $self->upgrade_directory($config->sqldir->as_string);
 
    return $config;
 }

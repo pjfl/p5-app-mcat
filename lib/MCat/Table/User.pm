@@ -9,9 +9,16 @@ with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
-with    'HTML::StateTable::Role::Reorderable';
 
-has '+configurable_control_location' => default => 'TopLeft';
+has '+configurable_control_location' => default => 'TopRight';
+
+has '+configurable_dialog_close' => default => sub {
+   return shift->context->request->uri_for('img/cancel.svg')->as_string;
+};
+
+has '+configurable_label' => default => sub {
+   return shift->context->request->uri_for('img/tune.svg')->as_string;
+};
 
 has '+form_buttons' => default => sub {
    return [{

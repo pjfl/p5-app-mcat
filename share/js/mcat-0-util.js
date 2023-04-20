@@ -133,6 +133,7 @@ MCat.Util = (function() {
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
       h5(attr, content)       { return this._tag('h5', attr, content) }
+      img(attr)               { return this._tag('img', attr) }
       input(attr, content)    { return this._tag('input', attr, content) }
       label(attr, content)    { return this._tag('label', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }

@@ -49,9 +49,9 @@ around 'to_psgi_app' => sub {
       enable 'FixMissingBodyInRedirect';
       enable 'Deflater',
          content_type => $config->deflate_types, vary_user_agent => TRUE;
-      enable 'Static',
-         path => qr{ \A / (?: $static) }mx, root => $config->root;
       mount $config->mount_point => builder {
+         enable 'Static',
+            path => qr{ \A / (?: $static) }mx, root => $config->root;
          enable 'Session', $self->session->middleware_config;
          enable 'LogDispatch', logger => $self->log;
          $psgi_app;

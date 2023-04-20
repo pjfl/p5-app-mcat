@@ -29,15 +29,44 @@ has 'context' => is => 'ro', isa => class_type('MCat::Context'),
 
 has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
-has 'label' => is => 'ro', isa => Str, default => '≡';
+has 'label' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
+   my $self = shift;
+
+   return $self->context->request->uri_for($self->_label)->as_string
+      if $self->_label =~ m{ / }mx;
+
+   return $self->_label;
+};
+
+has '_label' => is => 'ro', isa => Str, init_arg => 'label', default => '≡';
+
+has 'logo' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
+   my $self = shift;
+
+   return $self->context->request->uri_for($self->_logo)->as_string
+      if $self->_logo =~ m{ / }mx;
+
+   return NUL;
+};
+
+has '_logo' => is => 'ro', isa => Str, init_arg => 'logo', default => NUL;
 
 has 'messages' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'model' => is => 'ro', isa => class_type('MCat::Model'), required => TRUE;
 
+has 'skin' => is => 'rw', isa => Str, default => NUL;
+
 has 'title' => is => 'ro', isa => Str, default => 'Navigation';
 
 has 'title_abbrev' => is => 'ro', isa => Str, default => 'Nav';
+
+has 'title_entry' => is => 'lazy', isa => Str, default => sub {
+   my $self  = shift;
+   my @parts = split m{ / }mx, $self->context->action;
+
+   return $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
+};
 
 has '_base_url' => is => 'lazy', isa => URI, default => sub {
    return shift->context->request->uri_for(NUL);
@@ -65,6 +94,8 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'container-name' => $self->container_name,
             'content-name'   => $self->content_name,
             'label'          => $self->label,
+            'logo'           => $self->logo,
+            'skin'           => $self->skin,
             'title'          => $self->title,
             'title-abbrev'   => $self->title_abbrev,
             'verify-token'   => $self->context->verification_token,
@@ -145,7 +176,7 @@ sub finalise {
 
    my $body = $self->_json->encode({
       'menus'        => $self->_menus,
-      'title-entry'  => $self->_title_entry($context),
+      'title-entry'  => $self->title_entry,
       'verify-token' => $context->verification_token,
    });
 
@@ -258,14 +289,6 @@ sub _get_menu_label {
    my $menu = $self->_get_attributes($action)->{Nav};
 
    return $menu ? $menu->[0] : NUL;
-}
-
-sub _title_entry {
-   my ($self, $context) = @_;
-
-   my @parts = split m{ / }mx, $context->action;
-
-   return $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
 }
 
 sub _uri {

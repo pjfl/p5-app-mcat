@@ -1,6 +1,10 @@
 {
    "local_config_file": "mcat-local.json",
    "logfile": "var/log/mcat.log",
+   "navigation": {
+      "label": "img/settings.svg",
+      "logo": "img/logo.svg"
+   },
    "redis": {
       "every": 1000,
       "reconnect": 20,

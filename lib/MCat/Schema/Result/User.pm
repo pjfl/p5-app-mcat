@@ -65,6 +65,10 @@ sub _is_encrypted ($) {
    return $_[0] =~ m{ \A \$\d+[a]?\$ }mx ? TRUE : FALSE;
 }
 
+sub _is_nologin_token ($) {
+   return $_[0] =~ m{ \* }mx ? TRUE : FALSE;
+}
+
 sub _new_salt ($$) {
    my ($type, $lf) = @_;
 
@@ -88,11 +92,19 @@ sub authenticate {
    return TRUE;
 }
 
+sub encrypt_password {
+   my ($self, $password) = @_;
+
+   my $lf = $self->result_source->schema->config->user->{load_factor};
+
+   return bcrypt($password, _new_salt '2a', $lf);
+}
+
 sub insert {
    my $self    = shift;
    my $columns = { $self->get_inflated_columns };
 
-   $self->_encrypt_password($columns, $columns->{password});
+   $self->_encrypt_password($columns, 'password');
 
    return $self->next::method;
 }
@@ -112,7 +124,7 @@ sub update {
    $self->set_inflated_columns($columns) if $columns;
 
    $columns = { $self->get_inflated_columns };
-   $self->_encrypt_password($columns, $columns->{password});
+   $self->_encrypt_password($columns, 'password');
 
    return $self->next::method;
 }
@@ -127,15 +139,14 @@ sub _as_string {
 }
 
 sub _encrypt_password {
-   my ($self, $columns, $password) = @_;
+   my ($self, $columns, $column_name) = @_;
 
-   if ($password && !_is_encrypted $password) {
-      my $lf = $self->result_source->schema->config->user->{load_factor};
+   my $password = $columns->{$column_name} or return;
 
-      $columns->{password} = bcrypt($password, _new_salt '2a', $lf);
-      $self->set_inflated_columns($columns);
-   }
+   return if _is_encrypted $password or _is_nologin_token $password;
 
+   $columns->{password} = $self->encrypt_password($password);
+   $self->set_inflated_columns($columns);
    return;
 }
 

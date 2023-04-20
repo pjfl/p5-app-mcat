@@ -53,7 +53,11 @@ has 'schema' => is => 'lazy', default => sub {
 
    $info->[3] = _connect_attr();
 
-   return MCat::Schema->connect(@{$info});
+   my $schema = MCat::Schema->connect(@{$info});
+
+   MCat::Schema->config($self->config) if MCat::Schema->can('config');
+
+   return $schema;
 };
 
 has 'user_password' => is => 'lazy', default => sub {
@@ -83,7 +87,7 @@ has '_ddl_path' => is => 'lazy', default => sub {
    my $schema  = $self->schema;
    my $type    = $self->_type;
    my $version = $schema->schema_version;
-   my $dir     = $self->config->vardir->catdir('sql');
+   my $dir     = $self->config->sqldir;
 
    return io($schema->ddl_filename($type, $version, $dir));
 };
@@ -133,12 +137,13 @@ sub backup : method {
    my $bdir = $conf->vardir->catdir('backup');
    my $tarb = "${db}-${date}.tgz";
    my $out  = $bdir->catfile($tarb)->assert_filepath;
+   my $opts = { args => [$tarb], name => 'Admin.backup' };
 
+   ensure_class_loaded 'Archive::Tar';
+   $self->info('Generating backup [_1]', $opts);
    $self->_create_ddl_file;
    $self->run_cmd($self->_backup_command($path));
-
    chdir $conf->home;
-   ensure_class_loaded 'Archive::Tar';
 
    my $arc = Archive::Tar->new;
 
@@ -146,18 +151,14 @@ sub backup : method {
 
    $arc->add_files($path->abs2rel($conf->home)) if $path->exists;
 
-   $self->info('Generating backup [_1]', {
-      args => [$tarb], name => 'Admin.backup'
-   });
    $arc->write($out->pathname, COMPRESS_GZIP);
    $path->unlink;
    $file = $out->basename;
 
    my $size = Format::Human::Bytes->new()->base2($out->stat->{size});
 
-   $self->info('Backup complete. File [_1] size [_2]', {
-      args => [$file, $size], name => 'Admin.backup'
-   });
+   $opts = { args => [$file, $size], name => 'Admin.backup' };
+   $self->info('Backup complete. File [_1] size [_2]', $opts);
    return OK;
 }
 
@@ -239,7 +240,7 @@ sub store_password : method {
 
    $data->{db_password} = base64_encode_ns cipher->encrypt($password);
    $self->_local_config($data);
-   $self->info('Updated user password', { name => 'Admin.store_password'});
+   $self->info('Updated user password', { name => 'Admin.store_password' });
    return OK;
 }
 
@@ -320,7 +321,7 @@ sub _create_ddl_file {
    my $schema  = $self->schema;
    my $type    = $self->_type;
    my $version = $schema->schema_version;
-   my $dir     = $self->config->vardir->catdir('sql');
+   my $dir     = $self->config->sqldir;
 
    $schema->create_ddl_dir($type, $version, $dir);
    return;
@@ -347,7 +348,7 @@ sub _create_user {
 
 sub _deploy_and_populate_classes {
    my $self = shift;
-   my $dir  = $self->config->vardir->catdir('sql');
+   my $dir  = $self->config->sqldir;
 
    my $result_objects;
 

@@ -46,6 +46,7 @@ sub _add_tt_defaults {
       context        => $context,
       process_attrs  => \&process_attrs,
       token          => sub { $context->verification_token },
+      uri_for        => sub { $context->request->uri_for(@_) },
       uri_for_action => sub { $context->uri_for_action(@_) },
       %{$context->stash},
    };
