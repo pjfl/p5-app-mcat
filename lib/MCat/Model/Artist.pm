@@ -33,7 +33,7 @@ sub create : Nav('Create Artist') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, title => 'Create Artist' };
-   my $form    = $self->form->new_with_context('Artist', $options);
+   my $form    = $self->new_form('Artist', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $artistid    = $form->item->id;
@@ -69,7 +69,7 @@ sub delete : Nav('Delete Artist') {
 sub edit : Nav('Edit Artist') {
    my ($self, $context, $artistid) = @_;
 
-   my $form = $self->form->new_with_context('Artist', {
+   my $form = $self->new_form('Artist', {
       context => $context,
       item    => $context->stash('artist'),
       title   => 'Edit artist'
@@ -89,9 +89,7 @@ sub edit : Nav('Edit Artist') {
 sub list : Auth('view') Nav('Artists') {
    my ($self, $context) = @_;
 
-   $context->stash( table => $self->table->new_with_context('Artist', {
-      context => $context, resultset => $context->model('Artist')
-   }));
+   $context->stash(table => $self->new_table('Artist', { context => $context}));
    return;
 }
 
@@ -116,13 +114,15 @@ sub remove {
 sub view : Auth('view') Nav('View Artist') {
    my ($self, $context, $artistid) = @_;
 
-   my $artist  = $context->stash('artist');
    my $cd_rs   = $context->model('Cd')->search({ 'me.artistid' => $artistid });
    my $options = { context => $context, resultset => $cd_rs };
-   my $cds     = $self->table->new_with_context('Cd', $options);
+   my $cds     = $self->new_table('Cd', $options);
 
-   $context->stash(table => $self->table->new_with_context('Object::View', {
-      add_columns => [ 'CDs' => $cds ], context => $context, result => $artist
+   $context->stash(table => $self->new_table('Object::View', {
+      add_columns => [ 'CDs' => $cds ],
+      caption     => 'Artist View',
+      context     => $context,
+      result      => $context->stash('artist')
    }));
    return;
 }

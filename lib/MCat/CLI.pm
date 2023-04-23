@@ -111,11 +111,11 @@ sub make_less : method {
    my @files = ();
 
    $dir->filter(sub { m{ \.less \z }mx })->visit(sub { push @files, shift });
-   ensure_class_loaded('CSS::LESSp');
+   ensure_class_loaded('CSS::LESS');
 
    my $file  = 'mcat.css';
    my $out   = io([qw( share css ), $file])->assert_open('a')->truncate(0);
-   my $count =()= map  { $out->append(CSS::LESSp->parse($_->all)) }
+   my $count =()= map  { $out->append(CSS::LESS->new()->compile($_->all)) }
                   sort { $a->name cmp $b->name } @files;
    my $options = { name => 'CLI.make_less' };
 

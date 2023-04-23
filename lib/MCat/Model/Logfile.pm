@@ -54,9 +54,9 @@ sub clear_cache : Auth('admin') {
 sub list : Auth('admin') Nav('Logfiles') {
    my ($self, $context) = @_;
 
-   $context->stash(table => $self->table->new_with_context('Logfile::List', {
-      context => $context
-   }));
+   my $options = { context => $context };
+
+   $context->stash(table => $self->new_table('Logfile::List', $options));
    return;
 }
 
@@ -65,9 +65,13 @@ sub view : Auth('admin') Nav('View Logfile') {
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
-   $context->stash(table => $self->table->new_with_context('Logfile::View', {
-      context => $context, logfile => $logfile, redis=> $self->redis
-   }));
+   my $options = {
+      caption => "${logfile} Logfile View",
+      context => $context,
+      logfile => $logfile,
+      redis   => $self->redis
+   };
+   $context->stash(table => $self->new_table('Logfile::View', $options));
    return;
 }
 

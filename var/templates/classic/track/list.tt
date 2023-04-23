@@ -1,2 +1,1 @@
-[% subheader('Tracks') %]
 [% table.render %]

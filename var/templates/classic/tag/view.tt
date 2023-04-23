@@ -1,2 +1,1 @@
-[% subheader('Tag') %]
 [% table.render %]

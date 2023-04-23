@@ -6,6 +6,8 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
+has '+caption' => default => 'CD List';
+
 after 'BUILD' => sub {
    my $self = shift;
 

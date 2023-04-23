@@ -129,7 +129,10 @@ sub view : Auth('view') Nav('View CD') {
    my $tracks   = $self->table->new_with_context('Track', $options);
 
    $context->stash(table => $self->table->new_with_context('Object::View', {
-      add_columns => [ 'Tracks' => $tracks ], context => $context, result => $cd
+      add_columns => [ 'Tracks' => $tracks ],
+      caption     => 'CD View',
+      context     => $context,
+      result      => $cd
    }));
    return;
 }

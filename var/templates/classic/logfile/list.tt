@@ -1,2 +1,1 @@
-[% subheader('Logfiles') %]
 [% table.render %]

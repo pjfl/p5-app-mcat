@@ -147,6 +147,14 @@ sub has_valid_token { # Stash an exception if the CSRF token is bad
    return FALSE;
 }
 
+sub new_form {
+   my ($self, @args) = @_; return $self->form->new_with_context(@args);
+}
+
+sub new_table {
+   my ($self, @args) = @_; return $self->table->new_with_context(@args);
+}
+
 sub root : Auth('none') {
    my ($self, $context) = @_;
 

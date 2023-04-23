@@ -1,7 +1,7 @@
 package MCat::Model::User;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect );
+use MCat::Util             qw( redirect redirect2referer );
 use Unexpected::Functions  qw( UnknownUser Unspecified );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -33,7 +33,7 @@ sub create : Auth('admin') Nav('Create User') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, title => 'Create User' };
-   my $form    = $self->form->new_with_context('User', $options);
+   my $form    = $self->new_form('User', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $userid    = $form->item->id;
@@ -69,8 +69,8 @@ sub delete : Auth('admin') Nav('Delete User') {
 sub edit : Auth('admin') Nav('Edit User') {
    my ($self, $context, $userid) = @_;
 
-   my $form = $self->form->new_with_context('User', {
-      context => $context, item => $context->stash('user'), title => 'Edit user'
+   my $form = $self->new_form('User', {
+      context => $context, item => $context->stash('user'), title => 'Edit User'
    });
 
    if ($form->process( posted => $context->posted )) {
@@ -88,7 +88,7 @@ sub profile : Auth('view') Nav('Profile') {
    my ($self, $context, $userid) = @_;
 
    my $options = { context => $context, item => $context->stash('user') };
-   my $form    = $self->form->new_with_context('Profile', $options);
+   my $form    = $self->new_form('Profile', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $name    = $form->item->name;
@@ -105,9 +105,9 @@ sub profile : Auth('view') Nav('Profile') {
 sub list : Auth('admin') Nav('Users') {
    my ($self, $context) = @_;
 
-   $context->stash(table => $self->table->new_with_context('User', {
-      context => $context, resultset => $context->model('User')
-   }));
+   my $options = { context => $context, resultset => $context->model('User') };
+
+   $context->stash(table => $self->new_table('User', $options));
    return;
 }
 
@@ -125,15 +125,17 @@ sub remove : Auth('admin') {
       $count++;
    }
 
-   $context->stash( response => { message => '${count} user(s) deleted' });
+   $context->stash(redirect2referer $context, ["${count} tag(s) deleted"]);
    return;
 }
 
 sub view : Auth('admin') Nav('View User') {
    my ($self, $context, $userid) = @_;
 
-   $context->stash(table => $self->table->new_with_context('User::View', {
-      context => $context, result => $context->stash('user')
+   $context->stash(table => $self->new_table('User::View', {
+      caption => 'User View',
+      context => $context,
+      result  => $context->stash('user')
    }));
    return;
 }

@@ -18,6 +18,8 @@ with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Chartable';
 with    'HTML::StateTable::Role::Animation';
 
+has '+caption' => default => 'Artist List';
+
 has '+active_control_location' => default => 'BottomLeft';
 
 has '+chartable_columns' => default => sub { ['upvotes'] };
@@ -56,9 +58,13 @@ has '+tag_control_location' => default => 'Credit';
 
 has '+tag_section' => default => FALSE;
 
-has '+title_location' => default => 'outer';
+has '+title_location' => default => 'inner';
 
 set_table_name 'artist';
+
+setup_resultset sub {
+   return shift->context->model('Artist');
+};
 
 has_column 'check' =>
    cell_traits => ['Checkbox'],

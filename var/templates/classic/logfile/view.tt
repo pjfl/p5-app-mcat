@@ -1,2 +1,1 @@
-[% subheader(ucfirst(table.logfile) _ ' Logfile') %]
 [% table.render %]<br/>

@@ -61,7 +61,7 @@ header {
             overflow: visible;
         }
         .slide-out {
-            left: 0; max-width: 0; top: -1px; transform: translate(-100%, 0);
+            left: 0; max-width: 0; top: -5px; transform: translate(-100%, 0);
             transition: max-width ease-in-out 500ms;
             .nav-list li {
                 display: block;
@@ -129,7 +129,17 @@ header {
         li.control a,
         li.context a,
         .form-button span {
-            display: block; padding: 0.5rem 1rem;
+            display: block; padding: 0.25rem 1rem;
+        }
+        li.control:first-child a,
+        li.context:first-child a,
+        .form-button:first-child span {
+            padding-top: 0.5rem;
+        }
+        li.control:last-child a,
+        li.context:last-child a,
+        .form-button:last-child span {
+            padding-bottom: 0.5rem;
         }
         li.context.selected,
         li.control.selected {
@@ -160,5 +170,11 @@ header {
     }
     .title-text {
         position: relative; top: -1rem;
+    }
+    @media (max-width: 680px) {
+        flex-direction: column;
+        .nav-menu {
+            margin: 1rem 0 0.5rem;
+        }
     }
 }

@@ -9,7 +9,7 @@ use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE TRUE );
 use MCat::Util                 qw( digest local_tz truncate urandom );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectPassword
-                                   PasswordExpired );
+                                   PasswordDisabled PasswordExpired );
 
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
@@ -61,12 +61,12 @@ sub _get_salt ($) {
    return join '$', @parts;
 }
 
-sub _is_encrypted ($) {
-   return $_[0] =~ m{ \A \$\d+[a]?\$ }mx ? TRUE : FALSE;
+sub _is_disabled ($) {
+   return $_[0] =~ m{ \* }mx ? TRUE : FALSE;
 }
 
-sub _is_nologin_token ($) {
-   return $_[0] =~ m{ \* }mx ? TRUE : FALSE;
+sub _is_encrypted ($) {
+   return $_[0] =~ m{ \A \$\d+[a]?\$ }mx ? TRUE : FALSE;
 }
 
 sub _new_salt ($$) {
@@ -82,6 +82,8 @@ sub authenticate {
    my ($self, $password, $for_update) = @_;
 
    throw AccountInactive, [$self] unless $self->active;
+
+   throw PasswordDisabled, [$self] if _is_disabled $self->password;
 
    throw PasswordExpired, [$self] if $self->password_expired && !$for_update;
 
@@ -143,11 +145,13 @@ sub _encrypt_password {
 
    my $password = $columns->{$column_name} or return;
 
-   return if _is_encrypted $password or _is_nologin_token $password;
+   return if _is_disabled $password or _is_encrypted $password;
 
    $columns->{password} = $self->encrypt_password($password);
    $self->set_inflated_columns($columns);
    return;
 }
+
+use namespace::autoclean;
 
 1;

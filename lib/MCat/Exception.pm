@@ -41,6 +41,9 @@ has_exception 'IncorrectAuthCode' => parents => ['Authentication'],
 has_exception 'IncorrectPassword' => parents => ['Authentication'],
    error   => 'User [_1] authentication failed';
 
+has_exception 'PasswordDisabled' => parents => ['Authentication'],
+   error   => 'User [_1] password disabled';
+
 has_exception 'PasswordExpired' => parents => ['Authentication'],
    error   => 'User [_1] password expired';
 

@@ -6,6 +6,8 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
+has '+caption' => default => 'Track List';
+
 after 'BUILD' => sub {
    my $self = shift;
 

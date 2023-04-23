@@ -8,6 +8,8 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
+has '+caption' => default => 'Logfile List';
+
 has '+paging' => default => FALSE;
 
 setup_resultset sub {

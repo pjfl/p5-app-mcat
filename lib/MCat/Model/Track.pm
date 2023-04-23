@@ -125,7 +125,9 @@ sub view : Auth('view') Nav('View Track') {
    my ($self, $context, $trackid) = @_;
 
    $context->stash(table => $self->table->new_with_context('Object::View', {
-      context => $context, result => $context->stash('track')
+      caption => 'Track View',
+      context => $context,
+      result  => $context->stash('track')
    }));
    return;
 }

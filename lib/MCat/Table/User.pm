@@ -10,6 +10,8 @@ with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
 
+has '+caption' => default => 'User List';
+
 has '+configurable_control_location' => default => 'TopRight';
 
 has '+configurable_dialog_close' => default => sub {

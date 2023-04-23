@@ -11,6 +11,8 @@ with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
 
+has '+caption' => default => 'Tag List';
+
 has '+configurable_control_location' => default => 'TopLeft';
 
 has '+form_buttons' => default => sub {
