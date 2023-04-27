@@ -5,12 +5,18 @@
     message-background: linen;
     message-border: red;
     navigation-background: bisque;
+    navigation-grad: linear-gradient(to bottom, rgba(255,228,196,1), rgba(255,228,196,0));
     panel-background: linen;
     text: black;
 }
 #fonts() {
     data: Roboto Slab, serif;
     system: Roboto, sans-serif;
+}
+#widths() {
+    context-anchor: 3.5rem;
+    global-anchor: 3rem;
+    sidebar: 5rem;
 }
 html {
     height: 100%;
@@ -25,14 +31,14 @@ header {
     display: flex; justify-content: center; line-height: 1.5;
 }
 .centred-content.navigation-sidebar {
-    margin-left: 5rem;
+    margin-left: #widths[sidebar];
 }
 .messages-panel {
     bottom: 1rem; position: absolute; right: 1rem; z-index: 5;
     .message-item {
-        background: #colours[message-background]; border: 2px solid;
-        border-color: #colours[message-border]; border-radius: 5px;
-        margin-top: 1rem; max-width: 250px; padding: 0.5rem;
+        background: #colours[message-background];
+        border: 2px solid #colours[message-border]; border-radius: 5px;
+        margin-top: 1rem; max-width: 16rem; padding: 0.5rem;
     }
 }
 .standard-content {
@@ -44,13 +50,11 @@ header {
         display: inline-block; vertical-align: top;
     }
 }
-.sidebar,
-.state-navigation {
+.sidebar, .state-navigation {
     align-items: center; background: #colours[navigation-background];
     display: flex; justify-content: space-between; padding: 0 1rem;
     .global {
-        .nav-panel,
-        .slide-out {
+        .nav-panel, .slide-out {
             background: #colours[panel-background]; overflow: hidden;
             position: absolute; text-align: left; z-index: 10;
         }
@@ -59,20 +63,20 @@ header {
             transition: max-height ease-in-out 500ms;
         }
         .nav-panel.visible {
-            max-height: 500px;
+            max-height: 32rem;
         }
         .nav-panel:active, .nav-panel:hover {
             overflow: visible;
         }
         .slide-out {
             left: 0; max-width: 0; top: -5px; transform: translate(-100%, 0);
-            transition: max-width ease-in-out 500ms;
+            transition: all ease-in-out 500ms;
             .nav-list li {
                 display: block;
             }
         }
         .slide-out.visible {
-            max-width: 300px;
+            max-width: 32rem;
         }
     }
     .nav-title {
@@ -85,8 +89,8 @@ header {
         }
     }
     .nav-title:after {
-        border-bottom: 40px solid transparent; border-right: 40px solid;
-        border-right-color: #colours[navigation-background];
+        border-bottom: 40px solid transparent;
+        border-right: 40px solid #colours[navigation-background];
         content: ''; display: inline-block; height: 0; width: 0;
     }
     .nav-control {
@@ -105,7 +109,7 @@ header {
             transition: max-height ease-in-out 500ms; z-index: 2;
         }
         .nav-panel.visible {
-            max-height: 500px;
+            max-height: 32rem;
         }
     }
     .nav-list {
@@ -147,8 +151,7 @@ header {
         }
         li.context.selected,
         li.control.selected {
-            border-right: 5px solid; border-color: #colours[link];
-            position: relative;
+            border-right: 5px solid #colours[link]; position: relative;
         }
         li.global {
             margin-right: 2.5rem; position: relative;
@@ -183,10 +186,11 @@ header {
     }
 }
 .state-navigation.navigation-sidebar {
-    border-top-left-radius: 20px; padding: 0 1rem 0 5rem;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 20px; padding: 0 1rem 0 #widths[sidebar];
 }
 .sidebar {
-    border-top-left-radius: 0; display: inline-block; height: 100%;
+    background: unset; border-top-left-radius: 0; display: inline-block;
     padding: 0; position: fixed; top: 3rem; z-index: 2;
     .nav-list.global {
         align-items: flex-start; display: flex; flex-direction: column;
@@ -194,15 +198,15 @@ header {
         li.global {
             display: block; margin: 0;
             a, .drop-menu {
-                display: inline-block; padding: 1rem 1rem; min-width: 3rem;
+                display: inline-block; min-width: #widths[global-anchor];
+                padding: 1rem;
             }
             .nav-panel {
-                display: inline-block;
-                left: unset; margin: 0.5rem 0; max-width: 0;
-                transition: all ease-in-out 500ms;
+                display: inline-block; left: unset; margin: 0.5rem 0;
+                max-width: 0; transition: all ease-in-out 500ms;
             }
             .nav-panel.visible {
-                max-width: 500px;
+                max-width: 32rem;
             }
         }
         li.global.selected > span::before,
@@ -211,20 +215,28 @@ header {
         }
         .slide-out {
             display: inline-block; left: unset; position: absolute;
-            top: -1px; transform: unset; margin-left: 1px;
+            top: -1px; transform: unset;
         }
     }
     .nav-list.context {
         li.context {
             a, .drop-menu {
-                display: inline-block; padding: 0.5rem 1rem;
+                display: inline-block; min-width: #widths[context-anchor];
+                padding: 0.5rem 1rem;
             }
         }
         li.context.selected {
             border-left: 5px solid #colours[link]; border-right: 0;
         }
     }
+    .nav-menu {
+        background: #colours[navigation-background];
+    }
     @media (max-width: 680px) {
         top: 5rem;
     }
+}
+.sidebar:not(.navigation-header)::after {
+    background: #colours[navigation-grad]; content: ' '; display: block;
+    height: 5rem;
 }

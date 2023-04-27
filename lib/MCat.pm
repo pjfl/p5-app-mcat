@@ -1,7 +1,7 @@
 package MCat;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 52 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 53 $ =~ /\d+/gmx );
 
 sub schema_version {
    return qv( '0.1.43' );
