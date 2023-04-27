@@ -1,5 +1,6 @@
 <header>[% nav.render %]</header>
-<div class="centred-content">
+<div id="sidebar" class="sidebar"></div>
+<div class="centred-content navigation-[% config.navigation.global_location %]">
    <div id="[% nav.container_name %]" class="[% nav.container_name %]">
       <div id="[% nav.content_name %]" class="[% nav.content_name %]">
 [% content %]

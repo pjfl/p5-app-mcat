@@ -29,6 +29,8 @@ has 'context' => is => 'ro', isa => class_type('MCat::Context'),
 
 has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
+has 'global_location' => is => 'ro', isa => Str, default => 'header';
+
 has 'label' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
    my $self = shift;
 
@@ -80,10 +82,11 @@ has '_container' => is => 'lazy', isa => Str, default => sub {
 };
 
 has '_data' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift;
+   my $self  = shift;
+   my $class = 'state-navigation navigation-' . $self->global_location;
 
    return {
-      'class' => 'state-navigation',
+      'class' => $class,
       'data-navigation-config' => $self->_json->encode({
          'menus'      => $self->_menus,
          'messages'   => $self->_messages,
@@ -94,6 +97,7 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'container-name' => $self->container_name,
             'content-name'   => $self->content_name,
             'label'          => $self->label,
+            'location'       => $self->global_location,
             'logo'           => $self->logo,
             'skin'           => $self->skin,
             'title'          => $self->title,

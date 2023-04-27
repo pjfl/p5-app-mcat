@@ -249,6 +249,7 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
       my $self = shift;
 
       return {
+         global_location => 'sidebar',
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },

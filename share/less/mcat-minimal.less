@@ -22,7 +22,10 @@ header {
     position: sticky; top: 0; z-index: 10;
 }
 .centred-content {
-    display: flex; justify-content: center; line-height: 1.5; width: 100%;
+    display: flex; justify-content: center; line-height: 1.5;
+}
+.centred-content.navigation-sidebar {
+    margin-left: 5rem;
 }
 .messages-panel {
     bottom: 1rem; position: absolute; right: 1rem; z-index: 5;
@@ -41,6 +44,7 @@ header {
         display: inline-block; vertical-align: top;
     }
 }
+.sidebar,
 .state-navigation {
     align-items: center; background: #colours[navigation-background];
     display: flex; justify-content: space-between; padding: 0 1rem;
@@ -72,7 +76,7 @@ header {
         }
     }
     .nav-title {
-        background: #colours[grad-start]; border-top-left-radius: 5px;
+        background: #colours[grad-start]; border-top-left-radius: 10px;
         display: inline-block; font-family: #fonts[system]; font-size: larger;
         height: 40px; margin-top: 0.5rem; padding-left: 0.5rem;
         img {
@@ -176,5 +180,51 @@ header {
         .nav-menu {
             margin: 1rem 0 0.5rem;
         }
+    }
+}
+.state-navigation.navigation-sidebar {
+    border-top-left-radius: 20px; padding: 0 1rem 0 5rem;
+}
+.sidebar {
+    border-top-left-radius: 0; display: inline-block; height: 100%;
+    padding: 0; position: fixed; top: 3rem; z-index: 2;
+    .nav-list.global {
+        align-items: flex-start; display: flex; flex-direction: column;
+        padding-top: 0.5rem;
+        li.global {
+            display: block; margin: 0;
+            a, .drop-menu {
+                display: inline-block; padding: 1rem 1rem; min-width: 3rem;
+            }
+            .nav-panel {
+                display: inline-block;
+                left: unset; margin: 0.5rem 0; max-width: 0;
+                transition: all ease-in-out 500ms;
+            }
+            .nav-panel.visible {
+                max-width: 500px;
+            }
+        }
+        li.global.selected > span::before,
+        li.global.selected > a::before {
+            height: 100%; left: -0.035rem; top: 0; width: 5px;
+        }
+        .slide-out {
+            display: inline-block; left: unset; position: absolute;
+            top: -1px; transform: unset; margin-left: 1px;
+        }
+    }
+    .nav-list.context {
+        li.context {
+            a, .drop-menu {
+                display: inline-block; padding: 0.5rem 1rem;
+            }
+        }
+        li.context.selected {
+            border-left: 5px solid #colours[link]; border-right: 0;
+        }
+    }
+    @media (max-width: 680px) {
+        top: 5rem;
     }
 }

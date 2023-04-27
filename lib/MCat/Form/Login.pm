@@ -25,7 +25,10 @@ has_field 'password', type => 'Password', required => TRUE;
 has_field 'submit' => type => 'Submit';
 
 sub validate {
-   my $self    = shift;
+   my $self = shift;
+
+   return if $self->result->has_errors;
+
    my $field   = $self->field('name');
    my $name    = $field->value;
    my $context = $self->context;

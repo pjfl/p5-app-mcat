@@ -13,26 +13,35 @@ MCat.Navigation = (function() {
          this.properties       = config['properties'];
          this.baseURL          = this.properties['base-url'];
          this.confirm          = this.properties['confirm'];
-         this.containerName    = this.properties['container-name'];
+         const containerName   = this.properties['container-name'];
          this.contentName      = this.properties['content-name'];
          this.controlLabel     = this.properties['label'];
+         this.location         = this.properties['location'];
          this.logo             = this.properties['logo'];
          this.skin             = this.properties['skin'];
          this.title            = this.properties['title'];
          this.titleAbbrev      = this.properties['title-abbrev'];
          this.token            = this.properties['verify-token'];
          this.version          = this.properties['version'];
-         this.contentContainer = document.getElementById(this.containerName);
+         this.contentContainer = document.getElementById(containerName);
          this.contentPanel     = document.getElementById(this.contentName);
          this.contextPanels    = {};
          this.content;
-         this.menu;
+         this.headerMenu;
+         this.globalMenu;
          this.titleEntry;
          container.append(this.renderTitle());
          window.addEventListener('popstate', function(event) {
             if (event.state && event.state.href)
                this.renderLocation(event.state.href);
          }.bind(this));
+      }
+      addSelected(item) {
+         item.classList.add('selected');
+         return true;
+      }
+      isCurrentHref(href) {
+         return history.state && history.state.href == href ? true : false;
       }
       loadLocation(href) {
          return function(event) {
@@ -53,7 +62,10 @@ MCat.Navigation = (function() {
       menuLeave(context) {
          return function(event) {
             event.preventDefault();
-            this.contextPanels[context].classList.remove('visible');
+            const panel = this.contextPanels[context];
+            panel.classList.remove('visible');
+            for (const el of panel.getElementsByClassName('visible'))
+               el.classList.remove('visible');
          }.bind(this);
       }
       menuOver(context) {
@@ -93,11 +105,15 @@ MCat.Navigation = (function() {
          console.log('Recovered state ' + count + ' ' + state.href);
       }
       redraw() {
-         const menu = this.h.nav({ className: 'nav-menu' }, [
-            this.renderList(this.menus['_global'], 'global'),
-            this.renderControl()
-         ]);
-         this.menu = this.display(this.container, 'menu', menu);
+         const content = [this.renderControl()];
+         const global = this.renderList(this.menus['_global'], 'global');
+         if (this.location == 'header') content.unshift(global);
+         const cMenu = this.h.nav({ className: 'nav-menu' }, content);
+         this.headerMenu = this.display(this.container, 'headerMenu', cMenu);
+         if (this.location == 'header') return;
+         const container = document.getElementById(this.location);
+         const gMenu = this.h.nav({ className: 'nav-menu' }, global);
+         this.globalMenu = this.display(container, 'globalMenu', gMenu);
       }
       async render() {
          this.redraw();
@@ -143,11 +159,10 @@ MCat.Navigation = (function() {
                link.setAttribute('listener', true);
                return this.h.li({ className: menuName }, link);
             }
-            const spanAttr = { className: 'drop-menu' };
-            if (context) spanAttr['onmouseover'] = this.menuOver(context);
-            return this.h.li({
-               className: menuName
-            }, this.h.span(spanAttr, label));
+            const labelAttr = { className: 'drop-menu' };
+            if (context) labelAttr['onmouseover'] = this.menuOver(context);
+            const menuItem = this.h.span(labelAttr, label);
+            return this.h.li({ className: menuName }, menuItem);
          }
          if (label['method'] != 'post') return;
          const form = this.h.form({
@@ -165,7 +180,7 @@ MCat.Navigation = (function() {
          const [title, itemList] = list;
          const items = [];
          let context = false;
-         let containsSelected = false;
+         let isSelected = false;
          for (const item of itemList) {
             if (typeof item == 'string' && this.menus[item]) {
                const className
@@ -174,28 +189,23 @@ MCat.Navigation = (function() {
                   className: className, onmouseleave: this.menuLeave(item)
                }, this.renderList(this.menus[item], 'context'));
                context = item;
+               continue;
             }
-            else {
-               const listItem = this.renderItem(item, menuName, context);
-               items.push(listItem);
-               if (context) {
-                  const panel = this.contextPanels[context];
-                  listItem.append(panel);
-                  context = false;
-                  if (panel.firstChild.classList.contains('selected')) {
-                     listItem.classList.add('selected');
-                     containsSelected = true;
-                  }
-               }
-               if (history.state && history.state.href == item[1]) {
-                  listItem.classList.add('selected');
-                  containsSelected = true;
-               }
+            const listItem = this.renderItem(item, menuName, context);
+            if (context) {
+               const panel = this.contextPanels[context];
+               if (panel.firstChild.classList.contains('selected'))
+                  isSelected = this.addSelected(listItem);
+               listItem.append(panel);
+               context = false;
             }
+            if (this.isCurrentHref(item[1]))
+               isSelected = this.addSelected(listItem);
+            items.push(listItem);
          }
          const navList = this.h.ul({ className: 'nav-list' }, items);
          if (menuName) navList.classList.add(menuName);
-         if (containsSelected) navList.classList.add('selected');
+         if (isSelected) navList.classList.add('selected');
          return navList;
       }
       async renderLocation(href) {
