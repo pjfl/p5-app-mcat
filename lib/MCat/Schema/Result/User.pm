@@ -38,10 +38,6 @@ $class->add_columns(
       data_type => 'integer', is_nullable => FALSE,
       label => 'Role', cell_traits => ['Capitalise'], display => 'role.name'
    },
-   timezone => {
-      data_type => 'text', is_nullable => TRUE, default => local_tz,
-      label => 'Time Zone'
-   }
 );
 
 $class->set_primary_key('id');
@@ -51,6 +47,17 @@ $class->add_unique_constraint('user_name_uniq', ['name']);
 $class->belongs_to('role' => "${result}::Role", 'role_id');
 
 $class->has_many('preferences' => "${result}::Preference", 'user_id');
+
+$class->might_have('profile' => "${result}::Preference", sub {
+   my $args    = shift;
+   my $foreign = $args->{foreign_alias};
+   my $self    = $args->{self_alias};
+
+   return {
+      "${foreign}.user_id" => { -ident => "${self}.id" },
+      "${foreign}.name"    => { '=' => 'profile' }
+   };
+});
 
 # Private functions
 sub _get_salt ($) {

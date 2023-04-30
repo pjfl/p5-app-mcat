@@ -45,8 +45,11 @@ sub validate {
       $session->id($user->id);
       $session->authenticated(TRUE);
       $session->role($user->role->name);
-      $session->timezone($user->timezone);
       $session->username($name);
+
+      my $profile = $user->profile;
+
+      $session->timezone($profile->value->{timezone}) if $profile;
    }
    catch {
       my $exception = $_;

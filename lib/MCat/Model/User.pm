@@ -87,11 +87,11 @@ sub edit : Auth('admin') Nav('Edit User') {
 sub profile : Auth('view') Nav('Profile') {
    my ($self, $context, $userid) = @_;
 
-   my $options = { context => $context, item => $context->stash('user') };
+   my $options = { context => $context, user => $context->stash('user') };
    my $form    = $self->new_form('Profile', $options);
 
    if ($form->process( posted => $context->posted )) {
-      my $name    = $form->item->name;
+      my $name    = $form->user->name;
       my $default = $context->uri_for_action($self->config->redirect);
       my $message = ['User [_1] profile updated', $name];
 

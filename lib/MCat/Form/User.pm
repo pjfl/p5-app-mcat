@@ -43,8 +43,6 @@ sub options_role {
    return [ map { ucfirst } @{$options} ];
 }
 
-has_field 'timezone' => type => 'Timezone';
-
 has_field 'submit' => type => 'Submit';
 
 use namespace::autoclean -except => META;

@@ -54,6 +54,7 @@ has_column 'timestamp' =>
    label       => 'Timestamp',
    searchable  => TRUE,
    sortable    => TRUE,
+   title       => 'Sort by date and time',
    width       => '18ch';
 
 has_column 'status' => filterable => TRUE, width => '10ch';
