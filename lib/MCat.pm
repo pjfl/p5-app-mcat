@@ -1,10 +1,10 @@
 package MCat;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 54 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 55 $ =~ /\d+/gmx );
 
 sub schema_version {
-   return qv( '0.1.54' );
+   return qv( '0.1.55' );
 }
 
 use namespace::autoclean;

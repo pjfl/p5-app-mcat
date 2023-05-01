@@ -37,9 +37,9 @@ set_table_name 'object_view';
 has_column 'name' =>
    label   => SPC,
    options => { notraits => TRUE },
-   width   => '100px';
+   width   => '8rem';
 
-has_column 'value' => label => SPC;
+has_column 'value' => label => SPC, width => '10rem';
 
 use namespace::autoclean -except => TABLE_META;
 

@@ -48,43 +48,46 @@ has_exception 'PasswordExpired' => parents => ['Authentication'],
    error   => 'User [_1] password expired';
 
 has_exception 'APIMethodFailed', parent => [$class],
-   error => 'API class [_1] method [_2] call failed: [_3]';
+   error   => 'API class [_1] method [_2] call failed: [_3]';
 
 has_exception 'NoMethod' => parent => [$class],
-   error => 'Class [_1] has no method [_2]';
+   error   => 'Class [_1] has no method [_2]';
 
 has_exception 'PageNotFound' => parent => [$class],
-   error => 'Page [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'Page [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnauthorisedAPICall' => parent => [$class],
-   error => 'Class [_1] method [_2] unauthorised call attempt';
+   error   => 'Class [_1] method [_2] unauthorised call attempt';
 
 has_exception 'UnknownAPIClass' => parent => [$class],
-   error => 'API class [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'API class [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownAPIMethod' => parent => [$class],
-   error => 'Class [_1] has no [_2] method', rv => HTTP_NOT_FOUND;
+   error   => 'Class [_1] has no [_2] method', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownArtist' => parent => [$class],
-   error => 'Artist [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'Artist [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownCd' => parent => [$class],
-   error => 'CD [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'CD [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownModel' => parent => [$class],
-   error => 'Model [_1] (moniker) not found', rv => HTTP_NOT_FOUND;
+   error   => 'Model [_1] (moniker) not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownTag' => parent => [$class],
-   error => 'Tag [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'Tag [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownTrack' => parent => [$class],
-   error => 'Track [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'Track [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownUser' => parent => [$class],
-   error => 'User [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'User [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'NoUserRole' => parent => [$class],
-   error => 'User [_1] no role found on session', rv => HTTP_NOT_FOUND;
+   error   => 'User [_1] no role found on session', rv => HTTP_NOT_FOUND;
+
+has_exception 'UnauthorisedDataAccess' => parent => [$class],
+   error   => 'Access to resource denied';
 
 use namespace::autoclean;
 

@@ -2,7 +2,7 @@ package MCat::Model::User;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect redirect2referer );
-use Unexpected::Functions  qw( UnknownUser Unspecified );
+use Unexpected::Functions  qw( UnauthorisedDataAccess UnknownUser Unspecified );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -15,14 +15,18 @@ sub base : Auth('view') {
    my ($self, $context, $userid) = @_;
 
    my $nav = $context->stash('nav')->list('user')->item('user/create');
+   my $session = $context->session;
 
-   if ($userid) {
-      my $user = $context->model('User')->find($userid);
+   if ($userid && ($userid == $session->id || $session->role eq 'admin')) {
+      my $user = $context->model('User')->find($userid, { prefetch => 'profile' });
 
       return $self->error($context, UnknownUser, [$userid]) unless $user;
 
       $context->stash(user => $user);
       $nav->crud('user', $userid);
+   }
+   elsif ($userid) {
+      return $self->error($context, UnauthorisedDataAccess);
    }
 
    $nav->finalise;

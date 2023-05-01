@@ -42,19 +42,16 @@ sub validate {
 
    try {
       $user->authenticate($passwd->value);
-      $session->id($user->id);
       $session->authenticated(TRUE);
+      $session->id($user->id);
       $session->role($user->role->name);
-      $session->username($name);
-
-      my $profile = $user->profile;
-
-      $session->timezone($profile->value->{timezone}) if $profile;
+      $session->username($user->name);
    }
    catch {
       my $exception = $_;
 
       $passwd->add_error($exception->original);
+      $session->authenticated(FALSE);
 
       if ($exception->class eq 'PasswordExpired') {
          my $changep = $context->uri_for_action(
@@ -68,6 +65,13 @@ sub validate {
          $self->log->alert($exception, $self->context) if $self->has_log;
       }
    };
+
+   if ($session->authenticated and my $profile = $user->profile) {
+      my $value = $profile->value;
+
+      $session->skin($value->{skin}) if defined $value->{skin};
+      $session->timezone($value->{timezone}) if defined $value->{timezone};
+   }
 
    return;
 }

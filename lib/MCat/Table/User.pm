@@ -1,6 +1,7 @@
 package MCat::Table::User;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
+use MCat::Util                  qw( local_tz );
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -40,7 +41,7 @@ set_table_name 'user';
 has_column 'id' =>
    cell_traits => ['Numeric'],
    label       => 'ID',
-   width       => '40px';
+   width       => '3rem';
 
 has_column 'name' =>
    label      => 'User Name',
@@ -62,11 +63,12 @@ has_column 'role_id' =>
    title       => 'Sort by role',
    value       => 'role.name';
 
-has_column 'timezone' =>
-   label      => 'Time Zone',
-   searchable => TRUE,
-   sortable   => TRUE,
-   title      => 'Sort by time zone';
+has_column 'timezone' => value => sub {
+   my $self    = shift;
+   my $profile = $self->result->profile;
+
+   return $profile ? $profile->preference('timezone') : local_tz;
+};
 
 has_column 'check' =>
    cell_traits => ['Checkbox'],

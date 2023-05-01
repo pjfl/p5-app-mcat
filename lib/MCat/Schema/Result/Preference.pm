@@ -24,7 +24,7 @@ $class->add_columns(
 
 $class->set_primary_key('id');
 
-$class->add_unique_constraint('preference_name', ['name']);
+$class->add_unique_constraint('preference_user_id_name_uniq', ['user_id', 'name']);
 
 $class->belongs_to('user' => 'MCat::Schema::Result::User', 'user_id');
 
@@ -32,5 +32,13 @@ $class->inflate_column('value', {
    deflate => sub { encode_json(shift) },
    inflate => sub { decode_json(shift) },
 });
+
+sub preference {
+   my ($self, $name, $value) = @_;
+
+   $self->value->{$name} = $value if defined $value;
+
+   return $self->value->{$name};
+}
 
 1;

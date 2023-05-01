@@ -15,6 +15,11 @@ has '+form_buttons' => default => sub {
       selection => 'disable_on_select',
       value     => 'Edit User',
    },{
+      action    => $context->uri_for_action('user/profile', [$self->result->id]),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'User Profile',
+   },{
       action    => $context->uri_for_action('user/delete', [$self->result->id]),
       selection => 'disable_on_select',
       value     => 'Delete User',

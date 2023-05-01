@@ -253,7 +253,6 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
-         skin => $self->skin,
          title => $self->name . ' v' . MCat->VERSION,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
@@ -378,6 +377,7 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       session_attr => {
          id       => [ PositiveInt, 0 ],
          role     => [ Str, NUL ],
+         skin     => [ Str, $self->skin ],
          timezone => [ Str, local_tz ],
          wanted   => [ Object|Str, NUL ],
       },

@@ -57,8 +57,6 @@ has 'messages' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'model' => is => 'ro', isa => class_type('MCat::Model'), required => TRUE;
 
-has 'skin' => is => 'rw', isa => Str, default => NUL;
-
 has 'title' => is => 'ro', isa => Str, default => 'Navigation';
 
 has 'title_abbrev' => is => 'ro', isa => Str, default => 'Nav';
@@ -99,7 +97,7 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'label'          => $self->label,
             'location'       => $self->global_location,
             'logo'           => $self->logo,
-            'skin'           => $self->skin,
+            'skin'           => $self->context->session->skin,
             'title'          => $self->title,
             'title-abbrev'   => $self->title_abbrev,
             'verify-token'   => $self->context->verification_token,
