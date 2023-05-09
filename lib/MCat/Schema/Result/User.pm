@@ -1,15 +1,18 @@
 package MCat::Schema::Result::User;
 
-use strictures;
 use overload '""' => sub { $_[0]->_as_string },
              '+'  => sub { $_[0]->_as_number }, fallback => 1;
-use parent 'DBIx::Class::Core';
 
+use Auth::GoogleAuth;
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
-use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE TRUE );
+use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTML::Forms::Types         qw( HashRef );
 use MCat::Util                 qw( digest local_tz truncate urandom );
-use Unexpected::Functions      qw( throw AccountInactive IncorrectPassword
-                                   PasswordDisabled PasswordExpired );
+use Unexpected::Functions      qw( throw AccountInactive FailedSecurityCheck
+                                   IncorrectAuthCode IncorrectPassword
+                                   PasswordDisabled PasswordExpired
+                                   Unspecified );
+use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
@@ -59,6 +62,23 @@ $class->might_have('profile' => "${result}::Preference", sub {
    };
 });
 
+has 'profile_value' => is => 'lazy', isa => HashRef, default => sub {
+   my $self    = shift;
+   my $profile = $self->profile;
+
+   return $profile ? $profile->value : {};
+};
+
+has 'totp_authenticator' => is => 'lazy', default => sub {
+   my $self = shift;
+
+   return Auth::GoogleAuth->new({
+      issuer => $self->result_source->schema->config->prefix,
+      key_id => $self->name,
+      secret => $self->totp_secret,
+   });
+};
+
 # Private functions
 sub _get_salt ($) {
    my @parts = split m{ [\$] }mx, $_[0];
@@ -85,6 +105,16 @@ sub _new_salt ($$) {
 }
 
 # Public methods
+sub assert_can_email {
+   my $self = shift;
+
+   throw 'User [_1] has no email address', [$self] unless $self->email_address;
+   throw 'User [_1] has an example email address', [$self]
+      unless $self->can_email;
+
+   return;
+}
+
 sub authenticate {
    my ($self, $password, $for_update) = @_;
 
@@ -101,12 +131,49 @@ sub authenticate {
    return TRUE;
 }
 
+sub authenticate_optional_2fa {
+   my ($self, $passwd, $auth_code) = @_;
+
+   $self->authenticate($passwd);
+
+   throw Unspecified, ['Auth. Code'] if !$auth_code && $self->totp_secret;
+
+   throw IncorrectAuthCode, [$self]
+      if $auth_code && !$self->totp_authenticator->verify($auth_code);
+
+   return;
+}
+
+sub can_email {
+   my $self = shift;
+
+   return FALSE unless $self->email_address;
+   return FALSE if $self->email_address =~ m{ \@example\.com \z }mx;
+   return TRUE;
+}
+
+sub enable_2fa {
+   my ($self, $value) = @_; return $self->_profile('enable_2fa', $value);
+}
+
+sub email_address {
+   my ($self, $value) = @_; return $self->_profile('email', $value);
+}
+
 sub encrypt_password {
    my ($self, $password) = @_;
 
    my $lf = $self->result_source->schema->config->user->{load_factor};
 
    return bcrypt($password, _new_salt '2a', $lf);
+}
+
+sub execute {
+   my ($self, $method) = @_;
+
+   return FALSE unless exists { enable_2fa => TRUE }->{$method};
+
+   return $self->$method();
 }
 
 sub insert {
@@ -118,6 +185,24 @@ sub insert {
    return $self->next::method;
 }
 
+sub mobile_phone {
+   my ($self, $value) = @_; return $self->_profile('mobile_phone', $value);
+}
+
+sub postcode {
+   my ($self, $value) = @_; return $self->_profile('postcode', $value);
+}
+
+sub security_check {
+   my ($self, $opts) = @_;
+
+   for my $k (keys %{$opts}) {
+      throw FailedSecurityCheck, [$self] unless $opts->{$k} eq $self->$k();
+   }
+
+   return;
+}
+
 sub set_password {
    my ($self, $old, $new) = @_;
 
@@ -125,6 +210,23 @@ sub set_password {
    $self->password($new);
    $self->password_expired(FALSE);
    return $self->update;
+}
+
+sub set_totp_secret {
+   my ($self, $enabled) = @_;
+
+   my $current = $self->totp_secret ? TRUE : FALSE;
+
+   return $self->totp_secret(substr digest(urandom())->b64digest, 0, 16)
+      if $enabled && !$current;
+
+   return $self->totp_secret(NUL) if $current && !$enabled;
+
+   return $self->totp_secret;
+}
+
+sub totp_secret {
+   my ($self, $value) = @_; return $self->_profile('totp_secret', $value);
 }
 
 sub update {
@@ -157,6 +259,24 @@ sub _encrypt_password {
    $columns->{password} = $self->encrypt_password($password);
    $self->set_inflated_columns($columns);
    return;
+}
+
+sub _profile {
+   my ($self, $key, $value) = @_;
+
+   my $profile = $self->profile_value;
+
+   if (defined $value) {
+      $profile->{$key} = $value;
+
+      my $rs = $self->result_source->schema->resultset('Preference');
+
+      $rs->update_or_create({
+         name => 'profile', user_id => $self->id, value => $profile
+      });
+   }
+
+   return $profile->{$key};
 }
 
 use namespace::autoclean;

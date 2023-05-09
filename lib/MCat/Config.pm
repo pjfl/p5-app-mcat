@@ -6,7 +6,7 @@ use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
 use File::DataClass::Types qw( Path Directory File OctalNum Undef );
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
-use HTML::Forms::Types     qw( ArrayRef HashRef Object PositiveInt Str );
+use HTML::Forms::Types     qw( ArrayRef Bool HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
 use MCat::Util             qw( local_tz );
 use MCat::Exception;
@@ -375,11 +375,12 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
       serialise_session_attr => [ qw( id ) ],
       session_attr => {
-         id       => [ PositiveInt, 0 ],
-         role     => [ Str, NUL ],
-         skin     => [ Str, $self->skin ],
-         timezone => [ Str, local_tz ],
-         wanted   => [ Object|Str, NUL ],
+         enable_2fa => [ Bool, FALSE ],
+         id         => [ PositiveInt, 0 ],
+         role       => [ Str, NUL ],
+         skin       => [ Str, $self->skin ],
+         timezone   => [ Str, local_tz ],
+         wanted     => [ Object|Str, NUL ],
       },
    };
 };

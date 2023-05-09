@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds TOTP
           - Fixes preference index
           - Moved timezone to preferences
           - Various CSS improvements

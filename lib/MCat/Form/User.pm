@@ -14,8 +14,6 @@ has '+info_message'        =>
    default => 'With great power comes great responsibilty';
 has '+is_html5'            => default => TRUE;
 has '+item_class'          => default => 'User';
-has '+do_label_right'      => default => FALSE;
-has '+do_label_colon'      => default => FALSE;
 
 has_field 'name', required => TRUE;
 
@@ -32,7 +30,7 @@ sub default_password {
 
 has_field 'password_expired' => type => 'Boolean', default => TRUE;
 
-has_field 'role' => type => 'Select';
+has_field 'role' => type => 'Select', default => 2;
 
 sub options_role {
    my $self     = shift;

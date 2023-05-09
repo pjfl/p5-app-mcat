@@ -10,6 +10,7 @@ with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
+with    'HTML::StateTable::Role::Active';
 
 has '+caption' => default => 'User List';
 

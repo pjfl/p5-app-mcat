@@ -1,6 +1,6 @@
 package MCat::Model::User;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use MCat::Util             qw( redirect redirect2referer );
 use Unexpected::Functions  qw( UnauthorisedDataAccess UnknownUser Unspecified );
 use Web::Simple;
@@ -11,6 +11,11 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'user';
 
+# TODO: Show/hide password on change password
+# TODO: Password reset request form and email
+# TODO: Totp request form; username, password, mobile, postcode
+# TODO: Display Changes file and About dialog
+
 sub base : Auth('view') {
    my ($self, $context, $userid) = @_;
 
@@ -18,7 +23,8 @@ sub base : Auth('view') {
    my $session = $context->session;
 
    if ($userid && ($userid == $session->id || $session->role eq 'admin')) {
-      my $user = $context->model('User')->find($userid, { prefetch => 'profile' });
+      my $rs   = $context->model('User');
+      my $user = $rs->find($userid, { prefetch => 'profile' });
 
       return $self->error($context, UnknownUser, [$userid]) unless $user;
 
@@ -109,7 +115,8 @@ sub profile : Auth('view') Nav('Profile') {
 sub list : Auth('admin') Nav('Users') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context, resultset => $context->model('User') };
+   my $rs      = $context->model('User');
+   my $options = { context => $context, resultset => $rs };
 
    $context->stash(table => $self->new_table('User', $options));
    return;
@@ -130,6 +137,15 @@ sub remove : Auth('admin') {
    }
 
    $context->stash(redirect2referer $context, ["${count} tag(s) deleted"]);
+   return;
+}
+
+sub totp : Auth('view') Nav('View TOTP') {
+   my ($self, $context) = @_;
+
+   my $options = { context => $context, user => $context->stash('user') };
+
+   $context->stash( form => $self->new_form('TOTP::Secret', $options) );
    return;
 }
 

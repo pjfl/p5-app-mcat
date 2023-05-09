@@ -29,6 +29,14 @@ has 'user' => is => 'ro', isa => class_type('MCat::Schema::Result::User'),
 
 has_field 'name' => type => 'Display', label => 'User Name';
 
+has_field 'email' => type => 'Email';
+
+has_field 'enable_2fa' => type => 'Boolean';
+
+has_field 'mobile_phone' => type => 'PosInteger', size => 12;
+
+has_field 'postcode', size => 8;
+
 has_field 'skin' => type => 'Select', default => 'classic', options => [
    { label => 'Classic', value => 'classic' },
    { label => 'Funky',   value => 'funky' },
@@ -39,20 +47,27 @@ has_field 'timezone' => type => 'Timezone';
 has_field 'submit' => type => 'Submit';
 
 sub validate {
-   my $self  = shift;
-   my $value = {
-      skin     => $self->field('skin')->value,
-      timezone => $self->field('timezone')->value,
-   };
+   my $self       = shift;
+   my $enable_2fa = $self->field('enable_2fa')->value ? TRUE : FALSE;
+   my $value      = $self->user->profile_value;
+
+   $value->{email}        = $self->field('email')->value;
+   $value->{enable_2fa}   = $enable_2fa ? \1 : \0;
+   $value->{mobile_phone} = $self->field('mobile_phone')->value;
+   $value->{postcode}     = $self->field('postcode')->value;
+   $value->{skin}         = $self->field('skin')->value;
+   $value->{timezone}     = $self->field('timezone')->value;
 
    $self->context->model('Preference')->update_or_create({
       name => 'profile', user_id => $self->user->id, value => $value
    }, {
-      key  => 'preference_name'
+      key  => 'preference_user_id_name_uniq'
    });
 
    my $session = $self->context->session;
 
+   $self->user->set_totp_secret($enable_2fa);
+   $session->enable_2fa($enable_2fa);
    $session->skin($value->{skin});
    $session->timezone($value->{timezone});
    return;

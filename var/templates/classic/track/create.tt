@@ -1,2 +1,2 @@
-[% subheader('CD: ' _ cd.title) %]
+[% subheader('CD', cd.title) %]
 [% form.render %]

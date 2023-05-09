@@ -2,6 +2,7 @@ package MCat::Form::Login;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
 use MCat::Util             qw( redirect );
+use Unexpected::Functions  qw( catch_class );
 use Try::Tiny;
 use Moo;
 use HTML::Forms::Moo;
@@ -22,7 +23,23 @@ has_field 'name', required => TRUE, title => 'Enter your user name';
 
 has_field 'password', type => 'Password', required => TRUE;
 
+has_field 'auth_code', label => 'Auth. Code',
+   wrapper_class => ['hide input-text'];
+
 has_field 'submit' => type => 'Submit';
+
+before 'after_build' => sub {
+   my $self   = shift;
+   my $method = 'HForms.Util.showIfRequired';
+   my $uri    = $self->context->uri_for_action('user/has_property', [], {
+      class => 'User', property => 'enable_2fa'
+   });
+   my $js     = "${method}('${uri}', 'name', 'field_auth_code')";
+
+   $self->field('name')->element_attr({ javascript => q{onblur="}.$js.q{"}});
+
+   return;
+};
 
 sub validate {
    my $self = shift;
@@ -38,39 +55,41 @@ sub validate {
 
    return $field->add_error('User [_1] unknown', $name) unless $user;
 
-   my $passwd = $self->field('password');
+   my $passwd  = $self->field('password');
+   my $code    = $self->field('auth_code');
 
    try {
-      $user->authenticate($passwd->value);
+      $session->authenticated(FALSE);
+      $user->authenticate_optional_2fa($passwd->value, $code->value);
       $session->authenticated(TRUE);
       $session->id($user->id);
       $session->role($user->role->name);
       $session->username($user->name);
    }
-   catch {
-      my $exception = $_;
+   catch_class [
+      'IncorrectAuthCode' => sub { $code->add_error($_->original) },
+      'PasswordExpired' => sub {
+         my $message = $_->original;
+         my $changep = $context->uri_for_action('page/password', [$user->id]);
 
-      $passwd->add_error($exception->original);
-      $session->authenticated(FALSE);
-
-      if ($exception->class eq 'PasswordExpired') {
-         my $changep = $context->uri_for_action(
-            'page/change_password', [$user->id]
-         );
-
-         $context->stash( redirect $changep, [$exception->original] );
+         $context->stash( redirect $changep, [$message] );
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;
+         $passwd->add_error($message);
+      },
+      'Authentication' => sub { $passwd->add_error($_->original) },
+      'Unspecified' => sub { $code->add_error($_->original) },
+      '*' => sub {
+         $self->add_form_error(["${_}"]);
+         $self->log->alert($_, $self->context) if $self->has_log;
       }
-      else {
-         $self->log->alert($exception, $self->context) if $self->has_log;
-      }
-   };
+   ];
 
-   if ($session->authenticated and my $profile = $user->profile) {
-      my $value = $profile->value;
+   if ($session->authenticated) {
+      my $profile = $user->profile ? $user->profile->value : {};
 
-      $session->skin($value->{skin}) if defined $value->{skin};
-      $session->timezone($value->{timezone}) if defined $value->{timezone};
+      $session->enable_2fa($profile->{enable_2fa} ? TRUE : FALSE);
+      $session->skin($profile->{skin}) if defined $profile->{skin};
+      $session->timezone($profile->{timezone}) if defined $profile->{timezone};
    }
 
    return;

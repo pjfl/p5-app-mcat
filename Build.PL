@@ -16,9 +16,12 @@ my $prereqs  = {
     'version' => '0.88'
   },
   'requires' => {
+    'Auth::GoogleAuth' => '1.04',
+    'CSS::LESS' => 'v0.0.3',
     'Class::Usul' => 'v0.84.2',
     'Crypt::Eksblowfish' => '0.009',
     'DBIx::Class' => '0.082843',
+    'DBIx::Class::Moo::ResultClass' => '0.001001',
     'Data::Page' => '2.03',
     'Data::Record' => '0.02',
     'DateTime' => '1.54',

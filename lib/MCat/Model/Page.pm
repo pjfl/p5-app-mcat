@@ -1,8 +1,11 @@
 package MCat::Model::Page;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTTP::Status           qw( HTTP_OK );
+use JSON::MaybeXS          qw( encode_json );
 use MCat::Util             qw( new_uri redirect );
 use Unexpected::Functions  qw( PageNotFound UnknownUser );
+use Try::Tiny;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -27,22 +30,34 @@ sub base : Auth('none') {
 
 sub access_denied : Auth('none') {}
 
-sub change_password : Auth('none') Nav('Change Password') {
-   my ($self, $context, $userid) = @_;
+sub default : Auth('none') {
+   my ($self, $context) = @_;
 
-   my $form = $self->form->new_with_context('ChangePassword', {
-      context => $context, item => $context->stash('user'), log => $self->log
-   });
+   my $default = $context->uri_for_action($self->config->default_route);
 
-   if ($form->process( posted => $context->posted )) {
-      my $name    = $form->item->name;
-      my $default = $context->uri_for_action($self->config->redirect);
-      my $message = ['User [_1] changed password', $name];
+   $context->stash( redirect $default, []);
+   return;
+}
 
-      $context->stash( redirect $default, $message );
+sub has_property : Auth('none') {
+   my ($self, $context) = @_;
+
+   my $req   = $context->request;
+   my $class = $req->query_params->('class');
+   my $prop  = $req->query_params->('property');
+   my $value = $req->query_params->('value', { raw => TRUE });
+   my $body  = { found => \1 };
+
+   if ($value) {
+      try {
+         my $r = $context->model($class)->find_by_key($value);
+
+         $body->{found} = \0 unless $r && $r->execute($prop);
+      }
+      catch { $self->log->error($_, $context) };
    }
 
-   $context->stash( form => $form );
+   $context->stash(body => encode_json($body), code => HTTP_OK, view => 'json');
    return;
 }
 
@@ -87,6 +102,25 @@ sub not_found : Auth('none') {
    my ($self, $context) = @_;
 
    return $self->error($context, PageNotFound, [$context->request->path]);
+}
+
+sub password : Auth('none') Nav('Change Password') {
+   my ($self, $context, $userid) = @_;
+
+   my $form = $self->form->new_with_context('ChangePassword', {
+      context => $context, item => $context->stash('user'), log => $self->log
+   });
+
+   if ($form->process( posted => $context->posted )) {
+      my $name    = $form->item->name;
+      my $default = $context->uri_for_action($self->config->redirect);
+      my $message = ['User [_1] changed password', $name];
+
+      $context->stash( redirect $default, $message );
+   }
+
+   $context->stash( form => $form );
+   return;
 }
 
 1;

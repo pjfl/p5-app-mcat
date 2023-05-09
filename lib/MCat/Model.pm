@@ -164,8 +164,9 @@ sub root : Auth('none') {
    $nav->list('_control');
 
    if ($context->session->authenticated) {
+      $nav->item('page/password', [$session->id]);
       $nav->item('user/profile', [$session->id]);
-      $nav->item('page/change_password', [$session->id]);
+      $nav->item('user/totp', [$session->id]) if $session->enable_2fa;
       $nav->item(formpost, 'page/logout');
    }
    else { $nav->item('page/login') }

@@ -1,1 +1,1 @@
-[% subheader('Access Denied') %]
+[% subheader('', 'Access Denied') %]
