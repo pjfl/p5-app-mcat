@@ -13,7 +13,6 @@ use HTML::Forms::Manager;
 use HTML::StateTable::Manager;
 use MCat::Context;
 use MCat::Navigation;
-use MCat::Schema;
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -27,10 +26,11 @@ has 'form' =>
    builder => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
-      my $schema   = MCat::Schema->connect(@{$self->config->connect_info});
+      my $class    = $self->config->schema_class;
+      my $schema   = $class->connect(@{$self->config->connect_info});
       my $options  = { namespace => "${appclass}::Form", schema => $schema };
 
-      MCat::Schema->config($self->config) if MCat::Schema->can('config');
+      $class->config($self->config) if $class->can('config');
 
       return HTML::Forms::Manager->new($options);
    };

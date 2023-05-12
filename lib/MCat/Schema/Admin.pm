@@ -13,7 +13,6 @@ use Archive::Tar;
 use Class::Usul::File;
 use Data::Record;
 use Format::Human::Bytes;
-use MCat::Schema;
 use Try::Tiny;
 use Moo;
 use Class::Usul::Options;
@@ -48,14 +47,15 @@ has 'producers' => is => 'ro', default => sub {
 };
 
 has 'schema' => is => 'lazy', default => sub {
-   my $self = shift;
-   my $info = [ @{$self->config->connect_info} ];
+   my $self  = shift;
+   my $class = $self->config->schema_class;
+   my $info  = [ @{$self->config->connect_info} ];
 
    $info->[3] = _connect_attr();
 
-   my $schema = MCat::Schema->connect(@{$info});
+   my $schema = $class->connect(@{$info});
 
-   MCat::Schema->config($self->config) if MCat::Schema->can('config');
+   $class->config($self->config) if $class->can('config');
 
    return $schema;
 };

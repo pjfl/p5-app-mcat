@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds JobServer
           - Adds TOTP
           - Fixes preference index
           - Moved timezone to preferences

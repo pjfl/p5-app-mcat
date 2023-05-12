@@ -17,11 +17,21 @@ my $config;
 sub config {
    my ($self, $value) = @_;
 
-   $config = $value if $value;
+   $config = $value if defined $value;
 
    $self->upgrade_directory($config->sqldir->as_string);
 
    return $config;
+}
+
+sub context {
+   my ($self, $value) = @_;
+
+   if (defined $value) {
+      weaken $value; $self->{_context} = $value;
+   }
+
+   return $self->{_context};
 }
 
 sub create_ddl_dir {
@@ -40,14 +50,12 @@ sub create_ddl_dir {
 sub deploy {
    my ($self, $sqltargs, $dir) = @_;
 
-   local $SIG{__WARN__} = sub {
-      my $error = shift;
-      warn "${error}\n"
-         unless $error =~ m{ relation \s .+ \s already \s exists }mx;
-      return 1;
+   $self->throw_exception("Can't deploy without storage") unless $self->storage;
+
+   eval {
+      $self->storage->_get_dbh->do('DROP TABLE dbix_class_schema_versions');
    };
 
-   $self->throw_exception("Can't deploy without storage") unless $self->storage;
    $self->storage->deploy($self, undef, $sqltargs, $dir);
    return;
 }

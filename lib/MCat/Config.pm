@@ -4,7 +4,8 @@ package MCat::Config;
 use Class::Usul::Functions qw( base64_decode_ns );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
-use File::DataClass::Types qw( Path Directory File OctalNum Undef );
+use File::DataClass::Types qw( Path Directory File LoadableClass
+                               OctalNum Undef );
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
@@ -396,12 +397,21 @@ has 'root' => is => 'lazy', isa => Directory,
 
 =item rundir
 
-Defaults the the 'tempdir'. Used to store runtime files
+Used to store runtime files
 
 =cut
 
 has 'rundir' => is => 'lazy', isa => Directory,
    default => sub { shift->tempdir };
+
+=item schema_class
+
+The name of the lazily loaded database schema class
+
+=cut
+
+has 'schema_class' => is => 'lazy', isa => LoadableClass, coerce => TRUE,
+   default => 'MCat::Schema';
 
 =item script
 

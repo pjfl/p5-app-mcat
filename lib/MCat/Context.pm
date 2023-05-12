@@ -7,7 +7,6 @@ use List::Util             qw( pairs );
 use Ref::Util              qw( is_arrayref is_hashref );
 use Type::Utils            qw( class_type );
 use MCat::Response;
-use MCat::Schema;
 use Moo;
 
 has 'action' => is => 'ro', isa => Str, predicate => 'has_action';
@@ -23,6 +22,9 @@ has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager');
+
+has 'jobdaemon' => is => 'lazy', isa => class_type('MCat::Model::Job'),
+   default => sub { shift->models->{job}->jobdaemon };
 
 has 'models' => is => 'ro', isa => HashRef, weak_ref => TRUE,
    default => sub { {} };
@@ -40,15 +42,17 @@ has 'response' => is => 'ro', isa => class_type('MCat::Response'),
 
 has 'session' => is => 'lazy', default => sub { shift->request->session };
 
-has 'schema'  => is => 'lazy', isa => class_type('MCat::Schema'),
+has 'schema'  => is => 'lazy', isa => class_type('DBIx::Class::Schema'),
    default => sub {
       my $self   = shift;
-      my $schema = MCat::Schema->connect(@{$self->config->connect_info});
+      my $class  = $self->config->schema_class;
+      my $schema = $class->connect(@{$self->config->connect_info});
 
-      MCat::Schema->config($self->config) if MCat::Schema->can('config');
+      $class->config($self->config) if $class->can('config');
+      $class->context($self) if $class->can('context');
 
       return $schema;
-};
+   };
 
 has 'time_zone' => is => 'lazy', isa => Str,
    default => sub { shift->session->timezone };

@@ -49,7 +49,7 @@ sub has_property : Auth('none') {
    my $body  = { found => \1 };
 
    if ($value) {
-      try {
+      try { # Defensively written
          my $r = $context->model($class)->find_by_key($value);
 
          $body->{found} = \0 unless $r && $r->execute($prop);
