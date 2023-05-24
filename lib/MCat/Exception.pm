@@ -89,6 +89,9 @@ has_exception 'NoUserRole' => parent => [$class],
 has_exception 'UnauthorisedDataAccess' => parent => [$class],
    error   => 'Access to resource denied';
 
+has_exception 'UnknownToken' => parent => [$class],
+   error   => 'Token [_1] not found', rv => HTTP_NOT_FOUND;
+
 use namespace::autoclean;
 
 1;

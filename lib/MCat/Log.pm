@@ -75,18 +75,30 @@ sub warn {
 sub _log {
    my ($self, $level, $message, $context) = @_;
 
-   my $username = $context ? $context->session->username : USERNAME;
-   my $now      = now->strftime('%Y/%m/%d %T');
-
    $message = "${message}"; chomp $message;
 
    if ($message !~ m{ : }mx) {
-      my $action = $context->has_action ? ucfirst $context->action : 'Unknown';
-      my @parts  = split m{ / }mx, $action;
+      my $action = 'Unknown';
 
-      $action  = $parts[0] . DOT . $parts[-1];
+      if ($context) {
+         if ($context->can('action') && $context->has_action) {
+            $action = ucfirst $context->action;
+
+            my @parts  = split m{ / }mx, $action;
+
+            $action  = $parts[0] . DOT . $parts[-1];
+         }
+         elsif ($context->can('name')) {
+            $action = ucfirst $context->name;
+         }
+      }
+
       $message = "${action}: ${message}";
    }
+
+   my $now      = now->strftime('%Y/%m/%d %T');
+   my $username = $context && $context->can('session')
+      ? $context->session->username : USERNAME;
 
    $message = "${now} [${level}] (${username}) ${message}\n";
 

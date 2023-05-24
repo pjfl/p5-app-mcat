@@ -40,7 +40,9 @@ MCat.Util = (function() {
                'Content-Type', 'application/x-www-form-urlencoded'
             );
             const form = options.form; delete options.form;
-            const params = new URLSearchParams(new FormData(form));
+            const data = new FormData(form);
+            data.set('_submit', form.getAttribute('submitter'));
+            const params = new URLSearchParams(data);
             options.body = params.toString();
          }
          if (options.json) {

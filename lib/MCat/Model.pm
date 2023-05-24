@@ -17,6 +17,7 @@ use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 with 'MCat::Role::Authorisation';
+with 'MCat::Role::Schema';
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
@@ -26,11 +27,9 @@ has 'form' =>
    builder => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
-      my $class    = $self->config->schema_class;
-      my $schema   = $class->connect(@{$self->config->connect_info});
-      my $options  = { namespace => "${appclass}::Form", schema => $schema };
-
-      $class->config($self->config) if $class->can('config');
+      my $options  = {
+         namespace => "${appclass}::Form", schema => $self->schema
+      };
 
       return HTML::Forms::Manager->new($options);
    };

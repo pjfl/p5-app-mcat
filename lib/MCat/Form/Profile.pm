@@ -33,7 +33,8 @@ has_field 'email' => type => 'Email';
 
 has_field 'enable_2fa' => type => 'Boolean';
 
-has_field 'mobile_phone' => type => 'PosInteger', size => 12;
+has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
+   size => 12;
 
 has_field 'postcode', size => 8;
 

@@ -9,6 +9,8 @@ use Type::Utils            qw( class_type );
 use MCat::Response;
 use Moo;
 
+with 'MCat::Role::Schema';
+
 has 'action' => is => 'ro', isa => Str, predicate => 'has_action';
 
 has 'api_routes' => is => 'lazy', isa => HashRef, default => sub {
@@ -23,7 +25,7 @@ has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager');
 
-has 'jobdaemon' => is => 'lazy', isa => class_type('MCat::Model::Job'),
+has 'jobdaemon' => is => 'lazy', isa => class_type('App::Job::Daemon'),
    default => sub { shift->models->{job}->jobdaemon };
 
 has 'models' => is => 'ro', isa => HashRef, weak_ref => TRUE,
@@ -41,18 +43,6 @@ has 'response' => is => 'ro', isa => class_type('MCat::Response'),
    default => sub { MCat::Response->new };
 
 has 'session' => is => 'lazy', default => sub { shift->request->session };
-
-has 'schema'  => is => 'lazy', isa => class_type('DBIx::Class::Schema'),
-   default => sub {
-      my $self   = shift;
-      my $class  = $self->config->schema_class;
-      my $schema = $class->connect(@{$self->config->connect_info});
-
-      $class->config($self->config) if $class->can('config');
-      $class->context($self) if $class->can('context');
-
-      return $schema;
-   };
 
 has 'time_zone' => is => 'lazy', isa => Str,
    default => sub { shift->session->timezone };

@@ -1,5 +1,7 @@
 package MCat::JobServer;
 
+use App::Job::Daemon; our $VERSION = App::Job::Daemon->VERSION;
+
 use Moo;
 
 extends 'App::Job::Daemon';

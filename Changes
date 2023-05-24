@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds forget password and reset totp
           - Adds JobServer
           - Adds TOTP
           - Fixes preference index

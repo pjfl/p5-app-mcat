@@ -5,18 +5,46 @@ use Class::Usul::Constants     qw( FALSE NUL OK TRUE );
 use English                    qw( -no_match_vars );
 use File::DataClass::Functions qw( ensure_class_loaded );
 use File::DataClass::IO        qw( io );
+use File::DataClass::Types     qw( Directory );
+use HTML::Forms::Constants     qw( EXCEPTION_CLASS );
+use JSON::MaybeXS              qw( decode_json );
+use Type::Utils                qw( class_type );
+use Unexpected::Functions      qw( throw Unspecified );
+use MCat::Redis;
 use Moo;
 use Class::Usul::Options;
 
-extends q(Class::Usul);
-with    q(Class::Usul::TraitFor::OutputLogging);
-with    q(Class::Usul::TraitFor::Prompting);
-with    q(Class::Usul::TraitFor::Usage);
-with    q(Class::Usul::TraitFor::RunningMethods);
+extends 'Class::Usul';
+with    'Class::Usul::TraitFor::OutputLogging';
+with    'Class::Usul::TraitFor::Prompting';
+with    'Class::Usul::TraitFor::Usage';
+with    'Class::Usul::TraitFor::RunningMethods';
+with    'Web::Components::Role::Email';
+with    'MCat::Role::Schema';
+
+has 'assetdir' => is => 'lazy', isa => Directory, default => sub {
+   my $self = shift; return $self->config->root->catdir('img');
+};
 
 has '+config_class' => default => 'MCat::Config';
 
 has '+log_class' => default => 'MCat::Log';
+
+has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
+   my $self = shift;
+
+   return MCat::Redis->new(
+      client_name => 'job_stash', config => $self->config->redis
+   );
+};
+
+has 'templatedir' => is => 'lazy', isa => Directory, default => sub {
+   my $self = shift;
+
+   return $self->config->vardir->catdir(
+      'templates', $self->config->skin, 'site', 'email'
+   );
+};
 
 =head1 Subroutines/Methods
 
@@ -123,6 +151,36 @@ sub make_less : method {
    return OK;
 }
 
+=item send_message - Send a message
+
+=cut
+
+sub send_message : method {
+   my $self     = shift;
+   my $options  = $self->options;
+   my $sink     = $self->next_argv or throw Unspecified, ['message sink'];
+   my $quote    = $self->next_argv ? TRUE : $options->{quote} ? TRUE : FALSE;
+   my $stash    = $self->_load_stash($quote);
+   my $attaches = $self->_qualify_assets(delete $stash->{attachments});
+
+   if ($sink eq 'email') {
+      my $recipients = delete $stash->{recipients};
+
+      for my $id (@{$recipients // []}) {
+         if (my $user = $self->schema->resultset('User')->find($id)) {
+            $self->_send_email($stash, $user, $attaches);
+         }
+         else {
+            $self->error("User ${id} unknown", { name => 'CLI.send_message' });
+         }
+      }
+   }
+   elsif ($sink eq 'sms') { $self->_send_sms($stash) }
+   else { throw 'Message sink [_1] unknown', [$sink] }
+
+   return OK;
+}
+
 # Private methods
 sub _create_profile {
    my $self = shift;
@@ -166,6 +224,110 @@ sub _install_schema {
 
    $self->run_cmd([$cmd, '-o', 'bootstrap=1', 'install'], $opts);
    return;
+}
+
+sub _load_stash {
+   my ($self, $quote) = @_;
+
+   my $token    = $self->options->{token} or throw Unspecified, ['token'];
+   my $encoded  = $self->redis->get($token)
+      or throw 'Token [_1] not found', [$token];
+   my $stash    = decode_json($encoded);
+   my $template = delete $stash->{template};
+   my $path     = $self->templatedir->catfile($template);
+
+   $path = io $template unless $path->exists;
+
+   $stash->{content} = $path->all;
+#   $stash->{content} = $self->formatter->markdown($stash->{content})
+#      if $template =~ m{ \.md \z }mx;
+
+   my $tempdir  = $self->config->tempdir;
+
+   unlink $template if $tempdir eq substr $template, 0, length $tempdir;
+
+   $stash->{quote} = $quote;
+   return $stash;
+}
+
+sub _qualify_assets {
+   my ($self, $files) = @_;
+
+   return FALSE unless $files;
+
+   my $assets = {};
+
+   for my $file (@{$files}) {
+      my $path = $self->assetdir->catfile($file);
+
+      $path = io $file unless $path->exists;
+
+      next unless $path->exists;
+
+      $assets->{$path->basename} = $path;
+   }
+
+   return $assets;
+}
+
+sub _send_email {
+   my ($self, $stash, $user, $attaches) = @_;
+
+   $self->_should_send_email($stash, $user) or return;
+
+   my $content  = $stash->{content};
+   my $wrapper  = $self->config->skin . '/site/wrapper/email.tt';
+   my $template = "[% WRAPPER '${wrapper}' %]${content}[% END %]";
+
+   $stash = { %{$stash}, username => "${user}" };
+
+   my $post = {
+      attributes      => {
+         charset      => $self->config->encoding,
+         content_type => 'text/html',
+      },
+      from            => $self->config->name,
+      stash           => $stash,
+      subject         => $stash->{subject} // 'No subject',
+      template        => \$template,
+      to              => $user->email_address,
+   };
+
+   $post->{attachments} = $attaches if $attaches;
+
+   my ($id)   = $self->send_email($post);
+   my $params = { args => ["${user}", $id], name => 'CLI.send_message' };
+
+   $self->info('Emailed [_1] message id. [_2]', $params);
+   return;
+}
+
+sub _send_sms {
+}
+
+sub _should_send_email {
+   my ($self, $stash, $user) = @_;
+
+   unless ($user->can_email) {
+      $self->info("User ${user} example address", {name => 'CLI.send_message'});
+      return FALSE;
+   }
+
+   # if (my $action = $stash->{action}) {
+   #    if ($user->has_stopped_email($action)) {
+   #       $self->info('Would email [_1] but unsub. from action [_2]', {
+   #          args => [ $user->label, $action ] });
+   #       return FALSE;
+   #    }
+   # }
+
+   # if ($self->config->preferences->{no_message_send}) {
+   #    $self->info( 'Would email [_1] but off in config', {
+   #       args => [ $user->label ] } );
+   #    return FALSE;
+   # }
+
+   return TRUE;
 }
 
 use namespace::autoclean;

@@ -9,6 +9,7 @@ use File::DataClass::Types qw( Path Directory File LoadableClass
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
+use IO::Socket::SSL        qw( SSL_VERIFY_NONE );
 use MCat::Util             qw( local_tz );
 use MCat::Exception;
 use Class::Usul::Constants qw();
@@ -204,14 +205,28 @@ Locale used if an attempt is made to localise error messages
 
 has 'locale' => is => 'ro', isa => Str, default => 'en_GB';
 
+=item logdir
+
+Directory containing logfiles
+
+=cut
+
+has 'logdir' => is => 'lazy', isa => Directory,
+   default => sub { shift->vardir->catdir('log') };
+
 =item logfile
 
-Set in the configuration file, the path to the logfile used by the logging
+Set in the configuration file, the name of the logfile used by the logging
 class
 
 =cut
 
-has 'logfile' => is => 'ro', isa => Path|Undef, coerce => TRUE;
+has 'logfile' => is => 'lazy', isa => File|Undef, init_arg => undef,
+   default => sub {
+      my $self = shift; return $self->logdir->catfile($self->_logfile);
+   };
+
+has '_logfile' => is => 'ro', isa => Str, init_arg => 'logfile';
 
 =item man_page_cmd
 
@@ -467,6 +482,23 @@ Time in seconds the CSRF token has to live before it is declared invalid
 =cut
 
 has 'token_lifetime' => is => 'ro', isa => PositiveInt, default => 3_600;
+
+=item transport_attr
+
+Configuration for sending emails
+
+=cut
+
+has 'transport_attr' => is => 'lazy', isa => HashRef, init_arg => undef,
+   default => sub {
+      return {
+         ssl_options => { SSL_verify_mode => SSL_VERIFY_NONE },
+         %{shift->_transport_attr}
+      };
+   };
+
+has '_transport_attr' => is => 'ro', isa => HashRef, default => sub { {} },
+   init_arg => 'transport_attr';
 
 =item umask
 

@@ -13,6 +13,7 @@ sub menu : Auth('admin') Nav('Admin') {
 
    my $nav = $context->stash('nav')->list('admin');
 
+   $nav->menu('job')->item('job/status');
    $nav->menu('logfile')->item('logfile/list');
    $nav->menu('tag')->item('tag/list');
    $nav->menu('user')->item('user/list');

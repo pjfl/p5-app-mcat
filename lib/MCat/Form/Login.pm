@@ -19,24 +19,66 @@ has '+item_class'          => default => 'User';
 
 has 'log' => is => 'ro', predicate => 'has_log';
 
-has_field 'name', required => TRUE, title => 'Enter your user name';
+has_field 'name', required => TRUE, title => 'Enter your user name',
+   toggle => { -set => ['password_reset'] }, toggle_event => 'onchange';
 
 has_field 'password', type => 'Password', required => TRUE;
 
-has_field 'auth_code', label => 'Auth. Code',
-   wrapper_class => ['hide input-text'];
+has_field 'auth_code', type => 'PosInteger', label => 'Auth. Code',
+   required => TRUE, title => 'Enter the Google Authenticator code',
+   wrapper_class => ['hide input-integer'];
 
-has_field 'submit' => type => 'Submit';
+has_field 'login' => type => 'Button', html_name => 'submit',
+   label => 'Login', value => 'login',
+   wrapper_class => ['inline input-button right'];
 
-before 'after_build' => sub {
+has_field 'password_reset' => type => 'Button', html_name => 'submit',
+   element_attr => {
+      javascript
+         => q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"}
+   },
+   label => 'Forgot Password?', title => 'Send password reset email',
+   value => 'password_reset',
+   wrapper_class => ['hide inline input-button'];
+
+has_field 'totp_reset' => type => 'Button', html_name => 'submit',
+   element_attr => {
+      javascript
+         => q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"}
+   },
+   label => 'Reset Auth.', title => 'Request a TOTP reset',
+   value => 'totp_reset',
+   wrapper_class => ['hide inline input-button'];
+
+after 'after_build' => sub {
    my $self   = shift;
    my $method = 'HForms.Util.showIfRequired';
-   my $uri    = $self->context->uri_for_action('user/has_property', [], {
+   my $uri    = $self->context->uri_for_action('page/object_property', [], {
       class => 'User', property => 'enable_2fa'
    });
-   my $js     = "${method}('${uri}', 'name', 'field_auth_code')";
+   my $showif = "${method}('${uri}', 'name', ['auth_code', 'totp_reset'])";
+   my $toggle = "HForms.Toggle.toggleFields(document.getElementById('name'))";
+   my $js     = "${toggle}; ${showif}";
+   my $attr   = $self->field('name')->element_attr;
 
-   $self->field('name')->element_attr({ javascript => q{onblur="}.$js.q{"}});
+   $attr->{javascript} = q{onblur="}.$js.q{"};
+   $self->field('name')->element_attr($attr);
+   return;
+};
+
+around 'validate_form' => sub {
+   my ($orig, $self) = @_;
+
+   my @modified_fields;
+
+   if (my $field_obj = $self->field('auth_code')) {
+      $field_obj->required(FALSE);
+      push @modified_fields, $field_obj;
+   }
+
+   $orig->($self);
+
+   $_->required(TRUE) for (@modified_fields);
 
    return;
 };

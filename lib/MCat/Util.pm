@@ -7,6 +7,7 @@ use DateTime;
 use Digest                qw( );
 use English               qw( -no_match_vars );
 use File::DataClass::IO   qw( io );
+use JSON::MaybeXS         qw( encode_json );
 use Ref::Util             qw( is_hashref );
 use Unexpected::Functions qw( throw );
 use URI::Escape           qw( );
@@ -14,8 +15,9 @@ use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( clear_redirect digest formpost local_tz maybe_render_partial
-       new_uri now redirect redirect2referer trim truncate urandom uri_escape )
+   qw( clear_redirect digest create_token formpost local_tz
+       maybe_render_partial new_uri now redirect redirect2referer
+       trim truncate urandom uri_escape )
 ]};
 
 my $digest_cache;
@@ -26,6 +28,10 @@ my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved;
 
 sub clear_redirect ($) {
    return delete shift->stash->{redirect};
+}
+
+sub create_token () {
+   return substr digest(urandom())->hexdigest, 0, 32;
 }
 
 sub digest ($) {

@@ -261,6 +261,7 @@ MCat.Navigation = (function() {
          const action = form.action;
          return function(event) {
             event.preventDefault();
+            form.setAttribute('submitter', event.submitter.value);
             this.process(action, form);
          }.bind(this);
       }
