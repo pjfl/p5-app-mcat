@@ -91,7 +91,7 @@ sub _create_email {
       link        => "${link}",
       recipients  => [$user->id],
       subject     => '2FA Authenticator Reset',
-      template    => 'totp_reset.tt',
+      template    => 'totp_reset.md',
    }));
 
    my $program = $context->config->bin->catfile('mcat-cli');

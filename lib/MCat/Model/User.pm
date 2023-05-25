@@ -11,11 +11,6 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'user';
 
-# TODO: Show/hide password on change password
-# TODO: Password reset request form and email
-# TODO: Totp request form; username, password, mobile, postcode
-# TODO: Display Changes file and About dialog
-
 sub base : Auth('view') {
    my ($self, $context, $userid) = @_;
 

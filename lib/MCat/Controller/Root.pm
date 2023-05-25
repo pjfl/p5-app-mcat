@@ -31,6 +31,7 @@ return (
    'GET + /logfile + ?*'          => sub {['logfile/root/base/list',   @_]},
 
    'GET + /access_denied + ?*' => sub {['page/root/base/access_denied', @_]},
+   'GET + /changes + ?*'       => sub {['page/root/base/changes',       @_]},
    'GET|POST + /login + ?*'    => sub {['page/root/base/login',         @_]},
    'POST + /logout + ?*'       => sub {['page/root/logout',             @_]},
 

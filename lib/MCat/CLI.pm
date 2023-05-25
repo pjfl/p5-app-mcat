@@ -10,6 +10,7 @@ use HTML::Forms::Constants     qw( EXCEPTION_CLASS );
 use JSON::MaybeXS              qw( decode_json );
 use Type::Utils                qw( class_type );
 use Unexpected::Functions      qw( throw Unspecified );
+use MCat::Markdown;
 use MCat::Redis;
 use Moo;
 use Class::Usul::Options;
@@ -27,6 +28,9 @@ has 'assetdir' => is => 'lazy', isa => Directory, default => sub {
 };
 
 has '+config_class' => default => 'MCat::Config';
+
+has 'formatter'  => is => 'lazy', isa => class_type('MCat::Markdown'),
+   default => sub { MCat::Markdown->new( tab_width => 3 ) };
 
 has '+log_class' => default => 'MCat::Log';
 
@@ -239,8 +243,8 @@ sub _load_stash {
    $path = io $template unless $path->exists;
 
    $stash->{content} = $path->all;
-#   $stash->{content} = $self->formatter->markdown($stash->{content})
-#      if $template =~ m{ \.md \z }mx;
+   $stash->{content} = $self->formatter->markdown($stash->{content})
+      if $template =~ m{ \.md \z }mx;
 
    my $tempdir  = $self->config->tempdir;
 

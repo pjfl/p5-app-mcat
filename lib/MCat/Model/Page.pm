@@ -24,6 +24,8 @@ has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
    );
 };
 
+# TODO: Show/hide password on change password
+
 sub base : Auth('none') {
    my ($self, $context, $id_or_name) = @_;
 
@@ -33,6 +35,13 @@ sub base : Auth('none') {
 }
 
 sub access_denied : Auth('none') {}
+
+sub changes : Auth('none') Nav('Changes') {
+   my ($self, $context) = @_;
+
+   $context->stash(form => $self->new_form('Changes', { context => $context }));
+   return;
+}
 
 sub default : Auth('none') {
    my ($self, $context) = @_;
@@ -144,7 +153,8 @@ sub password : Auth('none') Nav('Change Password') {
 sub password_reset : Auth('none') {
    my ($self, $context, $userid, $token) = @_;
 
-   my $user = $context->stash('user') or return;
+   my $user    = $context->stash('user') or return;
+   my $changep = $context->uri_for_action('page/password', [$user->id]);
 
    if (!$context->posted && $token && $token ne 'reset') {
       if (my $stash = $self->redis->get($token)) {
@@ -153,7 +163,6 @@ sub password_reset : Auth('none') {
             password => $stash->{password}, password_expired => TRUE
          });
 
-         my $changep = $context->uri_for_action('page/password', [$user->id]);
          my $message = 'User [_1] password reset';
 
          $context->stash(redirect $changep, [$message, "${user}"]);
@@ -177,28 +186,21 @@ sub password_reset : Auth('none') {
 
    $token = create_token;
 
-   my $passwd = substr create_token, 0, 12;
-   my $link   = $context->uri_for_action(
-      'page/password_reset', [$user->id, $token]
-   );
-
-   $self->redis->set($token, encode_json({
+   my $actionp = 'page/password_reset';
+   my $link    = $context->uri_for_action($actionp, [$user->id, $token]);
+   my $passwd  = substr create_token, 0, 12;
+   my $options = {
       application => $self->config->name,
       link        => "${link}",
       password    => $passwd,
       recipients  => [$user->id],
       subject     => 'Password Reset',
-      template    => 'password_reset.tt',
-   }));
-
-   my $program = $self->config->bin->catfile('mcat-cli');
-   my $command = "${program} -o token=${token} send_message email";
-   my $options = { command => $command, name => 'send_message' };
-   my $job     = $context->model('Job')->create($options);
-   my $login   = $context->uri_for_action('page/login');
+      template    => 'password_reset.md',
+   };
+   my $job     = $self->_send_email($context, $token, $options);
    my $message = 'User [_1] password reset request sent [_2]';
 
-   $context->stash(redirect $login, [$message, "${user}", $job->label]);
+   $context->stash(redirect $changep, [$message, "${user}", $job->label]);
    return;
 }
 
@@ -237,6 +239,18 @@ sub totp_reset : Auth('none') {
 
    $context->stash( form => $form );
    return;
+}
+
+sub _send_email {
+   my ($self, $context, $token, $args) = @_;
+
+   $self->redis->set($token, encode_json($args));
+
+   my $program = $self->config->bin->catfile('mcat-cli');
+   my $command = "${program} -o token=${token} send_message email";
+   my $options = { command => $command, name => 'send_message' };
+
+   return $context->model('Job')->create($options);
 }
 
 sub _stash_user {
