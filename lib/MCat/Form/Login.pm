@@ -19,35 +19,46 @@ has '+item_class'          => default => 'User';
 
 has 'log' => is => 'ro', predicate => 'has_log';
 
-has_field 'name', required => TRUE, title => 'Enter your user name',
-   toggle => { -set => ['password_reset'] }, toggle_event => 'onchange';
+has_field 'name' =>
+   required     => TRUE,
+   title        => 'Enter your user name',
+   toggle       => { -set => ['password_reset'] },
+   toggle_event => 'onblur';
 
-has_field 'password', type => 'Password', required => TRUE;
+has_field 'password' => type => 'Password', required => TRUE;
 
-has_field 'auth_code', type => 'PosInteger', label => 'Auth. Code',
-   required => TRUE, title => 'Enter the Google Authenticator code',
+has_field 'auth_code' =>
+   type          => 'PosInteger',
+   label         => 'Auth. Code',
+   required      => TRUE,
+   title         => 'Enter the Google Authenticator code',
    wrapper_class => ['hide input-integer'];
 
-has_field 'login' => type => 'Button', html_name => 'submit',
-   label => 'Login', value => 'login',
+has_field 'login' =>
+   type          => 'Button',
+   html_name     => 'submit',
+   label         => 'Login',
+   value         => 'login',
    wrapper_class => ['inline input-button right'];
 
-has_field 'password_reset' => type => 'Button', html_name => 'submit',
-   element_attr => {
-      javascript
-         => q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"}
-   },
-   label => 'Forgot Password?', title => 'Send password reset email',
-   value => 'password_reset',
+my $button_js = q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"};
+
+has_field 'password_reset' =>
+   type          => 'Button',
+   html_name     => 'submit',
+   element_attr  => { javascript => $button_js },
+   label         => 'Forgot Password?',
+   title         => 'Send password reset email',
+   value         => 'password_reset',
    wrapper_class => ['hide inline input-button'];
 
-has_field 'totp_reset' => type => 'Button', html_name => 'submit',
-   element_attr => {
-      javascript
-         => q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"}
-   },
-   label => 'Reset Auth.', title => 'Request a TOTP reset',
-   value => 'totp_reset',
+has_field 'totp_reset' =>
+   type          => 'Button',
+   html_name     => 'submit',
+   element_attr  => { javascript => $button_js },
+   label         => 'Reset Auth.',
+   title         => 'Request a TOTP reset',
+   value         => 'totp_reset',
    wrapper_class => ['hide inline input-button'];
 
 after 'after_build' => sub {
@@ -58,11 +69,11 @@ after 'after_build' => sub {
    });
    my $showif = "${method}('${uri}', 'name', ['auth_code', 'totp_reset'])";
    my $toggle = "HForms.Toggle.toggleFields(document.getElementById('name'))";
-   my $js     = "${toggle}; ${showif}";
-   my $attr   = $self->field('name')->element_attr;
+   my $field  = $self->field('name');
+   my $attr   = $field->element_attr;
 
-   $attr->{javascript} = q{onblur="}.$js.q{"};
-   $self->field('name')->element_attr($attr);
+   $attr->{javascript} = qq{onblur="${toggle}; ${showif}"};
+   $field->element_attr($attr);
    return;
 };
 
@@ -92,8 +103,7 @@ sub validate {
    my $name    = $field->value;
    my $context = $self->context;
    my $session = $context->session;
-   my $rs      = $context->model($self->item_class);
-   my $user    = $rs->find({ name => $name });
+   my $user    = $context->model($self->item_class)->find({ name => $name });
 
    return $field->add_error('User [_1] unknown', $name) unless $user;
 

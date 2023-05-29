@@ -166,17 +166,31 @@ sub send_message : method {
    my $quote    = $self->next_argv ? TRUE : $options->{quote} ? TRUE : FALSE;
    my $stash    = $self->_load_stash($quote);
    my $attaches = $self->_qualify_assets(delete $stash->{attachments});
+   my $log_opts = { name => 'CLI.send_message' };
 
    if ($sink eq 'email') {
       my $recipients = delete $stash->{recipients};
 
-      for my $id (@{$recipients // []}) {
-         if (my $user = $self->schema->resultset('User')->find($id)) {
-            $self->_send_email($stash, $user, $attaches);
+      for my $id_or_email (@{$recipients // []}) {
+         if ($id_or_email =~ m{ \A \d+ \z }mx) {
+            my $user = $self->schema->resultset('User')->find($id_or_email);
+
+            unless ($user) {
+               $self->error("User ${id_or_email} unknown", $log_opts);
+               next;
+            }
+
+            unless ($user->can_email) {
+               $self->error("User ${user} example address", $log_opts);
+               next;
+            }
+
+            $stash->{email} = $user->email;
+            $stash->{username} = "${user}";
          }
-         else {
-            $self->error("User ${id} unknown", { name => 'CLI.send_message' });
-         }
+         else { $stash->{email} = $id_or_email }
+
+         $self->_send_email($stash, $attaches);
       }
    }
    elsif ($sink eq 'sms') { $self->_send_sms($stash) }
@@ -275,17 +289,12 @@ sub _qualify_assets {
 }
 
 sub _send_email {
-   my ($self, $stash, $user, $attaches) = @_;
-
-   $self->_should_send_email($stash, $user) or return;
+   my ($self, $stash, $attaches) = @_;
 
    my $content  = $stash->{content};
    my $wrapper  = $self->config->skin . '/site/wrapper/email.tt';
    my $template = "[% WRAPPER '${wrapper}' %]${content}[% END %]";
-
-   $stash = { %{$stash}, username => "${user}" };
-
-   my $post = {
+   my $post     = {
       attributes      => {
          charset      => $self->config->encoding,
          content_type => 'text/html',
@@ -294,44 +303,19 @@ sub _send_email {
       stash           => $stash,
       subject         => $stash->{subject} // 'No subject',
       template        => \$template,
-      to              => $user->email_address,
+      to              => $stash->{email},
    };
 
    $post->{attachments} = $attaches if $attaches;
 
-   my ($id)   = $self->send_email($post);
-   my $params = { args => ["${user}", $id], name => 'CLI.send_message' };
+   my ($id)    = $self->send_email($post);
+   my $options = { args => [$stash->{email}, $id], name => 'CLI.send_message' };
 
-   $self->info('Emailed [_1] message id. [_2]', $params);
+   $self->info('Emailed [_1] message id. [_2]', $options);
    return;
 }
 
 sub _send_sms {
-}
-
-sub _should_send_email {
-   my ($self, $stash, $user) = @_;
-
-   unless ($user->can_email) {
-      $self->info("User ${user} example address", {name => 'CLI.send_message'});
-      return FALSE;
-   }
-
-   # if (my $action = $stash->{action}) {
-   #    if ($user->has_stopped_email($action)) {
-   #       $self->info('Would email [_1] but unsub. from action [_2]', {
-   #          args => [ $user->label, $action ] });
-   #       return FALSE;
-   #    }
-   # }
-
-   # if ($self->config->preferences->{no_message_send}) {
-   #    $self->info( 'Would email [_1] but off in config', {
-   #       args => [ $user->label ] } );
-   #    return FALSE;
-   # }
-
-   return TRUE;
 }
 
 use namespace::autoclean;

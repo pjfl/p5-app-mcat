@@ -30,10 +30,11 @@ return (
    'GET + /logfile/* + ?*'        => sub {['logfile/root/base/view',   @_]},
    'GET + /logfile + ?*'          => sub {['logfile/root/base/list',   @_]},
 
-   'GET + /access_denied + ?*' => sub {['page/root/base/access_denied', @_]},
-   'GET + /changes + ?*'       => sub {['page/root/base/changes',       @_]},
-   'GET|POST + /login + ?*'    => sub {['page/root/base/login',         @_]},
-   'POST + /logout + ?*'       => sub {['page/root/logout',             @_]},
+   'GET + /access_denied + ?*'   => sub {['page/root/base/access_denied', @_]},
+   'GET + /changes + ?*'         => sub {['page/root/base/changes',       @_]},
+   'GET|POST + /login + ?*'      => sub {['page/root/base/login',         @_]},
+   'POST + /logout + ?*'         => sub {['page/root/logout',             @_]},
+   'GET|POST + /register/* + ?*' => sub {['page/root/register',           @_]},
 
    'GET + /** + ?*' => sub {['page/root/default',   @_]},
    'GET + ?*'       => sub {['page/root/default',   @_]},

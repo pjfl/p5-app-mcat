@@ -82,9 +82,8 @@ sub _create_email {
 
    my $token   = create_token;
    my $context = $self->context;
-   my $link    = $context->uri_for_action(
-      'page/totp_reset', [$user->id, $token]
-   );
+   my $actionp = 'page/totp_reset';
+   my $link    = $context->uri_for_action($actionp, [$user->id, $token]);
 
    $self->redis->set($token, encode_json({
       application => $context->config->name,

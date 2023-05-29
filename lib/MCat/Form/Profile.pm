@@ -29,8 +29,6 @@ has 'user' => is => 'ro', isa => class_type('MCat::Schema::Result::User'),
 
 has_field 'name' => type => 'Display', label => 'User Name';
 
-has_field 'email' => type => 'Email';
-
 has_field 'enable_2fa' => type => 'Boolean';
 
 has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
@@ -52,7 +50,6 @@ sub validate {
    my $enable_2fa = $self->field('enable_2fa')->value ? TRUE : FALSE;
    my $value      = $self->user->profile_value;
 
-   $value->{email}        = $self->field('email')->value;
    $value->{enable_2fa}   = $enable_2fa ? \1 : \0;
    $value->{mobile_phone} = $self->field('mobile_phone')->value;
    $value->{postcode}     = $self->field('postcode')->value;

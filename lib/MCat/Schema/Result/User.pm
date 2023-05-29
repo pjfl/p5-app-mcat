@@ -8,10 +8,9 @@ use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( HashRef );
 use MCat::Util                 qw( digest local_tz truncate urandom );
-use Unexpected::Functions      qw( throw AccountInactive FailedSecurityCheck
-                                   IncorrectAuthCode IncorrectPassword
-                                   PasswordDisabled PasswordExpired
-                                   Unspecified );
+use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
+                                   IncorrectPassword PasswordDisabled
+                                   PasswordExpired Unspecified );
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -41,9 +40,14 @@ $class->add_columns(
       data_type => 'integer', is_nullable => FALSE,
       label => 'Role', cell_traits => ['Capitalise'], display => 'role.name'
    },
+   email => {
+      data_type => 'text', is_nullable => FALSE, label => 'Email Address'
+   },
 );
 
 $class->set_primary_key('id');
+
+$class->add_unique_constraint('user_email_uniq', ['email']);
 
 $class->add_unique_constraint('user_name_uniq', ['name']);
 
@@ -108,7 +112,7 @@ sub _new_salt ($$) {
 sub assert_can_email {
    my $self = shift;
 
-   throw 'User [_1] has no email address', [$self] unless $self->email_address;
+   throw 'User [_1] has no email address', [$self] unless $self->email;
    throw 'User [_1] has an example email address', [$self]
       unless $self->can_email;
 
@@ -147,17 +151,13 @@ sub authenticate_optional_2fa {
 sub can_email {
    my $self = shift;
 
-   return FALSE unless $self->email_address;
-   return FALSE if $self->email_address =~ m{ \@example\.com \z }mx;
+   return FALSE unless $self->email;
+   return FALSE if $self->email =~ m{ \@example\.com \z }mx;
    return TRUE;
 }
 
 sub enable_2fa {
    my ($self, $value) = @_; return $self->_profile('enable_2fa', $value);
-}
-
-sub email_address {
-   my ($self, $value) = @_; return $self->_profile('email', $value);
 }
 
 sub encrypt_password {
@@ -191,16 +191,6 @@ sub mobile_phone {
 
 sub postcode {
    my ($self, $value) = @_; return $self->_profile('postcode', $value);
-}
-
-sub security_check {
-   my ($self, $opts) = @_;
-
-   for my $k (keys %{$opts}) {
-      throw FailedSecurityCheck, [$self] unless $opts->{$k} eq $self->$k();
-   }
-
-   return;
 }
 
 sub set_password {

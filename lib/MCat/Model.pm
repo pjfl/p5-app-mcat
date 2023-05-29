@@ -169,7 +169,7 @@ sub root : Auth('none') {
       $nav->item('user/totp', [$session->id]) if $session->enable_2fa;
       $nav->item(formpost, 'page/logout');
    }
-   else { $nav->item('page/login') }
+   else { $nav->item('page/login')->item('page/register') }
 
    $context->stash(nav => $nav);
    return;

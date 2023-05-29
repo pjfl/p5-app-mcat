@@ -133,11 +133,11 @@ sub object_property : Auth('none') {
 }
 
 sub password : Auth('none') Nav('Change Password') {
-   my ($self, $context, $userid) = @_;
+   my ($self, $context) = @_;
 
-   my $form = $self->new_form('ChangePassword', {
-      context => $context, item => $context->stash('user'), log => $self->log
-   });
+   my $user    = $context->stash('user') or return;
+   my $options = { context => $context, item => $user, log => $self->log };
+   my $form    = $self->new_form('ChangePassword', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $default = $context->uri_for_action($self->config->redirect);
@@ -201,6 +201,52 @@ sub password_reset : Auth('none') {
    my $message = 'User [_1] password reset request sent [_2]';
 
    $context->stash(redirect $changep, [$message, "${user}", $job->label]);
+   return;
+}
+
+sub register : Auth('none') {
+   my ($self, $context, $token) = @_;
+
+   if (!$context->posted && $token) {
+      if (my $stash = $self->redis->get($token)) {
+         $self->redis->remove($token);
+
+         my $role = $context->model('Role')->find({ name => 'view' });
+         my $args = {
+            email            => $stash->{email},
+            name             => $stash->{username},
+            password         => $stash->{password},
+            password_expired => TRUE,
+            role_id          => $role->id,
+         };
+         my $user    = $context->model('User')->create($args);
+         my $changep = $context->uri_for_action('page/password', [$user->id]);
+         my $message = 'User [_1] created';
+
+         $context->stash( redirect $changep, [$message, $user->name]);
+      }
+      else { $self->error($context, UnknownToken, [$token]) }
+
+      return;
+   }
+
+   my $options = {
+      context => $context,
+      log     => $self->log,
+      redis   => $self->redis
+   };
+   my $form = $context->new_form('Register', $options);
+
+   if ($form->process( posted => $context->posted )) {
+      my $job     = $context->stash->{job};
+      my $login   = $context->uri_for_action('page/login');
+      my $message = 'Registration request sent [_1]';
+
+      $context->stash( redirect $login, [$message, $job->id]);
+      return;
+   }
+
+   $context->stash( form => $form );
    return;
 }
 

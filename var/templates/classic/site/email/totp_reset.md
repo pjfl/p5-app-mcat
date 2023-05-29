@@ -1,4 +1,4 @@
-Hello [% username %].
+Hello [% username %],
 
 A TOTP account information request has been made for
 [% username %]@[% application %]. If this was not made by you please contact

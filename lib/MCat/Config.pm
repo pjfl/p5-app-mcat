@@ -147,7 +147,7 @@ has 'default_view' => is => 'ro', isa => Str, default => 'html';
 =item deflate_types
 
 List of mime types that the middleware will compress on the fly if the
-request allow for it
+request allows for it
 
 =cut
 
