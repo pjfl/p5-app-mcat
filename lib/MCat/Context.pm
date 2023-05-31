@@ -23,13 +23,13 @@ has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager');
+has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager'),
+   weak_ref => TRUE;
 
 has 'jobdaemon' => is => 'lazy', isa => class_type('App::Job::Daemon'),
    default => sub { shift->models->{job}->jobdaemon };
 
-has 'models' => is => 'ro', isa => HashRef, weak_ref => TRUE,
-   default => sub { {} };
+has 'models' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'posted' => is => 'lazy', isa => Bool,
    default => sub { lc shift->request->method eq 'post' ? TRUE : FALSE };
@@ -37,7 +37,8 @@ has 'posted' => is => 'lazy', isa => Bool,
 has 'request' =>
    is       => 'ro',
    isa      => class_type('Web::ComposableRequest::Base'),
-   required => TRUE;
+   required => TRUE,
+   weak_ref => TRUE;
 
 has 'response' => is => 'ro', isa => class_type('MCat::Response'),
    default => sub { MCat::Response->new };
@@ -94,15 +95,16 @@ sub uri_for_action {
 
       next if $n_stars != 0 and $n_stars > scalar @{$args // []};
 
-      while ($candidate =~ m{ \* }mx) {
+      $uri = $candidate;
+
+      while ($uri =~ m{ \* }mx) {
          my $arg = shift @{$args // []};
 
          last unless defined $arg;
 
-         $candidate =~ s{ \* }{$arg}mx;
+         $uri =~ s{ \* }{$arg}mx;
       }
 
-      $uri = $candidate;
       last;
    }
 

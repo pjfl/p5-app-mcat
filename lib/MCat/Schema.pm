@@ -24,14 +24,14 @@ sub config {
    return $config;
 }
 
-sub context {
+sub jobdaemon {
    my ($self, $value) = @_;
 
    if (defined $value) {
-      weaken $value; $self->{_context} = $value;
+      weaken $value; $self->{_jobdaemon} = $value;
    }
 
-   return $self->{_context};
+   return $self->{_jobdaemon};
 }
 
 sub create_ddl_dir {

@@ -19,10 +19,11 @@ has 'log' => is => 'ro', predicate => 'has_log';
 
 has_field 'name' => type => 'Display', label => 'User Name';
 
-has_field 'old_password' => type => 'Password', label => 'Old Password';
+has_field 'old_password' => type => 'Password', label => 'Old Password',
+   required => TRUE;
 
 has_field 'password' => type => 'Password', label => 'New Password',
-   title => 'Password must be at least 8 characters';
+   required => TRUE, title => 'Password must be at least 8 characters';
 
 has_field '_password' => type => 'PasswordConf', label => 'and again',
    password_field => 'password';

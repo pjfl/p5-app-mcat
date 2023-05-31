@@ -5,7 +5,8 @@ use HTTP::Status           qw( HTTP_OK );
 use JSON::MaybeXS          qw( encode_json );
 use MCat::Util             qw( create_token new_uri redirect );
 use Type::Utils            qw( class_type );
-use Unexpected::Functions  qw( PageNotFound UnknownToken UnknownUser );
+use Unexpected::Functions  qw( PageNotFound UnauthorisedAccess
+                               UnknownToken UnknownUser );
 use MCat::Redis;
 use Try::Tiny;
 use Web::Simple;
@@ -198,14 +199,17 @@ sub password_reset : Auth('none') {
       template    => 'password_reset.md',
    };
    my $job     = $self->_send_email($context, $token, $options);
-   my $message = 'User [_1] password reset request sent [_2]';
+   my $message = 'User [_1] password reset request [_2] dispatched';
 
    $context->stash(redirect $changep, [$message, "${user}", $job->label]);
    return;
 }
 
-sub register : Auth('none') {
+sub register : Auth('none') Nav('Register') {
    my ($self, $context, $token) = @_;
+
+   return $self->error($context, UnauthorisedAccess)
+      unless $self->config->registration;
 
    if (!$context->posted && $token) {
       if (my $stash = $self->redis->get($token)) {
@@ -235,14 +239,14 @@ sub register : Auth('none') {
       log     => $self->log,
       redis   => $self->redis
    };
-   my $form = $context->new_form('Register', $options);
+   my $form = $self->new_form('Register', $options);
 
    if ($form->process( posted => $context->posted )) {
       my $job     = $context->stash->{job};
       my $login   = $context->uri_for_action('page/login');
-      my $message = 'Registration request sent [_1]';
+      my $message = 'Registration request [_1] dispatched';
 
-      $context->stash( redirect $login, [$message, $job->id]);
+      $context->stash( redirect $login, [$message, $job->label]);
       return;
    }
 
@@ -277,7 +281,7 @@ sub totp_reset : Auth('none') {
 
    if ($form->process( posted => $context->posted )) {
       my $job     = $context->stash->{job};
-      my $message = 'User [_1] TOTP reset request sent [_2]';
+      my $message = 'User [_1] TOTP reset request [_2] dispatched';
       my $login   = $context->uri_for_action('page/login');
 
       $context->stash(redirect $login, [$message, "${user}", $job->label]);

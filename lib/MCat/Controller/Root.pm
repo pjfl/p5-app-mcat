@@ -34,7 +34,8 @@ return (
    'GET + /changes + ?*'         => sub {['page/root/base/changes',       @_]},
    'GET|POST + /login + ?*'      => sub {['page/root/base/login',         @_]},
    'POST + /logout + ?*'         => sub {['page/root/logout',             @_]},
-   'GET|POST + /register/* + ?*' => sub {['page/root/register',           @_]},
+   'GET|POST + /register/* | /register + ?*'
+                                 => sub {['page/root/base/register',      @_]},
 
    'GET + /** + ?*' => sub {['page/root/default',   @_]},
    'GET + ?*'       => sub {['page/root/default',   @_]},

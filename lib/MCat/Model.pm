@@ -1,7 +1,7 @@
 package MCat::Model;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::Forms::Types     qw( HashRef );
+use HTML::Forms::Types     qw( HashRef LoadableClass );
 use HTML::Forms::Util      qw( verify_token );
 use HTTP::Status           qw( HTTP_NOT_FOUND HTTP_OK );
 use MCat::Util             qw( formpost maybe_render_partial );
@@ -34,6 +34,18 @@ has 'form' =>
       return HTML::Forms::Manager->new($options);
    };
 
+has 'jobdaemon' => is => 'lazy', default => sub {
+   my $self = shift;
+
+   return $self->jobdaemon_class->new(config => {
+      appclass => 'MCat',
+      pathname => $self->config->bin->catfile('mcat-jobserver'),
+   });
+};
+
+has 'jobdaemon_class' => is => 'lazy', isa => LoadableClass, coerce => TRUE,
+   default => 'MCat::JobServer';
+
 has 'table' =>
    is      => 'lazy',
    isa     => class_type('HTML::StateTable::Manager'),
@@ -65,9 +77,10 @@ sub error { # Stash exception handler output to print an exception page
 
    if (!blessed $class) {
       my $nav = $context->stash('nav');
-      my $rv  = $nav && $nav->is_script_request ? HTTP_OK : HTTP_NOT_FOUND;
 
-      $exception = exception $class, $bindv, level => 2, rv => $rv, @args;
+      push @args, 'rv', HTTP_OK if $nav && $nav->is_script_request;
+
+      $exception = exception $class, $bindv // [], level => 2, @args;
    }
    else { $exception = $class }
 
@@ -169,7 +182,10 @@ sub root : Auth('none') {
       $nav->item('user/totp', [$session->id]) if $session->enable_2fa;
       $nav->item(formpost, 'page/logout');
    }
-   else { $nav->item('page/login')->item('page/register') }
+   else {
+      $nav->item('page/login');
+      $nav->item('page/register', []) if $self->config->registration;
+   }
 
    $context->stash(nav => $nav);
    return;

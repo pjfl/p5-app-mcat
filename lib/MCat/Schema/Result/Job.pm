@@ -53,7 +53,7 @@ sub insert {
    $self->set_inflated_columns($columns);
 
    my $job       = $self->next::method;
-   my $jobdaemon = $self->result_source->schema->context->jobdaemon;
+   my $jobdaemon = $self->result_source->schema->jobdaemon;
 
    $jobdaemon->trigger if $jobdaemon->is_running;
 

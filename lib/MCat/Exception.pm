@@ -2,7 +2,8 @@ package MCat::Exception;
 
 use DateTime;
 use HTML::Forms::Types    qw( Int Object );
-use HTTP::Status          qw( HTTP_NOT_FOUND );
+use HTTP::Status          qw( HTTP_BAD_REQUEST HTTP_NOT_FOUND
+                              HTTP_UNAUTHORIZED );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( has_exception );
 use MCat;
@@ -45,16 +46,18 @@ has_exception 'PasswordExpired' => parents => ['Authentication'],
    error   => 'User [_1] password expired';
 
 has_exception 'APIMethodFailed', parent => [$class],
-   error   => 'API class [_1] method [_2] call failed: [_3]';
+   error   => 'API class [_1] method [_2] call failed: [_3]',
+   rv      => HTTP_BAD_REQUEST;
 
 has_exception 'NoMethod' => parent => [$class],
-   error   => 'Class [_1] has no method [_2]';
+   error   => 'Class [_1] has no method [_2]', rv => HTTP_NOT_FOUND;
 
 has_exception 'PageNotFound' => parent => [$class],
    error   => 'Page [_1] not found', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnauthorisedAPICall' => parent => [$class],
-   error   => 'Class [_1] method [_2] unauthorised call attempt';
+   error   => 'Class [_1] method [_2] unauthorised call attempt',
+   rv      => HTTP_UNAUTHORIZED;
 
 has_exception 'UnknownAPIClass' => parent => [$class],
    error   => 'API class [_1] not found', rv => HTTP_NOT_FOUND;
@@ -83,8 +86,8 @@ has_exception 'UnknownUser' => parent => [$class],
 has_exception 'NoUserRole' => parent => [$class],
    error   => 'User [_1] no role found on session', rv => HTTP_NOT_FOUND;
 
-has_exception 'UnauthorisedDataAccess' => parent => [$class],
-   error   => 'Access to resource denied';
+has_exception 'UnauthorisedAccess' => parent => [$class],
+   error   => 'Access to resource denied', rv => HTTP_UNAUTHORIZED;
 
 has_exception 'UnknownToken' => parent => [$class],
    error   => 'Token [_1] not found', rv => HTTP_NOT_FOUND;

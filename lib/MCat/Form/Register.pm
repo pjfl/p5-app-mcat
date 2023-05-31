@@ -24,9 +24,9 @@ has 'log' => is => 'ro', isa => class_type('MCat::Log'), predicate => 'has_log';
 
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 
-has_field 'name' => type => 'Display', label => 'User Name';
+has_field 'name' => label => 'User Name', required => TRUE;
 
-has_field 'email' => type => 'Email';
+has_field 'email' => type => 'Email', required => TRUE;
 
 has_field 'submit' => type => 'Submit';
 
@@ -48,7 +48,7 @@ sub validate {
    }
    catch_class [
       '*' => sub {
-         $self->add_form_error(["${_}"]);
+         $self->add_form_error($_);
          $self->log->alert($_, $self->context) if $self->has_log;
       }
    ];
@@ -60,11 +60,11 @@ sub _create_email {
    my ($self, $name, $email) = @_;
 
    my $token   = create_token;
-   my $actionp = 'page/register';
-   my $link    = $context->uri_for_action($actionp, [$token]);
+   my $context = $self->context;
+   my $link    = $context->uri_for_action('page/register', [$token]);
    my $passwd  = substr create_token, 0, 12;
    my $options = {
-      application => $self->config->name,
+      application => $context->config->name,
       email       => $email->value,
       link        => "${link}",
       password    => $passwd,
@@ -78,7 +78,8 @@ sub _create_email {
 
    my $program = $context->config->bin->catfile('mcat-cli');
    my $command = "${program} -o token=${token} send_message email";
-   my $options = { command => $command, name => 'send_message' };
+
+   $options = { command => $command, name => 'send_message' };
 
    return $context->model('Job')->create($options);
 }

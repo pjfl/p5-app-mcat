@@ -32,7 +32,7 @@ sub is_authorised {
       my $location = $context->uri_for_action('page/login');
       my $wanted   = $context->request->uri;
 
-      $session->wanted($wanted)
+      $session->wanted("${wanted}")
          unless $session->wanted || $wanted->query_form('navigation')
          || $location eq substr $wanted, 0, length $location;
 

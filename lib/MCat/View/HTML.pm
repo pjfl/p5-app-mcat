@@ -24,7 +24,7 @@ sub _build__templater {
    my $self        =  shift;
    my $config      =  $self->config;
    my $args        =  {
-      COMPILE_DIR  => $config->tempdir->catdir('ttc'),
+      COMPILE_DIR  => $config->tempdir->catdir('ttc')->pathname,
       COMPILE_EXT  => 'c',
       ENCODING     => 'utf-8',
       INCLUDE_PATH => [$self->templates->pathname],

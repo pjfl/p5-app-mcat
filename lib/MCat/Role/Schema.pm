@@ -10,7 +10,9 @@ has 'schema'  => is => 'lazy', isa => class_type('DBIx::Class::Schema'),
       my $schema = $class->connect(@{$self->config->connect_info});
 
       $class->config($self->config) if $class->can('config');
-      $schema->context($self) if $schema->can('context');
+
+      $schema->jobdaemon($self->jobdaemon)
+         if $schema->can('jobdaemon') && $self->can('jobdaemon');
 
       return $schema;
    };

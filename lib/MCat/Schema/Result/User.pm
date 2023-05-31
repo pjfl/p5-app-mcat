@@ -23,7 +23,7 @@ $class->add_columns(
       data_type => 'integer', is_nullable => FALSE, is_auto_increment => TRUE,
       label => 'User ID'
    },
-   name => { data_type => 'text', is_nullable => FALSE, label => 'Name' },
+   name => { data_type => 'text', is_nullable => FALSE, label => 'User Name' },
    active => {
       data_type => 'boolean', is_nullable => FALSE, default => TRUE,
       label => 'Still Active', cell_traits => ['Bool']

@@ -348,6 +348,15 @@ cache
 
 has 'redis' => is => 'ro', isa => HashRef, default => sub { {} };
 
+=item registration
+
+Boolean which defaults false. If true user registration is allowed otherwise
+it is unavailable
+
+=cut
+
+has 'registration' => is => 'ro', isa => Bool, coerce => TRUE, default => FALSE;
+
 =item request
 
 Hash reference passed to the request object factory constructor by the
@@ -396,7 +405,7 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
          role       => [ Str, NUL ],
          skin       => [ Str, $self->skin ],
          timezone   => [ Str, local_tz ],
-         wanted     => [ Object|Str, NUL ],
+         wanted     => [ Str, NUL ],
       },
    };
 };

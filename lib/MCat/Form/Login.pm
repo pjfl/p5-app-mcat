@@ -20,6 +20,7 @@ has '+item_class'          => default => 'User';
 has 'log' => is => 'ro', predicate => 'has_log';
 
 has_field 'name' =>
+   label        => 'User Name',
    required     => TRUE,
    title        => 'Enter your user name',
    toggle       => { -set => ['password_reset'] },

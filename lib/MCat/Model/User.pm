@@ -2,7 +2,7 @@ package MCat::Model::User;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use MCat::Util             qw( redirect redirect2referer );
-use Unexpected::Functions  qw( UnauthorisedDataAccess UnknownUser Unspecified );
+use Unexpected::Functions  qw( UnauthorisedAccess UnknownUser Unspecified );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -27,7 +27,7 @@ sub base : Auth('view') {
       $nav->crud('user', $userid);
    }
    elsif ($userid) {
-      return $self->error($context, UnauthorisedDataAccess);
+      return $self->error($context, UnauthorisedAccess);
    }
 
    $nav->finalise;

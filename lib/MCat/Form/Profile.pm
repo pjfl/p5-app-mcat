@@ -17,10 +17,12 @@ has '+use_init_obj_over_item' => default => TRUE;
 
 has '+init_object' => default => sub {
    my $self    = shift;
-   my $profile = $self->user->profile;
+   my $user    = $self->user;
+   my $profile = $user->profile;
    my $value   = $profile ? $profile->value : {};
 
-   $value->{name} = $self->user->name;
+   $value->{name} = $user->name;
+   $value->{email} = $user->email;
    return $value;
 };
 
@@ -29,12 +31,15 @@ has 'user' => is => 'ro', isa => class_type('MCat::Schema::Result::User'),
 
 has_field 'name' => type => 'Display', label => 'User Name';
 
-has_field 'enable_2fa' => type => 'Boolean';
+has_field 'email' => type => 'Display', label => 'Email Address';
+
+has_field 'enable_2fa' => type => 'Boolean', label => 'Enable 2FA';
 
 has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
-   size => 12;
+   size => 12, title => 'Additional security question used by 2FA token reset';
 
-has_field 'postcode', size => 8;
+has_field 'postcode' =>
+   size => 8, title => 'Additional security question used by 2FA token reset';
 
 has_field 'skin' => type => 'Select', default => 'classic', options => [
    { label => 'Classic', value => 'classic' },

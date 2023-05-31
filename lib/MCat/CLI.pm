@@ -170,10 +170,11 @@ sub send_message : method {
 
    if ($sink eq 'email') {
       my $recipients = delete $stash->{recipients};
+      my $rs = $self->schema->resultset('User');
 
       for my $id_or_email (@{$recipients // []}) {
          if ($id_or_email =~ m{ \A \d+ \z }mx) {
-            my $user = $self->schema->resultset('User')->find($id_or_email);
+            my $user = $rs->find($id_or_email);
 
             unless ($user) {
                $self->error("User ${id_or_email} unknown", $log_opts);
