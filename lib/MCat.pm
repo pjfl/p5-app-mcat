@@ -1,7 +1,7 @@
 package MCat;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 4 $ =~ /\d+/gmx );
 
 sub schema_version {
    return qv( '0.2.2' );
@@ -27,7 +27,8 @@ MCat - Music Catalog
 
 =head1 Description
 
-A demo program for L<Web::Components>, L<HTML::Forms>, and L<HTML::StateTable>
+A demo web application for L<Web::Components>, L<HTML::Forms>, and
+L<HTML::StateTable>
 
 =head1 Configuration and Environment
 

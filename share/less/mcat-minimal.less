@@ -46,7 +46,7 @@ header {
 .standard-content {
     display: inline-block; padding-top: 0.5rem; text-align: left;
     h1, h2, h3, h4, h5 {
-        font-family: #fonts[system];
+        font-family: #fonts[system]; margin: 1rem 1rem;
     }
     h1 .content, h2 .content, h3 .content, h4 .content, h5 .content {
         font-family: #fonts[data];
@@ -201,7 +201,7 @@ header {
         align-items: flex-start; display: flex; flex-direction: column;
         min-height: 2rem; min-width: 5rem; padding-top: 0.5rem;
         li.global {
-            display: block; margin: 0;
+            display: block; margin: 0; padding: 1rem 0;
             a, .drop-menu {
                 display: inline-block; min-width: #widths[global-anchor];
                 padding: 1rem;
@@ -214,9 +214,16 @@ header {
                 max-width: 32rem;
             }
         }
+        li.global:first-child {
+            padding-top: 0;
+        }
         li.global.selected > span::before,
         li.global.selected > a::before {
-            height: 100%; left: -0.035rem; top: 0; width: 5px;
+            height: 50%; left: -0.035rem; margin: 25% 0; top: 0; width: 5px;
+        }
+        li.global:first-child > span:before,
+        li.global:first-child > a::before {
+           margin-top: 0.5rem;
         }
         .slide-out {
             display: inline-block; left: unset; margin-left: 1rem;

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Slight refactoring
           - Fixes memory leak
           - Adds user registration
 

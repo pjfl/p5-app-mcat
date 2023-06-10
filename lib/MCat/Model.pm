@@ -27,11 +27,10 @@ has 'form' =>
    builder => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
-      my $options  = {
-         namespace => "${appclass}::Form", schema => $self->schema
-      };
 
-      return HTML::Forms::Manager->new($options);
+      return HTML::Forms::Manager->new({
+         namespace => "${appclass}::Form", schema => $self->schema
+      });
    };
 
 has 'jobdaemon' => is => 'lazy', default => sub {
@@ -52,12 +51,11 @@ has 'table' =>
    builder => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
-      my $options  = {
+
+      return HTML::StateTable::Manager->new({
          namespace   => "${appclass}::Table",
          nav_manager => $self->config->navigation_manager,
-      };
-
-      return HTML::StateTable::Manager->new($options);
+      });
    };
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
@@ -213,9 +211,8 @@ sub _fix_redirect_for_fetch {
 
    my $nav = $context->stash('nav');
 
-   return unless $nav && $nav->is_script_request;
+   $context->stash->{code} = HTTP_OK if $nav && $nav->is_script_request;
 
-   $context->stash->{code} = HTTP_OK;
    return;
 }
 
