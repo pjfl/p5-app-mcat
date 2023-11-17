@@ -1,5 +1,6 @@
-use utf8; # -*- coding: utf-8; -*-
 package MCat::Navigation;
+
+use utf8; # -*- coding: utf-8; -*-
 
 use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types      qw( ArrayRef HashRef Str URI );

@@ -12,4 +12,4 @@ BEGIN {
 
 use MCat::Schema::Admin;
 
-exit MCat::Schema::Admin->new_with_options(config => {appclass => 'MCat'})->run;
+exit MCat::Schema::Admin->new_with_options->run;

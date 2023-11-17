@@ -32,6 +32,8 @@ has '+chartable_subtitle_link' => default => sub {
 
 has '+chartable_type' => default => 'pie';
 
+has '+configurable_action' => default => 'api/table_preference';
+
 has '+configurable_dialog_close' => default => sub {
    return shift->context->request->uri_for('img/cancel.svg')->as_string;
 };

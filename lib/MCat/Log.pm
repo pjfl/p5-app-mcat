@@ -1,20 +1,25 @@
 package MCat::Log;
 
-use HTML::Forms::Constants qw( DOT FALSE TRUE USERNAME );
-use HTML::Forms::Types     qw( Bool );
-use MCat::Util             qw( now );
-use Ref::Util              qw( is_arrayref is_coderef );
-use Type::Utils            qw( class_type );
+use HTML::Forms::Constants  qw( DOT FALSE TRUE USERNAME );
+use Class::Usul::Cmd::Types qw( ConfigProvider );
+use HTML::Forms::Types      qw( Bool );
+use Class::Usul::Cmd::Util  qw( ns_environment );
+use MCat::Util              qw( now );
+use Ref::Util               qw( is_arrayref is_coderef );
 use Moo;
 
-has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
+has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
 
-has '_debug' => is => 'lazy', isa => Bool, init_arg => 'debug', default => sub {
-   my $self = shift;
-   my $env  = $ENV{ uc $self->config->appclass . '_debug' };
+has '_debug' =>
+   is       => 'lazy',
+   isa      => Bool,
+   init_arg => 'debug',
+   default  => sub {
+      my $self = shift;
+      my $env  = ns_environment $self->config->appclass, 'debug';
 
-   return defined $env ? !!$env : FALSE;
-};
+      return defined $env ? !!$env : FALSE;
+   };
 
 around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;

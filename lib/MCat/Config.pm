@@ -1,7 +1,7 @@
-use utf8; # -*- coding: utf-8; -*-
 package MCat::Config;
 
-use Class::Usul::Functions qw( base64_decode_ns );
+use utf8; # -*- coding: utf-8; -*-
+
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
 use File::DataClass::Types qw( Path Directory File LoadableClass
@@ -10,9 +10,9 @@ use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Object PositiveInt Str );
 use HTML::Forms::Util      qw( cipher );
 use IO::Socket::SSL        qw( SSL_VERIFY_NONE );
-use MCat::Util             qw( local_tz );
+use MCat::Util             qw( base64_decode local_tz );
 use MCat::Exception;
-use Class::Usul::Constants qw();
+use Class::Usul::Cmd::Constants qw();
 use HTML::StateTable::Constants qw();
 use Web::ComposableRequest::Constants qw();
 use Moo;
@@ -21,10 +21,10 @@ with 'MCat::Config::Loader';
 
 my $except = [
    qw( BUILDARGS BUILD DOES connect_info has_config_file has_config_home
-       has_local_config_file new )
+       has_local_config_file new SSL_VERIFY_NONE )
 ];
 
-Class::Usul::Constants->Dump_Except($except);
+Class::Usul::Cmd::Constants->Dump_Except($except);
 HTML::Forms::Constants->Exception_Class('MCat::Exception');
 HTML::StateTable::Constants->Exception_Class('MCat::Exception');
 Web::ComposableRequest::Constants->Exception_Class('MCat::Exception');
@@ -86,7 +86,7 @@ and decrypted
 
 has 'connect_info' => is => 'lazy', isa => ArrayRef, default => sub {
    my $self     = shift;
-   my $password = cipher->decrypt(base64_decode_ns $self->db_password);
+   my $password = cipher->decrypt(base64_decode $self->db_password);
 
    return [$self->dsn, $self->db_username, $password, $self->db_extra];
 };

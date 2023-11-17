@@ -1,7 +1,8 @@
 package MCat::Config::Loader;
 
-use File::DataClass::IO    qw( io );
 use File::DataClass::Types qw( Directory File );
+use Class::Usul::Cmd::Util qw( ns_environment );
+use File::DataClass::IO    qw( io );
 use File::DataClass::Schema;
 use Moo::Role;
 
@@ -64,8 +65,9 @@ has 'local_config_file' => is => 'ro', isa => File,
 sub _config_file_list ($) {
    my $attr       = shift;
    my $appclass   = $attr->{appclass};
-   my $key        = uc "${appclass}_config";
-   my $file       = $attr->{config_file} // $ENV{$key} // lc $appclass;
+   my $file       = $attr->{config_file}
+      // ns_environment($appclass, 'config')
+      // lc $appclass;
    my $extensions = $attr->{config_extensions} // 'json yaml';
 
    return map { "${file}.${_}" } split m{ \s }mx, $extensions;
@@ -146,12 +148,11 @@ configuration file. If this defines C<local_config_file> that to is loaded
 around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;
 
-   my $attr   = $orig->($self, @args);
-   my $schema = File::DataClass::Schema->new( storage_class => 'Any' );
+   my $attr = $orig->($self, @args);
 
    if ($attr->{appclass}) {
       my $home = io $attr->{home} if defined $attr->{home} and -d $attr->{home};
-      my $env_var = $ENV{ uc $attr->{appclass} . '_home' };
+      my $env_var = ns_environment $attr->{appclass}, 'home';
 
       $home = io $env_var      if !$home and $env_var and -d $env_var;
       $home = _find_home $attr if !$home;
@@ -164,6 +165,8 @@ around 'BUILDARGS' => sub {
       $attr->{config_home} = $config_home if $config_home;
       $attr->{config_file} = $config_file if $config_file;
    }
+
+   my $schema = File::DataClass::Schema->new( storage_class => 'Any' );
 
    if ($attr->{config_file}) {
       $attr = { %{$attr}, %{$schema->load($attr->{config_file})} };

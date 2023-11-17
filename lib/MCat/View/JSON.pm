@@ -19,7 +19,7 @@ sub serialize {
 }
 
 sub _header {
-   return [ 'Content-Type'  => 'application/json', @{ $_[0] // [] } ];
+   return [ 'Content-Type' => 'application/json', @{ $_[0] // [] } ];
 }
 
 use namespace::autoclean;

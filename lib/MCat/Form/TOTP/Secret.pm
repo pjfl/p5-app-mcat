@@ -22,9 +22,12 @@ has_field 'totp_qr_code' => type => 'Image', label => 'QR Code';
 
 has_field 'totp_auth' => type => 'Display', label => 'Authentication URI';
 
-before 'after_build' => sub {
-   my $self  = shift;
-   my $auth  = $self->user->totp_authenticator;
+around 'after_build_fields' => sub {
+   my ($orig, $self) = @_;
+
+   $orig->($self);
+
+   my $auth = $self->user->totp_authenticator;
 
    $self->field('name')->default($self->user->name);
    $self->field('totp_qr_code')->src($auth->qr_code);

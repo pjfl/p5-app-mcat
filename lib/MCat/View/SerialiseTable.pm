@@ -1,11 +1,12 @@
 package MCat::View::SerialiseTable;
 
+use HTML::StateTable::Constants qw( SERIALISE_TABLE_VIEW );
 use Moo;
 
 extends 'HTML::StateTable::View::Serialise';
 with    'Web::Components::Role';
 
-has '+moniker' => default => 'serialise_table';
+has '+moniker' => default => SERIALISE_TABLE_VIEW;
 
 sub serialize {
    my ($self, $context) = @_;

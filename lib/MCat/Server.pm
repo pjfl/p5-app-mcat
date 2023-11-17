@@ -1,38 +1,23 @@
 package MCat::Server;
 
-use MCat;
-use MCat::Config;
-use MCat::Log;
-use MCat::Session;
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
-use HTML::Forms::Types     qw( HashRef Object Str );
 use HTTP::Status           qw( HTTP_FOUND );
+use Class::Usul::Cmd::Util qw( ns_environment );
 use Type::Utils            qw( class_type );
+
+use MCat;
+use MCat::Session;
 use Plack::Builder;
 use Web::Simple;
 
-has '_config_attr' =>
-   is       => 'ro',
-   isa      => HashRef,
-   init_arg => 'config',
-   builder  => sub { { appclass => 'MCat' } };
-
-has 'config' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::Config'),
-   builder => sub { MCat::Config->new( shift->_config_attr ) };
-
-has 'log' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::Log'),
-   builder => sub { MCat::Log->new( config => shift->config ) };
+with 'MCat::Role::Config';
+with 'MCat::Role::Log';
+with 'Web::Components::Loader';
 
 has 'session' =>
    is      => 'lazy',
    isa     => class_type('MCat::Session'),
-   builder => sub { MCat::Session->new( config => shift->config ) };
-
-with 'Web::Components::Loader';
+   default => sub { MCat::Session->new( config => shift->config ) };
 
 around 'to_psgi_app' => sub {
    my ($orig, $self, @args) = @_;
@@ -48,10 +33,12 @@ around 'to_psgi_app' => sub {
       enable 'ContentLength';
       enable 'FixMissingBodyInRedirect';
       enable 'Deflater',
-         content_type => $config->deflate_types, vary_user_agent => TRUE;
+         content_type    => $config->deflate_types,
+         vary_user_agent => TRUE;
       mount $config->mount_point => builder {
          enable 'Static',
-            path => qr{ \A / (?: $static) }mx, root => $config->root;
+            path => qr{ \A / (?: $static) }mx,
+            root => $config->root;
          enable 'Session', $self->session->middleware_config;
          enable 'LogDispatch', logger => $self->log;
          $psgi_app;
@@ -64,12 +51,11 @@ around 'to_psgi_app' => sub {
 
 sub BUILD {
    my $self   = shift;
-   my $server = ucfirst($ENV{PLACK_ENV} // NUL);
    my $class  = $self->config->appclass;
-   my $info   = 'v' . $class->VERSION;
-   my $port   = $ENV{ uc "${class}_port" } // 5_000;
+   my $server = ucfirst($ENV{PLACK_ENV} // NUL);
+   my $port   = ns_environment($class, 'port') // 5_000;
+   my $info   = 'v' . $class->VERSION . " started on port ${port}";
 
-   $info .= " started on port ${port}";
    $self->log->info("Server: ${class} ${server} ${info}");
    return;
 }

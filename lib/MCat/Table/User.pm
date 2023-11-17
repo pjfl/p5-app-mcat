@@ -14,6 +14,8 @@ with    'HTML::StateTable::Role::Active';
 
 has '+caption' => default => 'User List';
 
+has '+configurable_action' => default => 'api/table_preference';
+
 has '+configurable_control_location' => default => 'TopRight';
 
 has '+configurable_dialog_close' => default => sub {

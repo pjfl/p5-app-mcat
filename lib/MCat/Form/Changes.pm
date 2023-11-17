@@ -15,8 +15,11 @@ has_field 'changes' => type => 'NonEditable';
 has 'formatter' => is => 'lazy', isa => class_type('MCat::Markdown'),
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
 
-after 'after_build' => sub {
-   my $self   = shift;
+around 'after_build_fields' => sub {
+   my ($orig, $self) = @_;
+
+   $orig->($self);
+
    my $config = $self->context->config;
    my $path   = $config->home->catfile('Changes');
 
@@ -24,8 +27,7 @@ after 'after_build' => sub {
 
    my $content = join "\n", map { "    ${_}" } $path->getlines;
 
-   $content = $self->formatter->markdown($content);
-   $self->field('changes')->html($content);
+   $self->field('changes')->html($self->formatter->markdown($content));
    return;
 };
 

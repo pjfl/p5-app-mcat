@@ -22,7 +22,9 @@ around 'allowed' => sub {
 sub is_authorised {
    my ($self, $context, $attr) = @_;
 
-   my $role = $attr->{Auth}->[-1] // 'edit';
+   my $role = 'edit';
+
+   $role = $attr->{Auth}->[-1] if $attr && defined $attr->{Auth};
 
    return TRUE if $role eq 'none';
 

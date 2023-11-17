@@ -1,40 +1,35 @@
 package MCat::Schema::Admin;
 
-use Archive::Tar::Constant     qw( COMPRESS_GZIP );
-use Class::Usul::Constants     qw( AS_PARA AS_PASSWORD COMMA OK QUOTED_RE );
-use Class::Usul::Functions     qw( base64_decode_ns base64_encode_ns );
-use File::DataClass::Functions qw( ensure_class_loaded );
-use File::DataClass::IO        qw( io );
-use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
-use HTML::Forms::Util          qw( cipher );
-use MCat::Util                 qw( now trim );
-use Unexpected::Functions      qw( throw PathNotFound Unspecified );
+use Archive::Tar::Constant      qw( COMPRESS_GZIP );
+use Class::Usul::Cmd::Constants qw( AS_PARA AS_PASSWORD COMMA OK QUOTED_RE );
+use HTML::Forms::Constants      qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
+use File::DataClass::Functions  qw( ensure_class_loaded );
+use File::DataClass::IO         qw( io );
+use HTML::Forms::Util           qw( cipher );
+use MCat::Util                  qw( base64_decode base64_encode now trim );
+use Unexpected::Functions       qw( throw PathNotFound Unspecified );
 use Archive::Tar;
-use Class::Usul::File;
 use Data::Record;
+use File::DataClass::Schema;
 use Format::Human::Bytes;
 use Try::Tiny;
 use Moo;
-use Class::Usul::Options;
+use Class::Usul::Cmd::Options;
 
-extends q(Class::Usul);
-with    q(Class::Usul::TraitFor::OutputLogging);
-with    q(Class::Usul::TraitFor::Prompting);
-with    q(Class::Usul::TraitFor::Usage);
-with    q(Class::Usul::TraitFor::RunningMethods);
+extends 'Class::Usul::Cmd';
+with    'MCat::Role::Config';
+with    'MCat::Role::Log';
 
-has '+config_class' => default => 'MCat::Config';
+has 'admin_password' =>
+   is      => 'lazy',
+   default => sub {
+      my $self     = shift;
+      my $password = $self->get_line('+Enter DB admin password', AS_PASSWORD);
 
-has '+log_class' => default => 'MCat::Log';
+      throw 'No database admin password supplied' unless $password;
 
-has 'admin_password' => is => 'lazy', default => sub {
-   my $self     = shift;
-   my $password = $self->get_line('+Enter DB admin password', AS_PASSWORD);
-
-   throw 'No database admin password supplied' unless $password;
-
-   return $ENV{PGPASSWORD} = $password;
-};
+      return $ENV{PGPASSWORD} = $password;
+   };
 
 has 'config_extension' => is => 'ro', default => '.json';
 
@@ -42,81 +37,103 @@ has 'deploy_classes' => is => 'ro', default => sub { ['MCat::Schema'] };
 
 has 'host' => is => 'ro', default => 'localhost';
 
-has 'producers' => is => 'ro', default => sub {
-   return { mysql => 'MySQL', pg => 'PostgreSQL', sqlite => 'SQLite' };
-};
+has 'producers' =>
+   is      => 'ro',
+   default => sub {
+      return { mysql => 'MySQL', pg => 'PostgreSQL', sqlite => 'SQLite' };
+   };
 
-has 'schema' => is => 'lazy', default => sub {
-   my $self  = shift;
-   my $class = $self->config->schema_class;
-   my $info  = [ @{$self->config->connect_info} ];
+has 'schema' =>
+   is      => 'lazy',
+   default => sub {
+      my $self  = shift;
+      my $class = $self->config->schema_class;
+      my $info  = [ @{$self->config->connect_info} ];
 
-   $info->[3] = _connect_attr();
+      $info->[3] = _connect_attr();
 
-   my $schema = $class->connect(@{$info});
+      my $schema = $class->connect(@{$info});
 
-   $class->config($self->config) if $class->can('config');
+      $class->config($self->config) if $class->can('config');
 
-   return $schema;
-};
+      return $schema;
+   };
 
-has 'user_password' => is => 'lazy', default => sub {
-   my $self = shift;
-   my $password = $self->_local_config->{db_password};
+has 'user_password' =>
+   is      => 'lazy',
+   default => sub {
+      my $self = shift;
+      my $password = $self->_local_config->{db_password};
 
-   throw 'No database user password in local config file' unless $password;
+      throw 'No database user password in local config file' unless $password;
 
-   return cipher->decrypt(base64_decode_ns $password);
-};
+      return cipher->decrypt(base64_decode $password);
+   };
 
-has '_dbname' => is => 'lazy', default => sub {
-   my $self = shift;
-   my $dbname;
+has '_file_schema' =>
+   is      => 'lazy',
+   default => sub { File::DataClass::Schema->new(storage_class => 'Any') };
 
-   if ($self->config->dsn =~ m{ dbname[=] }mx) {
-      $dbname = (map  { s{ \A dbname [=] }{}mx; $_ }
-                 grep { m{ \A dbname [=] }mx }
-                 split  m{           [:] }mx, $self->config->dsn)[0];
-   }
+has '_dbname' =>
+   is      => 'lazy',
+   default => sub {
+      my $self = shift;
+      my $dbname;
 
-   return $dbname;
-};
-
-has '_ddl_path' => is => 'lazy', default => sub {
-   my $self    = shift;
-   my $schema  = $self->schema;
-   my $type    = $self->_type;
-   my $version = $schema->schema_version;
-   my $dir     = $self->config->sqldir;
-
-   return io($schema->ddl_filename($type, $version, $dir));
-};
-
-has '_driver' => is => 'lazy', default => sub {
-   my $self   = shift;
-   my $driver = (split m{ : }mx, $self->config->dsn)[1];
-
-   return lc $driver;
-};
-
-has '_host' => is => 'lazy', default => sub {
-   my $self = shift;
-   my $host = $self->host;
-
-   unless ($self->options && $self->options->{bootstrap}) {
-      if ($self->config->dsn =~ m{ host[=] }mx) {
-         $host = (map  { s{ \A host [=] }{}mx; $_ }
-                  grep { m{ \A host [=] }mx }
-                  split  m{         [;] }mx, $self->config->dsn)[0];
+      if ($self->config->dsn =~ m{ dbname[=] }mx) {
+         $dbname = (map  { s{ \A dbname [=] }{}mx; $_ }
+                    grep { m{ \A dbname [=] }mx }
+                    split  m{           [:] }mx, $self->config->dsn)[0];
       }
-   }
 
-   return $host;
-};
+      return $dbname;
+   };
 
-has '_type' => is => 'lazy', default => sub {
-   my $self = shift; return $self->producers->{$self->_driver};
-};
+has '_ddl_path' =>
+   is      => 'lazy',
+   default => sub {
+      my $self    = shift;
+      my $schema  = $self->schema;
+      my $type    = $self->_type;
+      my $version = $schema->schema_version;
+      my $dir     = $self->config->sqldir;
+
+      return io($schema->ddl_filename($type, $version, $dir));
+   };
+
+has '_driver' =>
+   is      => 'lazy',
+   default => sub {
+      my $self   = shift;
+      my $driver = (split m{ : }mx, $self->config->dsn)[1];
+
+      return lc $driver;
+   };
+
+has '_host' =>
+   is      => 'lazy',
+   default => sub {
+      my $self = shift;
+      my $host = $self->host;
+
+      unless ($self->options && $self->options->{bootstrap}) {
+         if ($self->config->dsn =~ m{ host[=] }mx) {
+            $host = (map  { s{ \A host [=] }{}mx; $_ }
+                     grep { m{ \A host [=] }mx }
+                     split  m{         [;] }mx, $self->config->dsn)[0];
+         }
+      }
+
+      return $host;
+   };
+
+has '_type' =>
+   is      => 'lazy',
+   default => sub {
+      my $self = shift;
+
+      return $self->producers->{$self->_driver};
+   };
 
 sub BUILD {}
 
@@ -238,7 +255,7 @@ sub store_password : method {
    my $password = $self->get_line('+Enter DB user password', AS_PASSWORD);
    my $data     = $self->_local_config;
 
-   $data->{db_password} = base64_encode_ns cipher->encrypt($password);
+   $data->{db_password} = base64_encode cipher->encrypt($password);
    $self->_local_config($data);
    $self->info('Updated user password', { name => 'Admin.store_password' });
    return OK;
@@ -444,15 +461,19 @@ sub _list_population_classes {
 sub _local_config {
    my ($self, $data) = @_;
 
-   my $fclass = 'Class::Usul::File';
-   my $file   = $self->config->local_config_file;
+   throw 'Local config file undefined'
+      unless $self->config->has_local_config_file;
+
+   my $file = $self->config->local_config_file;
 
    if ($data) {
-      $fclass->data_dump({ path => $file->assert, data => $data });
+      $self->_file_schema->data_dump({ path => $file->assert, data => $data });
       return $data;
    }
 
-   return $fclass->data_load( paths => [$file] ) // {} if $file->exists;
+   return $self->_file_schema->data_load(paths => [$file]) // {}
+      if $file->exists;
+
    return {};
 }
 
@@ -467,7 +488,7 @@ sub _populate_class {
 
    $self->output("Populating ${class}");
 
-   my $data   = Class::Usul::File->data_load( paths => [$path] ) // {};
+   my $data   = $self->_file_schema->data_load(paths => [$path]) // {};
    my $fields = [split SPC, $data->{fields}];
    my @rows   = map { [ map { _unquote(trim $_) } $split->records($_) ] }
                    @{ $data->{rows} };

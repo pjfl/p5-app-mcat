@@ -219,7 +219,7 @@ sub register : Auth('none') Nav('Register') {
       my $login   = $context->uri_for_action('page/login');
       my $message = 'Registration request [_1] dispatched';
 
-      $context->stash( redirect $login, [$message, $job->label]);
+      $context->stash(redirect $login, [$message, $job->label]);
       return;
    }
 

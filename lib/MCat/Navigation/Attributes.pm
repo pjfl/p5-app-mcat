@@ -48,11 +48,11 @@ sub attr_for {
 
    $components //= {};
 
-   return 0 unless $actionp;
+   return unless $actionp;
 
    my ($moniker, $method) = split m{ / }mx, $actionp;
-   my $component = $components->{$moniker} or return 0;
-   my $code_ref = $component->can($method) or return 0;
+   my $component = $components->{$moniker} or return;
+   my $code_ref = $component->can($method) or return;
 
    return attributes::get($code_ref) // {};
 }

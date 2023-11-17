@@ -283,7 +283,7 @@ __END__
 
 =over 3
 
-=item L<Class::Usul>
+=item L<DateTime::Format::Strptime>
 
 =back
 

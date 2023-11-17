@@ -1,6 +1,6 @@
-use utf8; # -*- coding: utf-8; -*-
 package MCat::Util;
 
+use utf8; # -*- coding: utf-8; -*-
 use strictures;
 
 use DateTime;
@@ -15,8 +15,8 @@ use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( clear_redirect digest create_token formpost local_tz
-       maybe_render_partial new_uri now redirect redirect2referer
+   qw( base64_decode base64_encode clear_redirect digest create_token formpost
+       local_tz maybe_render_partial new_uri now redirect redirect2referer
        trim truncate urandom uri_escape )
 ]};
 
@@ -25,6 +25,108 @@ my $reserved   = q(;/?:@&=+$,[]);
 my $mark       = q(-_.!~*'());                                   #'; emacs
 my $unreserved = "A-Za-z0-9\Q${mark}\E%\#";
 my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved;
+
+my $base64_char_set = sub { [ 0 .. 9, 'A' .. 'Z', '_', 'a' .. 'z', '~', '+' ] };
+my $index64 = sub { [
+   qw(XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX 64  XX XX XX XX
+       0  1  2  3   4  5  6  7   8  9 XX XX  XX XX XX XX
+      XX 10 11 12  13 14 15 16  17 18 19 20  21 22 23 24
+      25 26 27 28  29 30 31 32  33 34 35 XX  XX XX XX 36
+      XX 37 38 39  40 41 42 43  44 45 46 47  48 49 50 51
+      52 53 54 55  56 57 58 59  60 61 62 XX  XX XX 63 XX
+
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX
+      XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX)
+]};
+
+sub base64_decode ($) {
+   my $x = shift;
+
+   return unless defined $x;
+
+   my @x = split q(), $x;
+   my $index = $index64->();
+   my $j = 0;
+   my $k = 0;
+   my $len = length $x;
+   my $pad = 64;
+   my @y = ();
+
+ ROUND: {
+    while ($j < $len) {
+       my @c = ();
+       my $i = 0;
+
+       while ($i < 4) {
+          my $uc = $index->[ord $x[$j++]];
+
+          $c[$i++] = 0 + $uc if $uc ne 'XX';
+          next unless $j == $len;
+
+          if ($i < 4) {
+             last ROUND if $i < 2;
+             $c[2] = $pad if $i == 2;
+             $c[3] = $pad;
+          }
+
+          last;
+       }
+
+       last if $c[0] == $pad or $c[1] == $pad;
+       $y[$k++] = ( $c[0] << 2) | (($c[1] & 0x30) >> 4);
+       last if $c[2] == $pad;
+       $y[$k++] = (($c[1] & 0x0F) << 4) | (($c[2] & 0x3C) >> 2);
+       last if $c[3] == $pad;
+       $y[$k++] = (($c[2] & 0x03) << 6) | $c[3];
+    }
+ }
+
+   return join q(), map { chr $_ } @y;
+}
+
+sub base64_encode (;$) {
+   my $x = shift;
+
+   return unless defined $x;
+
+   my @x = split q(), $x;
+   my $basis = $base64_char_set->();
+   my $len = length $x;
+   my @y = ();
+
+   for (my $i = 0, my $j = 0; $len > 0; $len -= 3, $i += 3) {
+      my $c1 = ord $x[$i];
+      my $c2 = $len > 1 ? ord $x[$i + 1] : 0;
+
+      $y[$j++] = $basis->[$c1 >> 2];
+      $y[$j++] = $basis->[(($c1 & 0x3) << 4) | (($c2 & 0xF0) >> 4)];
+
+      if ($len > 2) {
+         my $c3 = ord $x[$i + 2];
+
+         $y[$j++] = $basis->[(($c2 & 0xF) << 2) | (($c3 & 0xC0) >> 6)];
+         $y[$j++] = $basis->[$c3 & 0x3F];
+      }
+      elsif ($len == 2) {
+         $y[$j++] = $basis->[($c2 & 0xF) << 2];
+         $y[$j++] = $basis->[64];
+      }
+      else { # len == 1
+         $y[$j++] = $basis->[64];
+         $y[$j++] = $basis->[64];
+      }
+   }
+
+   return join q(), @y;
+}
 
 sub clear_redirect ($) {
    return delete shift->stash->{redirect};

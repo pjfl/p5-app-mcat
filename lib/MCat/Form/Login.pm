@@ -62,8 +62,11 @@ has_field 'totp_reset' =>
    value         => 'totp_reset',
    wrapper_class => ['hide inline input-button'];
 
-after 'after_build' => sub {
-   my $self   = shift;
+around 'after_build_fields' => sub {
+   my ($orig, $self) = @_;
+
+   $orig->($self);
+
    my $method = 'HForms.Util.showIfRequired';
    my $uri    = $self->context->uri_for_action('page/object_property', [], {
       class => 'User', property => 'enable_2fa'

@@ -53,8 +53,8 @@ has 'table' =>
       my $appclass = $self->config->appclass;
 
       return HTML::StateTable::Manager->new({
-         namespace   => "${appclass}::Table",
-         nav_manager => $self->config->navigation_manager,
+         namespace    => "${appclass}::Table",
+         page_manager => $self->config->navigation_manager,
       });
    };
 

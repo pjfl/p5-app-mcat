@@ -11,9 +11,12 @@ use Moo;
 
 extends 'HTML::Forms::Exception', 'HTML::StateTable::Exception';
 
-has 'created' => is => 'ro', isa => class_type('DateTime'), default => sub {
-   return DateTime->now( locale => 'en_GB', time_zone => 'UTC' );
-};
+has 'created' =>
+   is      => 'ro',
+   isa     => class_type('DateTime'),
+   default => sub {
+      return DateTime->now( locale => 'en_GB', time_zone => 'UTC' );
+   };
 
 has 'rv' => is => 'ro', isa => Int, default => 1;
 

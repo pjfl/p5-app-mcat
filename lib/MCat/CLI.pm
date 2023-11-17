@@ -1,54 +1,57 @@
 package MCat::CLI;
 
 use MCat;
-use Class::Usul::Constants     qw( FALSE NUL OK TRUE );
-use English                    qw( -no_match_vars );
-use File::DataClass::Functions qw( ensure_class_loaded );
-use File::DataClass::IO        qw( io );
-use File::DataClass::Types     qw( Directory );
-use HTML::Forms::Constants     qw( EXCEPTION_CLASS );
-use JSON::MaybeXS              qw( decode_json );
-use Type::Utils                qw( class_type );
-use Unexpected::Functions      qw( throw Unspecified );
+use Class::Usul::Cmd::Constants qw( FALSE NUL OK TRUE );
+use HTML::Forms::Constants      qw( EXCEPTION_CLASS );
+use File::DataClass::Types      qw( Directory );
+use English                     qw( -no_match_vars );
+use File::DataClass::Functions  qw( ensure_class_loaded );
+use File::DataClass::IO         qw( io );
+use JSON::MaybeXS               qw( decode_json );
+use Type::Utils                 qw( class_type );
+use Unexpected::Functions       qw( throw Unspecified );
 use MCat::Markdown;
 use MCat::Redis;
 use Moo;
-use Class::Usul::Options;
+use Class::Usul::Cmd::Options;
 
-extends 'Class::Usul';
-with    'Class::Usul::TraitFor::OutputLogging';
-with    'Class::Usul::TraitFor::Prompting';
-with    'Class::Usul::TraitFor::Usage';
-with    'Class::Usul::TraitFor::RunningMethods';
-with    'Web::Components::Role::Email';
+extends 'Class::Usul::Cmd';
+with    'MCat::Role::Config';
+with    'MCat::Role::Log';
 with    'MCat::Role::Schema';
+with    'Web::Components::Role::Email';
 
-has 'assetdir' => is => 'lazy', isa => Directory, default => sub {
-   my $self = shift; return $self->config->root->catdir('img');
-};
+has 'assetdir' =>
+   is      => 'lazy',
+   isa     => Directory,
+   default => sub { $_[0]->config->root->catdir('img') };
 
-has '+config_class' => default => 'MCat::Config';
-
-has 'formatter'  => is => 'lazy', isa => class_type('MCat::Markdown'),
+has 'formatter' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::Markdown'),
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
 
-has '+log_class' => default => 'MCat::Log';
+has 'redis' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::Redis'),
+   default => sub {
+      my $self = shift;
 
-has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
-   my $self = shift;
+      return MCat::Redis->new(
+         client_name => 'job_stash', config => $self->config->redis
+      );
+   };
 
-   return MCat::Redis->new(
-      client_name => 'job_stash', config => $self->config->redis
-   );
-};
+has 'templatedir' =>
+   is      => 'lazy',
+   isa     => Directory,
+   default => sub {
+      my $self = shift;
 
-has 'templatedir' => is => 'lazy', isa => Directory, default => sub {
-   my $self = shift;
-
-   return $self->config->vardir->catdir(
-      'templates', $self->config->skin, 'site', 'email'
-   );
-};
+      return $self->config->vardir->catdir(
+         'templates', $self->config->skin, 'site', 'email'
+      );
+   };
 
 =head1 Subroutines/Methods
 
@@ -182,7 +185,7 @@ sub send_message : method {
             }
 
             unless ($user->can_email) {
-               $self->error("User ${user} example address", $log_opts);
+               $self->error("User ${user} bad email address", $log_opts);
                next;
             }
 
@@ -316,8 +319,7 @@ sub _send_email {
    return;
 }
 
-sub _send_sms {
-}
+sub _send_sms { ... }
 
 use namespace::autoclean;
 
