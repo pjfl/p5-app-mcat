@@ -3,7 +3,6 @@ package MCat::Util;
 use utf8; # -*- coding: utf-8; -*-
 use strictures;
 
-use DateTime;
 use Digest                qw( );
 use English               qw( -no_match_vars );
 use File::DataClass::IO   qw( io );
@@ -16,8 +15,8 @@ use URI::https;
 
 use Sub::Exporter -setup => { exports => [
    qw( base64_decode base64_encode clear_redirect digest create_token formpost
-       local_tz maybe_render_partial new_uri now redirect redirect2referer
-       trim truncate urandom uri_escape )
+       local_tz maybe_render_partial new_uri redirect redirect2referer
+       truncate urandom uri_escape )
 ]};
 
 my $digest_cache;
@@ -169,17 +168,6 @@ sub new_uri ($$) {
    my $v = uri_escape($_[1]); return bless \$v, 'URI::'.$_[0];
 }
 
-sub now (;$$) {
-   my ($tz, $locale) = @_;
-
-   my $args = { locale => 'en_GB', time_zone => 'UTC' };
-
-   $args->{locale}    = $locale if $locale;
-   $args->{time_zone} = $tz     if $tz;
-
-   return DateTime->now(%{$args});
-}
-
 sub redirect ($$) {
    return redirect => { location => $_[0], message => $_[1] };
 }
@@ -190,23 +178,6 @@ sub redirect2referer ($;$) {
    my $referer = new_uri 'http', $context->request->referer;
 
    return redirect $referer, $message;
-}
-
-=item trim( string, characters )
-
-Trims whitespace characters from both ends of the supplied string and returns
-it. The list of C<characters> to remove is optional and defaults to space and
-tab. Newlines at the end of the string are also removed
-
-=cut
-
-sub trim (;$$) {
-   my $chars = $_[1] // " \t";
-   (my $value = $_[0] // q()) =~ s{ \A [$chars]+ }{}mx;
-
-   chomp $value;
-   $value =~ s{ [$chars]+ \z }{}mx;
-   return $value;
 }
 
 sub truncate ($;$) {

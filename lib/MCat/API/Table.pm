@@ -10,7 +10,9 @@ use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 has 'name' => is => 'ro', isa => Str, required => TRUE;
 
-has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
+has '_json' =>
+   is      => 'ro',
+   isa     => class_type(JSON::MaybeXS::JSON),
    default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
 
 sub action : Auth('view') {

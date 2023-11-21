@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Removes unecessary functions from Util
           - Now depends on Class::Usul::Cmd
           - Slight refactoring
           - Fixes memory leak

@@ -9,7 +9,7 @@ requires qw( config );
 has 'log' =>
    is      => 'lazy',
    isa     => Logger,
-   default => sub { MCat::Log->new( config => shift->config ) };
+   default => sub { MCat::Log->new(config => shift->config) };
 
 use namespace::autoclean;
 

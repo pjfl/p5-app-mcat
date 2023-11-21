@@ -3,8 +3,7 @@ package MCat::Log;
 use HTML::Forms::Constants  qw( DOT FALSE TRUE USERNAME );
 use Class::Usul::Cmd::Types qw( ConfigProvider );
 use HTML::Forms::Types      qw( Bool );
-use Class::Usul::Cmd::Util  qw( ns_environment );
-use MCat::Util              qw( now );
+use Class::Usul::Cmd::Util  qw( now_dt ns_environment );
 use Ref::Util               qw( is_arrayref is_coderef );
 use Moo;
 
@@ -101,7 +100,7 @@ sub _log {
       $message = "${action}: ${message}";
    }
 
-   my $now      = now->strftime('%Y/%m/%d %T');
+   my $now      = now_dt->strftime('%Y/%m/%d %T');
    my $username = $context && $context->can('session')
       ? $context->session->username : USERNAME;
 

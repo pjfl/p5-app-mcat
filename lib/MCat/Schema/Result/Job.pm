@@ -4,7 +4,7 @@ use overload '""' => sub { $_[0]->_as_string },
              '+'  => sub { $_[0]->_as_number }, fallback => 1;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use MCat::Util             qw( now );
+use Class::Usul::Cmd::Util qw( now_dt );
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -49,7 +49,7 @@ sub insert {
    my $self    = shift;
    my $columns = { $self->get_inflated_columns };
 
-   $columns->{created} = now;
+   $columns->{created} = now_dt;
    $self->set_inflated_columns($columns);
 
    my $job       = $self->next::method;
@@ -70,7 +70,7 @@ sub update {
    $self->set_inflated_columns($columns) if $columns;
 
    $columns = { $self->get_inflated_columns };
-   $columns->{updated} = now;
+   $columns->{updated} = now_dt;
    $self->set_inflated_columns($columns);
    return $self->next::method;
 }

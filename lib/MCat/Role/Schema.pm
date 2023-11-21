@@ -3,7 +3,9 @@ package MCat::Role::Schema;
 use Type::Utils qw( class_type );
 use Moo::Role;
 
-has 'schema'  => is => 'lazy', isa => class_type('DBIx::Class::Schema'),
+has 'schema' =>
+   is      => 'lazy',
+   isa     => class_type('DBIx::Class::Schema'),
    default => sub {
       my $self   = shift;
       my $class  = $self->config->schema_class;

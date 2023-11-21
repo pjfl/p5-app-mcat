@@ -15,9 +15,13 @@ has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
 sub messages : Auth('none') {
    my ($self, $context, @args) = @_;
 
-   my $messages = $context->session->collect_status_messages($context->request);
+   if ($self->name eq 'collect') {
+      my $messages
+         = $context->session->collect_status_messages($context->request);
 
-   $context->stash( body => $self->_json->encode($messages) );
+      $context->stash( body => $self->_json->encode($messages) );
+   }
+
    return;
 }
 

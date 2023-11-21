@@ -1,12 +1,11 @@
 package MCat::Role::Config;
 
-use Class::Usul::Cmd::Constants qw( TRUE );
-use Class::Usul::Cmd::Types     qw( ConfigProvider );
-use Scalar::Util                qw( blessed );
+use Class::Usul::Cmd::Types qw( ConfigProvider );
+use Scalar::Util            qw( blessed );
 use MCat::Config;
 use Moo::Role;
 
-has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
+has 'config' => is => 'ro', isa => ConfigProvider;
 
 around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;

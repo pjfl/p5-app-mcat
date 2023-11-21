@@ -1,6 +1,7 @@
 package MCat::Session;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
+use Class::Usul::Cmd::Types     qw( ConfigProvider );
 use Type::Utils                 qw( class_type );
 use JSON::MaybeXS               qw( );
 use MCat::Redis;
@@ -8,17 +9,22 @@ use Plack::Session::State::Cookie;
 use Plack::Session::Store::Cache;
 use Moo;
 
-has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
+has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
 
-has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
-   my $self = shift;
+has 'redis' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::Redis'),
+   default => sub {
+      my $self = shift;
 
-   return MCat::Redis->new(
-      client_name => 'session_store', config => $self->config->redis
-   );
-};
+      return MCat::Redis->new(
+         client_name => 'session_store', config => $self->config->redis
+      );
+   };
 
-has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
+has '_json' =>
+   is      => 'ro',
+   isa     => class_type(JSON::MaybeXS::JSON),
    default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
 
 sub middleware_config {

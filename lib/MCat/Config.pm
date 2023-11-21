@@ -155,14 +155,6 @@ has 'deflate_types' => is => 'ro', isa => ArrayRef[Str], default => sub {
    [ qw( text/css text/html text/javascript application/javascript ) ]
 };
 
-=item doc_title
-
-Title used in the production of manual pages
-
-=cut
-
-has 'doc_title' => is => 'ro', isa => Str, default => 'User Documentation';
-
 =item dsn
 
 String used to select a database type and specific database by name
@@ -194,7 +186,7 @@ Configuration parameters used by the component loader
 =cut
 
 has 'loader_attr' => is => 'ro', isa => HashRef, default => sub {
-   { should_log_errors => FALSE, should_log_messages => TRUE }
+   return { should_log_errors => FALSE, should_log_messages => TRUE };
 };
 
 =item locale
@@ -227,15 +219,6 @@ has 'logfile' => is => 'lazy', isa => File|Undef, init_arg => undef,
    };
 
 has '_logfile' => is => 'ro', isa => Str, init_arg => 'logfile';
-
-=item man_page_cmd
-
-Command used to invoke the native manual page viewer
-
-=cut
-
-has 'man_page_cmd' => is => 'ro', isa => ArrayRef,
-   default => sub { ['nroff', '-man'] };
 
 =item mount_point
 
@@ -321,15 +304,6 @@ Used as a prefix when creating identifiers
 =cut
 
 has 'prefix' => is => 'ro', isa => Str, default => 'mcat';
-
-=item pwidth
-
-The width of the prompt to use (in characters) when asking for input on the
-command line
-
-=cut
-
-has 'pwidth' => is => 'ro', isa => PositiveInt, default => 60;
 
 =item redirect
 

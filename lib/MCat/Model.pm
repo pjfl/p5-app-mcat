@@ -24,7 +24,7 @@ has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 has 'form' =>
    is      => 'lazy',
    isa     => class_type('HTML::Forms::Manager'),
-   builder => sub {
+   default => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
 
@@ -33,22 +33,28 @@ has 'form' =>
       });
    };
 
-has 'jobdaemon' => is => 'lazy', default => sub {
-   my $self = shift;
+has 'jobdaemon' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::JobServer'),
+   default => sub {
+      my $self = shift;
 
-   return $self->jobdaemon_class->new(config => {
-      appclass => 'MCat',
-      pathname => $self->config->bin->catfile('mcat-jobserver'),
-   });
-};
+      return $self->_jobdaemon_class->new(config => {
+         appclass => 'MCat',
+         pathname => $self->config->bin->catfile('mcat-jobserver'),
+      });
+   };
 
-has 'jobdaemon_class' => is => 'lazy', isa => LoadableClass, coerce => TRUE,
+has '_jobdaemon_class' =>
+   is      => 'lazy',
+   isa     => LoadableClass,
+   coerce  => TRUE,
    default => 'MCat::JobServer';
 
 has 'table' =>
    is      => 'lazy',
    isa     => class_type('HTML::StateTable::Manager'),
-   builder => sub {
+   default => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
 

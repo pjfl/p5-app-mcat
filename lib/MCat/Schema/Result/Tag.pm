@@ -11,9 +11,11 @@ my $result = 'MCat::Schema::Result';
 $class->table('tag');
 
 $class->add_columns(
-   id   => {
-      data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE,
-      label => 'Tag ID'
+   id => {
+      data_type         => 'integer',
+      is_auto_increment => TRUE,
+      is_nullable       => FALSE,
+      label             => 'Tag ID'
    },
    name => { data_type => 'text', is_nullable => FALSE, label => 'Name' },
 );

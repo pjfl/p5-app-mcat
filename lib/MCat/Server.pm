@@ -3,21 +3,15 @@ package MCat::Server;
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_FOUND );
 use Class::Usul::Cmd::Util qw( ns_environment );
-use Type::Utils            qw( class_type );
 
 use MCat;
-use MCat::Session;
 use Plack::Builder;
 use Web::Simple;
 
 with 'MCat::Role::Config';
 with 'MCat::Role::Log';
+with 'MCat::Role::Session';
 with 'Web::Components::Loader';
-
-has 'session' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::Session'),
-   default => sub { MCat::Session->new( config => shift->config ) };
 
 around 'to_psgi_app' => sub {
    my ($orig, $self, @args) = @_;

@@ -3,10 +3,11 @@ package MCat::Schema::Admin;
 use Archive::Tar::Constant      qw( COMPRESS_GZIP );
 use Class::Usul::Cmd::Constants qw( AS_PARA AS_PASSWORD COMMA OK QUOTED_RE );
 use HTML::Forms::Constants      qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
+use Class::Usul::Cmd::Util      qw( now_dt trim );
 use File::DataClass::Functions  qw( ensure_class_loaded );
 use File::DataClass::IO         qw( io );
 use HTML::Forms::Util           qw( cipher );
-use MCat::Util                  qw( base64_decode base64_encode now trim );
+use MCat::Util                  qw( base64_decode base64_encode );
 use Unexpected::Functions       qw( throw PathNotFound Unspecified );
 use Archive::Tar;
 use Data::Record;
@@ -145,7 +146,7 @@ Backs up the database
 
 sub backup : method {
    my $self = shift;
-   my $now  = now;
+   my $now  = now_dt;
    my $db   = $self->_dbname;
    my $date = $now->ymd(NUL).'-'.$now->hms(NUL);
    my $file = "${db}-${date}.sql";
