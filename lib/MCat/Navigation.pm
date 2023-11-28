@@ -5,8 +5,7 @@ use utf8; # -*- coding: utf-8; -*-
 use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types      qw( ArrayRef HashRef Str URI );
 use HTTP::Status                 qw( HTTP_OK );
-use MCat::Util                   qw( clear_redirect formpost
-                                     maybe_render_partial );
+use MCat::Util                   qw( clear_redirect formpost );
 use Ref::Util                    qw( is_hashref );
 use Scalar::Util                 qw( blessed );
 use Type::Utils                  qw( class_type );
@@ -54,6 +53,13 @@ has 'logo' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
 
 has '_logo' => is => 'ro', isa => Str, init_arg => 'logo', default => NUL;
 
+has 'menu_location' => is => 'lazy', isa => Str, default => sub {
+   my $self    = shift;
+   my $session = $self->context->session;
+
+   return $session->menu_location || $self->global_location;
+};
+
 has 'messages' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'model' => is => 'ro', isa => class_type('MCat::Model'), required => TRUE;
@@ -82,7 +88,7 @@ has '_container' => is => 'lazy', isa => Str, default => sub {
 
 has '_data' => is => 'lazy', isa => HashRef, default => sub {
    my $self  = shift;
-   my $class = 'state-navigation navigation-' . $self->global_location;
+   my $class = 'state-navigation navigation-' . $self->menu_location;
 
    return {
       'class' => $class,
@@ -96,7 +102,7 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'container-name' => $self->container_name,
             'content-name'   => $self->content_name,
             'label'          => $self->label,
-            'location'       => $self->global_location,
+            'location'       => $self->menu_location,
             'logo'           => $self->logo,
             'skin'           => $self->context->session->skin,
             'title'          => $self->title,
@@ -149,14 +155,6 @@ around 'BUILDARGS' => sub {
    return { %{$attr}, %{$config->navigation} };
 };
 
-sub BUILD {
-   my $self = shift;
-
-   maybe_render_partial $self->context;
-
-   return;
-}
-
 sub crud {
    my ($self, $moniker, $existing_id, $create_id) = @_;
 
@@ -186,6 +184,17 @@ sub finalise {
    $context->stash(
       code => HTTP_OK, finalised => TRUE, body => $body, view => 'json'
    );
+   return;
+}
+
+sub fix_status_for_fetch {
+   my $self    = shift;
+   my $context = $self->context;
+
+   return unless exists $context->stash->{redirect};
+
+   $context->stash(code => HTTP_OK) if $self->is_script_request;
+
    return;
 }
 

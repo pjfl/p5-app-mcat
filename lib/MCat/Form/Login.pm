@@ -144,7 +144,10 @@ sub validate {
       my $profile = $user->profile ? $user->profile->value : {};
 
       $session->enable_2fa($profile->{enable_2fa} ? TRUE : FALSE);
+      $session->menu_location($profile->{menu_location})
+         if defined $profile->{menu_location};
       $session->skin($profile->{skin}) if defined $profile->{skin};
+      $session->theme($profile->{theme}) if defined $profile->{theme};
       $session->timezone($profile->{timezone}) if defined $profile->{timezone};
    }
 

@@ -1,5 +1,5 @@
 <header>[% nav.render %]</header>
-[% nav_class = 'navigation-' _ config.navigation.global_location -%]
+[% nav_class = 'navigation-' _ nav.menu_location -%]
 <div id="sidebar" class="sidebar [% nav_class %]"></div>
 <div class="centred-content [% nav_class %]">
    <div id="[% nav.container_name %]" class="[% nav.container_name %]">

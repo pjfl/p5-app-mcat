@@ -5,6 +5,8 @@ use Moo;
 
 extends 'MCat::Table::Object::View';
 
+has '+caption' => default => 'User View';
+
 has '+form_buttons' => default => sub {
    my $self    = shift;
    my $context = $self->context;

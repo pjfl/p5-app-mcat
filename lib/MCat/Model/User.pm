@@ -92,26 +92,25 @@ sub edit : Auth('admin') Nav('Edit User') {
 sub profile : Auth('view') Nav('Profile') {
    my ($self, $context, $userid) = @_;
 
-   my $options = { context => $context, user => $context->stash('user') };
-   my $form    = $self->new_form('Profile', $options);
+   my $user = $context->stash('user');
+   my $form = $self->new_form('Profile', { context => $context, user => $user});
 
-   if ($form->process( posted => $context->posted )) {
-      my $name    = $form->user->name;
-      my $default = $context->uri_for_action($self->config->redirect);
-      my $message = ['User [_1] profile updated', $name];
+   if ($form->process(posted => $context->posted)) {
+      my $location = $context->uri_for_action('user/profile', [$user->id]);
+      my $message  = ['User [_1] profile updated', $user->name];
+      my $options  = { http_headers => { 'X-Force-Reload' => 'true' }};
 
-      $context->stash( redirect $default, $message );
+      $context->stash(redirect $location, $message, $options);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
 sub list : Auth('admin') Nav('Users') {
    my ($self, $context) = @_;
 
-   my $rs      = $context->model('User');
-   my $options = { context => $context, resultset => $rs };
+   my $options = { context => $context, resultset => $context->model('User') };
 
    $context->stash(table => $self->new_table('User', $options));
    return;
@@ -131,7 +130,7 @@ sub remove : Auth('admin') {
       $count++;
    }
 
-   $context->stash(redirect2referer $context, ["${count} tag(s) deleted"]);
+   $context->stash(redirect2referer $context, ["${count} user(s) deleted"]);
    return;
 }
 
@@ -140,18 +139,16 @@ sub totp : Auth('view') Nav('View TOTP') {
 
    my $options = { context => $context, user => $context->stash('user') };
 
-   $context->stash( form => $self->new_form('TOTP::Secret', $options) );
+   $context->stash(form => $self->new_form('TOTP::Secret', $options));
    return;
 }
 
 sub view : Auth('admin') Nav('View User') {
    my ($self, $context, $userid) = @_;
 
-   $context->stash(table => $self->new_table('User::View', {
-      caption => 'User View',
-      context => $context,
-      result  => $context->stash('user')
-   }));
+   my $options = { context => $context, result => $context->stash('user') };
+
+   $context->stash(table => $self->new_table('User::View', $options));
    return;
 }
 

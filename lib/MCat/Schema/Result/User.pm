@@ -7,7 +7,7 @@ use Auth::GoogleAuth;
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( HashRef );
-use MCat::Util                 qw( digest local_tz truncate urandom );
+use MCat::Util                 qw( digest truncate urandom );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
                                    IncorrectPassword PasswordDisabled
                                    PasswordExpired Unspecified );
@@ -24,6 +24,13 @@ $class->add_columns(
       label => 'User ID'
    },
    name => { data_type => 'text', is_nullable => FALSE, label => 'User Name' },
+   email => {
+      data_type => 'text', is_nullable => FALSE, label => 'Email Address'
+   },
+   role_id => {
+      data_type => 'integer', is_nullable => FALSE,
+      label => 'Role', cell_traits => ['Capitalise'], display => 'role.name'
+   },
    active => {
       data_type => 'boolean', is_nullable => FALSE, default => TRUE,
       label => 'Still Active', cell_traits => ['Bool']
@@ -35,13 +42,6 @@ $class->add_columns(
    password_expired => {
       data_type => 'boolean', is_nullable => FALSE, default => FALSE,
       label => 'Password Expired', cell_traits => ['Bool']
-   },
-   role_id => {
-      data_type => 'integer', is_nullable => FALSE,
-      label => 'Role', cell_traits => ['Capitalise'], display => 'role.name'
-   },
-   email => {
-      data_type => 'text', is_nullable => FALSE, label => 'Email Address'
    },
 );
 
@@ -140,10 +140,12 @@ sub authenticate_optional_2fa {
 
    $self->authenticate($passwd);
 
-   throw Unspecified, ['Auth. Code'] if !$auth_code && $self->totp_secret;
+   return unless $self->totp_secret;
+
+   throw Unspecified, ['Auth. Code'] unless $auth_code;
 
    throw IncorrectAuthCode, [$self]
-      if $auth_code && !$self->totp_authenticator->verify($auth_code);
+      unless $self->totp_authenticator->verify($auth_code);
 
    return;
 }

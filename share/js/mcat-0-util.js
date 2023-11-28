@@ -59,9 +59,13 @@ MCat.Util = (function() {
          if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
-         if (response.headers.get('location')) return {
-            location: response.headers.get('location'), status: 302
-         };
+         const headers = response.headers;
+         const location = headers.get('location');
+         if (location) {
+            const reload_header = headers.get('x-force-reload');
+            const reload = reload_header == 'true' ? true : false;
+            return { location: location, reload: reload, status: 302 };
+         }
          if (want == 'object') return {
             object: await response.json(), status: response.status
          };
@@ -84,9 +88,8 @@ MCat.Util = (function() {
             throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
          const headers = response.headers;
-         if (headers.get('location')) return {
-            location: headers.get('location'), status: 302
-         };
+         const location = headers.get('location');
+         if (location) return { location: location, status: 302 };
          if (want == 'blob') {
             const key = 'content-disposition';
             const filename = headers.get(key).split('filename=')[1];

@@ -3,8 +3,8 @@ package MCat::Model;
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types     qw( HashRef LoadableClass );
 use HTML::Forms::Util      qw( verify_token );
-use HTTP::Status           qw( HTTP_NOT_FOUND HTTP_OK );
-use MCat::Util             qw( formpost maybe_render_partial );
+use HTTP::Status           qw( HTTP_OK );
+use MCat::Util             qw( formpost redirect2referer );
 use Ref::Util              qw( is_arrayref );
 use Scalar::Util           qw( blessed weaken );
 use Type::Utils            qw( class_type );
@@ -104,7 +104,14 @@ sub exception_handler { # Also called by component loader if model dies
       exception => $exception,
       page      => { %{$self->config->page}, layout => 'page/exception' },
    );
+
    $self->_finalise_stash($context);
+
+   my $nav = $context->stash->{nav};
+
+   $context->stash(redirect2referer $context, [$exception->original])
+      if $nav && $nav->is_script_request;
+
    return;
 }
 
@@ -126,7 +133,7 @@ sub execute { # Called by component loader for all model method calls
 
       return $stash->{response} if $stash->{response};
 
-      $self->_fix_redirect_for_fetch($context) if exists $stash->{redirect};
+      $stash->{nav}->fix_status_for_fetch if exists $stash->{nav};
 
       return if $stash->{finalised} || exists $stash->{redirect};
 
@@ -174,12 +181,13 @@ sub new_table {
 sub root : Auth('none') {
    my ($self, $context) = @_;
 
-   my $session = $context->session;
-   my $nav     = MCat::Navigation->new({ context => $context, model => $self });
+   my $nav = MCat::Navigation->new({ context => $context, model => $self });
 
    $nav->list('_control');
 
-   if ($context->session->authenticated) {
+   my $session = $context->session;
+
+   if ($session->authenticated) {
       $nav->item('page/changes');
       $nav->item('page/password', [$session->id]);
       $nav->item('user/profile', [$session->id]);
@@ -201,24 +209,12 @@ sub _finalise_stash { # Add necessary defaults for the view to render
 
    my $stash = $context->stash;
 
-   weaken $context;
    $stash->{code} //= HTTP_OK unless exists $stash->{redirect};
    $stash->{finalised} = TRUE;
    $stash->{page} //= { %{$self->config->page} };
    $stash->{page}->{layout} //= $self->moniker . "/${method}";
    $stash->{version} = $MCat::VERSION;
    $stash->{view} //= $self->config->default_view;
-   maybe_render_partial $context;
-   return;
-}
-
-sub _fix_redirect_for_fetch {
-   my ($self, $context) = @_;
-
-   my $nav = $context->stash('nav');
-
-   $context->stash->{code} = HTTP_OK if $nav && $nav->is_script_request;
-
    return;
 }
 

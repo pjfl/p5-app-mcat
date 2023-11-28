@@ -41,9 +41,23 @@ has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
 has_field 'postcode' =>
    size => 8, title => 'Additional security question used by 2FA token reset';
 
-has_field 'skin' => type => 'Select', default => 'classic', options => [
-   { label => 'Classic', value => 'classic' },
-   { label => 'Funky',   value => 'funky' },
+has_field 'skin' =>
+   type    => 'Select',
+   default => sub { $_[0]->context->config->skin },
+   options => [
+      { label => 'Classic', value => 'classic' },
+      { label => 'Funky',   value => 'funky' },
+   ];
+
+has_field 'menu_location' => type => 'Select', default => 'header',
+   options => [
+      { label => 'Header', value => 'header' },
+      { label => 'Sidebar', value => 'sidebar' },
+   ];
+
+has_field 'theme' => type => 'Select', default => 'light', options => [
+   { label => 'Dark', value => 'dark' },
+   { label => 'Light', value => 'light' },
 ];
 
 has_field 'timezone' => type => 'Timezone';
@@ -53,26 +67,36 @@ has_field 'submit' => type => 'Submit';
 sub validate {
    my $self       = shift;
    my $enable_2fa = $self->field('enable_2fa')->value ? TRUE : FALSE;
-   my $value      = $self->user->profile_value;
+   my $user       = $self->user;
+   my $value      = $user->profile_value;
 
-   $value->{enable_2fa}   = $enable_2fa ? \1 : \0;
-   $value->{mobile_phone} = $self->field('mobile_phone')->value;
-   $value->{postcode}     = $self->field('postcode')->value;
-   $value->{skin}         = $self->field('skin')->value;
-   $value->{timezone}     = $self->field('timezone')->value;
+   $value->{enable_2fa}    = $enable_2fa ? \1 : \0;
+   $value->{menu_location} = $self->field('menu_location')->value;
+   $value->{mobile_phone}  = $self->field('mobile_phone')->value;
+   $value->{postcode}      = $self->field('postcode')->value;
+   $value->{skin}          = $self->field('skin')->value;
+   $value->{theme}         = $self->field('theme')->value;
+   $value->{timezone}      = $self->field('timezone')->value;
 
    $self->context->model('Preference')->update_or_create({
-      name => 'profile', user_id => $self->user->id, value => $value
+      name => 'profile', user_id => $user->id, value => $value
    }, {
       key  => 'preference_user_id_name_uniq'
    });
 
+
+   $user->set_totp_secret($enable_2fa);
+
    my $session = $self->context->session;
 
-   $self->user->set_totp_secret($enable_2fa);
-   $session->enable_2fa($enable_2fa);
-   $session->skin($value->{skin});
-   $session->timezone($value->{timezone});
+   if ($session->id == $user->id) {
+      $session->enable_2fa($enable_2fa);
+      $session->menu_location($value->{menu_location});
+      $session->skin($value->{skin});
+      $session->theme($value->{theme});
+      $session->timezone($value->{timezone});
+   }
+
    return;
 }
 

@@ -17,6 +17,19 @@ has '+item_class'          => default => 'User';
 
 has_field 'name', required => TRUE;
 
+has_field 'email' => type => 'Email', required => TRUE;
+
+has_field 'role' => type => 'Select', default => 2;
+
+sub options_role {
+   my $self     = shift;
+   my $field    = $self->field('role');
+   my $accessor = $field->parent->full_accessor if $field->parent;
+   my $options  = $self->lookup_options($field, $accessor);
+
+   return [ map { ucfirst } @{$options} ];
+}
+
 has_field 'active' => type => 'Boolean', default => TRUE;
 
 has_field 'password';
@@ -29,17 +42,6 @@ sub default_password {
 }
 
 has_field 'password_expired' => type => 'Boolean', default => TRUE;
-
-has_field 'role' => type => 'Select', default => 2;
-
-sub options_role {
-   my $self     = shift;
-   my $field    = $self->field('role');
-   my $accessor = $field->parent->full_accessor if $field->parent;
-   my $options  = $self->lookup_options($field, $accessor);
-
-   return [ map { ucfirst } @{$options} ];
-}
 
 has_field 'submit' => type => 'Submit';
 

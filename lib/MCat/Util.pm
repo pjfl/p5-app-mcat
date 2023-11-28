@@ -15,8 +15,7 @@ use URI::https;
 
 use Sub::Exporter -setup => { exports => [
    qw( base64_decode base64_encode clear_redirect digest create_token formpost
-       local_tz maybe_render_partial new_uri redirect redirect2referer
-       truncate urandom uri_escape )
+       local_tz new_uri redirect redirect2referer truncate urandom uri_escape )
 ]};
 
 my $digest_cache;
@@ -168,8 +167,8 @@ sub new_uri ($$) {
    my $v = uri_escape($_[1]); return bless \$v, 'URI::'.$_[0];
 }
 
-sub redirect ($$) {
-   return redirect => { location => $_[0], message => $_[1] };
+sub redirect ($$;$) {
+   return redirect => { %{$_[2] // {}}, location => $_[0], message => $_[1] };
 }
 
 sub redirect2referer ($;$) {
@@ -212,25 +211,6 @@ sub uri_escape ($;$) {
    $v =~ s{([^$pattern])}{ URI::Escape::uri_escape_utf8($1) }ego;
    utf8::downgrade( $v );
    return $v;
-}
-
-sub maybe_render_partial ($) {
-   my $context = shift;
-   my $header  = $context->request->header('prefer') // q();
-
-   return unless $header eq 'render=partial';
-
-   if (my $exception = $context->stash('exception')) {
-      $context->stash(redirect2referer $context, [$exception->original]);
-      return;
-   }
-
-   my $page = $context->stash('page') // {};
-
-   $page->{html} = 'none';
-   $page->{wrapper} = 'none';
-   $context->stash( page => $page );
-   return;
 }
 
 sub _pseudo_random {

@@ -14,6 +14,8 @@ has '+moniker' => default => 'html';
 sub serialize {
    my ($self, $context) = @_;
 
+   $self->_maybe_render_partial($context);
+
    my $stash = $self->_add_tt_defaults($context);
    my $html  = encode($self->encoding, $self->render_template($stash));
 
@@ -54,6 +56,21 @@ sub _add_tt_defaults {
 
 sub _header {
    return [ 'Content-Type'  => 'text/html', @{ $_[0] // [] } ];
+}
+
+sub _maybe_render_partial {
+   my ($self, $context) = @_;
+
+   my $header = $context->request->header('prefer') // q();
+
+   return unless $header eq 'render=partial';
+
+   my $page = $context->stash('page') // {};
+
+   $page->{html} = 'none';
+   $page->{wrapper} = 'none';
+   $context->stash(page => $page);
+   return;
 }
 
 use namespace::autoclean;

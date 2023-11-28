@@ -35,6 +35,7 @@ MCat.Navigation = (function() {
             if (event.state && event.state.href)
                this.renderLocation(event.state.href);
          }.bind(this));
+         this.messages.render(window.location.href);
       }
       addSelected(item) {
          item.classList.add('selected');
@@ -76,12 +77,16 @@ MCat.Navigation = (function() {
       }
       async process(action, form) {
          const options = { headers: { prefer: 'render=partial' }, form: form };
-         const { location, text } = await this.bitch.blows(action, options);
-         if (text) this.renderHTML(text);
-         else if (location) {
-            this.messages.render(location);
-            this.renderLocation(location);
+         const { location, reload, text }
+               = await this.bitch.blows(action, options);
+         if (location) {
+            if (reload) { window.location.href = location }
+            else {
+               this.renderLocation(location);
+               this.messages.render(location);
+            }
          }
+         else if (text) { this.renderHTML(text) }
          else {
             console.warn('Neither content nor redirect in response to post');
          }
@@ -301,12 +306,21 @@ MCat.Navigation = (function() {
       async render(href) {
          const url = new URL(href);
          const messagesURL = new URL(this.messagesURL);
-         messagesURL.searchParams.set('mid', url.searchParams.get('mid'));
+         const mid = url.searchParams.get('mid');
+         if (!mid) return;
+         messagesURL.searchParams.set('mid', mid);
          const { object } = await this.bitch.sucks(messagesURL);
          if (!object) return;
          let count = 0;
+         this.panel.classList.remove('hide');
          for (const message of object) {
-            const item = this.h.div({ className: 'message-item' }, message);
+            const options = {
+               className: 'message-item',
+               onclick: function() {
+                  this.panel.classList.add('hide');
+               }.bind(this)
+            };
+            const item = this.h.div(options, message);
             if (count++ > 0) this.panel.prepend(item);
             else this.panel.append(item);
             this.items.unshift(item);

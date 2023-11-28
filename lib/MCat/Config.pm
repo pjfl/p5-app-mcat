@@ -248,7 +248,7 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
       my $self = shift;
 
       return {
-         global_location => 'sidebar',
+         global_location => 'header',
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
@@ -374,12 +374,14 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
       serialise_session_attr => [ qw( id ) ],
       session_attr => {
-         enable_2fa => [ Bool, FALSE ],
-         id         => [ PositiveInt, 0 ],
-         role       => [ Str, NUL ],
-         skin       => [ Str, $self->skin ],
-         timezone   => [ Str, local_tz ],
-         wanted     => [ Str, NUL ],
+         enable_2fa    => [ Bool, FALSE ],
+         id            => [ PositiveInt, 0 ],
+         menu_location => [ Str, 'header' ],
+         role          => [ Str, NUL ],
+         skin          => [ Str, $self->skin ],
+         theme         => [ Str, 'light' ],
+         timezone      => [ Str, local_tz ],
+         wanted        => [ Str, NUL ],
       },
    };
 };
