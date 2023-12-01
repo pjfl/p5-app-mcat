@@ -197,6 +197,20 @@ Locale used if an attempt is made to localise error messages
 
 has 'locale' => is => 'ro', isa => Str, default => 'en_GB';
 
+=item lock_attributes
+
+=cut
+
+has 'lock_attributes' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift;
+
+   return {
+      name  => $self->prefix . '_locks',
+      redis => $self->redis,
+      type  => 'redis',
+   };
+};
+
 =item logdir
 
 Directory containing logfiles
@@ -248,7 +262,6 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
       my $self = shift;
 
       return {
-         global_location => 'header',
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
@@ -376,6 +389,7 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       session_attr => {
          enable_2fa    => [ Bool, FALSE ],
          id            => [ PositiveInt, 0 ],
+         link_display  => [ Str, 'both' ],
          menu_location => [ Str, 'header' ],
          role          => [ Str, NUL ],
          skin          => [ Str, $self->skin ],

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds menu item icons
           - Adds profile menu location and colour theme
           - Removes unecessary functions from Util
           - Now depends on Class::Usul::Cmd

@@ -17,7 +17,8 @@ has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
    my $self = shift;
 
    return MCat::Redis->new(
-      client_name => 'logfile_cache', config => $self->config->redis
+      client_name => $self->config->prefix . '_logfile_cache',
+      config => $self->config->redis
    );
 };
 

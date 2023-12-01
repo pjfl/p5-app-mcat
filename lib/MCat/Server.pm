@@ -50,7 +50,7 @@ sub BUILD {
    my $port   = ns_environment($class, 'port') // 5_000;
    my $info   = 'v' . $class->VERSION . " started on port ${port}";
 
-   $self->log->info("Server: ${class} ${server} ${info}");
+   $self->log->info("HTTPServer: ${class} ${server} ${info}");
    return;
 }
 

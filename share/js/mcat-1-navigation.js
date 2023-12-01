@@ -15,9 +15,11 @@ MCat.Navigation = (function() {
          this.confirm          = this.properties['confirm'];
          const containerName   = this.properties['container-name'];
          this.contentName      = this.properties['content-name'];
-         this.controlLabel     = this.properties['label'];
+         this.controlLabel     = this.properties['control-label'];
+         this.linkDisplay      = this.properties['link-display'];
          this.location         = this.properties['location'];
          this.logo             = this.properties['logo'];
+         this.mediaBreak       = this.properties['media-break'];
          this.skin             = this.properties['skin'];
          this.title            = this.properties['title'];
          this.titleAbbrev      = this.properties['title-abbrev'];
@@ -35,7 +37,7 @@ MCat.Navigation = (function() {
             if (event.state && event.state.href)
                this.renderLocation(event.state.href);
          }.bind(this));
-         this.messages.render(window.location.href);
+         window.addEventListener('resize', this.resizeHandler());
       }
       addSelected(item) {
          item.classList.add('selected');
@@ -121,26 +123,27 @@ MCat.Navigation = (function() {
          this.globalMenu = this.display(container, 'globalMenu', gMenu);
       }
       async render() {
+         this.messages.render(window.location.href);
          this.redraw();
          await StateTable.isConstructing();
          this.replaceLinks(document.getElementById(this.contentName));
       }
       renderControl() {
+         const isURL = this.controlLabel.match(/:/) ? true : false;
+         const attr  = { className: 'nav-control-label' };
+         if (!isURL) this.appendValue(attr, 'className', 'text');
+         const label = isURL
+               ? this.h.img({ src: this.controlLabel }) : this.controlLabel;
+         const link = this.h.a({
+            onmouseover: this.menuOver('control')
+         }, this.h.span(attr, label));
          this.contextPanels['control'] = this.h.div({
             className: 'nav-panel control-panel',
             onmouseleave: this.menuLeave('control')
          }, this.renderList(this.menus['_control'], 'control'));
-         const attr  = { className: 'nav-control-label' };
-         const isURL = this.controlLabel.match(/:/) ? true : false;
-         if (!isURL) attr.className = 'nav-control-label text';
-         const label = isURL
-               ? this.h.img({ src: this.controlLabel }) : this.controlLabel;
-         return this.h.div({ className: 'nav-control' }, [
-            this.h.a({
-               onmouseover: this.menuOver('control')
-            }, this.h.span(attr, label)),
-            this.contextPanels['control']
-         ]);
+         return this.h.div({
+            className: 'nav-control'
+         }, [ link, this.contextPanels['control'] ]);
       }
       async renderHTML(html) {
          const attr  = { id: this.contentName, className: this.contentName };
@@ -155,8 +158,9 @@ MCat.Navigation = (function() {
          HForms.Util.focusFirst(this.skin);
       }
       renderItem(item, menuName, context) {
-         const [label, href] = item;
-         if (typeof label != 'object') {
+         const [text, href, icon] = item;
+         if (typeof text != 'object') {
+            const label = this.renderLabel(icon, text);
             if (href) {
                const attr = { href: href, onclick: this.loadLocation(href) };
                if (context) attr['onmouseover'] = this.menuOver(context);
@@ -169,17 +173,25 @@ MCat.Navigation = (function() {
             const menuItem = this.h.span(labelAttr, label);
             return this.h.li({ className: menuName }, menuItem);
          }
-         if (label['method'] != 'post') return;
+         if (text['method'] != 'post') return;
          const form = this.h.form({
             action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
          form.setAttribute('listener', true);
          form.addEventListener('submit', this.submitFormHandler(form));
-         const name = label['name'];
          form.append(this.h.button({
             className: 'form-button', onclick: this.submitHandler(form, name)
-         }, this.h.span(name)));
+         }, this.h.span(this.renderLabel(icon, text['name']))));
          return this.h.li({ className: menuName }, form);
+      }
+      renderLabel(icon, text) {
+         const iconImage = icon && icon.match(/:/)
+               ? this.h.img({ src: icon }) : icon;
+         return {
+            both: [iconImage, text],
+            icon: iconImage ? iconImage : text,
+            text: text
+         }[this.linkDisplay];
       }
       renderList(list, menuName) {
          const [title, itemList] = list;
@@ -254,6 +266,32 @@ MCat.Navigation = (function() {
                form.addEventListener('submit', this.submitFormHandler(form));
             }
          }
+      }
+      resizeHandler() {
+         return function(event) {
+            const linkDisplay = this.linkDisplay;
+            const navigation = document.getElementById('navigation');
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const className = 'link-display-' + this.linkDisplay;
+            navigation.classList.remove(className);
+            sidebar.classList.remove(className);
+            content.classList.remove(className);
+            if (window.innerWidth <= this.mediaBreak) {
+               navigation.classList.add('link-display-icon');
+               sidebar.classList.add('link-display-icon');
+               content.classList.add('link-display-icon');
+               this.linkDisplay = 'icon';
+            }
+            else {
+               const original = this.properties['link-display'];
+               navigation.classList.add('link-display-' + original);
+               sidebar.classList.add('link-display-' + original);
+               content.classList.add('link-display-' + original);
+               this.linkDisplay = original;
+            }
+            if (linkDisplay != this.linkDisplay) this.redraw();
+         }.bind(this);
       }
       setHeadTitle() {
          const head  = (document.getElementsByTagName('head'))[0];

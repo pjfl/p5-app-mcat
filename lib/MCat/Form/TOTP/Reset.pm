@@ -19,8 +19,6 @@ has '+is_html5' => default => TRUE;
 has '+no_update' => default => TRUE;
 has '+title' => default => 'TOTP Reset Request';
 
-has 'log' => is => 'ro', isa => class_type('MCat::Log'), predicate => 'has_log';
-
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 
 has 'user' => is => 'ro', isa => class_type('MCat::Schema::Result::User'),

@@ -107,7 +107,7 @@ sub edit : Nav('Edit CD') {
    return;
 }
 
-sub list : Auth('view') Nav('CDs') {
+sub list : Auth('view') Nav('CDs|img/cd.svg') {
    my ($self, $context, $artistid) = @_;
 
    my $cd_rs = $context->model('Cd');

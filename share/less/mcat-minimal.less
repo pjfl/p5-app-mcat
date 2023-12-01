@@ -17,10 +17,16 @@
 #widths() {
     context-anchor: 6rem;
     global-anchor: 3rem;
-    @sidebar: 5;
-    sidebar: unit(@sidebar, rem);
-    centred-content-margin: unit((@sidebar + 0.25), rem);
     media-break: 680px;
+    @sidebar-both: 7;
+    @sidebar-icon: 4;
+    @sidebar-text: 5;
+    sidebar-both: unit(@sidebar-both, rem);
+    centred-content-margin-both: unit((@sidebar-both + 0.25), rem);
+    sidebar-icon: unit(@sidebar-icon, rem);
+    centred-content-margin-icon: unit((@sidebar-icon + 0.25), rem);
+    sidebar-text: unit(@sidebar-text, rem);
+    centred-content-margin-text: unit((@sidebar-text + 0.25), rem);
 }
 *, *::before, *::after {
     box-sizing: border-box;
@@ -46,8 +52,14 @@ header {
 .centred-content {
     display: flex; justify-content: center; line-height: 1.5;
 }
-.centred-content.navigation-sidebar {
-    margin: 0 #widths[centred-content-margin];
+.centred-content.navigation-sidebar.link-display-both {
+    margin: 0 #widths[centred-content-margin-both];
+}
+.centred-content.navigation-sidebar.link-display-icon {
+    margin: 0 #widths[centred-content-margin-icon];
+}
+.centred-content.navigation-sidebar.link-display-text {
+    margin: 0 #widths[centred-content-margin-text];
 }
 .messages-panel {
     bottom: 1rem; position: absolute; right: 1rem; z-index: 2;
@@ -79,7 +91,7 @@ header {
     .global {
         .nav-panel, .slide-out {
             background: #colours[panel-background]; overflow: hidden;
-            position: absolute; text-align: left; z-index: 10;
+            position: absolute; text-align: left; z-index: 2;
         }
         .nav-panel {
             left: -1.1rem; max-height: 0; margin-top: 0.85rem;
@@ -153,6 +165,9 @@ header {
         display: inline-block; list-style: none; margin: 0; padding: 0;
         a, span.drop-menu {
             color: #colours[link]; font-family: #fonts[system];
+            img {
+                height: 24px; width: 24px; vertical-align: middle;
+            }
         }
         a:link {
             text-decoration: none;
@@ -195,7 +210,7 @@ header {
         li.global.selected > span::before,
         li.global.selected > a::before {
             background: #colours[link]; border-radius: 2px; content: '';
-            display: block; height: 5px; position: absolute; top: -1rem;
+            display: block; height: 5px; position: absolute; top: -0.66rem;
             width: 100%;
         }
         .form-button {
@@ -213,9 +228,6 @@ header {
     }
     .title-text {
         position: relative; top: -1rem;
-        @media (max-width: #widths[media-break]) {
-            display: none;
-        }
     }
 }
 .state-navigation {
@@ -231,10 +243,25 @@ header {
 .state-navigation:before {
     background: #colours[navigation-background];
     border-top: 0.5rem; border-top-left-radius: 20px;
-    content: ''; display: inline-block;
-    height: 3rem; width: #widths[sidebar];
+    content: ''; display: inline-block; height: 3rem;
     @media (max-width: #widths[media-break]) {
         width: 1rem;
+    }
+}
+.state-navigation.link-display-both:before {
+    width: #widths[sidebar-both];
+}
+.state-navigation.link-display-icon:before {
+    width: #widths[sidebar-icon];
+}
+.state-navigation.link-display-text:before {
+    width: #widths[sidebar-text];
+}
+.state-navigation.navigation-header {
+    .title-text {
+        @media (max-width: #widths[media-break]) {
+            display: none;
+        }
     }
 }
 .sidebar {
@@ -242,7 +269,7 @@ header {
     padding: 0; position: fixed; top: 3rem; z-index: 2;
     .nav-list.global {
         align-items: flex-start; display: flex; flex-direction: column;
-        min-height: 2rem; min-width: #widths[sidebar]; padding-top: 0.5rem;
+        min-height: 2rem; padding-top: 0.5rem;
         li.global {
             display: block; margin: 0; padding: 1rem 0;
             a, .drop-menu {
@@ -291,10 +318,31 @@ header {
         top: 3rem;
     }
 }
+.sidebar.link-display-both {
+    .nav-list.global {
+        min-width: #widths[sidebar-both];
+    }
+}
+.sidebar.link-display-icon {
+    .nav-list.global {
+        min-width: #widths[sidebar-icon];
+    }
+}
+.sidebar.link-display-text {
+    .nav-list.global {
+        min-width: #widths[sidebar-text];
+    }
+}
 .sidebar::after {
     background: #colours[navigation-grad]; content: ' '; display: block;
-    height: 5rem; margin-top: -0.25rem; width: #widths[sidebar];
-    @media (max-width: #widths[media-break]) {
-        display: none;
-    }
+    height: 5rem; margin-top: -0.25rem;
+}
+.sidebar.link-display-both::after {
+    width: #widths[sidebar-both];
+}
+.sidebar.link-display-icon::after {
+    width: #widths[sidebar-icon];
+}
+.sidebar.link-display-text::after {
+    width: #widths[sidebar-text];
 }

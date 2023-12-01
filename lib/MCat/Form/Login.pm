@@ -17,8 +17,6 @@ has '+info_message'        => default => 'Enter your username and password';
 has '+is_html5'            => default => TRUE;
 has '+item_class'          => default => 'User';
 
-has 'log' => is => 'ro', predicate => 'has_log';
-
 has_field 'name' =>
    label        => 'User Name',
    required     => TRUE,
@@ -144,6 +142,8 @@ sub validate {
       my $profile = $user->profile ? $user->profile->value : {};
 
       $session->enable_2fa($profile->{enable_2fa} ? TRUE : FALSE);
+      $session->link_display($profile->{link_display})
+         if defined $profile->{link_display};
       $session->menu_location($profile->{menu_location})
          if defined $profile->{menu_location};
       $session->skin($profile->{skin}) if defined $profile->{skin};

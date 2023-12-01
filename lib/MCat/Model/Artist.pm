@@ -86,7 +86,7 @@ sub edit : Nav('Edit Artist') {
    return;
 }
 
-sub list : Auth('view') Nav('Artists') {
+sub list : Auth('view') Nav('Artists|img/artist.svg') {
    my ($self, $context) = @_;
 
    $context->stash(table => $self->new_table('Artist', { context => $context}));

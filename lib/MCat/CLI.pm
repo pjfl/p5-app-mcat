@@ -38,7 +38,8 @@ has 'redis' =>
       my $self = shift;
 
       return MCat::Redis->new(
-         client_name => 'job_stash', config => $self->config->redis
+         client_name => $self->config->prefix . '_job_stash',
+         config => $self->config->redis
       );
    };
 

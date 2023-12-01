@@ -20,8 +20,6 @@ has '+item_class' => default => 'User';
 has '+no_update' => default => TRUE;
 has '+title' => default => 'Registration Request';
 
-has 'log' => is => 'ro', isa => class_type('MCat::Log'), predicate => 'has_log';
-
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 
 has_field 'name' => label => 'User Name', required => TRUE;

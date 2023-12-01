@@ -3,7 +3,7 @@ package MCat::Navigation;
 use utf8; # -*- coding: utf-8; -*-
 
 use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::StateTable::Types      qw( ArrayRef HashRef Str URI );
+use HTML::StateTable::Types      qw( ArrayRef HashRef PositiveInt Str URI );
 use HTTP::Status                 qw( HTTP_OK );
 use MCat::Util                   qw( clear_redirect formpost );
 use Ref::Util                    qw( is_hashref );
@@ -27,20 +27,31 @@ has 'content_name' => is => 'ro', isa => Str, default => 'panel-content';
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
    required => TRUE, weak_ref => TRUE;
 
+has 'control_label' => is => 'lazy', isa => Str, init_arg => undef,
+   default => sub {
+      my $self = shift;
+
+      return $self->context->request->uri_for($self->_control_label)->as_string
+         if $self->_control_label =~ m{ / }mx;
+
+      return $self->_control_label;
+   };
+
+has '_control_label' => is => 'ro', isa => Str, init_arg => 'control_label',
+   default => '≡';
+
 has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
-has 'global_location' => is => 'ro', isa => Str, default => 'header';
+has 'link_display' => is => 'lazy', isa => Str, init_arg => undef,
+   default => sub {
+      my $self = shift;
+      my $session = $self->context->session;
 
-has 'label' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
-   my $self = shift;
+      return $session->link_display || $self->_link_display;
+   };
 
-   return $self->context->request->uri_for($self->_label)->as_string
-      if $self->_label =~ m{ / }mx;
-
-   return $self->_label;
-};
-
-has '_label' => is => 'ro', isa => Str, init_arg => 'label', default => '≡';
+has '_link_display' => is => 'ro', isa => Str, init_arg => 'link_display',
+   default => 'both';
 
 has 'logo' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
    my $self = shift;
@@ -53,12 +64,17 @@ has 'logo' => is => 'lazy', isa => Str, init_arg => undef, default => sub {
 
 has '_logo' => is => 'ro', isa => Str, init_arg => 'logo', default => NUL;
 
+has 'media_break' => is => 'ro', isa => PositiveInt, default => 680;
+
 has 'menu_location' => is => 'lazy', isa => Str, default => sub {
    my $self    = shift;
    my $session = $self->context->session;
 
-   return $session->menu_location || $self->global_location;
+   return $session->menu_location || $self->_menu_location;
 };
+
+has '_menu_location' => is => 'ro', isa => Str, init_arg => 'menu_location',
+   default => 'header';
 
 has 'messages' => is => 'ro', isa => HashRef, default => sub { {} };
 
@@ -88,9 +104,11 @@ has '_container' => is => 'lazy', isa => Str, default => sub {
 
 has '_data' => is => 'lazy', isa => HashRef, default => sub {
    my $self  = shift;
-   my $class = 'state-navigation navigation-' . $self->menu_location;
+   my $class = 'state-navigation navigation-'
+      . $self->menu_location . ' link-display-' . $self->link_display;
 
    return {
+      'id' => 'navigation',
       'class' => $class,
       'data-navigation-config' => $self->_json->encode({
          'menus'      => $self->_menus,
@@ -101,9 +119,11 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'confirm'        => $self->confirm_message,
             'container-name' => $self->container_name,
             'content-name'   => $self->content_name,
-            'label'          => $self->label,
+            'control-label'  => $self->control_label,
+            'link-display'   => $self->link_display,
             'location'       => $self->menu_location,
             'logo'           => $self->logo,
+            'media-break'    => $self->media_break,
             'skin'           => $self->context->session->skin,
             'title'          => $self->title,
             'title-abbrev'   => $self->title_abbrev,
@@ -220,8 +240,19 @@ sub item {
 
    if ($self->model->allowed($self->context, $moniker, $method)) {
       my $list = $self->_lists->{$self->_name}->[1];
+      my ($text, $icon);
 
-      push @{$list}, [$label => $self->_uri(@args)];
+      if (is_hashref $label) {
+         ($text, $icon) = split m{ \| }mx, $label->{name};
+         $label->{name} = $text;
+         $text = $label;
+      }
+      else { ($text, $icon) = split m{ \| }mx, $label }
+
+      $icon = $self->context->request->uri_for($icon)
+         if $icon && $icon =~ m{ / }mx;
+
+      push @{$list}, [$text => $self->_uri(@args), $icon];
    }
    else { clear_redirect $self->context }
 

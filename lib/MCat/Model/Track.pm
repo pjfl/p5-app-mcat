@@ -108,7 +108,7 @@ sub edit : Nav('Edit Track') {
    return;
 }
 
-sub list : Auth('view') Nav('Tracks') {
+sub list : Auth('view') Nav('Tracks|img/tracks.svg') {
    my ($self, $context, $cdid) = @_;
 
    my $track_rs = $context->model('Track');

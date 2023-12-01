@@ -15,8 +15,6 @@ has '+info_message'        => default => 'Authenticate using your old password';
 has '+is_html5'            => default => TRUE;
 has '+no_update'           => default => TRUE;
 
-has 'log' => is => 'ro', predicate => 'has_log';
-
 has_field 'name' => type => 'Display', label => 'User Name';
 
 has_field 'old_password' => type => 'Password', label => 'Old Password',

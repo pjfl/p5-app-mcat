@@ -46,13 +46,26 @@ has_field 'skin' =>
    default => sub { $_[0]->context->config->skin },
    options => [
       { label => 'Classic', value => 'classic' },
-      { label => 'Funky',   value => 'funky' },
+      { label => 'None', value => 'none' },
    ];
 
-has_field 'menu_location' => type => 'Select', default => 'header',
+has_field 'menu_location' =>
+   type    => 'Select',
+   default => 'header',
+   label   => 'Menu Location',
    options => [
       { label => 'Header', value => 'header' },
       { label => 'Sidebar', value => 'sidebar' },
+   ];
+
+has_field 'link_display' =>
+   type    => 'Select',
+   default => 'both',
+   label   => 'Link Display',
+   options => [
+      { label => 'Both', value => 'both' },
+      { label => 'Icon', value => 'icon' },
+      { label => 'Text', value => 'text' },
    ];
 
 has_field 'theme' => type => 'Select', default => 'light', options => [
@@ -71,6 +84,7 @@ sub validate {
    my $value      = $user->profile_value;
 
    $value->{enable_2fa}    = $enable_2fa ? \1 : \0;
+   $value->{link_display}  = $self->field('link_display')->value;
    $value->{menu_location} = $self->field('menu_location')->value;
    $value->{mobile_phone}  = $self->field('mobile_phone')->value;
    $value->{postcode}      = $self->field('postcode')->value;
@@ -91,6 +105,7 @@ sub validate {
 
    if ($session->id == $user->id) {
       $session->enable_2fa($enable_2fa);
+      $session->link_display($value->{link_display});
       $session->menu_location($value->{menu_location});
       $session->skin($value->{skin});
       $session->theme($value->{theme});

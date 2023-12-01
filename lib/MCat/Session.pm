@@ -18,7 +18,8 @@ has 'redis' =>
       my $self = shift;
 
       return MCat::Redis->new(
-         client_name => 'session_store', config => $self->config->redis
+         client_name => $self->config->prefix . '_session_store',
+         config => $self->config->redis
       );
    };
 
