@@ -1,9 +1,7 @@
 package MCat::Schema::Result::Tag;
 
-use strictures;
-use parent 'DBIx::Class::Core';
-
 use HTML::Forms::Constants qw( FALSE TRUE );
+use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';

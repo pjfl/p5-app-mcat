@@ -1,11 +1,10 @@
 package MCat::Schema::Result::TagArtistString;
 
-use strictures;
-use parent 'DBIx::Class::Core';
-
 use HTML::Forms::Constants qw( FALSE TRUE );
+use DBIx::Class::Moo::ResultClass;
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->table('tag.artist_string');
 
@@ -17,8 +16,7 @@ $class->add_columns(
 $class->set_primary_key(qw( artistid ));
 
 $class->belongs_to(
-   artists => 'MCat::Schema::Result::Artist',
-   { 'foreign.artistid' => 'self.artistid' }
+   artists => "${result}::Artist", { 'foreign.artistid' => 'self.artistid' }
 );
 
 1;

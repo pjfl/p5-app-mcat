@@ -114,7 +114,7 @@ sub validate {
 
    try {
       $session->authenticated(FALSE);
-      $user->authenticate_optional_2fa($passwd->value, $code->value);
+      $user->authenticate($passwd->value, $code->value);
       $session->authenticated(TRUE);
       $session->id($user->id);
       $session->role($user->role->name);

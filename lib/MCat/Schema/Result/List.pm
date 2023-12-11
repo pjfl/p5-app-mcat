@@ -1,9 +1,7 @@
 package MCat::Schema::Result::List;
 
-use strictures;
-use parent 'DBIx::Class::Core';
-
 use HTML::Forms::Constants qw( FALSE TRUE );
+use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
@@ -17,15 +15,36 @@ $class->add_columns(
       is_nullable       => FALSE,
       label             => 'List ID'
    },
-   name => { data_type => 'text', is_nullable => FALSE },
+   name          => { data_type => 'text', is_nullable => FALSE },
+   description   => { data_type => 'text', is_nullable => TRUE },
+   owner_user_id => { data_type => 'integer', is_nullable => FALSE },
+   table_id      => { data_type => 'integer', is_nullable => FALSE },
 );
 
 $class->set_primary_key('id');
 
-$class->add_unique_constraint('list_name_uniq', ['name']);
+$class->add_unique_constraint(
+   'list_name_owner_user_uniq', ['name', 'owner_user_id']
+);
+
+$class->belongs_to('owner', "${result}::User", {
+   'foreign.id' => 'self.owner_user_id'
+});
+
+$class->belongs_to('core_table', "${result}::Table", {
+   'foreign.id' => 'self.table_id'
+});
 
 $class->has_many(
-   track_lists => "${result}::ListTrack", { 'foreign.list_id' => 'self.id' },
+   'artists' => "${result}::ListArtist", { 'foreign.list_id' => 'self.id' }
+);
+
+$class->has_many(
+   'cds' => "${result}::ListCd", { 'foreign.list_id' => 'self.id' }
+);
+
+$class->has_many(
+   'tracks' => "${result}::ListTrack", { 'foreign.list_id' => 'self.id' }
 );
 
 1;

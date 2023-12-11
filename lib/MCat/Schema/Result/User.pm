@@ -53,7 +53,13 @@ $class->add_unique_constraint('user_name_uniq', ['name']);
 
 $class->belongs_to('role' => "${result}::Role", 'role_id');
 
+$class->has_many('filters' => "${result}::Filter", 'owner_user_id');
+
+$class->has_many('lists' => "${result}::List", 'owner_user_id');
+
 $class->has_many('preferences' => "${result}::Preference", 'user_id');
+
+$class->has_many('tables' => "${result}::Table", 'owner_user_id');
 
 $class->might_have('profile' => "${result}::Preference", sub {
    my $args    = shift;
@@ -120,7 +126,7 @@ sub assert_can_email {
 }
 
 sub authenticate {
-   my ($self, $password, $for_update) = @_;
+   my ($self, $password, $auth_code, $for_update) = @_;
 
    throw AccountInactive, [$self] unless $self->active;
 
@@ -132,22 +138,14 @@ sub authenticate {
 
    throw IncorrectPassword, [$self] unless $self->password eq $encrypted;
 
-   return TRUE;
-}
-
-sub authenticate_optional_2fa {
-   my ($self, $passwd, $auth_code) = @_;
-
-   $self->authenticate($passwd);
-
-   return unless $self->totp_secret;
+   return TRUE if !$self->totp_secret || $for_update;
 
    throw Unspecified, ['Auth. Code'] unless $auth_code;
 
    throw IncorrectAuthCode, [$self]
       unless $self->totp_authenticator->verify($auth_code);
 
-   return;
+   return TRUE;
 }
 
 sub can_email {
@@ -198,7 +196,7 @@ sub postcode {
 sub set_password {
    my ($self, $old, $new) = @_;
 
-   $self->authenticate($old, TRUE);
+   $self->authenticate($old, NUL, TRUE);
    $self->password($new);
    $self->password_expired(FALSE);
    return $self->update;

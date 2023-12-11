@@ -24,6 +24,7 @@ has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 has 'form' =>
    is      => 'lazy',
    isa     => class_type('HTML::Forms::Manager'),
+   handles => { new_form => 'new_with_context' },
    default => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
@@ -40,7 +41,7 @@ has 'jobdaemon' =>
       my $self = shift;
 
       return $self->_jobdaemon_class->new(config => {
-         appclass => 'MCat',
+         appclass => $self->config->appclass,
          pathname => $self->config->bin->catfile('mcat-jobserver'),
       });
    };
@@ -54,13 +55,16 @@ has '_jobdaemon_class' =>
 has 'table' =>
    is      => 'lazy',
    isa     => class_type('HTML::StateTable::Manager'),
+   handles => { new_table => 'new_with_context' },
    default => sub {
       my $self     = shift;
       my $appclass = $self->config->appclass;
 
       return HTML::StateTable::Manager->new({
+         log          => $self->log,
          namespace    => "${appclass}::Table",
          page_manager => $self->config->navigation_manager,
+         view_name    => 'table',
       });
    };
 
@@ -168,14 +172,6 @@ sub has_valid_token { # Stash an exception if the CSRF token is bad
 
    $self->error($context, BadToken, [$reason], level => 3);
    return FALSE;
-}
-
-sub new_form {
-   my ($self, @args) = @_; return $self->form->new_with_context(@args);
-}
-
-sub new_table {
-   my ($self, @args) = @_; return $self->table->new_with_context(@args);
 }
 
 sub root : Auth('none') {

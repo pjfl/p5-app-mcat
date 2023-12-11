@@ -1,6 +1,6 @@
 package MCat::Form::TOTP::Reset;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META TRUE );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META NUL TRUE );
 use JSON::MaybeXS          qw( encode_json );
 use MCat::Util             qw( create_token redirect );
 use Type::Utils            qw( class_type );
@@ -45,7 +45,7 @@ sub validate {
    my $passwd = $self->field('password');
 
    try {
-      $user->authenticate($passwd->value);
+      $user->authenticate($passwd->value, NUL, TRUE);
 
       my $field = $self->field('mobile_phone');
       my $value = $field->value;

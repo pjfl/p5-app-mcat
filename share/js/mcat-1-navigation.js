@@ -373,12 +373,19 @@ MCat.Navigation = (function() {
    class Manager {
       constructor() {
          this.navigator;
+         this.onReady(function() { this.createNavigation() }.bind(this));
       }
       createNavigation() {
          const el = document.getElementsByClassName(triggerClass)[0];
+         if (!el) return;
          const nav = new Navigation(el, JSON.parse(el.dataset[dsName]));
          this.navigator = nav;
          nav.render();
+      }
+      onContentLoad() {
+         if (this.navigator) this.navigator.replaceLinks(
+            document.getElementById(this.navigator.contentName)
+         );
       }
       onReady(callback) {
          if (document.readyState != 'loading') callback();
@@ -394,15 +401,8 @@ MCat.Navigation = (function() {
       renderMessage(href) {
          this.navigator.messages.render(href);
       }
-      onContentLoad() {
-         if (this.navigator) this.navigator.replaceLinks(
-            document.getElementById(this.navigator.contentName)
-         );
-      }
    }
-   const manager = new Manager();
-   manager.onReady(function() { manager.createNavigation(); });
    return {
-      manager: manager
+      manager: new Manager()
    };
 })();

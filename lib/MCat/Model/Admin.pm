@@ -15,6 +15,7 @@ sub menu : Auth('admin') Nav('Admin|img/hammer.svg') {
 
    $nav->menu('job')->item('job/status');
    $nav->menu('logfile')->item('logfile/list');
+   $nav->menu('table')->item('table/list');
    $nav->menu('tag')->item('tag/list');
    $nav->menu('user')->item('user/list');
    return;

@@ -134,6 +134,7 @@ MCat.Util = (function() {
          return el;
       }
       a(attr, content)        { return this._tag('a', attr, content) }
+      caption(attr, content)  { return this._tag('caption', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
@@ -156,7 +157,10 @@ MCat.Util = (function() {
       ul(attr, content)       { return this._tag('ul', attr, content) }
       button(attr, content) {
          if (_typeof(attr) == 'object') attr['type'] ||= 'submit';
-         else { content = attr; attr = { type: 'submit' }; }
+         else {
+            content = attr;
+            attr = { type: 'submit' };
+         }
          return this._tag('button', attr, content);
       }
       checkbox(attr) {
@@ -197,6 +201,11 @@ MCat.Util = (function() {
             return obj;
          },
          h: new HtmlTiny(),
+         isHTMLOfClass: function(value, className) {
+            if (typeof value != 'string') return false;
+            if (!value.match(new RegExp(`class="${className}"`))) return false;
+            return true;
+         },
          ucfirst: ucfirst
       },
       Modifiers: { // Another role
@@ -221,6 +230,9 @@ MCat.Util = (function() {
             this[method] = function(args1, args2, args3, args4, args5) {
                return around(original, args1, args2, args3, args4, args5);
             };
+         },
+         resetModifiers: function(methods) {
+            for (const method of Object.keys(methods)) delete methods[method];
          }
       }
    };

@@ -62,43 +62,48 @@ sub log { # For benefit of P::M::LogDispatch
 
    my $level   = uc $args{level};
    my $message = $args{message};
-   my $name    = $args{name} || (split m{ :: }mx, caller)[-1];
+   my $leader  = $args{name} || (split m{ :: }mx, caller)[-1];
 
    return if $level =~ m{ debug }imx && !$self->_debug;
 
    $message = $message->() if is_coderef $message;
    $message = is_arrayref $message ? $message->[0] : $message;
 
-   return $self->_log($level, "${name}: ${message}");
+   return $self->_log($level, "${leader}: ${message}");
 }
 
 sub warn {
    return shift->_log('WARNING', @_);
 }
 
+# Private methods
+sub _get_leader {
+   my ($self, $context) = @_;
+
+   my $leader = 'Unknown';
+
+   return $leader unless $context;
+
+   if ($context->can('leader')) { $leader = $context->leader }
+   elsif ($context->can('action') && $context->has_action) {
+      my @parts = split m{ / }mx, ucfirst $context->action;
+
+      $leader = $parts[0] . DOT . $parts[-1];
+   }
+   elsif ($context->can('name')) { $leader = ucfirst $context->name }
+
+   return $leader;
+}
+
 sub _log {
    my ($self, $level, $message, $context) = @_;
 
-   $message = "${message}"; chomp $message;
+   $message //= 'Unknown';
+   $message = "${message}";
+   chomp $message;
 
-   if ($message !~ m{ : }mx) {
-      my $action = 'Unknown';
-
-      if ($context) {
-         if ($context->can('action') && $context->has_action) {
-            $action = ucfirst $context->action;
-
-            my @parts  = split m{ / }mx, $action;
-
-            $action  = $parts[0] . DOT . $parts[-1];
-         }
-         elsif ($context->can('name')) {
-            $action = ucfirst $context->name;
-         }
-      }
-
-      $message = "${action}: ${message}";
-   }
+   $message = $self->_get_leader($context) . ": ${message}"
+      if $message !~ m{ : }mx;
 
    my $now      = now_dt->strftime('%Y/%m/%d %T');
    my $username = $context && $context->can('session')
@@ -106,9 +111,7 @@ sub _log {
 
    $message = "${now} [${level}] (${username}) ${message}\n";
 
-   if ($self->config->logfile) {
-      $self->config->logfile->append($message)->flush;
-   }
+   if (my $file = $self->config->logfile) { $file->append($message)->flush }
    else { CORE::warn $message }
 
    return TRUE;

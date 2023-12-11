@@ -1,12 +1,11 @@
 package MCat::Schema::Result::Preference;
 
-use strictures;
-use parent 'DBIx::Class::Core';
-
 use HTML::Forms::Constants qw( FALSE TRUE );
 use JSON::MaybeXS          qw( decode_json encode_json );
+use DBIx::Class::Moo::ResultClass;
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->table('preference');
 
@@ -26,7 +25,7 @@ $class->set_primary_key('id');
 
 $class->add_unique_constraint('preference_user_id_name_uniq', ['user_id', 'name']);
 
-$class->belongs_to('user' => 'MCat::Schema::Result::User', 'user_id');
+$class->belongs_to('user' => "${result}::User", 'user_id');
 
 $class->inflate_column('value', {
    deflate => sub { encode_json(shift) },

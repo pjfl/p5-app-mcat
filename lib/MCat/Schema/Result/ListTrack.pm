@@ -1,11 +1,10 @@
-package MCat::Schame::Result::ListTrack;
-
-use strictures;
-use parent 'DBIx::Class::Core';
+package MCat::Schema::Result::ListTrack;
 
 use HTML::Forms::Constants qw( FALSE TRUE );
+use DBIx::Class::Moo::ResultClass;
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->table('list.track');
 
@@ -17,13 +16,11 @@ $class->add_columns(
 $class->set_primary_key(qw( trackid list_id ));
 
 $class->belongs_to(
-   tracks => 'MCat::Schema::Result::Track',
-   { 'foreign.trackid' => 'self.trackid' }
+   'tracks' => "${result}::Track", { 'foreign.trackid' => 'self.trackid' }
 );
 
 $class->belongs_to(
-   list => 'MCat::Schema::Result::List',
-   { 'foreign.id' => 'self.list_id' }
+   'lists' => "${result}::List", { 'foreign.id' => 'self.list_id' }
 );
 
 1;

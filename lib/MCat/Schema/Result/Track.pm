@@ -1,9 +1,7 @@
 package MCat::Schema::Result::Track;
 
-use strictures;
-use parent 'DBIx::Class::Core';
-
 use HTML::Forms::Constants qw( FALSE TRUE );
+use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
@@ -30,6 +28,10 @@ $class->belongs_to(
    cd => "${result}::Cd",
    { cdid => 'cdid' },
    { is_deferrable => FALSE, on_delete => 'CASCADE', on_update => 'CASCADE' },
+);
+
+$class->has_many(
+   'lists' => "${result}::ListTrack", { 'foreign.trackid' => 'self.trackid' }
 );
 
 1;

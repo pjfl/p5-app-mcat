@@ -1,11 +1,10 @@
 package MCat::Schema::Result::TagArtist;
 
-use strictures;
-use parent 'DBIx::Class::Core';
-
 use HTML::Forms::Constants qw( FALSE PIPE TRUE );
+use DBIx::Class::Moo::ResultClass;
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->table('tag.artist');
 
@@ -17,14 +16,10 @@ $class->add_columns(
 $class->set_primary_key(qw( artistid tag_id ));
 
 $class->belongs_to(
-   artists => 'MCat::Schema::Result::Artist',
-   { 'foreign.artistid' => 'self.artistid' }
+   artists => "${result}::Artist", { 'foreign.artistid' => 'self.artistid' }
 );
 
-$class->belongs_to(
-   tag => 'MCat::Schema::Result::Tag',
-   { 'foreign.id' => 'self.tag_id' }
-);
+$class->belongs_to(tag => "${result}::Tag", { 'foreign.id' => 'self.tag_id' });
 
 sub insert {
    my $self   = shift;

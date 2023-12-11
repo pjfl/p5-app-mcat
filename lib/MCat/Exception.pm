@@ -95,6 +95,9 @@ has_exception 'UnauthorisedAccess' => parent => [$class],
 has_exception 'UnknownToken' => parent => [$class],
    error   => 'Token [_1] not found', rv => HTTP_NOT_FOUND;
 
+has_exception 'UnknownTable' => parent => [$class],
+   error   => 'Table [_1] not found', rv => HTTP_NOT_FOUND;
+
 use namespace::autoclean;
 
 1;

@@ -1,2 +1,2 @@
-[% form.render %]
 [% table.render %]
+[% form.render %]
