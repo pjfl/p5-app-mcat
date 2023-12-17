@@ -26,7 +26,7 @@ has_column 'name' =>
       return  $context->uri_for_action('table/view', [$self->result->id]);
    },
    sortable => TRUE,
-   title    => 'Sort by tag',
+   title    => 'Sort by name',
    width    => '20rem';
 
 use namespace::autoclean -except => TABLE_META;

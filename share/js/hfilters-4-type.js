@@ -3,23 +3,22 @@
 HFilters.Type = (function() {
    const idCache = {};
    class Type {
-      constructor() {
+      constructor(args, label) {
+         this.instance = true;
+         this.editor = HFilters.Editor.editor();
       }
       apiURL(type, name, query) {
-         const editor = HFilters.Editor.editor;
-         const path = editor.config['filter-api'] || 'api/filter/*/*';
-         return editor.createURL(
-            path.replace(/\*/, type).replace(/\*/, name), query
-         );
+         return this.editor.createAPIURL(type, name, query);
       }
       createTypeContainer(name, input, typeId) {
-         const id = typeId || input.id;
+         const id = typeId || input[0].id;
          const typeName = this.type.toLowerCase().replace(/\./g, '-');
-         const typeClass
-               = typeName + '-' + name.toLowerCase().replace(/\s+/g, '-');
+         const typeClass = name
+               ? ' ' + typeName + '-' + name.toLowerCase().replace(/\s+/g, '-')
+               : '';
          const label = name ? this.h.label({ 'for': id }, name) : null;
          return this.h.div(
-            { className: 'type-container ' + typeClass }, [label, input]
+            { className: 'type-container' + typeClass }, [label, ...input]
          );
       }
       forJSON() {
@@ -33,11 +32,18 @@ HFilters.Type = (function() {
       }
       timezoneOptions() {
          const options = [];
-         for (const zone of Intl.Locale.prototype.getTimeZones()) {
-            options.push({
-               selected: (this.timezone && this.timezone == zone),
-               value: zone
-            }, zone);
+         if (Intl.Locale.prototype.getTimeZones) {
+            for (const zone of Intl.Locale.prototype.getTimeZones()) {
+               options.push({
+                  selected: (this.timezone && this.timezone == zone),
+                  value: zone
+               }, zone);
+            }
+         }
+         else {
+            options.push(
+               { selected: false, value: 'Antartica/Troll' }, 'Antartica/Troll'
+            );
          }
          options.unshift(this.h.option({
             selected: (this.timezone == ''), value: ''
@@ -49,19 +55,20 @@ HFilters.Type = (function() {
    Object.assign(Type.prototype, HFilters.Util.Markup);
    Object.assign(Type.prototype, HFilters.Util.String);
    class TypeDate extends Type {
-      type = 'Type.Date';
       constructor(args, label) {
-         this.label = label;
-         this.group = args['group'];
+         super(args, label);
          this.date = null;
          this.dateType = null;
+         this.group = args['group'];
+         this.label = label;
+         this.type = 'Type.Date';
          args['type'] ||= 'Type.Date.NoDate';
          if (args['type'] == 'Type.Date.Absolute'
              || args['type'] == 'Type.Date.Relative'
              || args['type'] == 'Type.Date.NoDate') {
             this.dateType = args['type'];
             const dateTypeClass = args['type'].replace(/\./g, '');
-            this.date = new dateTypeClass(args, '');
+            this.date = eval('new ' + dateTypeClass + '(args, "")');
          }
       }
       forJSON() {
@@ -116,16 +123,17 @@ HFilters.Type = (function() {
       updateDisplay() {
          const dateTypeClass = this.dateType.replace(/\./g, '');
          if (!this.date || this.date.constructor != dateTypeClass)
-            this.date = new dateTypeClass({}, '');
+            this.date = eval('new ' + dateTypeClass + '({}, "")');
          this.dateContainer.innerHTML = '';
          this.dateContainer.appendChild(this.date.render());
       }
    }
    class TypeDateNoDate extends Type {
-      type = 'Type.Date.NoDate';
       constructor(args, label) {
+         super(args, label);
          this.label = label;
          this.fields = [];
+         this.type = 'Type.Date.NoDate';
       }
       forJSON() {
          return this.toHash();
@@ -152,32 +160,31 @@ HFilters.Type = (function() {
       }
    }
    class TypeDateAbsolute extends Type {
-      type = 'Type.Date.Absolute';
       constructor(args, label) {
-         this.label = label;
+         super(args, label);
          const { date = '' } = args;
          this.date = new Date(date.replace(/\-/g, '/'));
+         this.label = label;
          this.timezone = args['timezone'];
+         this.type = 'Type.Date.Absolute';
       }
       forJSON() {
          return this.toHash();
       }
       getRetentionPeriodMessage() {
-         const editor = HFilters.Editor.editor;
-         return editor.config['data-retention'] + ' months';
+         const months = this.editor.config['data-retention'] || 12;
+         return months + ' months';
       }
       getRetentionTimestamp() {
-         const editor = HFilters.Editor.editor;
-         const months = editor.config['data-retention'];
+         const months = this.editor.config['data-retention'] || 12;
          return new Date().setMonth(new Date().getMonth() - months);
       }
       isTooOld(inputDate) {
-         const editor = HFilters.Editor.editor;
-         if (!editor.config['show-retention-notice']) return false;
+         if (!this.editor.config['show-retention-notice']) return false;
          return inputDate.getTime() <= this.getRetentionTimestamp();
       }
       isValid() {
-         return !isNan(this.date);
+         return !(this.date == 'Invalid Date');
       }
       render() {
          return this.createTypeContainer(this.label, this.renderInput());
@@ -192,7 +199,7 @@ HFilters.Type = (function() {
             }.bind(this),
             type: 'text',
             value: this.toDateString() || placeHolder
-         }).bind(this);
+         });
          this.timezoneSelect = this.h.select({
             className: 'type-date-absolute type-field-timezone',
             id: this.generateId('type-timezone'),
@@ -201,12 +208,12 @@ HFilters.Type = (function() {
             }.bind(this)
          }, this.timezoneOptions());
          const tzContainer = this.createTypeContainer(
-            'Time zone', this.timezoneSelect
+            'Time zone', [this.timezoneSelect]
          );
          return [this.input, tzContainer];
       }
       toDateString() {
-         if (isNan(this.date)) return null;
+         if (!this.isValid()) return null;
          return [
             this.date.getFullYear(),
             this.padString(this.date.getMonth() + 1, 2, '0'),
@@ -214,7 +221,7 @@ HFilters.Type = (function() {
          ].join('-');
       }
       toDisplay() {
-         return isNan(this.date) ? '<not defined>' : this.toString();
+         return this.isValid() ? this.toString() : '<not defined>';
       }
       toHash() {
          const hash = { date: this.toDateString(), type: this.type };
@@ -244,26 +251,25 @@ HFilters.Type = (function() {
       }
    }
    class TypeDateRelative extends Type {
-      type = 'Type.Date.Relative';
       constructor(args, label) {
+         super(args, label);
          this.days = args['days'];
          this.inputs = {};
          this.label = label;
          this.months = args['months'];
          this.past = args['past'] == null ? true : !!args['past'];
          this.timezone = args['time_zone'] || '';
+         this.type = 'Type.Date.Relative';
          this.years = args['year'];
       }
       forJSON() {
          return this.toHash();
       }
       getRetentionPeriodMessage() {
-         const editor = HFilters.Editor.editor;
-         return editor.config['data-retention'] + ' months';
+         return this.editor.config['data-retention'] + ' months';
       }
       getRetentionTimestamp() {
-         const editor = HFilters.Editor.editor;
-         const months = editor.config['data-retention'];
+         const months = this.editor.config['data-retention'];
          return new Date().setMonth(new Date().getMonth() - months);
       }
       isTooOld() {
@@ -273,8 +279,7 @@ HFilters.Type = (function() {
          days -= 3; // Avoids knowing # of days per month
          const today = new Date();
          const chosenDate = new Date().setDate(today.getDate() - days);
-         const editor = HFilters.Editor.editor;
-         if (!editor.config['show-retention-notice']) return false;
+         if (!this.editor.config['show-retention-notice']) return false;
          return chosenDate <= this.getRetentionTimestamp();
       }
       isValid() {
@@ -294,7 +299,7 @@ HFilters.Type = (function() {
                this.timezone = this.timezoneSelect.value
             }.bind(this)
          }, this.timezoneOptions());
-         els.push(this.createTypeContainer('Time zone', this.timezoneSelect));
+         els.push(this.createTypeContainer('Time zone', [this.timezoneSelect]));
          this.inputs.past = this.h.select({
             id: this.generateId('type-field')
          }, [
@@ -302,7 +307,7 @@ HFilters.Type = (function() {
             this.h.option({ selected: !this.past, value: '0' }, 'Today plus...')
          ]);
          els.push(
-            this.createTypeContainer('Date Modification', this.inputs.past)
+            this.createTypeContainer('Date Modification', [this.inputs.past])
          );
          ['years', 'months', 'days'].each(function(name) {
             els.push(this._createField(name));
@@ -360,18 +365,15 @@ HFilters.Type = (function() {
       }
    }
    class TypeField extends Type {
-      type = 'Type.Field';
       constructor(args, label) {
-         super(args);
-         this.fieldName = args['field_name'];
+         super(args, label);
+         this.fieldName = args['field-name'];
          this.label = label;
-         this.tableId = args['table_id'];
-         const editor = HFilters.Editor.editor;
-         const query = {
-            no_list_data: editor.config['no-list-data'],
-            table_id: this.tableId || editor.config['table-id']
-         };
-         this.selectorURL = this.apiURL('selector', 'field', query);
+         this.tableId = args['table-id'];
+         this.type = 'Type.Field';
+         this.selectorURL = this.apiURL('selector', 'field', {
+            table_id: this.tableId || this.editor.config['table-id']
+         });
       }
       isValid() {
          return !!this.fieldName;
@@ -401,8 +403,8 @@ HFilters.Type = (function() {
       }
       toHash() {
          const hash = {};
-         if (this.fieldName) hash['field_name'] = this.fieldName;
-         if (this.tableId) hash['table_id'] = this.tableId;
+         if (this.fieldName) hash['field-name'] = this.fieldName;
+         if (this.tableId) hash['table-id'] = this.tableId;
          return hash;
       }
       toString() {
@@ -422,19 +424,19 @@ HFilters.Type = (function() {
          HFilters.Modal.create({
             callback: function(ok, popup, data) { if (ok) callback(data) },
             cancelCallback: function() {},
-            init_value: null,
-            title: 'Field',
+            initValue: null,
+            title: 'Select Field',
             url: this.selectorURL
          });
       }
    }
    class TypeList extends Type {
-      type = 'Type.List';
       constructor(args, label) {
+         super(args, label);
          this.label = label;
          this.listId = args['list_id'];
-         const editor = HFilters.Editor.editor;
-         const query = { table_id: editor.config['table-id'] };
+         this.type = 'Type.List';
+         const query = { table_id: this.editor.config['table-id'] };
          this.selectorURL = this.apiURL('selector', 'list', query);
       }
       isValid() {
@@ -502,11 +504,11 @@ HFilters.Type = (function() {
       }
    }
    class TypeNegate extends Type {
-      type = 'Type.Negate';
       constructor(args, label) {
-         super(args);
+         super(args, label);
          this.label = '';
          this.negate = args['negate'] ? true : false;
+         this.type = 'Type.Negate';
       }
       isNegated() {
          return this.negate;
@@ -543,31 +545,29 @@ HFilters.Type = (function() {
       }
    }
    class TypeRuleType extends Type {
-      fields = [];
-      type = 'Type.RuleType';
       constructor(args, label) {
-         super(args);
+         super(args, label);
+         this.fields = [];
          this.label = label;
          this.rule = args['rule'];
          this.ruleType = args['ruleType'];
+         this.type = 'Type.RuleType';
       }
       filterRules(parentRuleClassName) {
          const className = parentRuleClassName.replace(/\./g, '');
          const classes = [];
-         HFilters.Node.subclasses(className).each(function(item) {
-            const proto = item.prototype;
-            if (proto.hidden && proto.hidden()) return;
-            classes.push({ label: proto.label, type: proto.type });
-         });
+         for (const item of HFilters.Node.subclasses(className)) {
+            if (item.hidden && item.hidden()) continue;
+            classes.push({ label: item.label, type: item.type });
+         }
          return classes;
       }
       filterRuleTypes() {
          const types = [];
-         HFilters.Node.subclasses('Rule').each(function(item) {
-            const proto = item.prototype;
-            if (proto.notSelectable()) return;
-            types.push({ label: proto.label, type: proto.type });
-         });
+         for (const item of HFilters.Node.subclasses('Rule')) {
+            if (item.notSelectable && item.notSelectable()) continue;
+            types.push({ label: item.label, type: item.type });
+         }
          return types;
       }
       isValid() {
@@ -575,23 +575,22 @@ HFilters.Type = (function() {
       }
       render() {
          this.ruleSelectorContainer = this.h.div(this.renderInput());
-         return this.h.div({}, [
-            this.createTypeContainer('Rule category', this.ruleTypeSelector),
+         return this.h.div({ className: 'node-rule-edit-content' }, [
+            this.createTypeContainer('Rule category', [this.ruleTypeSelector]),
             this.ruleSelectorContainer
          ]);
       }
       renderInput() {
          this.rule = null;
          this.ruleType = null;
+         const options = [ this.h.option({ value: '' }, '- Choose -') ];
+         for (const item of this.filterRuleTypes()) {
+            options.push(this.h.option({ value: item.type }, item.label));
+         };
          this.ruleTypeSelector = this.h.select({
             className: 'type-ruletype type-ruletype-ruleclass',
             onchange: function(ev) { this.updateRuleTypeSelector() }.bind(this)
-         }, [
-            this.h.option({ value: '' }, '- Choose -'),
-            this.filterRuleTypes().map(function(item) {
-               return this.h.option({ value: item.type }, item.label);
-            }.bind(this))
-         ]);
+         }, options);
          return this.ruleTypeSelector;
       }
       toDisplay() {
@@ -610,31 +609,30 @@ HFilters.Type = (function() {
       updateRuleTypeSelector() {
          if (!this.ruleTypeSelector.value) return;
          this.ruleSelectorContainer.innerHTML = '';
-         const rules = this.filterRules(this.ruleTypeSelector.value);
+         const options = [];
+         for (const item of this.filterRules(this.ruleTypeSelector.value)) {
+            options.push(this.h.option({ value: item.type }, item.label));
+         }
          this.ruleSelector = this.h.select({
             className: 'type-ruletype type-ruletype-rule'
-         }, [
-            rules.map(function(item) {
-               return this.h.option({ value: item.type }, item.label);
-            }.bind(this))
-         ]);
+         }, options);
          this.ruleSelectorContainer.appendChild(
-            this.createTypeContainer('Rule type', this.ruleSelector)
+            this.createTypeContainer('Rule type', [this.ruleSelector])
          );
       }
    }
    class TypeString extends Type {
-      type = 'Type.String';
       constructor(args, label) {
-         super(args);
+         super(args, label);
          this.label = label || 'Text';
          this.string = args['string'];
+         this.type = 'Type.String';
       }
       isValid() {
          return true;
       }
       render() {
-         return this.createTypeContainer(this.label, this.renderInput());
+         return this.createTypeContainer(this.label, [this.renderInput()]);
       }
       renderInput() {
          this.input = this.h.input({
@@ -660,9 +658,9 @@ HFilters.Type = (function() {
       }
    }
    class TypeMultiString extends TypeString {
-      type = 'Type.MultiString';
       constructor(args, label) {
          super(args, label);
+         this.type = 'Type.MultiString';
       }
       renderInput() {
          const lines = this.string ? this.string.split(/\n+/) : [];
@@ -697,26 +695,26 @@ HFilters.Type = (function() {
       }
    }
    class TypeNumeric extends TypeString {
-      type = 'Type.Numeric';
       constructor(args, label) {
          super(args, label);
+         this.type = 'Type.Numeric';
       }
       isValid() {
-         return !isNan(parseFloat(this.string)) && isFinite(this.string);
+         return !Number.isNaN(parseFloat(this.string)) && isFinite(this.string);
       }
    }
    class TypeNumericRange extends Type {
-      type = 'Type.NumericRange';
       constructor(args, label) {
-         super(args);
+         super(args, label);
          this.group = args['group'];
          this.inputs = {};
          this.label = label || 'Range';
          this.maxValue = args['max_value'] || '';
          this.minValue = args['min_value'] || '';
+         this.type = 'Type.NumericRange';
       }
       render() {
-         return this.createTypeContainer(this.label, this.renderInput());
+         return this.createTypeContainer(this.label, [this.renderInput()]);
       }
       renderInput() {
          for (const name of ['min', 'max']) {
@@ -727,7 +725,7 @@ HFilters.Type = (function() {
                value: name = 'max' ? this.maxValue : this.minValue
             });
          }
-         return this.h.div({}, [
+         return this.h.div({ id: this.inputs.min.id }, [
             'Min: ', this.inputs.min, ' Max: ', this.inputs.max
          ]);
       }
@@ -743,9 +741,9 @@ HFilters.Type = (function() {
       }
    }
    return {
-      create: function(type) {
-         const className = type.replace(/\./g, '');
-         return new className;
+      create: function(type, args = {}) {
+         const { label } = args;
+         return eval('new ' + type.replace(/\./g, '') + '(args, label)');
       }
    }
 })();

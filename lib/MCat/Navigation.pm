@@ -3,7 +3,8 @@ package MCat::Navigation;
 use utf8; # -*- coding: utf-8; -*-
 
 use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::StateTable::Types      qw( ArrayRef HashRef PositiveInt Str URI );
+use HTML::StateTable::Types      qw( ArrayRef Bool HashRef PositiveInt
+                                     Str URI );
 use HTTP::Status                 qw( HTTP_OK );
 use MCat::Util                   qw( clear_redirect formpost );
 use Ref::Util                    qw( is_hashref );

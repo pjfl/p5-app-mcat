@@ -17,8 +17,18 @@ $class->add_columns(
    },
    name          => { data_type => 'text', is_nullable => FALSE },
    description   => { data_type => 'text', is_nullable => TRUE },
-   owner_user_id => { data_type => 'integer', is_nullable => FALSE },
-   table_id      => { data_type => 'integer', is_nullable => FALSE },
+   owner_user_id => {
+      data_type   => 'integer',
+      is_nullable => FALSE,
+      label       => 'Owner',
+      display     => 'owner.name',
+   },
+   table_id      => {
+      data_type   => 'integer',
+      is_nullable => FALSE,
+      label       => 'Table',
+      display     => 'core_table.name',
+   },
 );
 
 $class->set_primary_key('id');

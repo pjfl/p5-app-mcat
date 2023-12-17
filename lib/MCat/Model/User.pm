@@ -55,7 +55,7 @@ sub create : Auth('admin') Nav('Create User') {
 sub delete : Auth('admin') Nav('Delete User') {
    my ($self, $context, $userid) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $user = $context->model('User')->find($userid);
 
@@ -119,7 +119,7 @@ sub list : Auth('admin') Nav('Users') {
 sub remove : Auth('admin') {
    my ($self, $context) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $value = $context->request->body_parameters->{data} or return;
    my $rs    = $context->model('User');

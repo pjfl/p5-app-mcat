@@ -35,7 +35,7 @@ HFilters.Util = (function() {
          }
       }
       async blows(url, options = {}) {
-         const want = options.response || 'text'; delete options.response;
+         let want = options.response || 'text'; delete options.response;
          this._setHeaders(options);
          if (options.form) {
             options.headers.set(
@@ -137,6 +137,7 @@ HFilters.Util = (function() {
       a(attr, content)        { return this._tag('a', attr, content) }
       caption(attr, content)  { return this._tag('caption', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
+      fieldset(attr, content) { return this._tag('fieldset', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
       h1(attr, content)       { return this._tag('h1', attr, content) }
@@ -147,6 +148,7 @@ HFilters.Util = (function() {
       iframe(attr, content)   { return this._tag('iframe', attr, content) }
       img(attr)               { return this._tag('img', attr) }
       input(attr, content)    { return this._tag('input', attr, content) }
+      legend(attr, content)   { return this._tag('legend', attr, content) }
       label(attr, content)    { return this._tag('label', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }
       nav(attr, content)      { return this._tag('nav', attr, content) }
@@ -191,21 +193,24 @@ HFilters.Util = (function() {
                el = el.offsetParent;
             } while (el);
          }
-         return { left: valueL.round(), top: valueT.round() };
+         return { left: Math.round(valueL), top: Math.round(valueT) };
       }
       elementOffset(el, stopEl) {
          let valueT = 0;
          let valueL = 0;
          do {
-            valueT += el.offsetTop  || 0;
-            valueL += el.offsetLeft || 0;
-            el = el.offsetParent;
-            if (stopEl && el == stopEl) break;
+            if (el) {
+               valueT += el.offsetTop  || 0;
+               valueL += el.offsetLeft || 0;
+               el = el.offsetParent;
+               if (stopEl && el == stopEl) break;
+            }
          } while (el);
-         return { left: valueL.round(), top: valueT.round() };
+         return { left: Math.round(valueL), top: Math.round(valueT) };
       }
       getDimensions(el) {
-         const style = el.style;
+         if (!el) return { height: 0, width: 0 };
+         const style = el.style || {};
          if (style.display && style.display !== 'none') {
             return { height: el.offsetHeight, width: el.offsetWidth };
          }
@@ -316,7 +321,9 @@ HFilters.Util = (function() {
          padString: function(string, padSize, pad) {
             string = string.toString();
             pad = pad.toString() || ' ';
-            return pad.times(padSize - string.length) + string;
+            const size = padSize - string.length;
+            if (size < 1) return string;
+            return pad.repeat(size) + string;
          },
          ucfirst: ucfirst
       }

@@ -37,7 +37,7 @@ return (
    'GET|POST + /register/* | /register + ?*'
                                  => sub {['page/root/base/register',      @_]},
 
-   'GET + /** + ?*' => sub {['page/root/default',   @_]},
+   'GET + /** + ?*' => sub {['page/root/not_found', @_]},
    'GET + ?*'       => sub {['page/root/default',   @_]},
    'HEAD + ?*'      => sub {['page/root/not_found', @_]},
    'PUT + ?*'       => sub {['page/root/not_found', @_]},

@@ -4,6 +4,7 @@ MCat.Navigation = (function() {
    const dsName       = 'navigationConfig';
    const triggerClass = 'state-navigation';
    const StateTable   = HStateTable.Renderer.manager;
+   const FilterEditor = HFilters.Editor.manager;
    class Navigation {
       constructor(container, config) {
          this.container        = container;
@@ -155,6 +156,7 @@ MCat.Navigation = (function() {
          this.contentPanel = this.display(
             this.contentContainer, 'contentPanel', panel
          );
+         FilterEditor.scan(panel);
          HForms.Util.focusFirst(this.skin);
       }
       renderItem(item, menuName, context) {
@@ -378,9 +380,8 @@ MCat.Navigation = (function() {
       createNavigation() {
          const el = document.getElementsByClassName(triggerClass)[0];
          if (!el) return;
-         const nav = new Navigation(el, JSON.parse(el.dataset[dsName]));
-         this.navigator = nav;
-         nav.render();
+         this.navigator = new Navigation(el, JSON.parse(el.dataset[dsName]));
+         this.navigator.render();
       }
       onContentLoad() {
          if (this.navigator) this.navigator.replaceLinks(

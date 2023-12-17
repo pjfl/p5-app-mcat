@@ -59,8 +59,6 @@ $class->has_many('lists' => "${result}::List", 'owner_user_id');
 
 $class->has_many('preferences' => "${result}::Preference", 'user_id');
 
-$class->has_many('tables' => "${result}::Table", 'owner_user_id');
-
 $class->might_have('profile' => "${result}::Preference", sub {
    my $args    = shift;
    my $foreign = $args->{foreign_alias};

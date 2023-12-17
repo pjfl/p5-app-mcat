@@ -51,7 +51,7 @@ sub create : Auth('admin') Nav('Create Tag') {
 sub delete : Auth('admin') Nav('Delete Tag') {
    my ($self, $context, $tagid) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $tag = $context->model('Tag')->find($tagid);
 
@@ -97,7 +97,7 @@ sub list : Auth('admin') Nav('Tags') {
 sub remove : Auth('admin') {
    my ($self, $context) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $value = $context->request->body_parameters->{data} or return;
    my $rs    = $context->model('Tag');

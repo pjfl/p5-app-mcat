@@ -20,7 +20,7 @@ $class->belongs_to(
 );
 
 $class->belongs_to(
-   'lists' => "${result}::List", { 'foreign.id' => 'self.list_id' }
+   'list' => "${result}::List", { 'foreign.id' => 'self.list_id' }
 );
 
 1;

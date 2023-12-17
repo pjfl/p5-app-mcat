@@ -1,6 +1,6 @@
 package MCat::Schema::Result::Filter;
 
-use HTML::Forms::Constants qw( FALSE TRUE );
+use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( now_dt );
 use JSON::MaybeXS          qw( decode_json encode_json );
 use Type::Utils            qw( class_type );
@@ -97,9 +97,17 @@ sub update {
 sub _inflate_columns {
    my $self    = shift;
    my $columns = { $self->get_inflated_columns };
-   my $filter  = $self->parse($columns->{filter_json});
 
-   $columns->{filter_search} = $filter->search;
+   if ($columns->{filter_json}) {
+      my $filter = $self->parse($columns->{filter_json});
+
+      $columns->{filter_search} = $filter->search;
+   }
+   else {
+      $columns->{filter_json} = NUL;
+      $columns->{filter_search} = {};
+   }
+
    $columns->{updated} = now_dt;
    $self->set_inflated_columns($columns);
    return;

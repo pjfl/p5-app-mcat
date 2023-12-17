@@ -33,7 +33,7 @@ MCat.Util = (function() {
       }
       async blows(url, options) {
          options ||= {};
-         const want = options.response || 'text'; delete options.response;
+         let want = options.response || 'text'; delete options.response;
          this._setHeaders(options);
          if (options.form) {
             options.headers.set(

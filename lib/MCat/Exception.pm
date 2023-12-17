@@ -98,6 +98,12 @@ has_exception 'UnknownToken' => parent => [$class],
 has_exception 'UnknownTable' => parent => [$class],
    error   => 'Table [_1] not found', rv => HTTP_NOT_FOUND;
 
+has_exception 'UnknownList' => parent => [$class],
+   error   => 'List [_1] not found', rv => HTTP_NOT_FOUND;
+
+has_exception 'UnknownFilter' => parent => [$class],
+   error   => 'Filter [_1] not found', rv => HTTP_NOT_FOUND;
+
 use namespace::autoclean;
 
 1;

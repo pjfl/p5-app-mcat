@@ -1,20 +1,23 @@
 // -*- coding: utf-8; -*-
 // Package HFilters.Node
 HFilters.Node = (function() {
+   const classes = [];
+   classes.push('Node');
    class Node {
       constructor() {
+         this.instance = true;
       }
-      nukeNode() {
-         const object = this.apply(arguments);
-         for (let i = 0, property; property = arguments[i]; i++) {
-            if (object[property] && object[property].parentNode) {
-               object[property].parentNode.removeChild(object[property]);
-               delete object[property];
+      nukeNode(properties) {
+         for (const property of properties) {
+            if (this[property] && this[property].parentNode) {
+               this[property].parentNode.removeChild(this[property]);
+               delete this[property];
             }
          }
       }
    }
    Object.assign(Node.prototype, HFilters.Util.Markup);
+   classes.push('Logic');
    class Logic extends Node {
       constructor() {
          super();
@@ -33,7 +36,7 @@ HFilters.Node = (function() {
       }
       hasSingleNode() {
          for (const node of this.nodes) {
-            if (node.type.matches(/^Rule/)) return true;
+            if (node.type.match(/^Rule/)) return true;
          }
          return false;
       }
@@ -41,9 +44,10 @@ HFilters.Node = (function() {
          return this.type ? this.type : 'Logic';
       }
       unrender() {
-         this.nukeNode('addEl', 'el', 'addAnd', 'addOr');
+         this.nukeNode(['addEl', 'el', 'addAnd', 'addOr']);
       }
    }
+   classes.push('LogicAnd');
    class LogicAnd extends Logic {
       constructor() {
          super();
@@ -55,7 +59,7 @@ HFilters.Node = (function() {
             className: 'node-logic-and-add',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('addclick', [this]);
+               this.registry.fire('addclick', this);
             }.bind(this)
          });
          this.update();
@@ -76,6 +80,7 @@ HFilters.Node = (function() {
          return rows;
       }
    }
+   classes.push('LogicContainer');
    class LogicContainer extends Logic {
       constructor() {
          super();
@@ -92,7 +97,7 @@ HFilters.Node = (function() {
             className: 'node-logic-container-add-and',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('addwrapclick', [this, 'Logic.And']);
+               this.registry.fire('addwrapclick', this, 'Logic.And');
             }.bind(this),
             title: 'AND'
          });
@@ -100,7 +105,7 @@ HFilters.Node = (function() {
             className: 'node-logic-container-add-or',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('addwrapclick', [this, 'Logic.Or']);
+               this.registry.fire('addwrapclick', this, 'Logic.Or');
             }.bind(this),
             title: 'OR'
          });
@@ -115,6 +120,7 @@ HFilters.Node = (function() {
          if (node.type == 'Logic.And') this.el.appendChild(this.addOr);
       }
    }
+   classes.push('LogicOr');
    class LogicOr extends Logic {
       constructor() {
          super();
@@ -126,7 +132,7 @@ HFilters.Node = (function() {
             className: 'node-logic-or-add',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('addclick', [this]);
+               this.registry.fire('addclick', this);
             }.bind(this)
          });
          this.update();
@@ -135,22 +141,21 @@ HFilters.Node = (function() {
       update() {
          this.el.innerHTML = '';
          if (!this.hasSingleNode()) this.el.appendChild(this.addEl);
-         this.el.appendChild();
          const attr = { className: 'node-logic-or' };
          const tbody = this.h.tbody(this._contentRows());
          this.el.appendChild(this.h.table(attr, tbody));
       }
       _edgeCells() {
          const cells = [];
-         this.nodes.length.times(function() {
+         for (const node of this.nodes) {
             cells.push(this.h.th({ className: 'node-logic-or-edge-center' }));
-         }.bind(this));
+         };
          if (cells.length == 1) {
             cells[0].className = 'node-logic-or-edge-single';
          }
          else {
-            cells.first().className = 'node-logic-or-edge-left';
-            cells.last().className = 'node-logic-or-edge-right';
+            cells[0].className = 'node-logic-or-edge-left';
+            cells[cells.length - 1].className = 'node-logic-or-edge-right';
          }
          return cells;
       }
@@ -171,30 +176,35 @@ HFilters.Node = (function() {
          ];
       }
    }
+   classes.push('Rule');
    class Rule extends Node {
       constructor(data) {
-         super()
+         super(data);
          this.registry = HFilters.Editor.createRegistrar(
             ['addruleclick', 'editorsave', 'nodeclick', 'removeruleclick']
          );
-         this.warning = 'Incomplete Rule';
          this.data = {};
-         for (const field in this.fields) {
-            if (data[field] && data[field].type.matches(/^Type/)) {
-               this.data[field] = data[field];
+         this.fields = data.fields;
+         this.label = data.label;
+         this.type = data.type;
+         this.warning = 'Incomplete Rule';
+         if (this.setup) this.setup();
+         for (const name in this.fields) {
+            if (data[name] && data[name].instance) {
+               this.data[name] = data[name];
             }
             else {
-               const fieldObject = this.fields[field];
+               const fieldObject = this.fields[name];
                const type = 'Type.' + fieldObject.type;
-               const args = data[field] || {};
+               const args = data[name] || {};
                args.group = fieldObject.group;
                args.hidden = fieldObject.hidden;
                args.inputType = fieldObject.inputType;
-               args.label = fieldObject.label
+               args.label = fieldObject.label;
                args.matchRadio = fieldObject.matchRadio;
-               args.name = field;
+               args.name = name;
                args.node = this;
-               this.data[field] = HFilters.Type.create(type, args);
+               this.data[name] = HFilters.Type.create(type, args);
             }
          }
       }
@@ -212,14 +222,14 @@ HFilters.Node = (function() {
       }
       isValid() {
          this.warning = 'Invalid rule';
-         for (const field in this.fields) {
-            if (!this.data[field].isValid()) return false;
+         for (const name in this.fields) {
+            if (!this.data[name].isValid()) return false;
          }
          return true;
       }
       nodeClick() {
-         if (HFilters.Editor.manager.editor.treeDragged) return;
-         this.registry.fire('nodeclick', [this]);
+         if (HFilters.Editor.editor().treeDragged) return;
+         this.registry.fire('nodeclick', this);
       }
       notSelectable() {
          return false;
@@ -235,14 +245,13 @@ HFilters.Node = (function() {
          this.wrapper = this.h.div({ className: 'node-rule-wrapper' }, this.el);
          return this.wrapper;
       }
-      renderRuleBox() {
-         const contents = Array.prototype.splice.call(arguments);
+      renderRuleBox(contents = []) {
          this.title = this.h.div({ className: 'node-rule-title' }, this.label);
          this.status = this.h.div(
             { className: 'node-rule-status' }, this.warning
          );
          const box = this.h.div(
-            { className: 'rule-string' }, [this.title, this.status, contents]
+            { className: 'rule-string' }, [this.title, this.status, ...contents]
          );
          if (this.isValid()) {
             this.el.classList.remove('rule-error');
@@ -256,7 +265,7 @@ HFilters.Node = (function() {
             className: 'node-rule-add-or',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('addruleclick', [this, 'Logic.Or']);
+               this.registry.fire('addruleclick', this, 'Logic.Or');
             }.bind(this),
             title: 'OR'
          });
@@ -265,16 +274,16 @@ HFilters.Node = (function() {
             className: 'node-rule-add-and',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('addruleclick', [this, 'Logic.And']);
+               this.registry.fire('addruleclick', this, 'Logic.And');
             }.bind(this),
             title: 'AND'
          });
          this.el.appendChild(this.addAnd);
-         this.removeEl = this.h.div({
-            className: 'node-rule-remove',
+         this.removeEl = this.h.button({
+            className: 'node-rule-remove-button',
             onclick: function(event) {
                event.preventDefault();
-               this.registry.fire('removeruleclick', [this]);
+               this.registry.fire('removeruleclick', this);
             }.bind(this)
          }, '×');
          this.el.appendChild(this.removeEl);
@@ -286,7 +295,7 @@ HFilters.Node = (function() {
          return this.type ? this.type : 'Unknown Rule';
       }
       unrender() {
-         this.nukeNode('el', 'inner', 'addOr', 'addAnd');
+         this.nukeNode(['el', 'inner', 'addOr', 'addAnd']);
       }
       unselect() {
          if (this.el) this.el.id = '';
@@ -297,22 +306,23 @@ HFilters.Node = (function() {
       }
       updateValue() {
          let error = false;
-         for (const field in this.fields) {
-            try { this.data[field].update() }
+         for (const name in this.fields) {
+            try { this.data[name].update() }
             catch(e) { error = true }
          }
-         return error;
+         return error ? false : true;
       }
    }
+   classes.push('RuleEmpty');
    class RuleEmpty extends Rule {
-      label = 'New rule';
-      type = 'Rule.Empty';
       constructor(data) {
+         data.fields ||= { ruleType: { label: 'Rule Type', type: 'RuleType' } };
+         data.label ||= 'New rule';
+         data.type ||= 'Rule.Empty';
          super(data);
-         this.fields = { ruleType: { label: 'Rule Type', type: 'RuleType' } };
       }
       editorSave() {
-         this.registry.fire('editorsave', [this, this.data.ruleType.rule]);
+         this.registry.fire('editorsave', this, this.data.ruleType.rule);
       }
       forJSON() {
          return { type: this.type };
@@ -325,212 +335,228 @@ HFilters.Node = (function() {
          return this.renderRuleBox();
       }
    }
+   classes.push('RuleString');
    class RuleString extends Rule {
-      label = 'Field text match';
-      type = 'Rule.String';
       constructor(data) {
-         super(data);
-         this.fields = {
+         data.fields ||= {
             field:  { label: 'Field', type: 'Field' },
             negate: { label: 'Inverse', type: 'Negate' },
             string: { label: 'Match text', type: 'String' }
          };
+         data.label ||= 'Field text match';
+         data.type ||= 'Rule.String';
+         super(data);
       }
       renderContent() {
          const data = this.data;
-         return this.renderRuleBox(
+         return this.renderRuleBox([
             this.h.div({ className: 'type-field' }, data.field.toDisplay()),
             this.h.div({ className: 'type-name' }, this.getBoxString()),
-            this.h.div({ className: 'trpe-string' }, data.string.toDisplay())
-         );
+            this.h.div({ className: 'type-string' }, data.string.toDisplay())
+         ]);
       }
    }
-   class RuleStringEquals extends RuleString {
-      label = 'Field equals';
-      type = 'Rule.String.Equals';
-      constructor(data) {
-         super(data);
-      }
-      getBoxString() {
-         return this.data.negate.isNegated() ? 'not equal to' : 'equal to';
-      }
-   }
-   class RuleStringContains extends RuleString {
-      label = 'Field contains';
-      type = 'Rule.String.Contains';
-      constructor(data) {
-         super(data);
-      }
-      getBoxString() {
-         return this.data.negate.isNegated() ? 'does not contain' : 'contains';
-      }
-   }
+   classes.push('RuleStringBegins');
    class RuleStringBegins extends RuleString {
-      label = 'Field begins with';
-      type = 'Rule.String.Begins';
       constructor(data) {
+         data.label ||= 'Field begins with';
+         data.type ||= 'Rule.String.Begins';
          super(data);
       }
       getBoxString() {
          return this.data.negate.isNegated() ? 'does not begin with' : 'begins with';
       }
    }
-   class RuleStringEnds extends RuleString {
-      label = 'Field ends with';
-      type = 'Rule.String.Ends';
+   classes.push('RuleStringContains');
+   class RuleStringContains extends RuleString {
       constructor(data) {
+         data.label ||= 'Field contains';
+         data.type ||= 'Rule.String.Contains';
+         super(data);
+      }
+      getBoxString() {
+         return this.data.negate.isNegated() ? 'does not contain' : 'contains';
+      }
+   }
+   classes.push('RuleStringEnds');
+   class RuleStringEnds extends RuleString {
+      constructor(data) {
+         data.label ||= 'Field ends with';
+         data.type ||= 'Rule.String.Ends';
          super(data);
       }
       getBoxString() {
          return this.data.negate.isNegated() ? 'does not end with' : 'ends with';
       }
    }
-   class RuleStringIsEmpty extends RuleString {
-      label = 'Field is empty';
-      type = 'Rule.String.IsEmpty';
+   classes.push('RuleStringEquals');
+   class RuleStringEquals extends RuleString {
       constructor(data) {
+         data.label ||= 'Field equals';
+         data.type ||= 'Rule.String.Equals';
          super(data);
-         this.fields = {
+      }
+      getBoxString() {
+         return this.data.negate.isNegated() ? 'not equal to' : 'equal to';
+      }
+   }
+   classes.push('RuleStringIsEmpty');
+   class RuleStringIsEmpty extends RuleString {
+      constructor(data) {
+         data.fields ||= {
             field:  { label: 'Field', type: 'Field' },
             negate: { label: 'Inverse', type: 'Negate' }
          };
+         data.label ||= 'Field is empty';
+         data.type ||= 'Rule.String.IsEmpty';
+         super(data);
       }
       getBoxString() {
          return this.data.negate.isNegated() ? 'is not empty' : 'is empty';
       }
       renderContent() {
-         return this.renderRuleBox(
+         return this.renderRuleBox([
             this.h.div({ className: 'type-field' }, this.data.field.toDisplay()),
             this.h.div({ className: 'type-name' }, this.getBoxString())
-         );
+         ]);
       }
    }
+   classes.push('RuleStringList');
    class RuleStringList extends RuleString {
-      label = 'Field matches list';
-      type = 'Rule.String.List';
       constructor(data) {
-         super(data);
-         this.fields = {
+         data.fields ||= {
             field:  { label: 'Field', type: 'Field' },
             negate: { label: 'Inverse', type: 'Negate' },
             string: { label: 'Match text (one per line)', type: 'MultiString' }
          };
+         data.label ||= 'Field matches list';
+         data.type ||= 'Rule.String.List';
+         super(data);
       }
       getBoxString() {
          return this.data.negate.isNegated() ? 'is not one of' : 'is one of';
       }
    }
+   classes.push('RuleNumeric');
    class RuleNumeric extends Rule {
-      label = 'Field numeric match';
-      type = 'Rule.Numeric';
       constructor(data) {
-         super(data);
-         this.fields = {
+         data.fields ||= {
             field:  { label: 'Field', type: 'Field' },
             number: { label: 'Value', type: 'Numeric' }
          };
+         data.label ||= 'Field numeric match';
+         data.type ||= 'Rule.Numeric';
+         super(data);
       }
       renderContent() {
          const data = this.data;
-         return this.renderRuleBox(
+         return this.renderRuleBox([
             this.h.div({ className: 'type-field' }, data.field.toDisplay()),
             this.h.div({ className: 'type-name' }, this.getBoxString()),
             this.h.div({ className: 'type-string' }, data.number.toDisplay())
-         );
+         ]);
       }
    }
+   classes.push('RuleNumericEqualTo');
    class RuleNumericEqualTo extends RuleNumeric {
-      label = 'Field equals';
-      type = 'Rule.Numeric.EqualTo'
       constructor(data) {
+         data.label ||= 'Field equals';
+         data.type ||= 'Rule.Numeric.EqualTo';
          super(data);
       }
       getBoxString() {
          return 'equal to';
       }
    }
+   classes.push('RuleNumericLessThan');
    class RuleNumericLessThan extends RuleNumeric {
-      label = 'Field less than';
-      type = 'Rule.Numeric.LessThan'
       constructor(data) {
+         data.label ||= 'Field less than';
+         data.type ||= 'Rule.Numeric.LessThan';
          super(data);
       }
       getBoxString() {
          return 'less than';
       }
    }
+   classes.push('RuleNumericGreaterThan');
    class RuleNumericGreaterThan extends RuleNumeric {
-      label = 'Field greater than';
-      type = 'Rule.Numeric.GreaterThan'
       constructor(data) {
+         data.label ||= 'Field greater than';
+         data.type ||= 'Rule.Numeric.GreaterThan';
          super(data);
       }
       getBoxString() {
          return 'greater than';
       }
    }
+   classes.push('RuleDate');
    class RuleDate extends Rule {
-      label = 'Date match';
-      type = 'Rule.Date';
       constructor(data) {
-         super(data);
-         this.fields = {
+         data.fields ||= {
             date:   { label: 'Date', type: 'Date' },
             field:  { label: 'Field', type: 'Field' },
             negate: { label: 'Inverse', type: 'Negate' }
          };
+         data.label ||= 'Date match';
+         data.type ||= 'Rule.Date';
+         super(data);
       }
       renderContent() {
          const data = this.data;
-         return this.renderRuleBox(
+         return this.renderRuleBox([
             this.h.div({ className: 'type-field' }, data.field.toDisplay()),
             this.h.div({ className: 'type-operation' }, this.getBoxString()),
             this.h.div({ className: 'type-date' }, data.date.toDisplay())
-         );
+         ]);
       }
    }
+   classes.push('RuleDateAnniversary');
    class RuleDateAnniversary extends RuleDate {
-      label = 'Anniverary';
-      type = 'Rule.Date.Anniversary';
       constructor(data) {
+         data.label ||= 'Anniverary';
+         data.type ||= 'Rule.Date.Anniversary';
          super(data);
       }
       getBoxString() {
          return this.data.negate.isNegated() ? 'anniversary is not' : 'has anniversary';
       }
    }
+   classes.push('RuleDateBefore');
    class RuleDateBefore extends RuleDate {
-      label = 'Date is before';
-      type = 'Rule.Date.Before';
       constructor(data) {
-         super(data);
-         this.fields = {
+         data.fields ||= {
             date:  { label: 'Date', type: 'Date' },
             field: { label: 'Field', type: 'Field' }
          };
+         data.label ||= 'Date is before';
+         data.type ||= 'Rule.Date.Before';
+         super(data);
       }
       getBoxString() {
          return 'is before';
       }
    }
+   classes.push('RuleDateAfter');
    class RuleDateAfter extends RuleDate {
-      label = 'Date is after';
-      type = 'Rule.Date.After';
       constructor(data) {
-         super(data);
-         this.fields = {
+         data.fields ||= {
             date:  { label: 'Date', type: 'Date' },
             field: { label: 'Field', type: 'Field' }
          };
+         data.label ||= 'Date is after';
+         data.type ||= 'Rule.Date.After';
+         super(data);
       }
       getBoxString() {
          return 'is after';
       }
    }
+   classes.push('RuleDateEquals');
    class RuleDateEquals extends RuleDate {
-      label = 'Date is equal';
-      type = 'Rule.Date.Equals';
       constructor(data) {
+         data.label ||= 'Date is equal';
+         data.type ||= 'Rule.Date.Equals';
          super(data);
       }
       getBoxString() {
@@ -538,18 +564,20 @@ HFilters.Node = (function() {
       }
    }
    return {
-      create: function(type) {
-         const className = type.replace(/\./g, '');
-         return new className;
+      create: function(args) {
+         const { type } = args;
+         delete args.type;
+         return eval('new ' + type.replace(/\./g, '') + '(args)');
       },
       subclasses: function(baseClass) {
-         const globalObject = Function('return this')();
-         return Object.keys(globalObject).filter(function (key) {
-            try {
-               return globalObject[key].prototype instanceof baseClass
+         const subclasses = [];
+         const re = new RegExp('^' + baseClass + '[A-Z][a-z]+$');
+         for (const className of classes) {
+            if (className.match(re)) {
+               subclasses.push(eval('new ' + className + '({})'));
             }
-            catch (e) { return false }
-         });
+         }
+         return subclasses;
       }
    }
 })();

@@ -68,7 +68,7 @@ sub create : Nav('Create CD') {
 sub delete : Nav('Delete CD') {
    my ($self, $context, $cdid) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $cd = $context->model('Cd')->find($cdid);
 

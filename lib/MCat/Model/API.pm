@@ -47,7 +47,7 @@ sub dispatch : Auth('none') {
    return $self->error($context, UnauthorisedAPICall, [$class, $method])
       unless $self->_allowed($context, $coderef);
 
-   return if $context->posted && !$self->has_valid_token($context);
+   return if $context->posted && !$self->verify_form_post($context);
 
    try { $handler->$method($context, @args) }
    catch_class [
@@ -60,7 +60,7 @@ sub dispatch : Auth('none') {
 
    return if $context->stash->{finalised};
 
-   $context->stash(view => 'json');
+   $context->stash(view => 'json') unless $context->stash->{view};
    return;
 }
 

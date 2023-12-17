@@ -3,8 +3,9 @@ package MCat::Object::View;
 use Data::Page;
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Int ResultRole Table Undef );
+use JSON::MaybeXS               qw( encode_json );
 use List::Util                  qw( pairs );
-use Ref::Util                   qw( is_coderef );
+use Ref::Util                   qw( is_coderef is_plain_hashref );
 use MCat::Object::Result;
 use Moo;
 use MooX::HandlesVia;
@@ -76,6 +77,8 @@ sub build_results {
          }
       }
       else { $value = $table->result->$colname }
+
+      if (is_plain_hashref $value) { $value = encode_json($value) }
 
       my $traits = $info->{cell_traits} // [];
       my $name   = $info->{label} // ucfirst $colname;

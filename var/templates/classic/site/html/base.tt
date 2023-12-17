@@ -10,7 +10,6 @@
    <meta name="generator" content="[% config.name %] v[% version %]">
    <title>[% nav.title_abbrev _ ' - ' _ nav.title_entry %]</title>
    <link rel="shortcut icon" href="[% uri_for('img/favicon.ico') %]">
-   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab">
 [% skin = context.session.skin || config.skin -%]
 [% css = uri_for('css/mcat-' _ skin _ '.css') -%]
    <link rel="stylesheet" href="[% css %]" type="text/css">

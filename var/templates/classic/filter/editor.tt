@@ -1,0 +1,4 @@
+<div>
+   <input type="hidden" id="filter_json" name="filter_json" value="[% filter_json %]">
+</div>
+<div class="filter-container" data-filter-config=[% filter_config %]></div>

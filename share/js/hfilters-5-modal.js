@@ -38,13 +38,9 @@ HFilters.Modal = (function() {
       }
       remove(el) {
          if (!el) return;
+         const popupParent = this.popupBackground.parentNode;
+         if (popupParent) popupParent.removeChild(this.popupBackground);
          const elParent = el.parentNode;
-         const afterRemoval = () => {
-            const popupParent = this.popupBackground.parentNode;
-            if (popupParent) popupParent.removeChild(this.popupBackground);
-            elParent.removeEventListener('transitioned', afterRemoval);
-         };
-         elParent.addEventListener('transitioned', afterRemoval.bind(this));
          elParent.classList.add('out');
          elParent.classList.remove('in');
       }
@@ -72,7 +68,7 @@ HFilters.Modal = (function() {
          if (args.parent) args.parent.appendChild(this.elm);
       }
       activate() {
-         this.el.classList.add('button-active');
+         this.elm.classList.add('button-active');
       }
       deactivate() {
          this.elm.classList.remove('button-active');
@@ -96,7 +92,7 @@ HFilters.Modal = (function() {
          this.drag = {};
          this.dragNodeX = null;
          this.dragNodeY = null;
-         this.scrollWrapper = document.querySelector('.page-wrapper-content');
+         this.scrollWrapper = document.querySelector('.centred-content');
       }
       autoScrollHandler(event) {
          const { drag } = this;
@@ -186,15 +182,15 @@ HFilters.Modal = (function() {
                ? 80 : options.autoScroll || false;
          this.drag = {
             autoScroll: autoScroll,
-            autoScrollSpeed: (options.autoScrollSpeed || 10),
-            autoScrollStep: (options.autoScrollStep || 5),
+            autoScrollSpeed: options.autoScrollSpeed || 10,
+            autoScrollStep: options.autoScrollStep || 5,
             constraints: options.constraints,
             currentDropNode: null,
             documentHeight: this.h.getDimensions(document).height,
             dragNode: options.dragNode,
             dragNodeOffset: options.dragNodeOffset,
             dropCallback: options.dropCallback,
-            dropNodes: options.dropTargets,
+            dropNodes: options.dropTargets || {},
             fixLeft: options.fixLeft,
             hoverCallback: options.hoverCallback,
             hoverClass: options.hoverClass,
@@ -221,7 +217,7 @@ HFilters.Modal = (function() {
          return this.drag;
       }
       stopDrag() {
-         document.removeEventListener('scroll', this.scrollHandler);
+         this.scrollWrapper.removeEventListener('scroll', this.scrollHandler);
          document.removeEventListener('wheel', this.wheelHandler);
          document.removeEventListener('mouseup', this.dropHandler);
          document.removeEventListener('mousemove', this.dragHandler);
@@ -237,7 +233,7 @@ HFilters.Modal = (function() {
       updateDropNodePositions() {
          const { drag } = this;
          drag.dropNodePositions = [];
-         drag.dropNodes.each(function(node) {
+         drag.dropNodes.forEach(function(node) {
             const offsets = this.h.getOffset(node);
             const dimensions = this.h.getDimensions(node);
             drag.dropNodePositions.push({
@@ -253,6 +249,7 @@ HFilters.Modal = (function() {
       updateHoveredNode(event) {
          let hoveredNode = null;
          const { drag, dragNodeX, dragNodeY } = this;
+         drag.dropNodePositions ||= [];
          for (const target of drag.dropNodePositions) {
             if (dragNodeX > target.left
                 && dragNodeX < target.right
@@ -315,26 +312,13 @@ HFilters.Modal = (function() {
          const classes = this.classList || '';
          this.el = this.h.div({ className: 'modal ' + classes });
          const { el } = this;
-         const drag = new Drag();
          this.modalHeader = this.h.div({
-            className: 'modal-header',
-            onclick: function(event) {
-               if (event.target.tagName === 'BUTTON') return;
-               const { left, top } = this.modularHeader.getBoundingClientRect();
-               const { scrollTop } = document.documentElement || document.body;
-               drag.start(event, {
-                  dragNode: el,
-                  dropTargets: [],
-                  dragNodeOffset: {
-                     x: event.clientX - left,
-                     y: (event.clientY + scrollTop) - top
-                  }
-               });
-            }.bind(this)
+            className: 'modal-header', onmousedown: this._clickHandler(el)
          }, [
             this.h.h1({ className: 'modal-title' }, this.title),
             this.h.button({
-               className: 'button modal-close button-transparent button-icon button-icon-only'
+               className: 'button modal-close button-icon',
+               onclick: function() { this.close() }.bind(this)
             }, '×')
          ]);
          this.modalHeader.setAttribute('draggable', 'draggable');
@@ -367,17 +351,33 @@ HFilters.Modal = (function() {
             buttonEl.buttonConfig = button;
          });
          el.appendChild(this.buttonBox);
-         this.modularHeader.querySelector('.modal-close')
-            .addEventListener('click', () => { this.close() });
          this.backdrop = new Backdrop();
          this.backdrop.add(this.el);
+      }
+      _clickHandler(el) {
+         return function(event) {
+            if (event.target.tagName === 'BUTTON') return;
+            const { left, top } = this.modalHeader.getBoundingClientRect();
+            const { scrollTop } = document.documentElement || document.body;
+            const drag = new Drag();
+            drag.start(event, {
+               dragNode: el,
+               dropTargets: [],
+               dragNodeOffset: {
+                  x: event.clientX - left,
+                  y: (event.clientY + scrollTop) - top
+               }
+            });
+         }.bind(this);
       }
    }
    Object.assign(Modal.prototype, HFilters.Util.Markup);
    Object.assign(Modal.prototype, HFilters.Util.String);
    class ModalUtil {
-      constructor(url) {
+      constructor(url, initValue, valueStore) {
          this.url = url;
+         this.initValue = initValue;
+         this.valueStore = valueStore;
       }
       createIcon(args) {
          const {
@@ -408,28 +408,55 @@ HFilters.Modal = (function() {
       frag(content) {
          document.createRange().createContextualFragment(content);
       }
+      async getFrameContent(frame, onload) {
+         const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
+         const { location, text } = await this.bitch.sucks(this.url, opt);
+         if (text && text.length > 0) {
+            frame.innerHTML = text;
+         }
+         else if (location) {
+            // TODO: Deal with
+         }
+         else {
+            console.warn('Neither content nor redirect in response to get');
+         }
+         if (onload) onload();
+      }
       getModalContainer() {
-         const loader = this.h.div({
-            className: 'modal-loader'
-         }, this.createSpinner());
-         const iframe = this.h.iframe({
+         const spinner = this.createSpinner();
+         const loader = this.h.div({ className: 'modal-loader' }, spinner);
+         const frame = this.h.div({
             className: 'selector',
-            frameBoarder: 0,
             id: 'selector-frame',
-            src: this.url,
             style: 'visibility:hidden;'
          });
-         const container = this.h.div({
-            className: 'modal-iframe-container'
-         }, [loader, iframe]);
-         return { container: container, iframe: iframe, loader: loader };
+         const container = this.h.div(
+            { className: 'modal-frame-container' }, [loader, frame]
+         );
+         this.frame = frame;
+         this.selector = new Selector(frame);
+         const onload = function() {
+            frame.style.visibility = 'visible';
+            loader.style.visibility = 'hidden';
+            const selector = this.selector;
+            if (this.initValue)
+               selector.setModalValue(this.initValue, this.valueStore);
+            for (const atag of frame.querySelectorAll('a')) {
+               atag.addEventListener('click', function() {
+                  this.valueStore = selector.setValueStore(this.valueStore);
+                  this.initValue = this.valueStore.value;
+               }.bind(this));
+            };
+            HStateTable.Renderer.manager.scan(frame);
+         }.bind(this);
+         this.getFrameContent(frame, onload);
+         return container;
       }
-      getModalValue(iframe, success) {
-         const func = iframe.contentWindow.getModalValue;
-         if (func) return func(success);
-         throw new Error(`Modal ${iframe.src} no getModalValue function`);
+      getModalValue(success) {
+         return this.selector.getModalValue(success);
       }
    }
+   Object.assign(ModalUtil.prototype, HFilters.Util.Bitch);
    Object.assign(ModalUtil.prototype, HFilters.Util.Markup);
    class Resizer {
       constructor(el, resizeEl, alsoResize, dir) {
@@ -483,6 +510,113 @@ HFilters.Modal = (function() {
       }
    }
    Object.assign(Resizer.prototype, HFilters.Util.Markup);
+   class Selector {
+      constructor(frame) {
+         this.frame = frame;
+         this.tableClass = 'state-table';
+         this.displayAttribute = 'object_display';
+      }
+      getModalValue(success) {
+         if (!success) return null;
+         const els = this._selectionEls();
+         const selected = [];
+         for (const el of els) {
+            if (el.checked) selected.push(el);
+         }
+         if (this.type === 'radio') {
+            if (selected && selected.length > 0) {
+               this.valueStore = {
+                  value: selected[0].value,
+                  display: selected[0].getAttribute(this.displayAttribute)
+               };
+            }
+            if (this.valueStore && this.valueStore.value !== undefined) {
+               const tempHash = {};
+               tempHash[this.valueStore.value] = 1;
+               this.valueStore = {
+                  value: this._removeUnchecked(tempHash, els),
+                  display: this.valueStore.display
+               };
+            }
+            else this.valueStore = null;
+         }
+         else {
+            this.valueStore = {
+               value: this._removeUnchecked(this._addIDs(selected), els),
+               display: null
+            };
+         }
+         return this.valueStore;
+      }
+      setModalValue(value, valueHash) {
+         if (!value) return;
+         this.valueStore = valueHash;
+         const values = value.split(',');
+         HFilters.Modal.clientTablePrecheckedValues = values;
+         let el;
+         if (this.type === 'radio') {
+            for (const selected of this._selectionEls()) {
+               if (selected.value == value) {
+                  el = selected;
+                  break;
+               }
+            }
+         }
+         else {
+            for (const selected of this._selectionEls()) {
+               if (values.includes(selected.value)) {
+                  el = selected;
+                  break;
+               }
+            }
+         }
+         if (!el) return;
+         el.setAttribute('checked', false);
+         el.click();
+      }
+      setValueStore(valueStore) {
+         this.valueStore = valueStore;
+         return this.getModalValue(true);
+      }
+      _addIDs(selected) {
+         const values = this.valueStore && this.valueStore.value
+               ? this.valueStore.value.split(',') : [];
+         const newValues = [];
+         if (selected && selected.length > 0) {
+            for (const el of selected) newValues.push(el.value);
+         }
+         const valueHash = {};
+         if (values.length || newValues.length) {
+            for (const v of [...values, ...newValues]) valueHash[v] = v;
+         }
+         return valueHash;
+      }
+      _removeUnchecked(values, els) {
+         if (values.length === 0) return '';
+         for (const el of els) {
+            if (values[el.value] && !el.checked) delete values[el.value];
+         }
+         return Object.keys(values).join(',');
+      }
+      _selectionEls() {
+         let pattern = 'input[type=';
+         const table = this.frame.querySelector('.' + this.tableClass);
+         if (table) pattern = '.' + this.tableClass + ' ' + pattern;
+         const selector = this.frame.querySelectorAll.bind(this.frame);
+         if (this.type !== undefined) return selector(pattern + type + ']');
+         let els = selector(pattern + 'radio]');
+         if (els && els.length > 0) {
+            this.type = 'radio';
+            return els;
+         }
+         els = selector(pattern + 'checkbox]');
+         if (!els || els.length === 0) throw new Error(
+            'Selectors need either a radio button or checkbox column'
+         );
+         this.type = 'checkbox';
+         return els;
+      }
+   }
    return {
       create: function(args) {
          const {
@@ -490,62 +624,33 @@ HFilters.Modal = (function() {
             callback = () => {},
             cancelCallback,
             classList = false,
-            labels = ['Okay', 'Cancel'],
+            labels = ['Cancel', 'OK'],
             title,
             url,
             validateForm
          } = args;
-         let { valueStore = {}, init_value: initValue } = args;
-         const util = new ModalUtil(url);
-         const { container, iframe, loader } = util.getModalContainer();
+         let { initValue, valueStore = {} } = args;
+         const util = new ModalUtil(url, initValue, valueStore);
+         const container = util.getModalContainer();
          const buttons = [{
             label: labels[0],
             onclick(p) {
-               const modalValue = util.getModalValue(iframe, true);
-               if (validateForm && !validateForm(p, modalValue))
-                  return false;
-               return callback(true, p, modalValue);
+               try { callback(false, p, util.getModalValue(false))}
+               catch(e) {}
+               if (cancelCallback) cancelCallback();
             }
          }, {
             label: labels[1],
             onclick(p) {
-               try { callback(false, p, util.getModalValue(iframe, false))}
-               catch(e) {}
-               if (cancelCallback) cancelCallback();
+               const modalValue = util.getModalValue(true);
+               if (validateForm && !validateForm(p, modalValue)) return false;
+               return callback(true, p, modalValue);
             }
          }];
          const options = { noInner: true, classList, buttonClass };
          if (args.closeCallback) options.closeCallback = args.closeCallback;
          const modal = new Modal(title, container, buttons, options);
          modal.render();
-         const { contentWindow } = iframe;
-         iframe.addEventListener('load', function(event) {
-            const setup = function() {
-               iframe.style.visibility = 'visible';
-               iframe.style.height = 'auto';
-               loader.style.visibility = 'hidden';
-               if (contentWindow.setModalValue && initValue)
-                  contentWindow.setModalValue(initValue, valueStore);
-               const doc = contentWindow.document;
-               const storeF = contentWindow.storeModalValue;
-               if (storeF) {
-                  const atags = doc.querySelector('a');
-                  [].forEach.call(atags, (atag) => {
-                     atag.addEventListener('click', () => {
-                        valueStore = storeF(valueStore);
-                        initValue = valueStore.value;
-                     });
-                  });
-               }
-               const height = doc.documentElement.scrollHeight;
-               iframe.style.height = `${height}px`;
-            };
-            setup();
-            contentWindow.addEventListener('load', setup);
-            contentWindow.addEventListener('unload', function() {
-               loader.style.visibility = 'visible';
-            });
-         });
          return modal;
       }
    };

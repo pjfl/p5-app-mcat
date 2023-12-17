@@ -50,7 +50,7 @@ sub create : Nav('Create Table') {
 sub delete : Nav('Delete Table') {
    my ($self, $context, $tableid) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $table = $context->model('Table')->find($tableid);
 

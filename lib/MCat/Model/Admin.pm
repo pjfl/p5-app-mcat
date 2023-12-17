@@ -13,7 +13,9 @@ sub menu : Auth('admin') Nav('Admin|img/hammer.svg') {
 
    my $nav = $context->stash('nav')->list('admin');
 
+   $nav->menu('filter')->item('filter/list');
    $nav->menu('job')->item('job/status');
+   $nav->menu('list')->item('list/list');
    $nav->menu('logfile')->item('logfile/list');
    $nav->menu('table')->item('table/list');
    $nav->menu('tag')->item('tag/list');

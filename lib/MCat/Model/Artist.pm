@@ -50,7 +50,7 @@ sub create : Nav('Create Artist') {
 sub delete : Nav('Delete Artist') {
    my ($self, $context, $artistid) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $artist = $context->model('Artist')->find($artistid);
 
@@ -96,7 +96,7 @@ sub list : Auth('view') Nav('Artists|img/artist.svg') {
 sub remove {
    my ($self, $context) = @_;
 
-   return unless $self->has_valid_token($context);
+   return unless $self->verify_form_post($context);
 
    my $value = $context->request->body_parameters->{data} or return;
    my $rs    = $context->model('Artist');

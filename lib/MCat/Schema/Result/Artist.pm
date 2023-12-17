@@ -48,4 +48,8 @@ $class->might_have(
    { 'foreign.artistid' => 'self.artistid' }
 );
 
+$class->has_many(
+   'lists' => "${result}::ListArtist", { 'foreign.artistid' => 'self.artistid' }
+);
+
 1;

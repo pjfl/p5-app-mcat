@@ -3,6 +3,7 @@
 HFilters.NodeTree = (function() {
    class NodeTree {
       constructor(data) {
+         this.instance = true;
          this.registry = HFilters.Editor.createRegistrar(
             ['ruleselect', 'ruleunselect', 'ruleremove']
          );
@@ -31,7 +32,7 @@ HFilters.NodeTree = (function() {
          const parent = node.parentNode;
          const newNode = this.createEmptyNode(parent);
          if (parent && parent.type == type)
-            this.insertNode(parent, newNode, 1);
+            this.insertNode(parent, newNode, node, 1);
          else {
             const logicNode = this.createLogicNode(type);
             this.insertNode(parent, logicNode, node, 1);
@@ -54,32 +55,32 @@ HFilters.NodeTree = (function() {
       appendNode(parent, node) {
          if (node.parentNode) this.unlinkNode(node);
          node.parentNode = parent;
-         parent.node.push(node);
+         parent.nodes.push(node);
       }
       createEmptyNode(parent) {
          return this.createRuleNode({
             type: 'Rule.Empty', ruleType: { type: 'Type.RuleType' }
-         });
+         }, parent);
       }
       createContainerNode(type, parent) {
          if (parent) throw 'Container nodes cannot be nested';
-         const node = HFilters.Node.create('Logic.Container');
+         const node = HFilters.Node.create({ type: 'Logic.Container' });
          node.registry.listen('addwrapclick', this.addWrapperRule, this);
          return node;
       }
       createLogicNode(type, parent) {
-         const node = HFilters.Node.create(type);
+         const node = HFilters.Node.create({ type: type });
          node.parentNode = parent;
-         if (!node.type.matches(/^Logic/))
+         if (!node.type.match(/^Logic/))
             throw "#{type} is not a logic node type".interpolate({ type: type});
          node.registry.listen('addclick', this.addLogicRule, this);
          return node;
       }
       createRuleNode(args, parent) {
          if (!args.type) throw 'Cannot create a node without a type';
-         const node = HFilters.Node.create(type);
+         const node = HFilters.Node.create(args);
          node.parentNode = parent;
-         node.registry.listen('editorSave', this.nodeSave, this);
+         node.registry.listen('editorsave', this.nodeSave, this);
          node.registry.listen('nodeclick', this.nodeClick, this);
          node.registry.listen('addruleclick', this.addRule, this);
          node.registry.listen('removeruleclick', this.removeRule, this);
@@ -104,12 +105,12 @@ HFilters.NodeTree = (function() {
       }
       nodeClick(node) {
          if (this.selectedNode == node) {
-            this.selectRule(null);
-            this.registry.fire('ruleunselect', [node]);
+            this.selectRule();
+            this.registry.fire('ruleunselect', node);
          }
          else {
             this.selectRule(node);
-            this.registry.fire('ruleselect', [node]);
+            this.registry.fire('ruleselect', node);
          }
       }
       nodeOffset(node) {
@@ -132,8 +133,9 @@ HFilters.NodeTree = (function() {
                   node = this.createContainerNode(data.type, parent);
                }
                else { node = this.createLogicNode(data.type, parent) }
-               if (data.nodes)
+               if (data.nodes) {
                   node.nodes = this.parseNodeData(data.nodes, node);
+               }
             }
             else { node = this.createRuleNode(data, parent) }
             nodes.push(node);
@@ -141,7 +143,7 @@ HFilters.NodeTree = (function() {
          return nodes;
       }
       removeNode(node) {
-         const parent = node.parentNode;
+         let parent = node.parentNode;
          const offset = this.nodeOffset(node);
          this.unlinkNode(node);
          if (parent.nodes.length == 1 && parent.type != 'Logic.Container') {
@@ -157,7 +159,7 @@ HFilters.NodeTree = (function() {
       removeRule(node) {
          const parent = node.parentNode;
          this.unselectRule();
-         this.registry.fire('ruleunselect', [node]);
+         this.registry.fire('ruleunselect', node);
          if (parent.type == 'Logic.Container') {
             const newNode = this.createRuleNode({ type: 'Rule.Empty' }, parent);
             this.appendNode(parent, newNode);
@@ -182,11 +184,11 @@ HFilters.NodeTree = (function() {
       selectRule(node) {
          if (this.selectedNode && this.selectedNode.unselect)
             this.selectedNode.unselect();
-         if (!node) this.selectedNode = null;
-         else {
+         if (node) {
             this.selectedNode = node;
             if (node.select) node.select();
          }
+         else this.selectedNode = null;
       }
       unlinkNode(node) {
          const offset = this.nodeOffset(node);

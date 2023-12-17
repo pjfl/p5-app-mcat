@@ -13,12 +13,13 @@ $class->add_columns(
       data_type         => 'integer',
       is_auto_increment => TRUE,
       is_nullable       => FALSE,
-      label             => 'Table ID'
+      label             => 'Table ID',
    },
    name => {
       data_type   => 'text',
       is_nullable => FALSE,
-      label       => 'Table Name' },
+      label       => 'Table Name',
+   },
    relation => { # artists cds tracks
       data_type   => 'text',
       is_nullable => FALSE,

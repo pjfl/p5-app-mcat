@@ -3,7 +3,8 @@ package MCat::Schema::Result::Cd;
 use HTML::Forms::Constants qw( FALSE TRUE );
 use DBIx::Class::Moo::ResultClass;
 
-my $class = __PACKAGE__;
+my $class  = __PACKAGE__;
+my $result = 'MCat::Schema::Result';
 
 $class->load_components('InflateColumn::DateTime');
 $class->table('cd');
@@ -29,15 +30,19 @@ $class->set_primary_key('cdid');
 $class->add_unique_constraint('cd_title_artistid', ['title', 'artistid']);
 
 $class->belongs_to(
-  artist => 'MCat::Schema::Result::Artist',
+  artist => "${result}::Artist",
   { artistid => 'artistid' },
   { is_deferrable => FALSE, on_delete => 'CASCADE', on_update => 'CASCADE' },
 );
 
 $class->has_many(
-  tracks => 'MCat::Schema::Result::Track',
+  tracks => "${result}::Track",
   { 'foreign.cdid' => 'self.cdid' },
   { cascade_copy => FALSE, cascade_delete => FALSE },
+);
+
+$class->has_many(
+   'lists' => "${result}::ListCd", { 'foreign.cdid' => 'self.cdid' }
 );
 
 1;

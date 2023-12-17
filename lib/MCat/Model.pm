@@ -1,9 +1,9 @@
 package MCat::Model;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTTP::Status           qw( HTTP_OK );
 use HTML::Forms::Types     qw( HashRef LoadableClass );
 use HTML::Forms::Util      qw( verify_token );
-use HTTP::Status           qw( HTTP_OK );
 use MCat::Util             qw( formpost redirect2referer );
 use Ref::Util              qw( is_arrayref );
 use Scalar::Util           qw( blessed weaken );
@@ -78,26 +78,21 @@ sub allowed { # Allows all. Apply a role to modify this for permissions
    return $method;
 }
 
-sub error { # Stash exception handler output to print an exception page
-   my ($self, $context, $class, $bindv, @args) = @_;
+# Stash exception handler output to print an exception page
+# Also called by component loader if model dies
+sub error {
+   my ($self, $context, $proto, $bindv, @args) = @_;
 
    my $exception;
 
-   if (!blessed $class) {
+   if (blessed $proto) { $exception = $proto }
+   else {
       my $nav = $context->stash('nav');
 
       push @args, 'rv', HTTP_OK if $nav && $nav->is_script_request;
 
-      $exception = exception $class, $bindv // [], level => 2, @args;
+      $exception = exception $proto, $bindv // [], level => 2, @args;
    }
-   else { $exception = $class }
-
-   $self->exception_handler($context, $exception);
-   return;
-}
-
-sub exception_handler { # Also called by component loader if model dies
-   my ($self, $context, $exception) = @_;
 
    $self->log->error($exception, $context);
 
@@ -162,18 +157,6 @@ sub get_context { # Creates and returns a new context object from the request
    );
 }
 
-sub has_valid_token { # Stash an exception if the CSRF token is bad
-   my ($self, $context) = @_;
-
-   my $token  = $context->get_body_parameters->{_verify};
-   my $reason = verify_token $token, $context->session->serialise;
-
-   return TRUE unless $reason;
-
-   $self->error($context, BadToken, [$reason], level => 3);
-   return FALSE;
-}
-
 sub root : Auth('none') {
    my ($self, $context) = @_;
 
@@ -197,6 +180,18 @@ sub root : Auth('none') {
 
    $context->stash(nav => $nav);
    return;
+}
+
+sub verify_form_post { # Stash an exception if the CSRF token is bad
+   my ($self, $context) = @_;
+
+   my $token  = $context->get_body_parameters->{_verify};
+   my $reason = verify_token $token, $context->session->serialise;
+
+   return TRUE unless $reason;
+
+   $self->error($context, BadToken, [$reason], level => 3);
+   return FALSE;
 }
 
 # Private methods
