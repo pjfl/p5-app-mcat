@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Filter editor round tripping
           - Started to add filter styling
           - Adds Filters
           - Adds List and ListTrack results

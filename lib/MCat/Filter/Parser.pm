@@ -4,7 +4,8 @@ use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE TRUE );
 use HTML::Forms::Types         qw( HashRef );
 use File::DataClass::Functions qw( ensure_class_loaded );
 use JSON::MaybeXS              qw( decode_json );
-use Ref::Util                  qw( is_hashref is_scalarref );
+use Ref::Util                  qw( is_plain_hashref is_scalarref );
+use Scalar::Util               qw( blessed );
 use Unexpected::Functions      qw( throw Unspecified );
 use MCat::Filter;
 use Try::Tiny;
@@ -15,7 +16,7 @@ has 'config' => is => 'ro', isa => HashRef, default => sub { {} };
 sub parse {
    my ($self, $json) = @_;
 
-   throw Unspecified, ['json'] unless defined $json && is_scalarref $json;
+   throw Unspecified, ['json'] unless defined $json;
 
    my $data;
 
@@ -27,8 +28,7 @@ sub parse {
 
    $filter->add_node($node);
 
-   throw 'Filter [_1] contains empty nodes', [$filter]
-      if $filter->contains_empty_nodes;
+   throw 'JSON contains empty nodes', if $filter->contains_empty_nodes;
 
    return $filter;
 }
@@ -37,7 +37,7 @@ sub parse {
 sub _build_node {
    my ($self, $data) = @_;
 
-   throw 'Hash reference required' unless is_hashref $data;
+   throw 'Hash reference required' unless is_plain_hashref $data;
 
    my $type = delete $data->{type} or throw 'Type attribute missing';
 
@@ -51,14 +51,15 @@ sub _build_node {
    ensure_class_loaded $class;
 
    for my $key (keys %{$data}) {
-      my $value = $data->{$key} or next;
+      my $value = $data->{$key};
+      next unless defined $value;
+      my $value_class = blessed $value;
 
-      if (is_hashref $value) { $data->{$key} = $self->_build_node($value) }
-      elsif ($value eq 'true') {
-         $data->{$key} = TRUE unless $type eq 'Type::String';
+      if ($value_class && $value_class eq 'JSON::PP::Boolean') {
+         $data->{$key} = "${value}";
       }
-      elsif ($value eq 'false') {
-         $data->{$key} = FALSE unless $type eq 'Type::String';
+      elsif (is_plain_hashref $value) {
+         $data->{$key} = $self->_build_node($value);
       }
    }
 

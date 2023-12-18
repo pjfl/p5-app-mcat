@@ -19,14 +19,20 @@ HFilters.Editor = (function() {
             this.error = `Element ${fieldName} not found`;
             return;
          }
+         const formName = config['form-name'] || 'filter_editor';
+         const form = document.getElementById(formName);
+         if (!form) console.warn(`Form ${formName} not found`);
+         else form.addEventListener('submit', this.submitHandler.bind(this));
          this.originalValue = this.field.value;
-         try { this.tree = HFilters.NodeTree.create(this.originalValue) }
+         try {
+            this.tree = HFilters.NodeTree.create(this.originalValue, config);
+         }
          catch (e) { throw `NodeTree.create: ${e}` }
          const treeReg = this.tree.registry;
          treeReg.listen('ruleremove', this.testDataChange.bind(this));
          treeReg.listen('ruleselect', this.ruleSelect.bind(this));
          treeReg.listen('ruleunselect', this.ruleUnselect.bind(this));
-         try { this.ruleEditor = new RuleEditor() }
+         try { this.ruleEditor = new RuleEditor(config) }
          catch (e) { throw `RuleEditor.new: ${e}` }
          const editorReg = this.ruleEditor.registry;
          editorReg.listen('close', this.tree.selectRule, this.tree);
@@ -41,24 +47,6 @@ HFilters.Editor = (function() {
             left: [parseInt(this.tree.el.style.left || 0), nodePos.x],
             top:  [parseInt(this.tree.el.style.top  || 0), nodePos.y]
          });
-      }
-      createAPIURL(type, name, query) {
-         const path = this.config['filter-api'] || 'filter/*/*';
-         const url = path.replace(/\*/, type).replace(/\*/, name);
-         const args = { requestBase: this.config['request-base'] };
-         return this.createURL(url, query, args);
-      }
-      createURL(url, query = {}, args = {}) {
-         const q = this.createQueryString(
-            Object.entries(query).reduce((acc, [key, val]) => {
-               if (key && (val && val !== '')) acc[key] = val;
-               return acc;
-            }, {})
-         );
-         if (q.length) url += `?${q}`;
-         let base = args.requestBase;
-         if (!base) base = 'http://localhost:5000/mcat/';
-         return base.replace(/\/+$/, '/') + url.replace(/^\//, '');
       }
       drag(event) {
          event.preventDefault();
@@ -235,7 +223,8 @@ HFilters.Editor = (function() {
    Object.assign(Editor.prototype, HFilters.Util.Markup);
    Object.assign(Editor.prototype, HFilters.Util.String);
    class RuleEditor {
-      constructor() {
+      constructor(config) {
+         this.config = config;
          this.registry = new Registrar(['close']);
          this.padding = 2;
       }
@@ -536,6 +525,7 @@ HFilters.Editor = (function() {
          if (!el) return;
          this.editor = new Editor(el, JSON.parse(el.dataset[dsName]));
          this.editor.render();
+         return this.editor;
       }
       onReady(callback) {
          if (document.readyState != 'loading') callback();

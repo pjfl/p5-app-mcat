@@ -101,7 +101,7 @@ sub _inflate_columns {
    if ($columns->{filter_json}) {
       my $filter = $self->parse($columns->{filter_json});
 
-      $columns->{filter_search} = $filter->search;
+      $columns->{filter_search} = $filter->to_where;
    }
    else {
       $columns->{filter_json} = NUL;

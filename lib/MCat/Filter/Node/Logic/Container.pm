@@ -4,7 +4,11 @@ use Moo;
 
 extends 'MCat::Filter::Node::Logic';
 
-sub search { ... }
+sub to_where {
+   my ($self, $args) = @_;
+
+   return { map { $_->to_where($args) } @{$self->nodes} };
+}
 
 use namespace::autoclean;
 

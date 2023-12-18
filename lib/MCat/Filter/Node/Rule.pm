@@ -1,33 +1,35 @@
 package MCat::Filter::Node::Rule;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use HTML::Forms::Types     qw( Bool );
+use MCat::Filter::Types    qw( FilterNegate );
 use Unexpected::Functions  qw( throw );
 use Moo;
 
 extends 'MCat::Filter::Node';
 
-has 'negate' => is => 'ro', isa => Bool, predicate => 'has_negate';
+has 'negate' =>
+   is        => 'ro',
+   isa       => FilterNegate,
+   handles   => { is_negated => 'negate' },
+   predicate => 'has_negate';
 
-sub search {
+sub to_where {
    my ($self, $args) = @_;
 
-   my $search = $self->_search($args);
+   my $result = $self->_to_where($args);
 
-   return $search unless $self->has_negate && $self->negate;
+   return $result unless $self->has_negate && $self->is_negated;
 
-   for my $field (keys %{$search}) {
-      for my $operator (keys %{$search->{$field}}) {
+   for my $field (keys %{$result}) {
+      for my $operator (keys %{$result->{$field}}) {
          my $negated = $self->_negate($operator);
 
-         $search->{$field}->{$negated} = delete $search->{$field}->{$operator};
+         $result->{$field}->{$negated} = delete $result->{$field}->{$operator};
       }
    }
 
-   return $search;
+   return $result;
 }
-
-sub value {}
 
 # Private methods
 my $dispatch = {
@@ -45,7 +47,7 @@ sub _negate {
    return $dispatch->{$operator};
 }
 
-sub _search {}
+sub _to_where { ... }
 
 use namespace::autoclean;
 

@@ -2,6 +2,29 @@
 if (!window.HFilters) window.HFilters = {};
 HFilters.Util = (function() {
    const esc = encodeURIComponent;
+   const _createQueryString = function(obj, traditional = true) {
+      if (!obj) return '';
+      return Object.entries(obj)
+         .filter(([key, val]) => val)
+         .reduce((acc, [k, v]) => {
+            if (traditional && Array.isArray(v))
+               return acc.concat(v.map(i => `${esc(k)}=${esc(i)}`));
+            return acc.concat(`${esc(k)}=${esc(v)}`);
+         }, []).join('&');
+   };
+   const _createURL = function(url, args, query = {}, options = {}) {
+      for (const arg of args) url = url.replace(/\*/, arg);
+      const q = _createQueryString(
+         Object.entries(query).reduce((acc, [key, val]) => {
+            if (key && (val && val !== '')) acc[key] = val;
+            return acc;
+         }, {})
+      );
+      if (q.length) url += `?${q}`;
+      const base = options.requestBase;
+      if (!base) return url.replace(/^\//, '');
+      return base.replace(/\/+$/, '') + '/' + url.replace(/^\//, '');
+   };
    const _events = [
       'onchange', 'onclick', 'ondragenter', 'ondragleave', 'ondragover',
       'ondragstart', 'ondrop', 'onkeypress', 'onmouseenter', 'onmouseleave',
@@ -16,7 +39,7 @@ HFilters.Util = (function() {
       if (type == 'object' && Array.isArray(x)) return 'array';
       return type;
    };
-   const ucfirst = function(s) {
+   const _ucfirst = function(s) {
       return s && s[0].toUpperCase() + s.slice(1) || '';
    };
    class Bitch {
@@ -296,18 +319,8 @@ HFilters.Util = (function() {
       String: {
          capitalise: function(s) {
             const words = [];
-            for (const word of s.split(' ')) words.push(ucfirst(word));
+            for (const word of s.split(' ')) words.push(_ucfirst(word));
             return words.join(' ');
-         },
-         createQueryString: function(obj, traditional = true) {
-            if (!obj) return '';
-            return Object.entries(obj)
-               .filter(([key, val]) => val)
-               .reduce((acc, [k, v]) => {
-                  if (traditional && Array.isArray(v))
-                     return acc.concat(v.map(i => `${esc(k)}=${esc(i)}`));
-                  return acc.concat(`${esc(k)}=${esc(v)}`);
-               }, []).join('&');
          },
          guid: function() {
             // https://jsfiddle.net/briguy37/2MVFd/
@@ -325,7 +338,10 @@ HFilters.Util = (function() {
             if (size < 1) return string;
             return pad.repeat(size) + string;
          },
-         ucfirst: ucfirst
+         ucfirst: _ucfirst
+      },
+      URL: {
+         createURL: _createURL
       }
    };
 })();

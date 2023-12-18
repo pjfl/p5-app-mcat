@@ -2,6 +2,7 @@ package MCat::Form::Login;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
 use MCat::Util             qw( redirect );
+use Scalar::Util           qw( blessed );
 use Unexpected::Functions  qw( catch_class );
 use Try::Tiny;
 use Moo;
@@ -133,7 +134,7 @@ sub validate {
       'Authentication' => sub { $passwd->add_error($_->original) },
       'Unspecified' => sub { $code->add_error($_->original) },
       '*' => sub {
-         $self->add_form_error(["${_}"]);
+         $self->add_form_error(blessed $_ ? $_->original : "${_}");
          $self->log->alert($_, $self->context) if $self->has_log;
       }
    ];

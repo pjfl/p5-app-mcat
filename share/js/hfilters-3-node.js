@@ -4,7 +4,8 @@ HFilters.Node = (function() {
    const classes = [];
    classes.push('Node');
    class Node {
-      constructor() {
+      constructor(data) {
+         this.config = data.config;
          this.instance = true;
       }
       nukeNode(properties) {
@@ -19,8 +20,8 @@ HFilters.Node = (function() {
    Object.assign(Node.prototype, HFilters.Util.Markup);
    classes.push('Logic');
    class Logic extends Node {
-      constructor() {
-         super();
+      constructor(data) {
+         super(data);
          this.nodes = [];
          this.registry = HFilters.Editor.createRegistrar(
             ['addclick', 'addwrapclick']
@@ -49,8 +50,8 @@ HFilters.Node = (function() {
    }
    classes.push('LogicAnd');
    class LogicAnd extends Logic {
-      constructor() {
-         super();
+      constructor(data) {
+         super(data);
          this.type = 'Logic.And';
       }
       render() {
@@ -82,8 +83,8 @@ HFilters.Node = (function() {
    }
    classes.push('LogicContainer');
    class LogicContainer extends Logic {
-      constructor() {
-         super();
+      constructor(data) {
+         super(data);
          this.type = 'Logic.Container';
       }
       appendChildNode(node) {
@@ -122,8 +123,8 @@ HFilters.Node = (function() {
    }
    classes.push('LogicOr');
    class LogicOr extends Logic {
-      constructor() {
-         super();
+      constructor(data) {
+         super(data);
          this.type = 'Logic.Or';
       }
       render() {
@@ -197,12 +198,12 @@ HFilters.Node = (function() {
                const fieldObject = this.fields[name];
                const type = 'Type.' + fieldObject.type;
                const args = data[name] || {};
+               args.config = this.config;
                args.group = fieldObject.group;
                args.hidden = fieldObject.hidden;
                args.inputType = fieldObject.inputType;
                args.label = fieldObject.label;
                args.matchRadio = fieldObject.matchRadio;
-               args.name = name;
                args.node = this;
                this.data[name] = HFilters.Type.create(type, args);
             }
@@ -569,9 +570,10 @@ HFilters.Node = (function() {
          delete args.type;
          return eval('new ' + type.replace(/\./g, '') + '(args)');
       },
-      subclasses: function(baseClass) {
+      subclasses: function(baseClass, all = false) {
          const subclasses = [];
-         const re = new RegExp('^' + baseClass + '[A-Z][a-z]+$');
+         const end = all ? '' : '$';
+         const re = new RegExp('^' + baseClass + '[A-Z][a-z]+' + end);
          for (const className of classes) {
             if (className.match(re)) {
                subclasses.push(eval('new ' + className + '({})'));

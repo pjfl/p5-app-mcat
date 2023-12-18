@@ -17,7 +17,7 @@ sub name {
 
    $schema = $self->schema if $self->has_schema;
 
-   return sprintf '"%s"."%s"', $schema, $self->name;
+   return sprintf '"%s"."%s"', $schema, $self->_name;
 }
 
 use namespace::autoclean;

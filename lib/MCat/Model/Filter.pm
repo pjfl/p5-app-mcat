@@ -1,6 +1,6 @@
 package MCat::Model::Filter;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Type::Utils            qw( class_type );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownFilter UnknownTable Unspecified );
@@ -40,7 +40,7 @@ sub create : Nav('Create Filter') {
    if ($form->process( posted => $context->posted )) {
       my $filterid    = $form->item->id;
       my $filter_view = $context->uri_for_action('filter/view', [$filterid]);
-      my $message   = ['Filter [_1] created', $form->item->name];
+      my $message     = ['Filter [_1] created', $form->item->name];
 
       $context->stash( redirect $filter_view, $message );
    }
@@ -79,7 +79,7 @@ sub edit : Nav('Edit Filter') {
 
    if ($form->process( posted => $context->posted )) {
       my $filter_view = $context->uri_for_action('filter/view', [$filterid]);
-      my $message   = ['Filter [_1] updated', $form->item->name];
+      my $message     = ['Filter [_1] updated', $form->item->name];
 
       $context->stash( redirect $filter_view, $message );
    }
@@ -91,10 +91,28 @@ sub edit : Nav('Edit Filter') {
 sub editor {
    my ($self, $context) = @_;
 
-   my $tableid = $context->stash('filter')->table_id;
-   my $config  = encode_json({ 'table-id' => $tableid });
+   my $filter = $context->stash('filter');
+   my $config = encode_json({
+      'request-base' => $context->request->uri_for(NUL)->as_string,
+      'selector-uri' => 'filter/*/*',
+      'table-id'     => $filter->table_id
+   });
 
-   $context->stash( filter_config => "'${config}'");
+   $context->stash(
+      filter_config => "'${config}'", tableid => $filter->table_id
+   );
+
+   my $options = { context => $context, item => $filter };
+   my $form    = $self->new_form('Filter::Editor', $options);
+
+   if ($form->process( posted => $context->posted )) {
+      my $filter_view = $context->uri_for_action('filter/view', [$filter->id]);
+      my $message     = ['Filter [_1] updated', $form->item->name];
+
+      $context->stash( redirect $filter_view, $message );
+   }
+
+   $context->stash( form => $form );
    return;
 }
 

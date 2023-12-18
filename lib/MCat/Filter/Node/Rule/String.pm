@@ -20,18 +20,18 @@ has '_operator' => is => 'ro', isa => Str, required => TRUE;
 has '_template' =>
    is      => 'ro',
    isa     => Str,
-   default => 'coalesce(lower(%s), "")';
+   default => '\coalesce(lower(%s), "")';
 
 sub value {
    return lc shift->string->value;
 }
 
-sub _search {
+sub _to_where {
    my ($self, $args) = @_;
 
-   my $sql = sprintf $self->_template, $self->field->name($args);
+   my $lhs = sprintf $self->_template, $self->field->name($args);
 
-   return { \$sql => { $self->_operator => $self->value } };
+   return { $lhs => { $self->_operator => $self->value } };
 }
 
 use namespace::autoclean;

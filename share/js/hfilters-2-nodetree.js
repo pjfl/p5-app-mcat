@@ -2,7 +2,8 @@
 // Package HFilters.NodeTree
 HFilters.NodeTree = (function() {
    class NodeTree {
-      constructor(data) {
+      constructor(data, config) {
+         this.config = config;
          this.instance = true;
          this.registry = HFilters.Editor.createRegistrar(
             ['ruleselect', 'ruleunselect', 'ruleremove']
@@ -64,20 +65,22 @@ HFilters.NodeTree = (function() {
       }
       createContainerNode(type, parent) {
          if (parent) throw 'Container nodes cannot be nested';
-         const node = HFilters.Node.create({ type: 'Logic.Container' });
+         const args = { config: this.config, type: 'Logic.Container' };
+         const node = HFilters.Node.create(args);
          node.registry.listen('addwrapclick', this.addWrapperRule, this);
          return node;
       }
       createLogicNode(type, parent) {
-         const node = HFilters.Node.create({ type: type });
+         const node = HFilters.Node.create({ config: this.config, type: type });
          node.parentNode = parent;
          if (!node.type.match(/^Logic/))
-            throw "#{type} is not a logic node type".interpolate({ type: type});
+            throw `${type} is not a logic node type`;
          node.registry.listen('addclick', this.addLogicRule, this);
          return node;
       }
       createRuleNode(args, parent) {
          if (!args.type) throw 'Cannot create a node without a type';
+         args.config = this.config;
          const node = HFilters.Node.create(args);
          node.parentNode = parent;
          node.registry.listen('editorsave', this.nodeSave, this);
@@ -213,6 +216,6 @@ HFilters.NodeTree = (function() {
    }
    Object.assign(NodeTree.prototype, HFilters.Util.Markup);
    return {
-      create: function(data) { return new NodeTree(data) }
+      create: function(data, config) { return new NodeTree(data, config) }
    };
 })();

@@ -366,7 +366,7 @@ header {
     width: #sizes[sidebar-text];
 }
 .filter-container {
-    align-items: center; display: flex; justify-content: center;
+    align-items: flex-start; display: flex; justify-content: center;
     position: relative;
     h3, label, table, td, th, tbody, tr {
         border: 0; font-family: inherit; font-size: 100%; font-style: inherit;
@@ -379,7 +379,7 @@ header {
         border-collapse: separate; border-spacing: 0; width: 100%;
     }
     table, td, th {
-        vertical-align: top;
+        vertical-align: middle;
     }
     td, th {
         font-weight: normal; padding: 4px 10px 4px 5px; text-align: left;
@@ -414,6 +414,20 @@ header {
         background: #colours[filter-editor-background];
         border: 1px solid #colours[shadow]; border-radius: 5px;
     }
+    node-logic-container-add-and {
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #colours[shadow];
+        bottom: -12px; cursor: pointer; left: 50%;
+        margin-left: -9px; position: absolute;
+    }
+    .node-logic-container-add-or {
+        border-bottom: 10px solid transparent;
+        border-left: 10px solid #colours[shadow];
+        border-top: 10px solid transparent;
+        cursor: pointer; margin-right: -12px; margin-top: -10px;
+        position: absolute; right: 0; top: 50%;
+    }
     .node-logic-and-cell, .node-logic-or-cell {
         padding: 0.5rem;
     }
@@ -421,6 +435,7 @@ header {
         border-collapse: collapse;
     }
     .node-logic-or-row-bottom th, .node-logic-or-row-top th {
+        background: #colours[shadow]; font-size: 1px; height: 1px;
         padding: 0;
     }
     .node-logic-or-row-bottom th {
@@ -475,7 +490,7 @@ header {
             .type-name, .type-numeric, .type-operation, .type-string {
                 padding: 0 0.25rem; white-space: nowrap;
             }
-            .node-rule-status, .node-rule-title, .type-name {
+            .node-rule-status, .node-rule-title, .type-name, .type-operation {
                 font-family: #fonts[system];
             }
             .node-rule-status {
