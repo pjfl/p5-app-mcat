@@ -12,7 +12,6 @@ HFilters.Editor = (function() {
          this.startHighlightDelay = config['start-highlight-delay'] || 100;
          this.instance = true;
          this.editorDisplay = this.h.div({ className: 'filter-editor' });
-         this.container.appendChild(this.editorDisplay);
          const fieldName = config['field-name'] || 'filter_json';
          this.field = document.getElementById(fieldName);
          if (!this.field) {
@@ -78,8 +77,7 @@ HFilters.Editor = (function() {
          const nodeSize = this.h.getDimensions(node.el);
          const x = -nodeOffset.left
                + (editorSize.width / 2)
-               - (nodeSize.width / 2)
-               - (this.ruleEditorWidth / 2);
+               - (nodeSize.width / 2);
          const y = -nodeOffset.top
                + (editorSize.height / 2)
                - (nodeSize.height / 2);
@@ -144,6 +142,7 @@ HFilters.Editor = (function() {
             duration: 300, transition: FxTransitions.cubicInOut
          });
          this.container.appendChild(this.ruleEditor.render());
+         this.container.appendChild(this.editorDisplay);
          setTimeout(function() {
             const node = this.tree.getFirstRule();
             this.tree.selectRule(node);
@@ -210,9 +209,11 @@ HFilters.Editor = (function() {
          this.field.value = JSON.stringify(this.tree.forJSON());
       }
       testDataChange() {
-         const newSha = this._hashit(JSON.stringify(this.tree.forJSON()));
+         const newValue = JSON.stringify(this.tree.forJSON());
+         const newSha = this._hashit(newValue);
          const oldSha = this._hashit(this.originalValue);
-         this.setOnBeforeUnload(newSha === oldSha);
+         this.setOnBeforeUnload(newSha == oldSha);
+         if (newSha != oldSha) this.field.value = newValue;
       }
       _hashit(string) {
          return Array.from(string).reduce(
