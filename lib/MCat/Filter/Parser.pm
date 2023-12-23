@@ -1,12 +1,12 @@
 package MCat::Filter::Parser;
 
-use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE TRUE );
-use HTML::Forms::Types         qw( HashRef );
-use File::DataClass::Functions qw( ensure_class_loaded );
-use JSON::MaybeXS              qw( decode_json );
-use Ref::Util                  qw( is_plain_hashref is_scalarref );
-use Scalar::Util               qw( blessed );
-use Unexpected::Functions      qw( throw Unspecified );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use HTML::Forms::Types     qw( HashRef );
+use Class::Usul::Cmd::Util qw( ensure_class_loaded );
+use JSON::MaybeXS          qw( decode_json );
+use Ref::Util              qw( is_plain_hashref is_scalarref );
+use Scalar::Util           qw( blessed );
+use Unexpected::Functions  qw( throw Unspecified );
 use MCat::Filter;
 use Try::Tiny;
 use Moo;
@@ -16,7 +16,7 @@ has 'config' => is => 'ro', isa => HashRef, default => sub { {} };
 sub parse {
    my ($self, $json) = @_;
 
-   throw Unspecified, ['json'] unless defined $json;
+   throw Unspecified, ['json'] unless defined $json and length $json;
 
    my $data;
 
@@ -28,7 +28,7 @@ sub parse {
 
    $filter->add_node($node);
 
-   throw 'JSON contains empty nodes', if $filter->contains_empty_nodes;
+   throw 'JSON contains empty nodes' if $filter->contains_empty_nodes;
 
    return $filter;
 }

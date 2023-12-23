@@ -6,13 +6,9 @@ use Moo;
 
 extends 'MCat::Filter::Node';
 
-has 'string' => is => 'ro', isa => Str, required => TRUE;
-
 has 'time_zone' => is => 'ro', predicate => 'has_time_zone';
 
-sub value {
-   return shift->string;
-}
+sub value { ... }
 
 use namespace::autoclean;
 

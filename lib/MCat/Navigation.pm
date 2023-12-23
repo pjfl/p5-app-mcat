@@ -19,11 +19,11 @@ use Moo;
 
 has 'confirm_message' => is => 'ro', isa => Str, default => 'Are you sure ?';
 
-has 'container_name' => is => 'ro', isa => Str, default => 'standard-content';
+has 'container_name' => is => 'ro', isa => Str, default => 'standard';
 
 has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 
-has 'content_name' => is => 'ro', isa => Str, default => 'panel-content';
+has 'content_name' => is => 'ro', isa => Str, default => 'panel';
 
 has 'context' => is => 'ro', isa => class_type('MCat::Context'),
    required => TRUE, weak_ref => TRUE;
@@ -275,6 +275,7 @@ sub menu {
    my $lists = $self->_lists;
 
    push @{$lists->{$self->_name}->[1]}, $name if exists $lists->{$name};
+
    return $self;
 }
 

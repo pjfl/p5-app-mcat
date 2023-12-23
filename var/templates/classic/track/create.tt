@@ -1,2 +1,4 @@
+<div>
 [% subheader('CD', cd.title) %]
 [% form.render %]
+</div>

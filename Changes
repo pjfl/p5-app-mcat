@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Filter creates SQL and bind values
           - Filter editor lines displaying
           - Filter editor round tripping
           - Started to add filter styling

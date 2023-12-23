@@ -221,6 +221,9 @@ HFilters.Node = (function() {
          }
          return json;
       }
+      isEmpty() {
+         return false;
+      }
       isValid() {
          this.warning = 'Invalid rule';
          for (const name in this.fields) {
@@ -243,7 +246,10 @@ HFilters.Node = (function() {
          }, this.inner);
          this.renderRuleManagement();
          this.update();
-         this.wrapper = this.h.div({ className: 'node-rule-wrapper' }, this.el);
+         const classStatus = this.isEmpty() ? ' empty' : '';
+         this.wrapper = this.h.div(
+            { className: 'node-rule-wrapper' + classStatus }, this.el
+         );
          return this.wrapper;
       }
       renderRuleBox(contents = []) {
@@ -309,7 +315,10 @@ HFilters.Node = (function() {
          let error = false;
          for (const name in this.fields) {
             try { this.data[name].update() }
-            catch(e) { error = true }
+            catch(e) {
+               console.warn(`Rule update failed: ${e}`);
+               error = true;
+            }
          }
          return error ? false : true;
       }
@@ -324,6 +333,9 @@ HFilters.Node = (function() {
       }
       editorSave() {
          this.registry.fire('editorsave', this, this.data.ruleType.rule);
+      }
+      isEmpty() {
+         return true;
       }
       forJSON() {
          return { type: this.type };

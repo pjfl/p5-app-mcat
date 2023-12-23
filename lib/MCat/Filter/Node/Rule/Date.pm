@@ -15,27 +15,27 @@ has 'field' => is => 'ro', isa => FilterField, coerce => TRUE, required => TRUE;
 
 has '_operator' => is => 'ro', isa => Str, required => TRUE;
 
-sub _to_where {
+sub _to_abstract {
    my ($self, $args) = @_;
 
-   my $lhs = $self->_field_to_where($args);
+   my $lhs = $self->field->value;
 
-   return { $lhs => { $self->_operator => $self->date->value } };
+   return $lhs => { $self->_operator => $self->_rhs_value($args) };
 }
 
-sub _field_to_where {
+sub _rhs_value {
    my ($self, $args) = @_;
 
-   my $where = $self->field->name;
+   my $value = $self->date->value;
 
-   return sprintf "to_timestamp(%s, 'YYYY-MM-DD HH:MI:SS')", $where
+   return sprintf "\\to_timestamp(%s, 'YYYY-MM-DD HH:MI:SS')", $value
       if $self->date->has_time_zone;
 
    my $format = $args->{date_field_format} || $self->date_field_format;
 
-   return sprintf("to_date(%s, '%s')", $where, $format) if $format;
+   return sprintf "\\to_date(%s, '%s')", $value, $format if $format;
 
-   return $where;
+   return "'" . $value . "'";
 }
 
 use namespace::autoclean;

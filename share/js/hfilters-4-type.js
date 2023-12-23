@@ -45,9 +45,10 @@ HFilters.Type = (function() {
             }
          }
          else {
-            options.push(this.h.option(
-               { selected: false, value: 'Antartica/Troll' }, 'Antartica/Troll'
-            ));
+            options.push(this.h.option({
+               selected: (this.timezone && this.timezone == 'Antartica/Troll'),
+               value: 'Antartica/Troll'
+            }, 'Antartica/Troll'));
          }
          options.unshift(this.h.option({
             selected: (this.timezone == ''), value: ''
@@ -91,6 +92,7 @@ HFilters.Type = (function() {
          const { dateType } = this;
          this.input = this.h.select({
             className: 'type-date-input type-field',
+            id: this.generateId('data-input'),
             onchange: function(event) {
                this.dateType = this.input.value;
                this.updateDisplay();
@@ -101,13 +103,13 @@ HFilters.Type = (function() {
                value: 'Type.Date.NoDate'
             }, '- Choose -'),
             this.h.option({
-               selected: dateType == 'Type.Date.Relative' ? 'selected' : '',
-               value: 'Type.Date.Relative'
-            }, '"Today\'s" Date'),
-            this.h.option({
                selected: dateType == 'Type.Date.Absolute' ? 'selected' : '',
                value: 'Type.Date.Absolute'
-            }, 'Fixed Date')
+            }, 'Fixed Date'),
+            this.h.option({
+               selected: dateType == 'Type.Date.Relative' ? 'selected' : '',
+               value: 'Type.Date.Relative'
+            }, '"Today\'s" Date')
          ]);
          this.dateContainer = this.h.div({ className: 'type-date-container' });
          this.updateDisplay();
@@ -242,33 +244,33 @@ HFilters.Type = (function() {
       }
       update() {
          const date = this.input.value.replace(/[\s\-]+/g, '/');
-         if (!date.match(/^\d{4}\/\d\d\/\d\d$/)) {
-            this.date = new Date('');
-            window.alert('Dates must be in YYYY-MM-DD format');
-            throw 'Bad date format';
-         }
-         else {
+         if (date.match(/^\d{4}\/\d\d\/\d\d$/)) {
             this.date = new Date(date);
             if (this.isTooOld(this.date)) window.alert(
                'Date too old. Outside retention period '
                   + this.getRetentionMessage()
             );
          }
+         else {
+            this.date = new Date('');
+            window.alert('Dates must be in YYYY-MM-DD format');
+            throw 'Bad date format';
+         }
       }
    }
    class TypeDateRelative extends Type {
       constructor(args, label) {
          super(args, label);
-         this.days = args['days'];
+         this.days = args['days'] || 0;
          this.inputs = {};
          this.label = label;
-         this.months = args['months'];
+         this.months = args['months'] || 0;
          this.past = args['past'] == null ? true : !!args['past'];
          this.retentionPeriod = this.config['data-retention'] || 12;
          this.showRetention = this.config['show-retention-notice'];
-         this.timezone = args['timezone'] || '';
+         this.timezone = args['time_zone'] || '';
          this.type = 'Type.Date.Relative';
-         this.years = args['year'];
+         this.years = args['years'] || 0;
       }
       forJSON() {
          return this.toHash();
@@ -338,7 +340,7 @@ HFilters.Type = (function() {
             type: this.type,
             years: this.years || 0
          };
-         if (this.timezone) hash['timezone'] = this.timezone;
+         if (this.timezone) hash['time_zone'] = this.timezone;
          return hash;
       }
       toIntervalArray() {
@@ -358,7 +360,7 @@ HFilters.Type = (function() {
          this.past = !!+this.inputs.past.value;
          this.years = +this.inputs.years.value || 0;
          this.months = +this.inputs.months.value || 0;
-         this.day = +this.input.days.value || 0;
+         this.day = +this.inputs.days.value || 0;
          if (this.past && this.isTooOld()) window.alert(
             'Date too old. Outside retention period '
                + this.getRetentionMessage()
@@ -609,6 +611,7 @@ HFilters.Type = (function() {
          };
          this.ruleTypeSelector = this.h.select({
             className: 'type-ruletype type-ruletype-ruleclass',
+            id: this.generateId('type-ruletype-ruleclass'),
             onchange: function(ev) { this.updateRuleTypeSelector() }.bind(this)
          }, options);
          return this.ruleTypeSelector;
@@ -634,7 +637,8 @@ HFilters.Type = (function() {
             options.push(this.h.option({ value: item.type }, item.label));
          }
          this.ruleSelector = this.h.select({
-            className: 'type-ruletype type-ruletype-rule'
+            className: 'type-ruletype type-ruletype-rule',
+            id: this.generateId('type-ruletype-rule'),
          }, options);
          this.ruleSelectorContainer.appendChild(
             this.createTypeContainer('Rule type', [this.ruleSelector])

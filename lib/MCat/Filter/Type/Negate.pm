@@ -6,6 +6,8 @@ extends 'MCat::Filter::Node';
 
 has 'negate' => is => 'ro';
 
-sub value {}
+sub value {
+   return shift->negate;
+}
 
 1;

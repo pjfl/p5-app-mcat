@@ -6,14 +6,13 @@ extends 'MCat::Filter::Node::Rule::Date';
 
 has '+_operator' => default => '=';
 
-sub _to_where {
+sub _to_abstract {
    my ($self, $args) = @_;
 
-   my $max = my $min = $self->date->value;
-   my $lhs = $self->_field_to_where($args);
+   return $self->next::method($args) unless $self->date->has_time_zone;
 
-   return { $lhs => { $self->_operator => $min } }
-      unless $self->date->has_time_zone;
+   my $max = my $min = $self->date->value;
+   my $lhs = $self->field->value;
 
    if ($self->date->type eq 'Type.Date.Relative') {
       my $next_day = "(current_timestamp + '1days'::interval)";
@@ -21,12 +20,7 @@ sub _to_where {
       $max =~ s{ current_timestamp }{$next_day}mx;
    }
 
-   return {
-      '-and' => [
-         "${lhs}::timestamp" => { '>=' => $min },
-         "${lhs}::timestamp" => { '<' => $max }
-      ]
-   };
+   return '-and' => [ $lhs => { '>=' => $min }, $lhs => { '<' => $max } ];
 }
 
 use namespace::autoclean;

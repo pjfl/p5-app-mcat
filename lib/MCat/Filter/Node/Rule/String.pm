@@ -22,16 +22,21 @@ has '_template' =>
    isa     => Str,
    default => '\coalesce(lower(%s), "")';
 
-sub value {
-   return lc shift->string->value;
-}
-
-sub _to_where {
+sub _to_abstract {
    my ($self, $args) = @_;
 
-   my $lhs = sprintf $self->_template, $self->field->name($args);
+   my ($lhs, $value);
 
-   return { $lhs => { $self->_operator => $self->value } };
+   if ($args->{insensitive}) {
+      $lhs = sprintf $self->_template, $self->field->value($args);
+      $value = lc $self->string->value;
+   }
+   else {
+      $lhs = $self->field->value($args);
+      $value = $self->string->value;
+   }
+
+   return $lhs => { $self->_operator => $value };
 }
 
 use namespace::autoclean;

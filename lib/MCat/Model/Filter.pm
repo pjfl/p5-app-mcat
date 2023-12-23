@@ -2,7 +2,7 @@ package MCat::Model::Filter;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Type::Utils            qw( class_type );
-use MCat::Util             qw( redirect );
+use MCat::Util             qw( formpost redirect );
 use Unexpected::Functions  qw( UnknownFilter UnknownTable Unspecified );
 use JSON::MaybeXS          qw( encode_json );
 use Web::Simple;
@@ -16,7 +16,7 @@ has '+moniker' => default => 'filter';
 sub base {
    my ($self, $context, $filterid) = @_;
 
-   my $nav = $context->stash('nav')->list('filter')->item('filter/create');
+   my $nav = $context->stash('nav');
 
    if ($filterid && $filterid =~ m{ \A \d+ \z }mx) {
       my $filter = $context->model('Filter')->find($filterid);
@@ -24,7 +24,14 @@ sub base {
       return $self->error($context, UnknownFilter, [$filterid]) unless $filter;
 
       $context->stash( filter => $filter );
-      $nav->crud('filter', $filterid);
+      $nav->list('filter_editor')->item('filter/editor', [$filterid]);
+      $nav->list('filter')->item('filter/create');
+      $nav->item(formpost, 'filter/delete', [$filterid]);
+      $nav->item('filter/edit', [$filterid]);
+      $nav->menu('filter_editor')->item('filter/view', [$filterid]);
+   }
+   else {
+      $nav->list('filter')->item('filter/create');
    }
 
    $nav->finalise;
@@ -88,7 +95,7 @@ sub edit : Nav('Edit Filter') {
    return;
 }
 
-sub editor {
+sub editor : Nav('Filter Editor') {
    my ($self, $context) = @_;
 
    my $filter = $context->stash('filter');
@@ -140,10 +147,14 @@ sub selector {
 sub view : Nav('View Filter') {
    my ($self, $context, $filterid) = @_;
 
+   my $filter = $context->stash('filter');
+   my $query  = $filter->to_sql;
+
    $context->stash(table => $self->new_table('Filter::View', {
-      caption => 'Filter View',
-      context => $context,
-      result  => $context->stash('filter')
+      add_columns => [ 'SQL' => $query->[0], 'Bind Values' => $query->[1] ],
+      caption     => 'Filter View',
+      context     => $context,
+      result      => $filter
    }));
    return;
 }

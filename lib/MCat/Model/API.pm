@@ -1,12 +1,12 @@
 package MCat::Model::API;
 
-use File::DataClass::Functions qw( ensure_class_loaded );
-use HTML::Forms::Constants     qw( FALSE EXCEPTION_CLASS TRUE );
-use HTML::Forms::Types         qw( HashRef );
-use MCat::Util                 qw( clear_redirect );
-use Unexpected::Functions      qw( catch_class throw APIMethodFailed
-                                   UnauthorisedAPICall UnknownAPIClass
-                                   UnknownAPIMethod UnknownView );
+use HTML::Forms::Constants qw( FALSE EXCEPTION_CLASS TRUE );
+use HTML::Forms::Types     qw( HashRef );
+use Class::Usul::Cmd::Util qw( ensure_class_loaded );
+use MCat::Util             qw( clear_redirect );
+use Unexpected::Functions  qw( catch_class throw APIMethodFailed
+                               UnauthorisedAPICall UnknownAPIClass
+                               UnknownAPIMethod UnknownView );
 use Try::Tiny;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning

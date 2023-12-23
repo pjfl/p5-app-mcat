@@ -1,2 +1,4 @@
+<div>
 [% subheader('Artist', artist.name) %]
 [% form.render %]
+</div>

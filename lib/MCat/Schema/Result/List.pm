@@ -57,4 +57,17 @@ $class->has_many(
    'tracks' => "${result}::ListTrack", { 'foreign.list_id' => 'self.id' }
 );
 
+sub apply_filter {
+   my ($self, $filter) = @_;
+
+   my $schema   = $self->result_source->schema;
+   my $table_rs = $schema->resultset($self->core_table->name);
+
+   while (my $filtered = $table_rs->search($filter->filter_search)->next) {
+      $filtered->create_related('list', { list_id => $self->id });
+   }
+
+   return;
+}
+
 1;

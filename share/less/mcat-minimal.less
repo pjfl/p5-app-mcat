@@ -1,24 +1,19 @@
 #colours() {
-    body-bg: linear-gradient(to bottom right, rgba(250,240,230,0), rgba(255,228,196,1));
-    corners-left: linear-gradient(to right, transparent, transparent 50%, grey 50.001%, grey);
-    corners-right: linear-gradient(to right, grey, grey 50%, transparent 50.001%, transparent);
     filter-connector: grey;
     filter-editor-bg: linen;
-    lines: linear-gradient(to right, grey 1px, transparent 1px, transparent);
+    filter-rule-editor-bg: ivory;
+    filter-rule-status-bg: lightpink;
+    filter-rule-title-border: orange;
     link: seagreen;
     message-bg: linen;
     message-border: red;
     message-text: black;
     modal-bg: linen;
+    muted: gray;
     navigation-bg: bisque;
     panel-bg: linen;
     panel-shadow: gray;
-    rule-editor-bg: ivory;
-    rule-status-bg: lightpink;
-    rule-title-border: orange;
     selected: orange;
-    shadow: gray;
-    sidebar-bg: linear-gradient(to bottom, rgba(255,228,196,1), rgba(255,228,196,0));
     text: black;
 }
 #fonts() {
@@ -28,11 +23,29 @@
     mono: 'Nimbus Mono PS', 'Courier New', monospace;
     system: Roboto, system-ui, sans-serif;
 }
+#grads() {
+    body-bg: linear-gradient(
+        to bottom right, rgba(250,240,230,0), rgba(255,228,196,1)
+    );
+    filters-edge-left: linear-gradient(
+        to right, transparent, transparent 50%, grey 50.001%, grey
+    );
+    filters-edge-right: linear-gradient(
+        to right, grey, grey 50%, transparent 50.001%, transparent
+    );
+    filter-lines: linear-gradient(
+        to right, grey 1px, transparent 1px, transparent
+    );
+    sidebar-bg: linear-gradient(
+        to bottom, rgba(255,228,196,1), rgba(255,228,196,0)
+    );
+}
 #sizes() {
-    context-anchor: 6rem;
+    context-anchor: 7rem;
     filter-editor-height: 400px;
     filter-editor-width: 800px;
-    filter-rule-max-width: 10rem;
+    filter-editor-max-height: 800px;
+    filter-rule-max-width: 20rem;
     global-anchor: 3rem;
     media-break: 680px;
     message-max-width: 16rem;
@@ -40,11 +53,11 @@
     @sidebar-icon: 4;
     @sidebar-text: 5;
     sidebar-both: unit(@sidebar-both, rem);
-    centred-content-margin-both: unit((@sidebar-both + 0.25), rem);
+    frame-left-both: unit((@sidebar-both + 0.75), rem);
     sidebar-icon: unit(@sidebar-icon, rem);
-    centred-content-margin-icon: unit((@sidebar-icon + 0.25), rem);
+    frame-left-icon: unit((@sidebar-icon + 0.75), rem);
     sidebar-text: unit(@sidebar-text, rem);
-    centred-content-margin-text: unit((@sidebar-text + 0.25), rem);
+    frame-left-text: unit((@sidebar-text + 0.75), rem);
 }
 *, *::before, *::after {
     box-sizing: border-box;
@@ -59,7 +72,7 @@ html.light {
     color-scheme: light;
 }
 body {
-    background-image: #colours[body-bg]; margin: 0; padding: 0 0.5rem;
+    background-image: #grads[body-bg]; margin: 0; padding: 0 0.5rem;
     @media (max-width: #sizes[media-break]) {
         padding: 0;
     }
@@ -67,17 +80,20 @@ body {
 header {
     position: sticky; top: 0; z-index: 3;
 }
-.centred-content {
+.frame {
+    height: 90%; overflow: auto; position: fixed; right: 0.5rem;
+}
+.frame.link-display-both {
+    left: #sizes[frame-left-both];
+}
+.frame.link-display-icon {
+    left: #sizes[frame-left-icon];
+}
+.frame.link-display-text {
+    left: #sizes[frame-left-text];
+}
+.centred {
     display: flex; justify-content: center; line-height: 1.5;
-}
-.centred-content.navigation-sidebar.link-display-both {
-    margin: 0 #sizes[centred-content-margin-both];
-}
-.centred-content.navigation-sidebar.link-display-icon {
-    margin: 0 #sizes[centred-content-margin-icon];
-}
-.centred-content.navigation-sidebar.link-display-text {
-    margin: 0 #sizes[centred-content-margin-text];
 }
 .messages-panel {
     bottom: 1rem; position: absolute; right: 1rem; z-index: 3;
@@ -93,7 +109,7 @@ header {
 .messages-panel.hide {
     display: none;
 }
-.standard-content {
+.standard {
     display: inline-block; padding-top: 0.5rem; text-align: left;
     h1, h2, h3, h4, h5 {
         font-family: #fonts[system]; margin: 1rem 1rem;
@@ -104,7 +120,7 @@ header {
     .inline-panel {
         display: inline-block; vertical-align: top;
     }
-    .panel-content {
+    .panel {
         align-items: flex-start; display: flex; justify-content: center;
     }
 }
@@ -185,7 +201,7 @@ header {
     }
     .nav-list {
         display: inline-block; list-style: none; margin: 0; padding: 0;
-        a, span.drop-menu {
+        a, .drop-menu {
             color: #colours[link]; font-family: #fonts[system];
             img {
                 height: 24px; width: 24px; vertical-align: middle;
@@ -296,7 +312,7 @@ header {
             display: block; margin: 0; padding: 1rem 0;
             a, .drop-menu {
                 display: inline-block; min-width: #sizes[global-anchor];
-                padding: 1rem;
+                padding: 1rem 1.25rem 1rem 1.25rem; position: relative;
             }
             .nav-panel {
                 display: inline-block; left: unset; margin: 0.5rem 0;
@@ -311,14 +327,11 @@ header {
         }
         li.global.selected > span::before,
         li.global.selected > a::before {
-            height: 50%; left: -0.035rem; margin: 25% 0; top: 0; width: 5px;
-        }
-        li.global:first-child > span:before,
-        li.global:first-child > a::before {
-           margin-top: 0.5rem;
+            height: 2rem; left: -0.035rem; position: absolute; top: 0.75rem;
+            width: 5px;
         }
         .slide-out {
-            display: inline-block; left: unset; margin-left: 0.5rem;
+            display: inline-block; left: unset;
             position: absolute; top: -1px; transform: unset;
         }
     }
@@ -356,7 +369,7 @@ header {
     }
 }
 .sidebar::after {
-    background: #colours[sidebar-bg]; content: ' '; display: block;
+    background: #grads[sidebar-bg]; content: ' '; display: block;
     height: 5rem; margin-top: -0.25rem;
 }
 .sidebar.link-display-both::after {
@@ -396,13 +409,15 @@ header {
     .filter-editor {
         -moz-user-select: none;
         background: #colours[filter-editor-bg];
-        border: 1px solid #colours[shadow]; border-radius: 5px;
-        height: #sizes[filter-editor-height]; overflow: hidden;
+        border: 1px solid #colours[muted]; border-radius: 5px;
+        box-shadow: 3px 3px 3px; color: #colours[muted];
+        height: #sizes[filter-editor-height];
+        max-height: #sizes[filter-editor-max-height]; overflow: hidden;
         position: relative; width: #sizes[filter-editor-width];
         .filter-tree {
-            background: #colours[lines]; background-position-x: 100%;
+            background: #grads[filter-lines]; background-position-x: 100%;
             background-repeat: no-repeat; background-size: 50% 100%;
-            padding: 200px 70%; position: absolute;
+            color: #colours[text]; padding: 400px 70%; position: absolute;
         }
     }
     .node-logic-container-container, .node-logic-and-container,
@@ -430,7 +445,7 @@ header {
         padding: 10px;
     }
     .node-logic-container-container, .node-logic-and, .node-logic-or-cell {
-        background: #colours[lines]; background-position-x: 100%;
+        background: #grads[filter-lines]; background-position-x: 100%;
         background-repeat: no-repeat; background-size: 50% 100%;
     }
     .node-logic-or-row-bottom th, .node-logic-or-row-top th {
@@ -447,10 +462,10 @@ header {
         background-repeat: repeat-x;
     }
     th.node-logic-or-edge-left {
-        background: #colours[corners-left];
+        background: #grads[filters-edge-left];
     }
     th.node-logic-or-edge-right {
-        background: #colours[corners-right];
+        background: #grads[filters-edge-right];
     }
     th.node-logic-or-edge-single {
         background-image: none;
@@ -458,40 +473,40 @@ header {
     .node-logic-container-add-and {
         border-left: 10px solid transparent;
         border-right: 10px solid transparent;
-        border-top: 10px solid #colours[shadow];
+        border-top: 10px solid #colours[muted];
         bottom: -12px; cursor: pointer; left: 50%; margin-bottom: 3px;
         margin-left: -10px; position: absolute;
     }
     .node-logic-container-add-or {
         border-bottom: 10px solid transparent;
-        border-left: 10px solid #colours[shadow];
+        border-left: 10px solid #colours[muted];
         border-top: 10px solid transparent;
         cursor: pointer; margin-right: -10px; margin-top: -10px;
         position: absolute; right: 0; top: 50%;
     }
     .node-rule-wrapper {
         background: #colours[filter-editor-bg];
-        border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[shadow];
+        border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[muted];
         margin: 0 auto; max-width: #sizes[filter-rule-max-width];
         position: static;
         .node-rule-box {
-            align-items: flex-start; border: 1px solid #colours[shadow];
+            align-items: flex-start; border: 1px solid #colours[muted];
             border-radius: 5px; color: #colours[text]; cursor: pointer;
             display: flex; font-size: 0.8rem; justify-content: space-between;
             padding: 0 0.25rem 0.25rem 0; position: relative;
             .node-rule-box-inner {
-                padding: 0.25rem 0 0 0.25rem;
+                flex-grow: 2; padding: 0.25rem 0 0 0.25rem;
             }
             .node-rule-add-and {
                 border-left: 10px solid transparent;
                 border-right: 10px solid transparent;
-                border-top: 10px solid #colours[shadow];
+                border-top: 10px solid #colours[muted];
                 bottom: 0; cursor: pointer; left: 50%;
                 margin-bottom: -12px; margin-left: -9px; position: absolute;
             }
             .node-rule-add-or {
                 border-bottom: 10px solid transparent;
-                border-left: 10px solid #colours[shadow];
+                border-left: 10px solid #colours[muted];
                 border-top: 10px solid transparent;
                 cursor: pointer; margin-right: -12px; margin-top: -10px;
                 position: absolute; right: 0; top: 50%;
@@ -508,10 +523,10 @@ header {
                 font-family: #fonts[system];
             }
             .node-rule-status {
-                background: #colours[rule-status-bg];
+                background: #colours[filter-rule-status-bg];
             }
             .node-rule-title {
-                border-bottom: 1px solid #colours[rule-title-border];
+                border-bottom: 1px solid #colours[filter-rule-title-border];
             }
         }
         .node-rule-box.rule-error {
@@ -530,9 +545,12 @@ header {
             }
         }
     }
+    .node-rule-wrapper.empty {
+        max-width: 7rem;
+    }
     .rule-editor {
-        background: #colours[rule-editor-bg];
-        border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[shadow];
+        background: #colours[filter-rule-editor-bg];
+        border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[muted];
         display: inline-block; margin-right: 1rem;
         .node-rule-edit-container {
             color: #colours[text];
@@ -551,7 +569,7 @@ header {
                     }
                 }
                 .type-date-relative input {
-                    width: 20px;
+                    width: 40px;
                 }
             }
         }
@@ -564,11 +582,18 @@ header {
         }
         label {
             font-family: #fonts[system]; font-size: 0.8rem;
-            line-height: 1rem; padding: 0.5rem 0.5rem 0.5rem 0;
-            white-space: nowrap;
+            line-height: 1rem;
+            padding: 0.5rem 0.5rem 0.5rem 0; white-space: nowrap;
         }
         select {
             font-family: #fonts[data];
+        }
+    }
+    .type-container.type-date-relative-days,
+    .type-container.type-date-relative-months,
+    .type-container.type-date-relative-years {
+        label {
+            min-width: 3.5rem;
         }
     }
 }
@@ -580,13 +605,13 @@ header {
     right: 0.25rem;
 }
 .modal-outer-wrapper {
-    align-items: center; background: #colours[body-bg]; bottom: 0;
+    align-items: center; background: #grads[body-bg]; bottom: 0;
     display: flex; justify-content: center; left: 0; position: absolute;
     right: 0; top: 0; z-index: 2;
     .modal {
-        background: #colours[rule-editor-bg];
+        background: #colours[filter-rule-editor-bg];
         border-radius: 5px; box-shadow: 3px 3px 3px;
-        color: #colours[shadow]; padding: 0.5rem;
+        color: #colours[muted]; padding: 0.5rem;
         .modal-content-wrapper, .modal-footer, .modal-header {
             color: #colours[text];
         }

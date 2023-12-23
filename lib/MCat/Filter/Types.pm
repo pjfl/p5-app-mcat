@@ -3,8 +3,8 @@ package MCat::Filter::Types;
 use strictures;
 
 use Type::Library             -base, -declare =>
-                          qw( FilterDate FilterField FilterNumeric FilterString
-                              FilterNegate );
+                          qw( AbsoluteDate FilterDate FilterField
+                              FilterNumeric FilterString FilterNegate );
 use Type::Utils           qw( as class_type coerce declare extends from
                               message subtype via where );
 use Unexpected::Functions qw( inflate_message );
@@ -22,7 +22,7 @@ class_type FilterNumeric, { class => 'MCat::Filter::Type::Numeric' };
 class_type FilterString, { class => 'MCat::Filter::Type::String' };
 
 coerce FilterDate, from Str, via {
-   MCat::Filter::Type::Date->new( name => $_ );
+   MCat::Filter::Type::Date->new( date => $_ );
 };
 
 coerce FilterDate, from HashRef, via {
@@ -52,5 +52,11 @@ coerce FilterString, from Str, via {
 coerce FilterString, from HashRef, via {
    MCat::Filter::Type::String->new( $_ );
 };
+
+subtype AbsoluteDate, as Str,
+   where { $_ =~ m{ \A \d{4} [/-] \d{2} [/-] \d{2} \z }mx },
+   message {
+      inflate_message 'Value [_1] does not match pattern YYYY-MM-DD', $_
+   };
 
 1;

@@ -24,10 +24,10 @@ sub contains_empty_nodes {
    return shift->_contains_node('MCat::Filter::Node::Rule::Empty');
 }
 
-sub to_where {
+sub to_abstract {
    my ($self, $args) = @_;
 
-   return { map { $_->to_where($args) } @{$self->nodes} };
+   return map { $_->to_abstract($args) } @{$self->nodes};
 }
 
 # Private methods

@@ -13,12 +13,12 @@ has 'negate' =>
    handles   => { is_negated => 'negate' },
    predicate => 'has_negate';
 
-sub to_where {
+sub to_abstract {
    my ($self, $args) = @_;
 
-   my $result = $self->_to_where($args);
+   my $result = { $self->_to_abstract($args) };
 
-   return $result unless $self->has_negate && $self->is_negated;
+   return %{$result} unless $self->has_negate && $self->is_negated;
 
    for my $field (keys %{$result}) {
       for my $operator (keys %{$result->{$field}}) {
@@ -28,7 +28,7 @@ sub to_where {
       }
    }
 
-   return $result;
+   return %{$result};
 }
 
 # Private methods
@@ -47,7 +47,7 @@ sub _negate {
    return $dispatch->{$operator};
 }
 
-sub _to_where { ... }
+sub _to_abstract { ... }
 
 use namespace::autoclean;
 

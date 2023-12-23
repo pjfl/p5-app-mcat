@@ -13,12 +13,6 @@ with 'MCat::Role::Schema';
 
 has 'action' => is => 'ro', isa => Str, predicate => 'has_action';
 
-has 'api_routes' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift;
-
-   return exists $self->models->{api} ? $self->models->{api}->routes : {};
-};
-
 has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
@@ -49,6 +43,12 @@ has 'time_zone' => is => 'lazy', isa => Str,
    default => sub { shift->session->timezone };
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
+
+has '_api_routes' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift;
+
+   return exists $self->models->{api} ? $self->models->{api}->routes : {};
+};
 
 has '_stash' => is => 'ro', isa => HashRef, default => sub {
    return { version => MCat->VERSION };
@@ -127,7 +127,7 @@ sub view {
 sub _action_path2uri {
    my ($self, $action) = @_;
 
-   return $self->api_routes->{$action} if exists $self->api_routes->{$action};
+   return $self->_api_routes->{$action} if exists $self->_api_routes->{$action};
 
    for my $controller (keys %{$self->controllers}) {
       my $map = $self->controllers->{$controller}->action_path_map;

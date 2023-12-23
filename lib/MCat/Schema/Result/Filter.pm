@@ -22,16 +22,26 @@ $class->add_columns(
    },
    name          => { data_type => 'text', is_nullable => FALSE },
    description   => { data_type => 'text', is_nullable => TRUE },
-   owner_user_id => { data_type => 'integer', is_nullable => FALSE },
-   table_id      => { data_type => 'integer', is_nullable => FALSE },
-   filter_json   => { data_type => 'text', is_nullable => FALSE },
-   filter_search => { data_type => 'text', is_nullable => FALSE },
+   owner_user_id => {
+      data_type => 'integer', is_nullable => FALSE, label => 'Owner',
+      cell_traits => ['Capitalise'], display => 'owner.name'
+   },
+   table_id      => {
+      data_type => 'integer', is_nullable => FALSE, label => 'Table',
+      display => 'core_table.name'
+   },
    updated       => {
       cell_traits => ['Date'],
       data_type   => 'timestamp',
       is_nullable => FALSE,
       label       => 'Last Updated',
       timezone    => 'UTC',
+   },
+   filter_json   => {
+      data_type => 'text', is_nullable => FALSE, label => 'Editor Data'
+   },
+   filter_search => {
+      data_type => 'text', is_nullable => FALSE, label => 'Abstract'
    },
 );
 
@@ -83,6 +93,17 @@ sub parse {
    return $self->parser->parse($json);
 }
 
+sub to_sql {
+   my $self   = shift;
+   my $schema = $self->result_source->schema;
+   my $rs     = $schema->resultset($self->core_table->name);
+   my ($query, @bindv) = @{
+      ${ $rs->search($self->filter_search, { columns => ['id']})->as_query }
+   };
+
+   return [$query, encode_json(\@bindv)];
+}
+
 sub update {
    my ($self, $columns) = @_;
 
@@ -101,7 +122,7 @@ sub _inflate_columns {
    if ($columns->{filter_json}) {
       my $filter = $self->parse($columns->{filter_json});
 
-      $columns->{filter_search} = $filter->to_where;
+      $columns->{filter_search} = { $filter->to_abstract };
    }
    else {
       $columns->{filter_json} = NUL;

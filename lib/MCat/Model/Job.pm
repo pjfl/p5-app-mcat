@@ -13,7 +13,7 @@ has '+moniker' => default => 'job';
 sub base : Auth('admin') {
    my ($self, $context) = @_;
 
-   $context->stash('nav')->list('job')->finalise;
+   $context->stash('nav')->finalise;
 
    return;
 }

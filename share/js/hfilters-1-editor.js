@@ -324,7 +324,7 @@ HFilters.Editor = (function() {
          return this.h.div({ className: 'node-rule-edit-container' }, el);
       }
       saveEditorChanges() {
-         if (this.node.updateValue() === false) return;
+         if (this.node.updateValue() == false) return;
          this.node.editorSave();
          this.registry.fire('save', this);
       }

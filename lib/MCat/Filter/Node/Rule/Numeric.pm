@@ -17,24 +17,22 @@ has 'number' =>
 
 has '_operator' => is => 'ro', isa => Str, required => TRUE;
 
-has '_template' => is => 'ro', isa => Str, default => '\%s::integer';
+sub _to_abstract {
+   my ($self, $args) = @_;
 
-sub value {
-   my $self = shift;
+   my $lhs = $self->field->value;
+
+   return $lhs => { $self->_operator => $self->_rhs_value($args) };
+}
+
+sub _rhs_value {
+   my ($self, $args) = @_;
+
    my $value = $self->number->value;
 
    $value =~ s{ [^.0-9-] }{}gmx;
 
    return $value;
-}
-
-sub _to_where {
-   my ($self, $args) = @_;
-
-   my $lhs = sprintf $self->_template, $self->field->name($args);
-
-   return { $lhs => { $self->_operator => $self->value } };
-
 }
 
 use namespace::autoclean;
