@@ -10,7 +10,7 @@
     message-text: black;
     modal-bg: linen;
     muted: gray;
-    navigation-bg: bisque;
+    nav-bg: bisque;
     panel-bg: linen;
     panel-shadow: gray;
     selected: orange;
@@ -41,23 +41,23 @@
     );
 }
 #sizes() {
-    context-anchor: 7rem;
     filter-editor-height: 400px;
     filter-editor-width: 800px;
     filter-editor-max-height: 800px;
     filter-rule-max-width: 20rem;
-    global-anchor: 3rem;
     media-break: 680px;
     message-max-width: 16rem;
-    @sidebar-both: 7;
-    @sidebar-icon: 4;
-    @sidebar-text: 5;
-    sidebar-both: unit(@sidebar-both, rem);
-    frame-left-both: unit((@sidebar-both + 0.75), rem);
-    sidebar-icon: unit(@sidebar-icon, rem);
-    frame-left-icon: unit((@sidebar-icon + 0.75), rem);
-    sidebar-text: unit(@sidebar-text, rem);
-    frame-left-text: unit((@sidebar-text + 0.75), rem);
+    nav-control-width: 10rem;
+    nav-list-width: 7rem;
+    @nav-link-both: 7;
+    @nav-link-icon: 4;
+    @nav-link-text: 5;
+    sidebar-both: unit(@nav-link-both, rem);
+    frame-left-both: unit((@nav-link-both + 0.75), rem);
+    sidebar-icon: unit(@nav-link-icon, rem);
+    frame-left-icon: unit((@nav-link-icon + 0.75), rem);
+    sidebar-text: unit(@nav-link-text, rem);
+    frame-left-text: unit((@nav-link-text + 0.75), rem);
 }
 *, *::before, *::after {
     box-sizing: border-box;
@@ -92,23 +92,6 @@ header {
 .frame.link-display-text {
     left: #sizes[frame-left-text];
 }
-.centred {
-    display: flex; justify-content: center; line-height: 1.5;
-}
-.messages-panel {
-    bottom: 1rem; position: absolute; right: 1rem; z-index: 3;
-    .message-item {
-        background: #colours[message-bg];
-        border: 2px solid #colours[message-border]; border-radius: 5px;
-        box-shadow: 3px 3px 3px #colours[panel-shadow];
-        color: #colours[message-text]; font-family: #fonts[cursive];
-        margin-top: 1rem; max-width: #sizes[message-max-width];
-        padding: 0.5rem;
-    }
-}
-.messages-panel.hide {
-    display: none;
-}
 .standard {
     display: inline-block; padding-top: 0.5rem; text-align: left;
     h1, h2, h3, h4, h5 {
@@ -124,8 +107,40 @@ header {
         align-items: flex-start; display: flex; justify-content: center;
     }
 }
+.centred {
+    display: flex; justify-content: center; line-height: 1.5;
+}
 .sidebar, .state-navigation {
     align-items: center; display: flex; justify-content: left;
+    .nav-title {
+        border-top: 0.5rem solid #colours[nav-bg];
+        display: inline-block; font-family: #fonts[system];
+        font-size: larger; height: 3rem;
+        img {
+            height: 24px; width: 24px; margin-right: 0.25rem;
+            margin-top: 0.3rem; vertical-align: top;
+            @media (max-width: #sizes[media-break]) {
+                margin-left: 0.75rem;
+            }
+        }
+    }
+    .nav-title:after {
+        border-bottom: 40px solid transparent;
+        border-right: 28px solid #colours[nav-bg];
+        content: ' '; display: inline-block; height: 0; width: 0;
+        @media (max-width: #sizes[media-break]) {
+            border-bottom: 0; border-right: 0;
+            border-top-right-radius: 10px;
+            box-shadow: 0.5rem 0 #colours[nav-bg];
+            height: 100%; width: 1rem;
+        }
+    }
+    .nav-title:before {
+        border-top-left-radius: 10px;
+        box-shadow: inset 0.5rem 0 #colours[nav-bg];
+        content: ''; display: inline-block; height: 100%;
+        margin-left: -0.5rem; width: 1rem;
+    }
     .global {
         .nav-panel, .slide-out {
             background: #colours[panel-bg]; overflow: hidden;
@@ -142,44 +157,15 @@ header {
             overflow: visible;
         }
         .slide-out {
-            left: 0; max-width: 0; top: -5px; transform: translate(-100%, 0);
+            left: -5px; max-width: 0; top: -1px; transform: translate(-100%, 0);
             transition: all ease-in-out 500ms;
             .nav-list li {
                 display: block;
             }
         }
         .slide-out.visible {
-            max-width: 32rem;
+            max-width: 32rem; overflow: visible;
         }
-    }
-    .nav-title {
-        border-top: 0.5rem solid #colours[navigation-bg];
-        display: inline-block; font-family: #fonts[system];
-        font-size: larger; height: 3rem;
-        img {
-            height: 24px; width: 24px; margin-right: 0.25rem;
-            margin-top: 0.3rem; vertical-align: top;
-            @media (max-width: #sizes[media-break]) {
-                margin-left: 0.75rem;
-            }
-        }
-    }
-    .nav-title:after {
-        border-bottom: 40px solid transparent;
-        border-right: 28px solid #colours[navigation-bg];
-        content: ' '; display: inline-block; height: 0; width: 0;
-        @media (max-width: #sizes[media-break]) {
-            border-bottom: 0; border-right: 0;
-            border-top-right-radius: 10px;
-            box-shadow: 0.5rem 0 #colours[navigation-bg];
-            height: 100%; width: 1rem;
-        }
-    }
-    .nav-title:before {
-        border-top-left-radius: 10px;
-        box-shadow: inset 0.5rem 0 #colours[navigation-bg];
-        content: ''; display: inline-block; height: 100%;
-        margin-left: -0.5rem; width: 1rem;
     }
     .nav-control {
         cursor: pointer; display: inline-block; font-size: larger;
@@ -190,9 +176,8 @@ header {
             height: 24px; width: 24px; vertical-align: middle;
         }
         .nav-panel {
-            background: #colours[panel-bg];  max-height: 0;
-            overflow: hidden; position: absolute; right: -1rem;
-            text-align: left; top: 36px;
+            background: #colours[panel-bg]; max-height: 0; overflow: hidden;
+            position: absolute; right: -1rem; text-align: left; top: 2.5rem;
             transition: max-height ease-in-out 500ms; z-index: 3;
         }
         .nav-panel.visible {
@@ -221,12 +206,13 @@ header {
         }
         li.control,
         li.context {
-            display: block; white-space: nowrap; width: 100%;
+            display: block; position: relative; white-space: nowrap;
+            width: 100%;
         }
         li.control a,
         li.context a,
         .form-button span {
-            display: block; padding: 0.25rem 1rem;
+            display: block; padding: 0.5rem;
         }
         li.control:first-child a,
         li.context:first-child a,
@@ -238,9 +224,11 @@ header {
         .form-button:last-child span {
             padding-bottom: 0.5rem;
         }
-        li.context.selected,
-        li.control.selected {
-            border-right: 5px solid #colours[link]; position: relative;
+        li.context.selected::before,
+        li.control.selected::before {
+            background: #colours[link]; border-radius: 2px; content: '';
+            height: 2rem; position: absolute; right: -5px; top: 1px;
+            width: 5px;
         }
         li.global {
             margin-right: 2.5rem; position: relative;
@@ -257,12 +245,14 @@ header {
             padding: 0 !important; text-decoration: none;
         }
     }
-    .nav-list.control,
-    .nav-list.context {
-        border: 1px solid; border-radius: 3px;
+    .nav-list.control {
+        width: #sizes[nav-control-width];
+    }
+    .nav-list.control, .nav-list.context {
+        border: 1px solid; border-radius: 3px; padding: 0 0.25rem;
     }
     .nav-menu {
-        background: #colours[navigation-bg];
+        background: #colours[nav-bg];
     }
     .title-text {
         position: relative; top: -1rem;
@@ -279,7 +269,7 @@ header {
     }
  }
 .state-navigation:before {
-    background: #colours[navigation-bg];
+    background: #colours[nav-bg];
     border-top: 0.5rem; border-top-left-radius: 20px;
     content: ''; display: inline-block; height: 3rem;
     @media (max-width: #sizes[media-break]) {
@@ -311,11 +301,11 @@ header {
         li.global {
             display: block; margin: 0; padding: 1rem 0;
             a, .drop-menu {
-                display: inline-block; min-width: #sizes[global-anchor];
-                padding: 1rem 1.25rem 1rem 1.25rem; position: relative;
+                display: inline-block; padding: 1rem 1.25rem 1rem 1.25rem;
+                position: relative; width: 100%;
             }
             .nav-panel {
-                display: inline-block; left: unset; margin: 0.5rem 0;
+                display: inline-block; left: unset; margin: 0.75rem 0;
                 max-width: 0; transition: all ease-in-out 500ms;
             }
             .nav-panel.visible {
@@ -331,23 +321,25 @@ header {
             width: 5px;
         }
         .slide-out {
-            display: inline-block; left: unset;
+            display: inline-block; left: unset; margin-left: 0.25rem;
             position: absolute; top: -1px; transform: unset;
         }
     }
     .nav-list.context {
+        width: #sizes[nav-list-width];
         li.context {
             a, .drop-menu {
-                display: inline-block; min-width: #sizes[context-anchor];
-                padding: 0.5rem 1rem;
+                padding: 0.5rem;
             }
         }
-        li.context.selected {
-            border-left: 5px solid #colours[link]; border-right: 0;
+        li.context.selected::before {
+            background: #colours[link]; border-radius: 2px; content: '';
+            height: 2rem; left: -5px; position: absolute;
+            width: 5px;
         }
     }
     .nav-menu {
-        background: #colours[navigation-bg];
+        background: #colours[nav-bg];
     }
     @media (max-width: #sizes[media-break]) {
         top: 3rem;
@@ -603,6 +595,20 @@ header {
     border-top: 1px solid white; bottom: 0; cursor: row-resize;
     font-size: 1px; height: 6px; left: 0.25rem; position: absolute;
     right: 0.25rem;
+}
+.messages-panel {
+    bottom: 1rem; position: absolute; right: 1rem; z-index: 3;
+    .message-item {
+        background: #colours[message-bg];
+        border: 2px solid #colours[message-border]; border-radius: 5px;
+        box-shadow: 3px 3px 3px #colours[panel-shadow];
+        color: #colours[message-text]; font-family: #fonts[cursive];
+        margin-top: 1rem; max-width: #sizes[message-max-width];
+        padding: 0.5rem;
+    }
+}
+.messages-panel.hide {
+    display: none;
 }
 .modal-outer-wrapper {
     align-items: center; background: #grads[body-bg]; bottom: 0;

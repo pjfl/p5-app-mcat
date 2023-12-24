@@ -3,11 +3,9 @@
 <header>[% nav.render %]</header>
 <div id="sidebar" class="sidebar [% menu_location %] [% link_display %]"></div>
 <div id="frame" class="frame [% menu_location %] [% link_display %]">
-   <div id="content" class="centred">
-      <div id="[% nav.container_name %]" class="[% nav.container_name %]">
-         <div id="[% nav.content_name %]" class="[% nav.content_name %]">
+   <div id="[% nav.container_name %]" class="centred [% nav.container_name %]">
+      <div id="[% nav.content_name %]" class="[% nav.content_name %]">
 [% content %]
-         </div>
       </div>
    </div>
 </div>

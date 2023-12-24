@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Checkpoint for CSS slide off menus
           - Filter creates SQL and bind values
           - Filter editor lines displaying
           - Filter editor round tripping
