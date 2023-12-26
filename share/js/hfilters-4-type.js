@@ -7,10 +7,15 @@ HFilters.Type = (function() {
          this.config = args.config || {};
          this.instance = true;
       }
-      apiURL(type, name, query) {
-         const url = this.config['selector-uri'] || '*/*';
+      apiURL(method, name, query = {}) {
+         const url = this.config['api-uri'] || '*/*';
          const options = { requestBase: this.config['request-base'] };
-         return this.createURL(url, [type, name], query, options);
+         return this.createURL(url, [name, method], query, options);
+      }
+      selectorURL(name, query = {}) {
+         const url = this.config['selector-uri'] || '*';
+         const options = { requestBase: this.config['request-base'] };
+         return this.createURL(url, [name], query, options);
       }
       createTypeContainer(name, input, typeId) {
          const id = typeId || input[0].id;
@@ -34,21 +39,15 @@ HFilters.Type = (function() {
          if (!idCache[name]) idCache[name] = 0;
          return name + '-' + idCache[name]++;
       }
-      timezoneOptions() {
+      async timezoneOptions() {
          const options = [];
-         if (Intl.Locale.prototype.getTimeZones) {
-            for (const zone of Intl.Locale.prototype.getTimeZones()) {
-               options.push(this.h.option({
-                  selected: (this.timezone && this.timezone == zone),
-                  value: zone
-               }, zone));
-            }
-         }
-         else {
+         const url = this.apiURL('get', 'timezones');
+         const { object } = await this.bitch.sucks(url);
+         for (const zone of object['timezones']) {
             options.push(this.h.option({
-               selected: (this.timezone && this.timezone == 'Antartica/Troll'),
-               value: 'Antartica/Troll'
-            }, 'Antartica/Troll'));
+               selected: (this.timezone && this.timezone == zone),
+               value: zone
+            }, zone));
          }
          options.unshift(this.h.option({
             selected: (this.timezone == ''), value: ''
@@ -127,12 +126,12 @@ HFilters.Type = (function() {
       update() {
          this.date.update();
       }
-      updateDisplay() {
+      async updateDisplay() {
          const dateTypeClass = this.dateType.replace(/\./g, '');
          if (!this.date || this.date.type != this.dateType)
             this.date = eval('new ' + dateTypeClass + '({}, "")');
          this.dateContainer.innerHTML = '';
-         this.dateContainer.appendChild(this.date.render());
+         this.dateContainer.appendChild(await this.date.render());
       }
    }
    class TypeDateNoDate extends Type {
@@ -194,10 +193,10 @@ HFilters.Type = (function() {
       isValid() {
          return !(this.date == 'Invalid Date');
       }
-      render() {
-         return this.createTypeContainer(this.label, this.renderInput());
+      async render() {
+         return this.createTypeContainer(this.label, await this.renderInput());
       }
-      renderInput() {
+      async renderInput() {
          const placeHolder = 'YYYY-MM-DD';
          this.input = this.h.input({
             className: 'type-date-absolute type-field-date',
@@ -214,7 +213,7 @@ HFilters.Type = (function() {
             onchange: function(event) {
                this.timezone = this.timezoneSelect.value
             }.bind(this)
-         }, this.timezoneOptions());
+         }, await this.timezoneOptions());
          const tzContainer = this.createTypeContainer(
             'Time zone', [this.timezoneSelect]
          );
@@ -295,12 +294,12 @@ HFilters.Type = (function() {
       isValid() {
          return true;
       }
-      render() {
+      async render() {
          return this.h.div({
             className: 'type-date-relative'
-         }, this.renderInput());
+         }, await this.renderInput());
       }
-      renderInput() {
+      async renderInput() {
          const els = [];
          this.timezoneSelect = this.h.select({
             className: 'type-date-relative type-field-timezone',
@@ -308,7 +307,7 @@ HFilters.Type = (function() {
             onchange: function(event) {
                this.timezone = this.timezoneSelect.value
             }.bind(this)
-         }, this.timezoneOptions());
+         }, await this.timezoneOptions());
          els.push(this.createTypeContainer('Time zone', [this.timezoneSelect]));
          this.inputs.past = this.h.select({
             id: this.generateId('type-field')
@@ -392,10 +391,13 @@ HFilters.Type = (function() {
          super(args, label);
          this.fieldName = args['name'];
          this.label = label;
-         this.tableId = args['table-id'];
+         this.tableId = args['tableId'];
          this.type = 'Type.Field';
-         const query = { table_id: this.tableId || this.config['table-id'] };
-         this.selectorURL = this.apiURL('selector', 'field', query);
+         const query = {
+            table_id: this.tableId || this.config['table-id']
+         };
+         if (args['dataType']) query['data_type'] = args['dataType'];
+         this.url = this.selectorURL('field', query);
       }
       isValid() {
          return !!this.fieldName;
@@ -448,7 +450,7 @@ HFilters.Type = (function() {
             cancelCallback: function() {},
             initValue: null,
             title: 'Select Field',
-            url: this.selectorURL
+            url: this.url
          });
       }
    }
@@ -459,7 +461,7 @@ HFilters.Type = (function() {
          this.listId = args['list_id'];
          this.type = 'Type.List';
          const query = { table_id: this.config['table-id'] };
-         this.selectorURL = this.apiURL('selector', 'list', query);
+         this.url = this.selectorURL('list', query);
       }
       isValid() {
          return !!this.listId
@@ -477,6 +479,7 @@ HFilters.Type = (function() {
             value: this.toString()
          });
          this.display = this.h.div({ className: 'type-list-display' });
+         if (this.listId) this.updateListDisplay(this.listId);
          const callback = function(data) {
             this.input.value = data.value;
             this.updateListDisplay(data.value);
@@ -489,11 +492,10 @@ HFilters.Type = (function() {
                   cancelCallback: function() {},
                   init_value: null,
                   title: 'List',
-                  url: this.selectorURL
+                  url: this.url
                });
             }.bind(this)
          }, '...');
-         if (this.listId) this.updateListDisplay(this.listId);
          return [button, this.display, this.input];
       }
       toDisplay() {
@@ -510,17 +512,18 @@ HFilters.Type = (function() {
          this.listId = this.input.value;
       }
       async updateListDisplay(listId) {
-         const url = this.apiURL('get', 'list', { list_id: listId });
+         const url = this.apiURL('get', 'list_name', { list_id: listId });
          const { object } = await this.bitch.sucks(url);
          this.listId = listId;
-         this.listName = object['name'];
+         this.listName = object['list_name'];
          this.display.innerHTML = '';
          this.display.appendChild(document.createTextNode(this.toDisplay()));
       }
       async updateRuleBox(el) {
-         const url = this.apiURL('get', 'list', { list_id: this.listId });
+         if (!this.listId) return;
+         const url = this.apiURL('get', 'list_name', { list_id: this.listId });
          const { object } = await this.bitch.sucks(url);
-         this.listName = object['name'];
+         this.listName = object['list_name'];
          el.innerHTML = '';
          el.appendChild(document.createTextNode(this.toDisplay()));
       }
@@ -679,6 +682,20 @@ HFilters.Type = (function() {
       }
       update() {
          this.string = this.input.value;
+      }
+   }
+   class TypeBigString extends TypeString {
+      constructor(args, label) {
+         super(args, label);
+         this.type = 'Type.BigString';
+      }
+      renderInput() {
+         this.input = this.h.textarea({
+            className: 'type-string-input type-string',
+            id: this.generateId('type-string'),
+            value: this.string || ''
+         });
+         return this.input;
       }
    }
    class TypeMultiString extends TypeString {

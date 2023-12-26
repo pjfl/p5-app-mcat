@@ -3,7 +3,7 @@ package MCat::Filter::Types;
 use strictures;
 
 use Type::Library             -base, -declare =>
-                          qw( AbsoluteDate FilterDate FilterField
+                          qw( AbsoluteDate FilterDate FilterField FilterList
                               FilterNumeric FilterString FilterNegate );
 use Type::Utils           qw( as class_type coerce declare extends from
                               message subtype via where );
@@ -14,6 +14,8 @@ BEGIN { extends 'Unexpected::Types' };
 class_type FilterDate, { class => 'MCat::Filter::Type::Date' };
 
 class_type FilterField, { class => 'MCat::Filter::Type::Field' };
+
+class_type FilterList, { class => 'MCat::Filter::Type::List' };
 
 class_type FilterNegate, { class => 'MCat::Filter::Type::Negate' };
 
@@ -35,6 +37,14 @@ coerce FilterField, from Str, via {
 
 coerce FilterField, from HashRef, via {
    MCat::Filter::Type::Field->new( $_ );
+};
+
+coerce FilterList, from Str, via {
+   MCat::Filter::Type::List->new( list => $_ );
+};
+
+coerce FilterList, from HashRef, via {
+   MCat::Filter::Type::List->new( $_ );
 };
 
 coerce FilterNumeric, from Str, via {

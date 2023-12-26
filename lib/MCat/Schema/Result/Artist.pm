@@ -31,20 +31,19 @@ $class->set_primary_key('artistid');
 $class->add_unique_constraint('artist_name_uniq', ['name']);
 
 $class->has_many(
-  cds => "${result}::Cd",
-  { 'foreign.artistid' => 'self.artistid' },
-  { cascade_copy => FALSE, cascade_delete => FALSE },
+   'cds' => "${result}::Cd", { 'foreign.artistid' => 'self.artistid' },
+   { cascade_copy => FALSE, cascade_delete => FALSE }
 );
 
 $class->has_many(
-   artist_tags => "${result}::TagArtist",
+   'artist_tags' => "${result}::TagArtist",
    { 'foreign.artistid' => 'self.artistid' }
 );
 
 $class->many_to_many('tags', 'artist_tags', 'tag');
 
 $class->might_have(
-   tag_string => "${result}::TagArtistString",
+   'tag_string' => "${result}::TagArtistString",
    { 'foreign.artistid' => 'self.artistid' }
 );
 

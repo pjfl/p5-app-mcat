@@ -25,6 +25,11 @@ $class->add_columns(
       is_nullable => FALSE,
       label       => 'Relation Name',
    },
+   key_name => {
+      data_type   => 'text',
+      is_nullable => FALSE,
+      label       => 'Key Name',
+   }
 );
 
 $class->set_primary_key('id');

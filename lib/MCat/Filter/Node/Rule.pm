@@ -33,9 +33,11 @@ sub to_abstract {
 
 # Private methods
 my $dispatch = {
-   '=' => '!=', '!=' => '=',
-   '<' => '>=', '>=' => '<',
-   '>' => '<=', '<=' => '>',
+   '='    => '!=',       '!='       => '=',
+   '<'    => '>=',       '>='       => '<',
+   '>'    => '<=',       '<='       => '>',
+   '-in'  => '-not_in',  '-not_in'  => '-in',
+   'like' => 'not like', 'not like' => 'like',
 };
 
 sub _negate {

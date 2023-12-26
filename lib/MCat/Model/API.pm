@@ -19,6 +19,7 @@ has '+moniker' => default => 'api';
 has 'routes' => is => 'ro', isa => HashRef, default => sub {
    return {
       'api/navigation_messages' => 'api/navigation/collect/messages',
+      'api/object_get'          => 'api/object/*/get',
       'api/table_action'        => 'api/table/*/action',
       'api/table_preference'    => 'api/table/*/preference',
    };

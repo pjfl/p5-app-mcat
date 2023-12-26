@@ -88,11 +88,11 @@ HFilters.Modal = (function() {
    }
    Object.assign(Button.prototype, HFilters.Util.Markup);
    class Drag {
-      constructor() {
+      constructor(args) {
          this.drag = {};
          this.dragNodeX = null;
          this.dragNodeY = null;
-         this.scrollWrapper = document.querySelector('.centred-content');
+         this.scrollWrapper = document.querySelector(args.scrollWrapper);
       }
       autoScrollHandler(event) {
          const { drag } = this;
@@ -274,15 +274,15 @@ HFilters.Modal = (function() {
    Object.assign(Drag.prototype, HFilters.Util.Markup);
    class Modal {
       constructor(title, content, buttons, setup) {
-         const { buttonClass, classList, closeCallback, resizeElement } = setup;
-         this.buttonClass = buttonClass;
+         this.buttonClass = setup.buttonClass;
          this.buttons = buttons;
-         this.classList = classList;
-         this.closeCallback = closeCallback;
+         this.classList = setup.classList;
+         this.closeCallback = setup.closeCallback;
          this.content = content;
+         this.dragScrollWrapper = setup.dragScrollWrapper || '.standard';
          this.ident = this.guid();
          this.open = true;
-         this.resizeElement = resizeElement;
+         this.resizeElement = setup.resizeElement;
          this.title = title;
          MODALS.add(this.ident);
          this.keyHandler = this.keyHandler.bind(this);
@@ -359,7 +359,7 @@ HFilters.Modal = (function() {
             if (event.target.tagName === 'BUTTON') return;
             const { left, top } = this.modalHeader.getBoundingClientRect();
             const { scrollTop } = document.documentElement || document.body;
-            const drag = new Drag();
+            const drag = new Drag({ scrollWrapper: this.dragScrollWrapper });
             drag.start(event, {
                dragNode: el,
                dropTargets: [],

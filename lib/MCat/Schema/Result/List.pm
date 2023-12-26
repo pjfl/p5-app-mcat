@@ -64,7 +64,7 @@ sub apply_filter {
    my $table_rs = $schema->resultset($self->core_table->name);
 
    while (my $filtered = $table_rs->search($filter->filter_search)->next) {
-      $filtered->create_related('list', { list_id => $self->id });
+      $filtered->create_related('lists', { list_id => $self->id });
    }
 
    return;

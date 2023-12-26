@@ -1,2 +1,2 @@
 [% form.render %]
-<div class="filter-container" data-filter-config=[% filter_config %]></div>
+<div class="filter-container" data-filter-config="[% filter_config %]"></div>

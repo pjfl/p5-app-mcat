@@ -1,6 +1,7 @@
 package MCat::Model::Filter;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTML::Entities         qw( encode_entities );
 use Type::Utils            qw( class_type );
 use MCat::Util             qw( formpost redirect );
 use Unexpected::Functions  qw( UnknownFilter UnknownTable Unspecified );
@@ -32,6 +33,10 @@ sub base {
    }
    else {
       $nav->list('filter')->item('filter/create');
+   }
+
+   if ($context->action =~ m{ /editor \z }mx) {
+      $context->stash('nav')->container_layout(NUL);
    }
 
    $nav->finalise;
@@ -98,17 +103,7 @@ sub edit : Nav('Edit Filter') {
 sub editor : Nav('Filter Editor') {
    my ($self, $context) = @_;
 
-   my $filter = $context->stash('filter');
-   my $config = encode_json({
-      'request-base' => $context->request->uri_for(NUL)->as_string,
-      'selector-uri' => 'filter/*/*',
-      'table-id'     => $filter->table_id
-   });
-
-   $context->stash(
-      filter_config => "'${config}'", tableid => $filter->table_id
-   );
-
+   my $filter  = $context->stash('filter');
    my $options = { context => $context, item => $filter };
    my $form    = $self->new_form('Filter::Editor', $options);
 
@@ -117,9 +112,19 @@ sub editor : Nav('Filter Editor') {
       my $message     = ['Filter [_1] updated', $form->item->name];
 
       $context->stash( redirect $filter_view, $message );
+      return;
    }
 
    $context->stash( form => $form );
+
+   my $config = encode_entities encode_json {
+      'api-uri'      => 'api/object/*/*',
+      'request-base' => $context->request->uri_for(NUL)->as_string,
+      'selector-uri' => 'filter/selector/*',
+      'table-id'     => $filter->table_id
+   };
+
+   $context->stash( filter_config => $config );
    return;
 }
 
@@ -133,14 +138,25 @@ sub list : Nav('Filters') {
 sub selector {
    my ($self, $context, $type) = @_;
 
-   my $tableid = $context->request->query_parameters->{table_id}
-      or return $self->error($context, 'Table id not found');
-   my $table   = $context->model('Table')->find($tableid)
-      or return $self->error($context, UnknownTable, [$tableid]);
-   my $options = { context => $context, result_class => $table->name };
    my $name    = 'Selector::' . ucfirst $type;
+   my $params  = $context->request->query_parameters;
+   my $tableid = $params->{table_id}
+      or return $self->error($context, 'Table id not found');
+   my $options;
 
-   $context->stash(table => $self->new_table($name, $options));
+   if ($type eq 'field') {
+      my $table = $context->model('Table')->find($tableid)
+         or return $self->error($context, UnknownTable, [$tableid]);
+
+      $options = { context => $context, result_class => $table->name };
+
+      $options->{data_type} = $params->{data_type} if $params->{data_type};
+   }
+   elsif ($type eq 'list') {
+      $options = { context => $context, table_id => $tableid };
+   }
+
+   $context->stash(table => $self->new_table($name, $options)) if $options;
    return;
 }
 

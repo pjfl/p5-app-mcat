@@ -182,6 +182,7 @@ HFilters.Util = (function() {
       table(attr, content)    { return this._tag('table', attr, content) }
       tbody(attr, content)    { return this._tag('tbody', attr, content) }
       td(attr, content)       { return this._tag('td', attr, content) }
+      textarea(attr, content) { return this._tag('textarea', attr, content) }
       th(attr, content)       { return this._tag('th', attr, content) }
       tr(attr, content)       { return this._tag('tr', attr, content) }
       thead(attr, content)    { return this._tag('thead', attr, content) }

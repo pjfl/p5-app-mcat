@@ -20,17 +20,17 @@ $class->add_columns(
       is_nullable       => FALSE,
       label             => 'Filter ID',
    },
-   name          => { data_type => 'text', is_nullable => FALSE },
-   description   => { data_type => 'text', is_nullable => TRUE },
+   name => { data_type => 'text', is_nullable => FALSE },
+   description => { data_type => 'text', is_nullable => TRUE },
    owner_user_id => {
-      data_type => 'integer', is_nullable => FALSE, label => 'Owner',
+      data_type   => 'integer', is_nullable => FALSE, label => 'Owner',
       cell_traits => ['Capitalise'], display => 'owner.name'
    },
-   table_id      => {
+   table_id => {
       data_type => 'integer', is_nullable => FALSE, label => 'Table',
-      display => 'core_table.name'
+      display   => 'core_table.name'
    },
-   updated       => {
+   updated => {
       cell_traits => ['Date'],
       data_type   => 'timestamp',
       is_nullable => FALSE,
@@ -120,9 +120,10 @@ sub _inflate_columns {
    my $columns = { $self->get_inflated_columns };
 
    if ($columns->{filter_json}) {
-      my $filter = $self->parse($columns->{filter_json});
+      my $filter  = $self->parse($columns->{filter_json});
+      my $options = { table => $self->core_table };
 
-      $columns->{filter_search} = { $filter->to_abstract };
+      $columns->{filter_search} = { $filter->to_abstract($options) };
    }
    else {
       $columns->{filter_json} = NUL;

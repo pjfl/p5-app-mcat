@@ -199,6 +199,7 @@ HFilters.Node = (function() {
                const type = 'Type.' + fieldObject.type;
                const args = data[name] || {};
                args.config = this.config;
+               args.dataType = fieldObject.dataType;
                args.group = fieldObject.group;
                args.hidden = fieldObject.hidden;
                args.inputType = fieldObject.inputType;
@@ -323,6 +324,120 @@ HFilters.Node = (function() {
          return error ? false : true;
       }
    }
+   classes.push('RuleData');
+   class RuleData extends Rule {
+      constructor(data) {
+         data.fields ||= { negate: { label: 'Inverse', type: 'Negate' } };
+         data.label  ||= 'Data match';
+         data.type   ||= 'Rule.Data';
+         super(data);
+      }
+      renderContent() {
+         return this.renderRuleBox([
+            this.h.div({
+               className: 'type-negate'
+            }, this.data.negate.isNegated() ? 'Item is not' : 'Item is'),
+            this.h.div({ className: 'type-event' }, this.actionName)
+         ]);
+      }
+   }
+   classes.push('RuleDataInList');
+   class RuleDataInList extends RuleData {
+      constructor(data) {
+         data.fields ||= {
+            list:   { label: 'List', type: 'List' },
+            negate: { label: 'Inverse', type: 'Negate' }
+         };
+         data.label ||= 'In List';
+         data.type  ||= 'Rule.Data.InList';
+         super(data);
+         this.actionName = 'in list';
+      }
+      renderContent() {
+         const listDisplay = this.h.div({ className: 'type-list' });
+         this.data.list.updateRuleBox(listDisplay);
+         return this.renderRuleBox([
+            this.h.div({
+               className: 'type-negate'
+            }, this.data.negate.isNegated() ? 'Item is not' : 'Item is'),
+            this.h.div({ className: 'type-event' }, this.actionName),
+            listDisplay
+         ]);
+      }
+   }
+   classes.push('RuleDate');
+   class RuleDate extends Rule {
+      constructor(data) {
+         data.fields ||= {
+            date:   { label: 'Date', type: 'Date' },
+            field:  { label: 'Field', type: 'Field', dataType: 'timestamp' },
+            negate: { label: 'Inverse', type: 'Negate' }
+         };
+         data.label ||= 'Date match';
+         data.type  ||= 'Rule.Date';
+         super(data);
+      }
+      renderContent() {
+         const data = this.data;
+         return this.renderRuleBox([
+            this.h.div({ className: 'type-field' }, data.field.toDisplay()),
+            this.h.div({ className: 'type-operation' }, this.getBoxString()),
+            this.h.div({ className: 'type-date' }, data.date.toDisplay())
+         ]);
+      }
+   }
+   classes.push('RuleDateAnniversary');
+   class RuleDateAnniversary extends RuleDate {
+      constructor(data) {
+         data.label ||= 'Anniverary';
+         data.type ||= 'Rule.Date.Anniversary';
+         super(data);
+      }
+      getBoxString() {
+         return this.data.negate.isNegated() ? 'anniversary is not' : 'has anniversary';
+      }
+   }
+   classes.push('RuleDateBefore');
+   class RuleDateBefore extends RuleDate {
+      constructor(data) {
+         data.fields ||= {
+            date:  { label: 'Date', type: 'Date' },
+            field: { label: 'Field', type: 'Field' }
+         };
+         data.label ||= 'Date is before';
+         data.type ||= 'Rule.Date.Before';
+         super(data);
+      }
+      getBoxString() {
+         return 'is before';
+      }
+   }
+   classes.push('RuleDateAfter');
+   class RuleDateAfter extends RuleDate {
+      constructor(data) {
+         data.fields ||= {
+            date:  { label: 'Date', type: 'Date' },
+            field: { label: 'Field', type: 'Field' }
+         };
+         data.label ||= 'Date is after';
+         data.type ||= 'Rule.Date.After';
+         super(data);
+      }
+      getBoxString() {
+         return 'is after';
+      }
+   }
+   classes.push('RuleDateEquals');
+   class RuleDateEquals extends RuleDate {
+      constructor(data) {
+         data.label ||= 'Date is equal';
+         data.type ||= 'Rule.Date.Equals';
+         super(data);
+      }
+      getBoxString() {
+         return this.data.negate.isNegated() ? 'is not equal to' : 'is equal to';
+      }
+   }
    classes.push('RuleEmpty');
    class RuleEmpty extends Rule {
       constructor(data) {
@@ -348,11 +463,64 @@ HFilters.Node = (function() {
          return this.renderRuleBox();
       }
    }
+   classes.push('RuleNumeric');
+   class RuleNumeric extends Rule {
+      constructor(data) {
+         data.fields ||= {
+            field:  { label: 'Field', type: 'Field', dataType: 'integer' },
+            number: { label: 'Value', type: 'Numeric' }
+         };
+         data.label ||= 'Field numeric match';
+         data.type ||= 'Rule.Numeric';
+         super(data);
+      }
+      renderContent() {
+         const data = this.data;
+         return this.renderRuleBox([
+            this.h.div({ className: 'type-field' }, data.field.toDisplay()),
+            this.h.div({ className: 'type-name' }, this.getBoxString()),
+            this.h.div({ className: 'type-string' }, data.number.toDisplay())
+         ]);
+      }
+   }
+   classes.push('RuleNumericEqualTo');
+   class RuleNumericEqualTo extends RuleNumeric {
+      constructor(data) {
+         data.label ||= 'Field equals';
+         data.type ||= 'Rule.Numeric.EqualTo';
+         super(data);
+      }
+      getBoxString() {
+         return 'equal to';
+      }
+   }
+   classes.push('RuleNumericLessThan');
+   class RuleNumericLessThan extends RuleNumeric {
+      constructor(data) {
+         data.label ||= 'Field less than';
+         data.type ||= 'Rule.Numeric.LessThan';
+         super(data);
+      }
+      getBoxString() {
+         return 'less than';
+      }
+   }
+   classes.push('RuleNumericGreaterThan');
+   class RuleNumericGreaterThan extends RuleNumeric {
+      constructor(data) {
+         data.label ||= 'Field greater than';
+         data.type ||= 'Rule.Numeric.GreaterThan';
+         super(data);
+      }
+      getBoxString() {
+         return 'greater than';
+      }
+   }
    classes.push('RuleString');
    class RuleString extends Rule {
       constructor(data) {
          data.fields ||= {
-            field:  { label: 'Field', type: 'Field' },
+            field:  { label: 'Field', type: 'Field', dataType: 'text' },
             negate: { label: 'Inverse', type: 'Negate' },
             string: { label: 'Match text', type: 'String' }
          };
@@ -448,132 +616,6 @@ HFilters.Node = (function() {
       }
       getBoxString() {
          return this.data.negate.isNegated() ? 'is not one of' : 'is one of';
-      }
-   }
-   classes.push('RuleNumeric');
-   class RuleNumeric extends Rule {
-      constructor(data) {
-         data.fields ||= {
-            field:  { label: 'Field', type: 'Field' },
-            number: { label: 'Value', type: 'Numeric' }
-         };
-         data.label ||= 'Field numeric match';
-         data.type ||= 'Rule.Numeric';
-         super(data);
-      }
-      renderContent() {
-         const data = this.data;
-         return this.renderRuleBox([
-            this.h.div({ className: 'type-field' }, data.field.toDisplay()),
-            this.h.div({ className: 'type-name' }, this.getBoxString()),
-            this.h.div({ className: 'type-string' }, data.number.toDisplay())
-         ]);
-      }
-   }
-   classes.push('RuleNumericEqualTo');
-   class RuleNumericEqualTo extends RuleNumeric {
-      constructor(data) {
-         data.label ||= 'Field equals';
-         data.type ||= 'Rule.Numeric.EqualTo';
-         super(data);
-      }
-      getBoxString() {
-         return 'equal to';
-      }
-   }
-   classes.push('RuleNumericLessThan');
-   class RuleNumericLessThan extends RuleNumeric {
-      constructor(data) {
-         data.label ||= 'Field less than';
-         data.type ||= 'Rule.Numeric.LessThan';
-         super(data);
-      }
-      getBoxString() {
-         return 'less than';
-      }
-   }
-   classes.push('RuleNumericGreaterThan');
-   class RuleNumericGreaterThan extends RuleNumeric {
-      constructor(data) {
-         data.label ||= 'Field greater than';
-         data.type ||= 'Rule.Numeric.GreaterThan';
-         super(data);
-      }
-      getBoxString() {
-         return 'greater than';
-      }
-   }
-   classes.push('RuleDate');
-   class RuleDate extends Rule {
-      constructor(data) {
-         data.fields ||= {
-            date:   { label: 'Date', type: 'Date' },
-            field:  { label: 'Field', type: 'Field' },
-            negate: { label: 'Inverse', type: 'Negate' }
-         };
-         data.label ||= 'Date match';
-         data.type ||= 'Rule.Date';
-         super(data);
-      }
-      renderContent() {
-         const data = this.data;
-         return this.renderRuleBox([
-            this.h.div({ className: 'type-field' }, data.field.toDisplay()),
-            this.h.div({ className: 'type-operation' }, this.getBoxString()),
-            this.h.div({ className: 'type-date' }, data.date.toDisplay())
-         ]);
-      }
-   }
-   classes.push('RuleDateAnniversary');
-   class RuleDateAnniversary extends RuleDate {
-      constructor(data) {
-         data.label ||= 'Anniverary';
-         data.type ||= 'Rule.Date.Anniversary';
-         super(data);
-      }
-      getBoxString() {
-         return this.data.negate.isNegated() ? 'anniversary is not' : 'has anniversary';
-      }
-   }
-   classes.push('RuleDateBefore');
-   class RuleDateBefore extends RuleDate {
-      constructor(data) {
-         data.fields ||= {
-            date:  { label: 'Date', type: 'Date' },
-            field: { label: 'Field', type: 'Field' }
-         };
-         data.label ||= 'Date is before';
-         data.type ||= 'Rule.Date.Before';
-         super(data);
-      }
-      getBoxString() {
-         return 'is before';
-      }
-   }
-   classes.push('RuleDateAfter');
-   class RuleDateAfter extends RuleDate {
-      constructor(data) {
-         data.fields ||= {
-            date:  { label: 'Date', type: 'Date' },
-            field: { label: 'Field', type: 'Field' }
-         };
-         data.label ||= 'Date is after';
-         data.type ||= 'Rule.Date.After';
-         super(data);
-      }
-      getBoxString() {
-         return 'is after';
-      }
-   }
-   classes.push('RuleDateEquals');
-   class RuleDateEquals extends RuleDate {
-      constructor(data) {
-         data.label ||= 'Date is equal';
-         data.type ||= 'Rule.Date.Equals';
-         super(data);
-      }
-      getBoxString() {
-         return this.data.negate.isNegated() ? 'is not equal to' : 'is equal to';
       }
    }
    return {

@@ -1,8 +1,8 @@
-package MCat::Table::Selector::Field;
+package MCat::Table::Selector::List;
 
 use HTML::StateTable::Constants qw( FALSE SPC TABLE_META TRUE );
-use HTML::StateTable::Types     qw( Str );
-use MCat::Object::View::Class;
+use HTML::StateTable::Types     qw( Int );
+use MCat::Object::View::List;
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -13,15 +13,13 @@ has '+no_count' => default => TRUE;
 
 has '+paging' => default => FALSE;
 
-has 'data_type' => is => 'ro', isa => Str, predicate => 'has_data_type';
-
-has 'result_class' => is => 'ro', isa => Str, required => TRUE;
+has 'table_id' => is => 'ro', isa => Int, required => TRUE;
 
 setup_resultset sub {
-   return MCat::Object::View::Class->new(table => shift);
+   return MCat::Object::View::List->new(table => shift);
 };
 
-set_table_name 'field_selector';
+set_table_name 'list_selector';
 
 has_column 'check' =>
    cell_traits => ['Checkbox'],

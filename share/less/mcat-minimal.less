@@ -1,9 +1,9 @@
 #colours() {
-    filter-connector: grey;
+    filter-connector: gray;
     filter-editor-bg: linen;
     filter-rule-editor-bg: ivory;
     filter-rule-status-bg: lightpink;
-    filter-rule-title-border: orange;
+    filter-rule-title-border: gray;
     link: seagreen;
     message-bg: linen;
     message-border: red;
@@ -44,10 +44,12 @@
     filter-editor-height: 400px;
     filter-editor-width: 800px;
     filter-editor-max-height: 800px;
+    filter-input-max-width: 10rem;
     filter-rule-max-width: 20rem;
     media-break: 680px;
     message-max-width: 16rem;
     nav-control-width: 10rem;
+    nav-header-height: 3rem;
     nav-list-width: 7rem;
     @nav-link-both: 7;
     @nav-link-icon: 4;
@@ -81,7 +83,8 @@ header {
     position: sticky; top: 0; z-index: 3;
 }
 .frame {
-    height: 90%; overflow: auto; position: fixed; right: 0.5rem;
+    bottom: 0; overflow: auto; position: fixed; right: 0.5rem;
+    top: #sizes[nav-header-height];
 }
 .frame.link-display-both {
     left: #sizes[frame-left-both];
@@ -115,7 +118,7 @@ header {
     .nav-title {
         border-top: 0.5rem solid #colours[nav-bg];
         display: inline-block; font-family: #fonts[system];
-        font-size: larger; height: 3rem;
+        font-size: larger; height: #sizes[nav-header-height];
         img {
             height: 24px; width: 24px; margin-right: 0.25rem;
             margin-top: 0.3rem; vertical-align: top;
@@ -142,6 +145,10 @@ header {
         margin-left: -0.5rem; width: 1rem;
     }
     .global {
+        isolation: isolate;
+        .drop-menu img, a img {
+            position: relative; z-index: -1;
+        }
         .nav-panel, .slide-out {
             background: #colours[panel-bg]; overflow: hidden;
             position: absolute; text-align: left; z-index: 3;
@@ -150,12 +157,6 @@ header {
             left: -1.1rem; max-height: 0; margin-top: 0.85rem;
             transition: max-height ease-in-out 500ms;
         }
-        .nav-panel.visible {
-            max-height: 32rem;
-        }
-        .nav-panel:active, .nav-panel:hover {
-            overflow: visible;
-        }
         .slide-out {
             left: -5px; max-width: 0; top: -1px; transform: translate(-100%, 0);
             transition: all ease-in-out 500ms;
@@ -163,8 +164,15 @@ header {
                 display: block;
             }
         }
+        .nav-panel.visible {
+            max-height: 32rem;
+        }
         .slide-out.visible {
-            max-width: 32rem; overflow: visible;
+            max-width: 32rem;
+        }
+        .nav-panel:active, .slide-out:active,
+        .nav-panel:hover, .slide-out:hover {
+            overflow: visible;
         }
     }
     .nav-control {
@@ -204,14 +212,11 @@ header {
         li.control {
             font-size: medium;
         }
-        li.control,
-        li.context {
+        li.control, li.context {
             display: block; position: relative; white-space: nowrap;
             width: 100%;
         }
-        li.control a,
-        li.context a,
-        .form-button span {
+        li.control a, li.context a, .form-button span {
             display: block; padding: 0.5rem;
         }
         li.control:first-child a,
@@ -224,8 +229,7 @@ header {
         .form-button:last-child span {
             padding-bottom: 0.5rem;
         }
-        li.context.selected::before,
-        li.control.selected::before {
+        li.context.selected::before, li.control.selected::before {
             background: #colours[link]; border-radius: 2px; content: '';
             height: 2rem; position: absolute; right: -5px; top: 1px;
             width: 5px;
@@ -233,8 +237,7 @@ header {
         li.global {
             margin-right: 2.5rem; position: relative;
         }
-        li.global.selected > span::before,
-        li.global.selected > a::before {
+        li.global.selected > span::before, li.global.selected > a::before {
             background: #colours[link]; border-radius: 2px; content: '';
             display: block; height: 5px; position: absolute; top: -0.66rem;
             width: 100%;
@@ -261,7 +264,7 @@ header {
 .state-navigation {
     .nav-menu {
         border-bottom-right-radius: 10px;
-        display: inline-block; flex-grow: 10; height: 3rem;
+        display: inline-block; flex-grow: 10; height: #sizes[nav-header-height];
         padding-right: 1rem; padding-top: 0.5rem; text-align: right;
         .nav-control {
             position: relative;
@@ -271,7 +274,7 @@ header {
 .state-navigation:before {
     background: #colours[nav-bg];
     border-top: 0.5rem; border-top-left-radius: 20px;
-    content: ''; display: inline-block; height: 3rem;
+    content: ''; display: inline-block; height: #sizes[nav-header-height];
     @media (max-width: #sizes[media-break]) {
         width: 1rem;
     }
@@ -294,14 +297,14 @@ header {
 }
 .sidebar {
     background: unset; border-top-left-radius: 0; display: inline-block;
-    padding: 0; position: fixed; top: 3rem; z-index: 3;
+    padding: 0; position: fixed; top: #sizes[nav-header-height]; z-index: 3;
     .nav-list.global {
         align-items: flex-start; display: flex; flex-direction: column;
         min-height: 2rem; padding-top: 0.5rem;
         li.global {
             display: block; margin: 0; padding: 1rem 0;
             a, .drop-menu {
-                display: inline-block; padding: 1rem 1.25rem 1rem 1.25rem;
+                display: inline-block; padding: 1rem 1.25rem;
                 position: relative; width: 100%;
             }
             .nav-panel {
@@ -315,8 +318,7 @@ header {
         li.global:first-child {
             padding-top: 0;
         }
-        li.global.selected > span::before,
-        li.global.selected > a::before {
+        li.global.selected > span::before, li.global.selected > a::before {
             height: 2rem; left: -0.035rem; position: absolute; top: 0.75rem;
             width: 5px;
         }
@@ -342,7 +344,7 @@ header {
         background: #colours[nav-bg];
     }
     @media (max-width: #sizes[media-break]) {
-        top: 3rem;
+        top: #sizes[nav-header-height];
     }
 }
 .sidebar.link-display-both {
@@ -487,7 +489,7 @@ header {
             display: flex; font-size: 0.8rem; justify-content: space-between;
             padding: 0 0.25rem 0.25rem 0; position: relative;
             .node-rule-box-inner {
-                flex-grow: 2; padding: 0.25rem 0 0 0.25rem;
+                flex-grow: 2; min-width: 6rem; padding: 0.25rem 0 0 0.25rem;
             }
             .node-rule-add-and {
                 border-left: 10px solid transparent;
@@ -507,18 +509,23 @@ header {
                 border-radius: 5px; font-family: #fonts[system];
                 font-size: 0.8rem; margin: 0.125rem 0 0 0.25rem;
             }
-            .node-rule-status, .node-rule-title, .type-date, .type-field,
-            .type-name, .type-numeric, .type-operation, .type-string {
-                padding: 0 0.25rem; white-space: nowrap;
-            }
-            .node-rule-status, .node-rule-title, .type-name, .type-operation {
-                font-family: #fonts[system];
-            }
             .node-rule-status {
                 background: #colours[filter-rule-status-bg];
             }
             .node-rule-title {
                 border-bottom: 1px solid #colours[filter-rule-title-border];
+            }
+            .node-rule-status, .node-rule-title, .type-date, .type-event,
+            .type-field, .type-list, .type-name, .type-negate, .type-numeric,
+            .type-operation, .type-string {
+                padding: 0 0.25rem; white-space: nowrap;
+            }
+            .node-rule-status, .node-rule-title, .type-event, .type-name,
+            .type-negate, .type-operation {
+                font-family: #fonts[system];
+            }
+            .type-event, .type-negate {
+                display: inline-block;
             }
         }
         .node-rule-box.rule-error {
@@ -538,14 +545,14 @@ header {
         }
     }
     .node-rule-wrapper.empty {
-        max-width: 7rem;
+        max-width: 8rem;
     }
     .rule-editor {
         background: #colours[filter-rule-editor-bg];
         border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[muted];
-        display: inline-block; margin-right: 1rem;
+        display: inline-block; margin-left: 1rem;
         .node-rule-edit-container {
-            color: #colours[text];
+            color: #colours[text]; min-width: 12rem;
             .node-rule-edit {
                 border-collapse: separate; border-spacing: 0 0.5rem;
                 border-radius: 5px; padding: 0 1rem;
@@ -580,6 +587,15 @@ header {
         select {
             font-family: #fonts[data];
         }
+        select, input {
+            max-width: #sizes[filter-input-max-width];
+        }
+        .type-list-button {
+            margin-right: 0.5rem;
+        }
+        .type-list-display {
+            font-size: 0.8rem;
+        }
     }
     .type-container.type-date-relative-days,
     .type-container.type-date-relative-months,
@@ -613,7 +629,7 @@ header {
 .modal-outer-wrapper {
     align-items: center; background: #grads[body-bg]; bottom: 0;
     display: flex; justify-content: center; left: 0; position: absolute;
-    right: 0; top: 0; z-index: 2;
+    right: 0; top: 0; z-index: 4;
     .modal {
         background: #colours[filter-rule-editor-bg];
         border-radius: 5px; box-shadow: 3px 3px 3px;
@@ -627,7 +643,9 @@ header {
         .modal-header {
             align-items: center; display: flex; justify-content: space-between;
             .modal-title {
-                font-family: #fonts[system]; font-size: 1.5rem; margin: 0;
+                border-bottom: 1px solid #colours[muted]; flex-grow: 2;
+                font-family: #fonts[system]; font-size: 1rem;
+                font-weight: normal; margin: 0;
             }
         }
         .modal-footer, .modal-header {

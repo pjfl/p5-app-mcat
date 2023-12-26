@@ -2,7 +2,7 @@ package MCat::Navigation;
 
 use utf8; # -*- coding: utf-8; -*-
 
-use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
 use HTML::StateTable::Types      qw( ArrayRef Bool HashRef PositiveInt
                                      Str URI );
 use HTTP::Status                 qw( HTTP_OK );
@@ -18,6 +18,14 @@ use Try::Tiny;
 use Moo;
 
 has 'confirm_message' => is => 'ro', isa => Str, default => 'Are you sure ?';
+
+has 'container_class' => is => 'lazy', isa => Str, default => sub {
+   my $self = shift;
+
+   return $self->container_name . SPC . $self->container_layout;
+};
+
+has 'container_layout' => is => 'rw', isa => Str, default => 'centred';
 
 has 'container_name' => is => 'ro', isa => Str, default => 'standard';
 
@@ -88,8 +96,9 @@ has 'title_abbrev' => is => 'ro', isa => Str, default => 'Nav';
 has 'title_entry' => is => 'lazy', isa => Str, default => sub {
    my $self  = shift;
    my @parts = split m{ / }mx, $self->context->action;
+   my $label = $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
 
-   return $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
+   return (split m{ \| }mx, $label)[0];
 };
 
 has '_base_url' => is => 'lazy', isa => URI, default => sub {
@@ -116,20 +125,21 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
          'messages'   => $self->_messages,
          'moniker'    => $self->model->moniker,
          'properties' => {
-            'base-url'       => $self->_base_url,
-            'confirm'        => $self->confirm_message,
-            'container-name' => $self->container_name,
-            'content-name'   => $self->content_name,
-            'control-label'  => $self->control_label,
-            'link-display'   => $self->link_display,
-            'location'       => $self->menu_location,
-            'logo'           => $self->logo,
-            'media-break'    => $self->media_break,
-            'skin'           => $self->context->session->skin,
-            'title'          => $self->title,
-            'title-abbrev'   => $self->title_abbrev,
-            'verify-token'   => $self->context->verification_token,
-            'version'        => MCat->VERSION,
+            'base-url'         => $self->_base_url,
+            'confirm'          => $self->confirm_message,
+            'container-layout' => $self->container_layout,
+            'container-name'   => $self->container_name,
+            'content-name'     => $self->content_name,
+            'control-label'    => $self->control_label,
+            'link-display'     => $self->link_display,
+            'location'         => $self->menu_location,
+            'logo'             => $self->logo,
+            'media-break'      => $self->media_break,
+            'skin'             => $self->context->session->skin,
+            'title'            => $self->title,
+            'title-abbrev'     => $self->title_abbrev,
+            'verify-token'     => $self->context->verification_token,
+            'version'          => MCat->VERSION,
          },
       }),
    };
@@ -197,9 +207,10 @@ sub finalise {
    $self->_add_global;
 
    my $body = $self->_json->encode({
-      'menus'        => $self->_menus,
-      'title-entry'  => $self->title_entry,
-      'verify-token' => $context->verification_token,
+      'container-layout' => $self->container_layout,
+      'menus'            => $self->_menus,
+      'title-entry'      => $self->title_entry,
+      'verify-token'     => $context->verification_token,
    });
 
    $context->stash(

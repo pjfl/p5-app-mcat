@@ -14,7 +14,8 @@ MCat.Navigation = (function() {
          this.properties       = config['properties'];
          this.baseURL          = this.properties['base-url'];
          this.confirm          = this.properties['confirm'];
-         const containerName   = this.properties['container-name'];
+         this.containerLayout  = this.properties['container-layout'];
+         this.containerName    = this.properties['container-name'];
          this.contentName      = this.properties['content-name'];
          this.controlLabel     = this.properties['control-label'];
          this.linkDisplay      = this.properties['link-display'];
@@ -26,7 +27,7 @@ MCat.Navigation = (function() {
          this.titleAbbrev      = this.properties['title-abbrev'];
          this.token            = this.properties['verify-token'];
          this.version          = this.properties['version'];
-         this.contentContainer = document.getElementById(containerName);
+         this.contentContainer = document.getElementById(this.containerName);
          this.contentPanel     = document.getElementById(this.contentName);
          this.contextPanels    = {};
          this.content;
@@ -44,6 +45,9 @@ MCat.Navigation = (function() {
          item.classList.add('selected');
          return true;
       }
+      iconImage(icon) {
+         return icon && icon.match(/:/) ? this.h.img({ src: icon }) : icon;
+      }
       isCurrentHref(href) {
          return history.state && history.state.href == href ? true : false;
       }
@@ -59,6 +63,7 @@ MCat.Navigation = (function() {
          url.searchParams.set('navigation', true);
          const { object } = await this.bitch.sucks(url);
          if (!object) return;
+         this.containerLayout = object['container-layout'];
          this.menus = object['menus'];
          this.token = object['verify-token'];
          this.titleEntry = object['title-entry'];
@@ -147,6 +152,9 @@ MCat.Navigation = (function() {
          }, [ link, this.contextPanels['control'] ]);
       }
       async renderHTML(html) {
+         let className = this.containerName;
+         if (this.containerLayout) className += ' ' + this.containerLayout;
+         this.contentContainer.setAttribute('class', className);
          const attr  = { id: this.contentName, className: this.contentName };
          const panel = this.h.div(attr);
          panel.innerHTML = html;
@@ -161,6 +169,8 @@ MCat.Navigation = (function() {
       }
       renderItem(item, menuName, context) {
          const [text, href, icon] = item;
+         const iconImage = this.iconImage(icon);
+         const title = iconImage && this.linkDisplay == 'icon' ? text : '';
          if (typeof text != 'object') {
             const label = this.renderLabel(icon, text);
             if (href) {
@@ -168,12 +178,12 @@ MCat.Navigation = (function() {
                if (context) attr['onmouseover'] = this.menuOver(context);
                const link = this.h.a(attr, label);
                link.setAttribute('listener', true);
-               return this.h.li({ className: menuName }, link);
+               return this.h.li({ className: menuName, title: title }, link);
             }
             const labelAttr = { className: 'drop-menu' };
             if (context) labelAttr['onmouseover'] = this.menuOver(context);
             const menuItem = this.h.span(labelAttr, label);
-            return this.h.li({ className: menuName }, menuItem);
+            return this.h.li({ className: menuName, title: title }, menuItem);
          }
          if (text['method'] != 'post') return;
          const form = this.h.form({
@@ -184,11 +194,10 @@ MCat.Navigation = (function() {
          form.append(this.h.button({
             className: 'form-button', onclick: this.submitHandler(form, name)
          }, this.h.span(this.renderLabel(icon, text['name']))));
-         return this.h.li({ className: menuName }, form);
+         return this.h.li({ className: menuName, title: title }, form);
       }
       renderLabel(icon, text) {
-         const iconImage = icon && icon.match(/:/)
-               ? this.h.img({ src: icon }) : icon;
+         const iconImage = this.iconImage(icon);
          return {
             both: [iconImage, text],
             icon: iconImage ? iconImage : text,
@@ -233,8 +242,8 @@ MCat.Navigation = (function() {
          const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
          const { location, text } = await this.bitch.sucks(url, opt);
          if (text && text.length > 0) {
-            await this.renderHTML(text);
             await this.loadMenuData(url);
+            await this.renderHTML(text);
             this.setHeadTitle();
             this.redraw();
          }

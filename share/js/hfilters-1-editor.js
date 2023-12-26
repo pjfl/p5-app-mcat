@@ -141,8 +141,8 @@ HFilters.Editor = (function() {
          this.treeScrollFx = new FxStyles(this.tree.el, {
             duration: 300, transition: FxTransitions.cubicInOut
          });
-         this.container.appendChild(this.ruleEditor.render());
          this.container.appendChild(this.editorDisplay);
+         this.container.appendChild(this.ruleEditor.render());
          setTimeout(function() {
             const node = this.tree.getFirstRule();
             this.tree.selectRule(node);
@@ -238,14 +238,14 @@ HFilters.Editor = (function() {
          this.cleared = true;
          this.fx().custom(this.el.offsetWidth, 0);
       }
-      editRule(node) {
+      async editRule(node) {
          this.cleared = false;
          this.el.innerHTML = '';
          this.ruleEditorFx = null;
          this.editor = new RuleEditorInterface(node);
          this.editor.registry.listen('save', this.saveRule, this);
          this.editor.registry.listen('cancel', this.cancelRule, this);
-         this.el.appendChild(this.editor.render());
+         this.el.appendChild(await this.editor.render());
          const fx = this.fx();
          fx.custom(this.el.offsetWidth, this.ruleEditorFx.initialWidth);
       }
@@ -298,14 +298,14 @@ HFilters.Editor = (function() {
          }
          return;
       }
-      render() {
+      async render() {
          const legend = this.h.legend({
             className: 'node-rule-edit-title'
          }, this.node.label);
          const content = [ legend ];
          for (const field in this.node.fields) {
             const fieldNode = this.node.data[field];
-            if (!fieldNode.group) content.push(fieldNode.render());
+            if (!fieldNode.group) content.push(await fieldNode.render());
          }
          content.push(this.h.div({ className: 'node-rule-edit-footer' }, [
             this.h.button({
