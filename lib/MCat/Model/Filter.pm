@@ -1,11 +1,8 @@
 package MCat::Model::Filter;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::Entities         qw( encode_entities );
-use Type::Utils            qw( class_type );
 use MCat::Util             qw( formpost redirect );
-use Unexpected::Functions  qw( UnknownFilter UnknownTable Unspecified );
-use JSON::MaybeXS          qw( encode_json );
+use Unexpected::Functions  qw( UnknownFilter UnknownSelector UnknownTable );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -115,16 +112,14 @@ sub editor : Nav('Filter Editor') {
       return;
    }
 
-   $context->stash( form => $form );
-
-   my $config = encode_entities encode_json {
+   my $config = {
       'api-uri'      => 'api/object/*/*',
       'request-base' => $context->request->uri_for(NUL)->as_string,
       'selector-uri' => 'filter/selector/*',
       'table-id'     => $filter->table_id
    };
 
-   $context->stash( filter_config => $config );
+   $context->stash( filter_config => $config, form => $form );
    return;
 }
 
@@ -142,21 +137,19 @@ sub selector {
    my $params  = $context->request->query_parameters;
    my $tableid = $params->{table_id}
       or return $self->error($context, 'Table id not found');
-   my $options;
+   my $options = { context => $context };
 
    if ($type eq 'field') {
       my $table = $context->model('Table')->find($tableid)
          or return $self->error($context, UnknownTable, [$tableid]);
 
-      $options = { context => $context, result_class => $table->name };
-
-      $options->{data_type} = $params->{data_type} if $params->{data_type};
+      $options->{result_class} = $table->name;
    }
-   elsif ($type eq 'list') {
-      $options = { context => $context, table_id => $tableid };
-   }
+   elsif ($type eq 'list') { $options->{table_id} = $tableid }
+   else { return $self->error($context, UnknownSelector, [$type]) }
 
-   $context->stash(table => $self->new_table($name, $options)) if $options;
+   $options->{data_type} = $params->{data_type} if $params->{data_type};
+   $context->stash(table => $self->new_table($name, $options));
    return;
 }
 
@@ -164,7 +157,7 @@ sub view : Nav('View Filter') {
    my ($self, $context, $filterid) = @_;
 
    my $filter = $context->stash('filter');
-   my $query  = $filter->to_sql;
+   my $query  = $filter->filter_json ? $filter->to_sql : [ NUL, NUL ];
 
    $context->stash(table => $self->new_table('Filter::View', {
       add_columns => [ 'SQL' => $query->[0], 'Bind Values' => $query->[1] ],

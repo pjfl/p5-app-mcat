@@ -2,10 +2,13 @@ package MCat::Schema::Result::Filter;
 
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( now_dt );
-use JSON::MaybeXS          qw( decode_json encode_json );
 use Type::Utils            qw( class_type );
 use MCat::Filter::Parser;
 use DBIx::Class::Moo::ResultClass;
+
+use Data::Dumper;
+
+$Data::Dumper::Terse = TRUE;
 
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
@@ -59,11 +62,6 @@ $class->belongs_to('core_table', "${result}::Table", {
    'foreign.id' => 'self.table_id'
 });
 
-$class->inflate_column('filter_search', {
-   deflate => sub { encode_json(shift) },
-   inflate => sub { decode_json(shift) },
-});
-
 has 'parser' =>
    is      => 'lazy',
    isa     => class_type('MCat::Filter::Parser'),
@@ -94,14 +92,19 @@ sub parse {
 }
 
 sub to_sql {
-   my $self   = shift;
-   my $schema = $self->result_source->schema;
-   my $rs     = $schema->resultset($self->core_table->name);
-   my ($query, @bindv) = @{
-      ${ $rs->search($self->filter_search, { columns => ['id']})->as_query }
-   };
+   my $self    = shift;
+   my $schema  = $self->result_source->schema;
+   my $rs      = $schema->resultset($self->core_table->name);
+   my $columns = { columns => [$self->core_table->key_name] };
+   my ($query, @bindv) = @{${$rs->search($self->to_where, $columns)->as_query}};
 
-   return [$query, encode_json(\@bindv)];
+   return [$query, Dumper(\@bindv)];
+}
+
+sub to_where {
+   my ($self, $json) = @_;
+
+   return { $self->parse($json)->to_abstract({ table => $self->core_table }) };
 }
 
 sub update {
@@ -120,14 +123,14 @@ sub _inflate_columns {
    my $columns = { $self->get_inflated_columns };
 
    if ($columns->{filter_json}) {
-      my $filter  = $self->parse($columns->{filter_json});
-      my $options = { table => $self->core_table };
+      my $dumped = Dumper($self->to_where($columns->{filter_json}));
 
-      $columns->{filter_search} = { $filter->to_abstract($options) };
+      $dumped =~ s{ [\n] }{}gmx;
+      $columns->{filter_search} = $dumped;
    }
    else {
       $columns->{filter_json} = NUL;
-      $columns->{filter_search} = {};
+      $columns->{filter_search} = NUL;
    }
 
    $columns->{updated} = now_dt;

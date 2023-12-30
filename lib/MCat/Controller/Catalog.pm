@@ -27,11 +27,12 @@ return (
    'GET + /track/* + ?*'                => sub {['track/root/base/view',   @_]},
    'GET + /cd/*/track | /track + ?*'    => sub {['track/root/base/list',   @_]},
 
-   'GET|POST + /list/create + ?*' => sub {['list/root/base/create', @_]},
-   'GET|POST + /list/*/edit + ?*' => sub {['list/root/base/edit',   @_]},
-   'POST + /list/*/delete + ?*'   => sub {['list/root/base/delete', @_]},
-   'GET + /list/* + ?*'           => sub {['list/root/base/view',   @_]},
-   'GET + /list + ?*'             => sub {['list/root/base/list',   @_]},
+   'GET|POST + /list/create + ?*'   => sub {['list/root/base/create', @_]},
+   'GET|POST + /list/*/edit + ?*'   => sub {['list/root/base/edit',   @_]},
+   'POST + /list/*/delete + ?*'     => sub {['list/root/base/delete', @_]},
+   'GET|POST + /list/*/update + ?*' => sub {['list/root/base/update', @_]},
+   'GET + /list/* + ?*'             => sub {['list/root/base/view',   @_]},
+   'GET + /list + ?*'               => sub {['list/root/base/list',   @_]},
 
    'GET|POST + /filter/create + ?*' => sub {['filter/root/base/create',   @_]},
    'GET + /filter/selector/* + ?*'  => sub {['filter/root/base/selector', @_]},

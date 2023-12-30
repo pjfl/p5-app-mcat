@@ -62,6 +62,7 @@ HFilters.Type = (function() {
    class TypeDate extends Type {
       constructor(args, label) {
          super(args, label);
+         this.args = args;
          this.date = null;
          this.dateType = null;
          this.group = args['group'];
@@ -128,8 +129,11 @@ HFilters.Type = (function() {
       }
       async updateDisplay() {
          const dateTypeClass = this.dateType.replace(/\./g, '');
-         if (!this.date || this.date.type != this.dateType)
-            this.date = eval('new ' + dateTypeClass + '({}, "")');
+         if (!this.date || this.date.type != this.dateType) {
+            const args = this.args;
+            const label = this.label;
+            this.date = eval('new ' + dateTypeClass + '(args, label)');
+         }
          this.dateContainer.innerHTML = '';
          this.dateContainer.appendChild(await this.date.render());
       }
@@ -491,7 +495,7 @@ HFilters.Type = (function() {
                   callback: function(ok, popup, data) { if (ok) callback(data)},
                   cancelCallback: function() {},
                   init_value: null,
-                  title: 'List',
+                  title: 'Select List',
                   url: this.url
                });
             }.bind(this)

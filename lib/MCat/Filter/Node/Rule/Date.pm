@@ -3,15 +3,21 @@ package MCat::Filter::Node::Rule::Date;
 use HTML::Forms::Constants qw( FALSE TRUE );
 use HTML::Forms::Types     qw( Str );
 use MCat::Filter::Types    qw( FilterField FilterDate );
+use Ref::Util              qw( is_scalarref );
 use Moo;
 
 extends 'MCat::Filter::Node::Rule';
 
 has 'date' => is => 'ro', isa => FilterDate, coerce => TRUE, required => TRUE;
 
-has 'date_field_format' => is => 'ro', isa => Str, default => 'YYYY-MM-DD';
+has 'date_format' => is => 'ro', isa => Str, default => 'YYYY-MM-DD';
 
 has 'field' => is => 'ro', isa => FilterField, coerce => TRUE, required => TRUE;
+
+has 'timestamp_format' =>
+   is      => 'ro',
+   isa     => Str,
+   default => 'YYYY-MM-DD HH24:MI:SS';
 
 has '_operator' => is => 'ro', isa => Str, required => TRUE;
 
@@ -26,16 +32,18 @@ sub _to_abstract {
 sub _rhs_value {
    my ($self, $args) = @_;
 
-   my $value = $self->date->value;
+   my ($holder, @values)  = $self->date->value;
+   my $format = $args->{timestamp_format} || $self->timestamp_format;
 
-   return sprintf "\\to_timestamp(%s, 'YYYY-MM-DD HH:MI:SS')", $value
+   return \[ sprintf("to_timestamp(%s::text, '%s')", $holder, $format), @values]
       if $self->date->has_time_zone;
 
-   my $format = $args->{date_field_format} || $self->date_field_format;
+   $format = $args->{date_format} || $self->date_format;
 
-   return sprintf "\\to_date(%s, '%s')", $value, $format if $format;
+   return \[ sprintf("to_date(%s::text, '%s')", $holder, $format), @values ]
+      if $format;
 
-   return "'" . $value . "'";
+   return $holder;
 }
 
 use namespace::autoclean;

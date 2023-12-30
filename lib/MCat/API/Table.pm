@@ -1,19 +1,12 @@
 package MCat::API::Table;
 
-use HTML::Forms::Constants qw( DOT EXCEPTION_CLASS FALSE NUL TRUE );
+use HTML::Forms::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
 use HTML::Forms::Types     qw( Str );
-use JSON::MaybeXS          qw( );
-use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( throw UnknownModel );
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 has 'name' => is => 'ro', isa => Str, required => TRUE;
-
-has '_json' =>
-   is      => 'ro',
-   isa     => class_type(JSON::MaybeXS::JSON),
-   default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
 
 sub action : Auth('view') {
    my ($self, $context, @args) = @_;
@@ -36,7 +29,7 @@ sub preference : Auth('view') {
    my $value = $context->get_body_parameters->{data} if $context->posted;
    my $pref  = $self->_preference($context, $name, $value);
 
-   $context->stash( body => $self->_json->encode($pref ? $pref->value : {}) );
+   $context->stash( json => $pref ? $pref->value : {} );
    return;
 }
 

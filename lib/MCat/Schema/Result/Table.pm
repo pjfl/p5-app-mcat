@@ -20,7 +20,7 @@ $class->add_columns(
       is_nullable => FALSE,
       label       => 'Table Name',
    },
-   relation => { # artists cds tracks
+   relation => { # ListArtist ListCd ListTrack
       data_type   => 'text',
       is_nullable => FALSE,
       label       => 'Relation Name',

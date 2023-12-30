@@ -1,19 +1,26 @@
 package MCat::View::JSON;
 
-use JSON::MaybeXS qw( encode_json );
+use HTML::Forms::Constants qw( FALSE TRUE );
+use JSON::MaybeXS          qw( );
+use Type::Utils            qw( class_type );
 use Moo;
 
 with 'Web::Components::Role';
 
 has '+moniker' => default => 'json';
 
+has '_json' =>
+   is      => 'ro',
+   isa     => class_type(JSON::MaybeXS::JSON),
+   default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
+
 sub serialize {
    my ($self, $context) = @_;
 
    my $stash = $context->stash;
-   my $json  = $stash->{body} if $stash->{body};
+   my $json; $json = $stash->{body} if $stash->{body};
 
-   $json = encode_json $stash->{json} unless $json;
+   $json = $self->_json->encode($stash->{json}) unless $json;
 
    return [ $stash->{code}, _header($stash->{http_headers}), [$json] ];
 }

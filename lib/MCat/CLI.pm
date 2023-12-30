@@ -204,6 +204,21 @@ sub send_message : method {
    return OK;
 }
 
+=item update_list - Updates list using a filter
+
+=cut
+
+sub update_list : method {
+   my $self      = shift;
+   my $list_id   = $self->options->{list_id};
+   my $filter_id = $self->options->{filter_id};
+   my $list      = $self->schema->resultset('List')->find($list_id);
+   my $filter    = $self->schema->resultset('Filter')->find($filter_id);
+
+   $list->apply_filter($filter);
+   return OK;
+}
+
 # Private methods
 sub _create_profile {
    my $self = shift;

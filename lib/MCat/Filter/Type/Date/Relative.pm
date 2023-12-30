@@ -1,6 +1,6 @@
 package MCat::Filter::Type::Date::Relative;
 
-use HTML::Forms::Constants qw( FALSE TRUE );
+use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTML::Forms::Types     qw( Bool Int );
 use Moo;
 
@@ -17,30 +17,34 @@ has 'years', is => 'ro', isa => Int, required => TRUE;
 sub value {
    my ($self, $args) = @_;
 
-   my $interval = $self->_value($args);
-
+   my $interval = "'" . $self->_value($args) . "'::interval";
    my $date; $date = $args->{date} if $args->{date};
+   my $value;
 
    if ($self->has_time_zone) {
       my $timezone = $self->time_zone;
 
-      return "(timezone('${timezone}', '${date}')::timestamp + '${interval}'::interval)::timestamp"
-         if $date;
-
-      return "(date_trunc('day', timezone('${timezone}', current_timestamp)) + '${interval}'::interval)";
+      if ($date) {
+         $value = "(timezone('${timezone}', '${date}')::timestamp + ${interval})";
+      }
+      else {
+         $value = "(date_trunc('day', timezone('${timezone}', current_timestamp)) + ${interval})";
+      }
+   }
+   elsif ($date) {
+      $value = "('${date}'::timestamp + ${interval})";
+   }
+   else {
+      $value = "(current_date::timestamp + ${interval})";
    }
 
-   return "('${date}'::timestamp + '${interval}'::interval)::date" if $date;
-
-   return "(current_date::timestamp + '${interval}'::interval)::date";
+   return $value, $self->years, $self->months, $self->days;
 }
 
 sub _value {
-   my $self   = shift;
-   my $format = $self->past
-      ? '-%syears -%smonths -%sdays' : '%syears %smonths %sdays';
+   my $self = shift;
 
-   return sprintf $format, $self->years, $self->months, $self->days;
+   return $self->past ? '-?years -?months -?days' : '?years ?months ?days';
 }
 
 use namespace::autoclean;

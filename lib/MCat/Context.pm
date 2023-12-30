@@ -59,7 +59,9 @@ sub get_body_parameters {
 }
 
 sub model {
-   my ($self, $rs_name) = @_; return $self->schema->resultset($rs_name);
+   my ($self, $rs_name) = @_;
+
+   return $rs_name ? $self->schema->resultset($rs_name) : undef;
 }
 
 sub res { shift->response }

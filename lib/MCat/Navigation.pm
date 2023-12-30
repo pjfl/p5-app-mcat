@@ -98,7 +98,7 @@ has 'title_entry' => is => 'lazy', isa => Str, default => sub {
    my @parts = split m{ / }mx, $self->context->action;
    my $label = $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
 
-   return (split m{ \| }mx, $label)[0];
+   return (split m{ \| }mx, $label)[0] // NUL;
 };
 
 has '_base_url' => is => 'lazy', isa => URI, default => sub {

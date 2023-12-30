@@ -60,12 +60,18 @@ $class->has_many(
 sub apply_filter {
    my ($self, $filter) = @_;
 
-   my $schema   = $self->result_source->schema;
-   my $table_rs = $schema->resultset($self->core_table->name);
+   my $schema      = $self->result_source->schema;
+   my $table_rs    = $schema->resultset($self->core_table->name);
+   my $filtered_rs = $table_rs->search($filter->to_where);
+   my $join_rs     = $schema->resultset($self->core_table->relation);
 
-   while (my $filtered = $table_rs->search($filter->filter_search)->next) {
-      $filtered->create_related('lists', { list_id => $self->id });
-   }
+   $schema->txn_do(sub {
+      $join_rs->search({ list_id => $self->id })->delete;
+
+      while (my $included = $filtered_rs->next) {
+         $included->create_related('lists', { list_id => $self->id });
+      }
+   });
 
    return;
 }

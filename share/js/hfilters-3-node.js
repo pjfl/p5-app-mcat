@@ -370,7 +370,7 @@ HFilters.Node = (function() {
       constructor(data) {
          data.fields ||= {
             date:   { label: 'Date', type: 'Date' },
-            field:  { label: 'Field', type: 'Field', dataType: 'timestamp' },
+            field:  { label: 'Field', type: 'Field', dataType: 'datetime' },
             negate: { label: 'Inverse', type: 'Negate' }
          };
          data.label ||= 'Date match';
@@ -467,7 +467,7 @@ HFilters.Node = (function() {
    class RuleNumeric extends Rule {
       constructor(data) {
          data.fields ||= {
-            field:  { label: 'Field', type: 'Field', dataType: 'integer' },
+            field:  { label: 'Field', type: 'Field', dataType: 'numeric' },
             number: { label: 'Value', type: 'Numeric' }
          };
          data.label ||= 'Field numeric match';

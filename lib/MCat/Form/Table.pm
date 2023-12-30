@@ -18,6 +18,8 @@ has_field 'name' => required => TRUE;
 
 has_field 'relation' => required => TRUE;
 
+has_field 'key_name' => required => TRUE;
+
 has_field 'submit' => type => 'Submit';
 
 use namespace::autoclean -except => META;

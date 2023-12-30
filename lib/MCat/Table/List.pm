@@ -8,8 +8,6 @@ extends 'HTML::StateTable';
 
 has '+caption' => default => 'Lists List';
 
-has '+page_size_control_location' => default => 'BottomLeft';
-
 set_table_name 'lists';
 
 setup_resultset sub {

@@ -1,9 +1,11 @@
 package MCat::View::HTML;
 
 use HTML::Forms::Constants qw( TRUE );
-use HTML::Forms::Util      qw( get_token process_attrs );
-use Scalar::Util           qw( weaken );
 use Encode                 qw( encode );
+use HTML::Entities         qw( encode_entities );
+use HTML::Forms::Util      qw( get_token process_attrs );
+use JSON::MaybeXS          qw( encode_json );
+use Scalar::Util           qw( weaken );
 use Moo;
 
 with 'Web::Components::Role';
@@ -45,11 +47,13 @@ sub _add_tt_defaults {
    my ($self, $context) = @_; weaken $context;
 
    return {
-      context        => $context,
-      process_attrs  => \&process_attrs,
-      token          => sub { $context->verification_token },
-      uri_for        => sub { $context->request->uri_for(@_) },
-      uri_for_action => sub { $context->uri_for_action(@_) },
+      context         => $context,
+      encode_entities => \&encode_entities,
+      encode_json     => \&encode_json,
+      process_attrs   => \&process_attrs,
+      token           => sub { $context->verification_token },
+      uri_for         => sub { $context->request->uri_for(@_) },
+      uri_for_action  => sub { $context->uri_for_action(@_) },
       %{$context->stash},
    };
 }
