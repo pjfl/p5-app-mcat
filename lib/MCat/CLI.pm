@@ -214,8 +214,11 @@ sub update_list : method {
    my $filter_id = $self->options->{filter_id};
    my $list      = $self->schema->resultset('List')->find($list_id);
    my $filter    = $self->schema->resultset('Filter')->find($filter_id);
+   my $count     = $list->apply_filter($filter);
+   my $options   = { name => 'CLI.update_list' };
+   my $name      = $list->name;
 
-   $list->apply_filter($filter);
+   $self->output("Added ${count} entries to ${name} list", $options);
    return OK;
 }
 

@@ -17,34 +17,29 @@ has 'years', is => 'ro', isa => Int, required => TRUE;
 sub value {
    my ($self, $args) = @_;
 
-   my $interval = "'" . $self->_value($args) . "'::interval";
+   my $interval = "((? || 'years')::interval + (? || 'months')::interval + (? || 'days')::interval)::interval";
    my $date; $date = $args->{date} if $args->{date};
-   my $value;
+   my $op = $self->past ? '-' : '+';
+   my $holder;
 
    if ($self->has_time_zone) {
       my $timezone = $self->time_zone;
 
       if ($date) {
-         $value = "(timezone('${timezone}', '${date}')::timestamp + ${interval})";
+         $holder = "(timezone('${timezone}', '${date}')::timestamp ${op} ${interval})";
       }
       else {
-         $value = "(date_trunc('day', timezone('${timezone}', current_timestamp)) + ${interval})";
+         $holder = "(date_trunc('day', timezone('${timezone}', current_timestamp)) ${op} ${interval})";
       }
    }
    elsif ($date) {
-      $value = "('${date}'::timestamp + ${interval})";
+      $holder = "('${date}'::timestamp ${op} ${interval})";
    }
    else {
-      $value = "(current_date::timestamp + ${interval})";
+      $holder = "(current_date::timestamp ${op} ${interval})";
    }
 
-   return $value, $self->years, $self->months, $self->days;
-}
-
-sub _value {
-   my $self = shift;
-
-   return $self->past ? '-?years -?months -?days' : '?years ?months ?days';
+   return $holder, $self->years, $self->months, $self->days;
 }
 
 use namespace::autoclean;

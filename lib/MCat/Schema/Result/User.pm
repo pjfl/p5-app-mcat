@@ -132,6 +132,8 @@ sub authenticate {
 
    throw PasswordExpired, [$self] if $self->password_expired && !$for_update;
 
+   throw Unspecified, ['Password'] unless $password;
+
    my $encrypted = bcrypt($password, _get_salt $self->password);
 
    throw IncorrectPassword, [$self] unless $self->password eq $encrypted;

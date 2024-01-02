@@ -11,12 +11,9 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
-has '+title'               => default => 'Login';
-has '+default_wrapper_tag' => default => 'fieldset';
-has '+do_form_wrapper'     => default => TRUE;
-has '+info_message'        => default => 'Enter your username and password';
-has '+is_html5'            => default => TRUE;
-has '+item_class'          => default => 'User';
+has '+title'        => default => 'Login';
+has '+info_message' => default => 'Enter your username and password';
+has '+item_class'   => default => 'User';
 
 has_field 'name' =>
    label        => 'User Name',
@@ -28,10 +25,11 @@ has_field 'name' =>
 has_field 'password' => type => 'Password', required => TRUE;
 
 has_field 'auth_code' =>
-   type          => 'PosInteger',
+   type          => 'Digits',
    label         => 'Auth. Code',
    required      => TRUE,
-   title         => 'Enter the Google Authenticator code',
+   size          => 6,
+   title         => 'Enter the Authenticator code',
    wrapper_class => ['hide input-integer'];
 
 has_field 'login' =>
@@ -39,7 +37,7 @@ has_field 'login' =>
    html_name     => 'submit',
    label         => 'Login',
    value         => 'login',
-   wrapper_class => ['inline input-button right'];
+   wrapper_class => ['expand input-button'];
 
 my $button_js = q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"};
 
@@ -50,7 +48,7 @@ has_field 'password_reset' =>
    label         => 'Forgot Password?',
    title         => 'Send password reset email',
    value         => 'password_reset',
-   wrapper_class => ['hide inline input-button'];
+   wrapper_class => ['expand hide inline input-button'];
 
 has_field 'totp_reset' =>
    type          => 'Button',
@@ -77,6 +75,7 @@ around 'after_build_fields' => sub {
 
    $attr->{javascript} = qq{onblur="${toggle}; ${showif}"};
    $field->element_attr($attr);
+   $self->set_form_element_attr('novalidate', 'novalidate');
    return;
 };
 
@@ -123,6 +122,7 @@ sub validate {
    }
    catch_class [
       'IncorrectAuthCode' => sub { $code->add_error($_->original) },
+      'IncorrectPassword' => sub { $passwd->add_error($_->original) },
       'PasswordExpired' => sub {
          my $message = $_->original;
          my $changep = $context->uri_for_action('page/password', [$user->id]);
@@ -131,8 +131,8 @@ sub validate {
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;
          $passwd->add_error($message);
       },
-      'Authentication' => sub { $passwd->add_error($_->original) },
-      'Unspecified' => sub { $code->add_error($_->original) },
+      'Unspecified' => sub { $self->add_form_error($_->original) },
+      'Authentication' => sub { $self->add_form_error($_->original) },
       '*' => sub {
          $self->add_form_error(blessed $_ ? $_->original : "${_}");
          $self->log->alert($_, $self->context) if $self->has_log;

@@ -34,21 +34,10 @@ sub validate {
    my $self      = shift;
    my $filter_id = $self->field('filter')->value;
 
-   try   { $self->_update_list($self->item->id, $filter_id) }
+   try   { $self->item->queue_update($filter_id) }
    catch { $self->add_form_error("${_}") };
 
    return;
-}
-
-sub _update_list {
-   my ($self, $list_id, $filter_id) = @_;
-
-   my $program = $self->context->config->bin->catfile('mcat-cli');
-   my $options = "-o list_id=${list_id} -o filter_id=${filter_id}";
-   my $command = "${program} ${options} update_list";
-   my $args    = { command => $command, name => 'update_list' };
-
-   return $self->context->model('Job')->create($args);
 }
 
 use namespace::autoclean -except => META;

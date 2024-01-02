@@ -8,12 +8,9 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
-has '+title'               => default => 'List';
-has '+default_wrapper_tag' => default => 'fieldset';
-has '+do_form_wrapper'     => default => TRUE;
-has '+info_message'        => default => 'You know what to do';
-has '+is_html5'            => default => TRUE;
-has '+item_class'          => default => 'List';
+has '+title'        => default => 'List';
+has '+info_message' => default => 'You know what to do';
+has '+item_class'   => default => 'List';
 
 has_field 'name' => required => TRUE;
 
@@ -41,7 +38,7 @@ sub options_table {
 }
 
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
 
 use namespace::autoclean -except => META;
 

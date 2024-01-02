@@ -89,7 +89,13 @@ sub edit : Nav('Edit Artist') {
 sub list : Auth('view') Nav('Artists|img/artist.svg') {
    my ($self, $context) = @_;
 
-   $context->stash(table => $self->new_table('Artist', { context => $context}));
+   my $options = { context => $context };
+
+   if (my $list_id = $context->request->query_parameters->{list_id}) {
+      $options->{list_id} = $list_id;
+   }
+
+   $context->stash(table => $self->new_table('Artist', $options));
    return;
 }
 
@@ -114,8 +120,7 @@ sub remove {
 sub view : Auth('view') Nav('View Artist') {
    my ($self, $context, $artistid) = @_;
 
-   my $cd_rs   = $context->model('Cd')->search({ 'me.artistid' => $artistid });
-   my $options = { context => $context, resultset => $cd_rs };
+   my $options = { context => $context, artistid => $artistid };
    my $cds     = $self->new_table('Cd', $options);
 
    $context->stash(table => $self->new_table('Object::View', {

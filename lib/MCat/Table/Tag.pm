@@ -28,6 +28,8 @@ has '+form_buttons' => default => sub {
 
 has '+form_control_location' => default => 'BottomRight';
 
+has '+page_control_location' => default => 'TopRight';
+
 has '+page_size_control_location' => default => 'BottomLeft';
 
 set_table_name 'tag';
@@ -49,7 +51,7 @@ has_column 'name' =>
    searchable => TRUE,
    sortable   => TRUE,
    title      => 'Sort by tag',
-   width      => '20rem';
+   width      => '30rem';
 
 has_column 'check' =>
    cell_traits => ['Checkbox'],

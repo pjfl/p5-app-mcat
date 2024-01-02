@@ -31,7 +31,7 @@ has_exception $class;
 has_exception 'Authentication' => parents => [$class];
 
 has_exception 'AccountInactive' => parents => ['Authentication'],
-   error   => 'User [_1] authentication failed';
+   error   => 'User [_1] account inactive';
 
 has_exception 'AuthenticationRequired' => parents => ['Authentication'],
    error   => 'Resource [_1] authentication required';

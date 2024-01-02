@@ -165,7 +165,7 @@ MCat.Navigation = (function() {
             this.contentContainer, 'contentPanel', panel
          );
          FilterEditor.scan(panel);
-         HForms.Util.focusFirst(this.skin);
+         HForms.Util.scan(this.skin);
       }
       renderItem(item, menuName, context) {
          const [text, href, icon] = item;

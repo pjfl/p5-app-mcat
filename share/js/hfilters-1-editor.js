@@ -5,37 +5,39 @@ HFilters.Editor = (function() {
    const triggerClass = 'filter-container';
    class Editor {
       constructor(container, config) {
-         this.container = container;
          this.config = config;
+         this.container = container;
          this.dragThreshold = config['drag-threshold'] || 3;
+         this.editorDisplay = this.h.div({ className: 'filter-editor' });
+         this.instance = true;
          this.ruleEditorWidth = config['rule-editor-width'] || 200;
          this.startHighlightDelay = config['start-highlight-delay'] || 100;
-         this.instance = true;
-         this.editorDisplay = this.h.div({ className: 'filter-editor' });
+
          const fieldName = config['field-name'] || 'filter_json';
          this.field = document.getElementById(fieldName);
          if (!this.field) {
             this.error = `Element ${fieldName} not found`;
             return;
          }
-         const formName = config['form-name'] || 'filter_editor';
-         const form = document.getElementById(formName);
-         if (!form) console.warn(`Form ${formName} not found`);
-         else form.addEventListener('submit', this.submitHandler.bind(this));
-         this.originalValue = this.field.value;
-         try {
-            this.tree = HFilters.NodeTree.create(this.originalValue, config);
-         }
+
+         const value = this.originalValue = this.field.value;
+         try { this.tree = HFilters.NodeTree.create(value, config) }
          catch (e) { throw `NodeTree.create: ${e}` }
          const treeReg = this.tree.registry;
          treeReg.listen('ruleremove', this.testDataChange.bind(this));
          treeReg.listen('ruleselect', this.ruleSelect.bind(this));
          treeReg.listen('ruleunselect', this.ruleUnselect.bind(this));
+
          try { this.ruleEditor = new RuleEditor(config) }
          catch (e) { throw `RuleEditor.new: ${e}` }
          const editorReg = this.ruleEditor.registry;
          editorReg.listen('close', this.tree.selectRule, this.tree);
          editorReg.listen('close', this.testDataChange.bind(this));
+
+         const formName = config['form-name'] || 'filter_editor';
+         const form = document.getElementById(formName);
+         if (!form) console.warn(`Form ${formName} not found`);
+         else form.addEventListener('submit', this.submitHandler.bind(this));
       }
       centerNode(node, big) {
          const nodePos = this.getNodeCenter(node);

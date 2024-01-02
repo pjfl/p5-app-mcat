@@ -10,16 +10,12 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
-has '+messages_before_start' => default => FALSE;
-has '+name'                  => default => 'filter_editor';
-has '+title'                 => default => 'Filter Editor';
-has '+default_wrapper_tag'   => default => 'fieldset';
-has '+do_form_wrapper'       => default => TRUE;
-has '+info_message'          => default => 'You know what to do';
-has '+is_html5'              => default => TRUE;
-has '+item_class'            => default => 'Filter';
+has '+name'         => default => 'filter_editor';
+has '+title'        => default => 'Filter Editor';
+has '+info_message' => default => 'You know what to do';
+has '+item_class'   => default => 'Filter';
 
-has_field 'name' => type => 'Hidden';
+has_field 'name' => type => 'Display';
 
 has_field 'description' => type => 'Hidden';
 
@@ -29,7 +25,7 @@ has_field 'core_table' => type => 'Hidden';
 
 has_field 'filter_json' => type => 'Hidden';
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
 
 sub validate {
    my $self = shift;

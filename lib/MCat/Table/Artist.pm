@@ -1,6 +1,7 @@
 package MCat::Table::Artist;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
+use HTML::StateTable::Types     qw( Int );
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -56,16 +57,28 @@ has '+form_buttons' => default => sub {
 
 has '+page_control_location' => default => 'TopRight';
 
-has '+tag_control_location' => default => 'Credit';
+has '+tag_control_location' => default => 'Title';
 
 has '+tag_section' => default => FALSE;
 
 has '+title_location' => default => 'inner';
 
+has 'list_id' => is => 'ro', isa => Int, predicate => 'has_list_id';
+
 set_table_name 'artist';
 
 setup_resultset sub {
-   return shift->context->model('Artist');
+   my $self = shift;
+   my $rs   = $self->context->model('Artist');
+
+   return $rs unless $self->has_list_id;
+
+   my $list_rs = $self->context->model('ListArtist');
+   my $where   = { list_id => $self->list_id };
+
+   $list_rs = $list_rs->search($where)->get_column('artistid');
+
+   return $rs->search({ 'me.artistid' => { -in => $list_rs->as_query } });
 };
 
 has_column 'check' =>

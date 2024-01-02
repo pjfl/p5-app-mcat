@@ -4,7 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use HTML::Forms::Types     qw( HashRef );
 use Class::Usul::Cmd::Util qw( ensure_class_loaded );
 use JSON::MaybeXS          qw( decode_json );
-use Ref::Util              qw( is_plain_hashref is_scalarref );
+use Ref::Util              qw( is_plain_hashref );
 use Scalar::Util           qw( blessed );
 use Unexpected::Functions  qw( throw Unspecified );
 use MCat::Filter;

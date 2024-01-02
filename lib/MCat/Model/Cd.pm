@@ -110,29 +110,29 @@ sub edit : Nav('Edit CD') {
 sub list : Auth('view') Nav('CDs|img/cd.svg') {
    my ($self, $context, $artistid) = @_;
 
-   my $cd_rs = $context->model('Cd');
+   my $options = { context => $context };
 
-   $cd_rs = $cd_rs->search({ 'me.artistid' => $artistid }) if $artistid;
+   $options->{artistid} = $artistid if $artistid;
 
-   $context->stash(table => $self->table->new_with_context('Cd', {
-      context => $context, resultset => $cd_rs
-   }));
+   if (my $list_id = $context->request->query_parameters->{list_id}) {
+      $options->{list_id} = $list_id;
+   }
+
+   $context->stash(table => $self->table->new_with_context('Cd', $options));
    return;
 }
 
 sub view : Auth('view') Nav('View CD') {
    my ($self, $context, $cdid) = @_;
 
-   my $cd       = $context->stash('cd');
-   my $track_rs = $context->model('Track')->search({ 'me.cdid' => $cdid });
-   my $options  = { context => $context, resultset => $track_rs };
-   my $tracks   = $self->table->new_with_context('Track', $options);
+   my $options = { context => $context, cdid => $cdid };
+   my $tracks  = $self->table->new_with_context('Track', $options);
 
    $context->stash(table => $self->table->new_with_context('Object::View', {
       add_columns => [ 'Tracks' => $tracks ],
       caption     => 'CD View',
       context     => $context,
-      result      => $cd
+      result      => $context->stash('cd')
    }));
    return;
 }

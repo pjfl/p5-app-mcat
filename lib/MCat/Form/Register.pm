@@ -12,13 +12,10 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
-has '+default_wrapper_tag' => default => 'fieldset';
-has '+do_form_wrapper' => default => TRUE;
+has '+title'        => default => 'Registration Request';
 has '+info_message' => default => 'Answer the registration questions';
-has '+is_html5' => default => TRUE;
-has '+item_class' => default => 'User';
-has '+no_update' => default => TRUE;
-has '+title' => default => 'Registration Request';
+has '+item_class'   => default => 'User';
+has '+no_update'    => default => TRUE;
 
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 
@@ -26,7 +23,7 @@ has_field 'name' => label => 'User Name', required => TRUE;
 
 has_field 'email' => type => 'Email', required => TRUE;
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
 
 sub validate {
    my $self  = shift;

@@ -1,6 +1,7 @@
 package MCat::Table::Track;
 
 use HTML::StateTable::Constants qw( FALSE TABLE_META TRUE );
+use HTML::StateTable::Types     qw( Int );
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -8,14 +9,34 @@ extends 'HTML::StateTable';
 
 has '+caption' => default => 'Track List';
 
+has 'cdid' => is => 'ro', isa => Int, predicate => 'has_cdid';
+
+has 'list_id' => is => 'ro', isa => Int, predicate => 'has_list_id';
+
 after 'BUILD' => sub {
    my $self = shift;
 
-   $self->paging(FALSE) if $self->context->stash('cd');
+   $self->paging(FALSE) if $self->has_cdid;
    return;
 };
 
 set_table_name 'track';
+
+setup_resultset sub {
+   my $self = shift;
+   my $rs   = $self->context->model('Track');
+
+   $rs = $rs->search({ 'me.cdid' => $self->cdid }) if $self->has_cdid;
+
+   return $rs unless $self->has_list_id;
+
+   my $list_rs = $self->context->model('ListTrack');
+   my $where   = { list_id => $self->list_id };
+
+   $list_rs = $list_rs->search($where)->get_column('trackid');
+
+   return $rs->search({ 'me.trackid' => { -in => $list_rs->as_query } });
+};
 
 has_column 'cd_title' =>
    hidden   => sub {

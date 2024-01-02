@@ -12,6 +12,8 @@ with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
 with    'HTML::StateTable::Role::Active';
 
+has '+active_control_location' => default => 'BottomLeft';
+
 has '+caption' => default => 'User List';
 
 has '+configurable_action' => default => 'api/table_preference';
@@ -37,6 +39,8 @@ has '+form_buttons' => default => sub {
 
 has '+form_control_location' => default => 'BottomRight';
 
+has '+page_control_location' => default => 'TopRight';
+
 has '+page_size_control_location' => default => 'BottomLeft';
 
 set_table_name 'user';
@@ -56,7 +60,8 @@ has_column 'name' =>
    },
    searchable => TRUE,
    sortable   => TRUE,
-   title      => 'Sort by user';
+   title      => 'Sort by user',
+   width      => '10rem';
 
 has_column 'role_id' =>
    cell_traits => ['Capitalise'],
@@ -66,12 +71,14 @@ has_column 'role_id' =>
    title       => 'Sort by role',
    value       => 'role.name';
 
-has_column 'timezone' => value => sub {
-   my $self    = shift;
-   my $profile = $self->result->profile;
+has_column 'timezone' =>
+   value => sub {
+      my $self    = shift;
+      my $profile = $self->result->profile;
 
-   return $profile ? $profile->preference('timezone') : local_tz;
-};
+      return $profile ? $profile->preference('timezone') : local_tz;
+   },
+   width => '15rem';
 
 has_column 'check' =>
    cell_traits => ['Checkbox'],

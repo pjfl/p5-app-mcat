@@ -24,8 +24,9 @@ has_column 'name' =>
       return  $context->uri_for_action('list/view', [$self->result->id]);
    },
    sortable => TRUE,
-   title    => 'Sort by name',
-   width    => '20rem';
+   title    => 'Sort by name';
+
+has_column 'description' => width => '20rem';
 
 use namespace::autoclean -except => TABLE_META;
 

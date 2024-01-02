@@ -111,13 +111,15 @@ sub edit : Nav('Edit Track') {
 sub list : Auth('view') Nav('Tracks|img/tracks.svg') {
    my ($self, $context, $cdid) = @_;
 
-   my $track_rs = $context->model('Track');
+   my $options = { context => $context };
 
-   $track_rs = $track_rs->search({ 'me.artistid' => $cdid }) if $cdid;
+   $options->{cdid} = $cdid if $cdid;
 
-   $context->stash(table => $self->table->new_with_context('Track', {
-      context => $context, resultset => $track_rs
-   }));
+   if (my $list_id = $context->request->query_parameters->{list_id}) {
+      $options->{list_id} = $list_id;
+   }
+
+   $context->stash(table => $self->table->new_with_context('Track', $options));
    return;
 }
 

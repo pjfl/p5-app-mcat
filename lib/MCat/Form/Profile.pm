@@ -75,7 +75,7 @@ has_field 'theme' => type => 'Select', default => 'light', options => [
 
 has_field 'timezone' => type => 'Timezone';
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
 
 sub validate {
    my $self       = shift;

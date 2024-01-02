@@ -1,7 +1,7 @@
 package MCat::Object::View;
 
 use Data::Page;
-use HTML::StateTable::Constants qw( FALSE TRUE );
+use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Int ResultRole Table Undef );
 use JSON::MaybeXS               qw( encode_json );
 use List::Util                  qw( pairs );
@@ -72,7 +72,12 @@ sub build_results {
             $value = $table->result;
 
             for my $component (split m{ \. }mx, $display) {
-               $value = $value->$component;
+               if ($value) { $value = $value->$component }
+               else {
+                  # TODO: Log warn
+                  $value = NUL;
+                  last;
+               }
             }
          }
       }

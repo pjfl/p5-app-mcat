@@ -53,7 +53,7 @@
     nav-list-width: 7rem;
     @nav-link-both: 7;
     @nav-link-icon: 4;
-    @nav-link-text: 5;
+    @nav-link-text: 6;
     sidebar-both: unit(@nav-link-both, rem);
     frame-left-both: unit((@nav-link-both + 0.75), rem);
     sidebar-icon: unit(@nav-link-icon, rem);
@@ -302,7 +302,7 @@ header {
         align-items: flex-start; display: flex; flex-direction: column;
         min-height: 2rem; padding-top: 0.5rem;
         li.global {
-            display: block; margin: 0; padding: 1rem 0;
+            display: block; margin: 0; padding: 1rem 0; width: 100%;
             a, .drop-menu {
                 display: inline-block; padding: 1rem 1.25rem;
                 position: relative; width: 100%;
@@ -347,24 +347,18 @@ header {
         top: #sizes[nav-header-height];
     }
 }
-.sidebar.link-display-both {
-    .nav-list.global {
-        min-width: #sizes[sidebar-both];
-    }
-}
-.sidebar.link-display-icon {
-    .nav-list.global {
-        min-width: #sizes[sidebar-icon];
-    }
-}
-.sidebar.link-display-text {
-    .nav-list.global {
-        min-width: #sizes[sidebar-text];
-    }
-}
 .sidebar::after {
     background: #grads[sidebar-bg]; content: ' '; display: block;
     height: 5rem; margin-top: -0.25rem;
+}
+.sidebar.link-display-both .nav-list.global {
+    min-width: #sizes[sidebar-both];
+}
+.sidebar.link-display-icon .nav-list.global {
+    min-width: #sizes[sidebar-icon];
+}
+.sidebar.link-display-text .nav-list.global {
+    min-width: #sizes[sidebar-text];
 }
 .sidebar.link-display-both::after {
     width: #sizes[sidebar-both];
