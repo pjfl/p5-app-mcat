@@ -12,12 +12,9 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
-has '+default_wrapper_tag' => default => 'fieldset';
-has '+do_form_wrapper' => default => TRUE;
+has '+title'        => default => 'TOTP Reset Request';
 has '+info_message' => default => 'Answer the security questions';
-has '+is_html5' => default => TRUE;
-has '+no_update' => default => TRUE;
-has '+title' => default => 'TOTP Reset Request';
+has '+no_update'    => default => TRUE;
 
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 
@@ -33,7 +30,7 @@ has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
 
 has_field 'postcode' => required => TRUE, size => 8;
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
 
 sub default_name {
    my $self = shift; return $self->user->name;

@@ -177,7 +177,7 @@ MCat.Navigation = (function() {
                const attr = { href: href, onclick: this.loadLocation(href) };
                if (context) attr['onmouseover'] = this.menuOver(context);
                const link = this.h.a(attr, label);
-               link.setAttribute('listener', true);
+               link.setAttribute('clicklistener', true);
                return this.h.li({ className: menuName, title: title }, link);
             }
             const labelAttr = { className: 'drop-menu' };
@@ -189,8 +189,8 @@ MCat.Navigation = (function() {
          const form = this.h.form({
             action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
-         form.setAttribute('listener', true);
          form.addEventListener('submit', this.submitFormHandler(form));
+         form.setAttribute('submitlistener', true);
          form.append(this.h.button({
             className: 'form-button', onclick: this.submitHandler(form, name)
          }, this.h.span(this.renderLabel(icon, text['name']))));
@@ -265,15 +265,15 @@ MCat.Navigation = (function() {
          for (const link of container.getElementsByTagName('a')) {
             const href = link.href + '';
             if (href.length && url == href.substring(0, url.length)
-                && !link.getAttribute('listener')) {
-               link.setAttribute('listener', true);
+                && !link.getAttribute('clicklistener')) {
                link.addEventListener('click', this.loadLocation(href));
+               link.setAttribute('clicklistener', true);
             }
          }
          for (const form of container.getElementsByTagName('form')) {
             const action = form.action + '';
             if (action.length && url == action.substring(0, url.length)
-                && !form.getAttribute('listener')) {
+                && !form.getAttribute('submitlistener')) {
                form.addEventListener('submit', this.submitFormHandler(form));
             }
          }
@@ -311,7 +311,7 @@ MCat.Navigation = (function() {
          title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
       submitFormHandler(form) {
-         form.setAttribute('listener', true);
+         form.setAttribute('submitlistener', true);
          const action = form.action;
          return function(event) {
             event.preventDefault();

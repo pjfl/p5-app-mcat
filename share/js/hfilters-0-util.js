@@ -28,7 +28,7 @@ HFilters.Util = (function() {
    const _events = [
       'onchange', 'onclick', 'ondragenter', 'ondragleave', 'ondragover',
       'ondragstart', 'ondrop', 'onkeypress', 'onmouseenter', 'onmouseleave',
-      'onmouseover', 'onsubmit'
+      'onmousemove', 'onmouseover', 'onsubmit'
    ];
    const _typeof = function(x) {
       if (!x) return;
@@ -271,6 +271,25 @@ HFilters.Util = (function() {
          bitch: new Bitch(),
       },
       Markup: { // A role
+         animateButtons: function(container) {
+            const selector = 'button';
+            container ||= this.container;
+            for (const el of container.querySelectorAll(selector)) {
+               if (el.getAttribute('movelistener')) continue;
+               el.addEventListener('mousemove', function(event) {
+                  const rect = el.getBoundingClientRect();
+                  const x = Math.floor(
+                     event.pageX - (rect.left + window.scrollX)
+                  );
+                  const y = Math.floor(
+                     event.pageY - (rect.top + window.scrollY)
+                  );
+                  el.style.setProperty('--x', x + 'px');
+                  el.style.setProperty('--y', y + 'px');
+               });
+               el.setAttribute('movelistener', true);
+            }
+         },
          appendValue: function(obj, key, newValue) {
             let existingValue = obj[key] || '';
             if (existingValue) existingValue += ' ';

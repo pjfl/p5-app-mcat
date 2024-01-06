@@ -1,1 +1,1 @@
-[% table.render %]<br/>
+[% table.render %]

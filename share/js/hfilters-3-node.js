@@ -287,7 +287,7 @@ HFilters.Node = (function() {
             title: 'AND'
          });
          this.el.appendChild(this.addAnd);
-         this.removeEl = this.h.button({
+         this.removeEl = this.h.span({
             className: 'node-rule-remove-button',
             onclick: function(event) {
                event.preventDefault();
@@ -402,7 +402,7 @@ HFilters.Node = (function() {
       constructor(data) {
          data.fields ||= {
             date:  { label: 'Date', type: 'Date' },
-            field: { label: 'Field', type: 'Field' }
+            field: { label: 'Field', type: 'Field', dataType: 'datetime' }
          };
          data.label ||= 'Date is before';
          data.type ||= 'Rule.Date.Before';
@@ -417,7 +417,7 @@ HFilters.Node = (function() {
       constructor(data) {
          data.fields ||= {
             date:  { label: 'Date', type: 'Date' },
-            field: { label: 'Field', type: 'Field' }
+            field: { label: 'Field', type: 'Field', dataType: 'datetime' }
          };
          data.label ||= 'Date is after';
          data.type ||= 'Rule.Date.After';

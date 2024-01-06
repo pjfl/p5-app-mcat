@@ -23,7 +23,9 @@ $class->add_columns(
 
 $class->set_primary_key('id');
 
-$class->add_unique_constraint('preference_user_id_name_uniq', ['user_id', 'name']);
+$class->add_unique_constraint(
+   'preference_user_id_name_uniq', ['user_id', 'name']
+);
 
 $class->belongs_to('user' => "${result}::User", 'user_id');
 

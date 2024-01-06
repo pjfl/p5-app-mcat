@@ -52,8 +52,9 @@ HFilters.Modal = (function() {
          const isButton = !args.url;
          const type = isButton ? 'button' : 'a';
          let classes = 'button';
-         if (args.modifiers)
+         if (args.modifiers) {
             classes += args.modifiers.map(m => ` button-${m}`).join('');
+         }
          const attrs = { className: classes };
          ['id', 'onclick', 'title', 'type'].forEach((a) => {
             if (args[a]) attrs[a] = args[a];
@@ -64,7 +65,7 @@ HFilters.Modal = (function() {
          }
          if (!isButton) attrs.href = args.url;
          this.text = document.createTextNode(args.text || '');
-         this.elm = this.h[type](attrs, this.text);
+         this.elm = this.h[type](attrs, this.h.span([this.text]));
          if (args.parent) args.parent.appendChild(this.elm);
       }
       activate() {
@@ -316,9 +317,12 @@ HFilters.Modal = (function() {
             className: 'modal-header', onmousedown: this._clickHandler(el)
          }, [
             this.h.h1({ className: 'modal-title' }, this.title),
-            this.h.button({
-               className: 'button modal-close button-icon',
-               onclick: function() { this.close() }.bind(this)
+            this.h.span({
+               className: 'button-icon modal-close',
+               onclick: function(event) {
+                  event.preventDefault();
+                  this.close();
+               }.bind(this)
             }, '×')
          ]);
          this.modalHeader.setAttribute('draggable', 'draggable');
@@ -350,6 +354,7 @@ HFilters.Modal = (function() {
             }).element();
             buttonEl.buttonConfig = button;
          });
+         this.animateButtons(this.buttonBox);
          el.appendChild(this.buttonBox);
          this.backdrop = new Backdrop();
          this.backdrop.add(this.el);
@@ -357,6 +362,7 @@ HFilters.Modal = (function() {
       _clickHandler(el) {
          return function(event) {
             if (event.target.tagName === 'BUTTON') return;
+            if (event.target.tagName === 'SPAN') return;
             const { left, top } = this.modalHeader.getBoundingClientRect();
             const { scrollTop } = document.documentElement || document.body;
             const drag = new Drag({ scrollWrapper: this.dragScrollWrapper });

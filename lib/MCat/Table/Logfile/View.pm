@@ -62,7 +62,7 @@ has_column 'status' => filterable => TRUE, width => '10ch';
 has_column 'username' => filterable => TRUE, searchable => TRUE,
    width => '14ch';
 
-has_column 'source' => width => '20rem', searchable => TRUE;
+has_column 'source' => width => '15rem', searchable => TRUE;
 
 has_column 'remainder' => label => 'Line', searchable => TRUE;
 

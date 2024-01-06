@@ -73,6 +73,11 @@ setup_resultset sub {
 
    return $rs unless $self->has_list_id;
 
+   my $list_rs   = $self->context->model('List');
+   my $list_name = $list_rs->find($self->list_id)->name;
+
+   $self->caption("Artists in List ${list_name}");
+
    my $list_rs = $self->context->model('ListArtist');
    my $where   = { list_id => $self->list_id };
 

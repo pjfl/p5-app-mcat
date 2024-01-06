@@ -16,6 +16,8 @@ has '+info_message' => default => 'Enter your username and password';
 has '+item_class'   => default => 'User';
 
 has_field 'name' =>
+   html_name    => 'user_name',
+   input_param  => 'user_name',
    label        => 'User Name',
    required     => TRUE,
    title        => 'Enter your user name',
@@ -30,14 +32,14 @@ has_field 'auth_code' =>
    required      => TRUE,
    size          => 6,
    title         => 'Enter the Authenticator code',
-   wrapper_class => ['hide input-integer'];
+   wrapper_class => ['input-integer'];
 
 has_field 'login' =>
    type          => 'Button',
    html_name     => 'submit',
    label         => 'Login',
    value         => 'login',
-   wrapper_class => ['expand input-button'];
+   wrapper_class => ['input-button expand'];
 
 my $button_js = q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"};
 
@@ -48,7 +50,7 @@ has_field 'password_reset' =>
    label         => 'Forgot Password?',
    title         => 'Send password reset email',
    value         => 'password_reset',
-   wrapper_class => ['expand hide inline input-button'];
+   wrapper_class => ['input-button expand'];
 
 has_field 'totp_reset' =>
    type          => 'Button',
@@ -57,25 +59,40 @@ has_field 'totp_reset' =>
    label         => 'Reset Auth.',
    title         => 'Request a TOTP reset',
    value         => 'totp_reset',
-   wrapper_class => ['hide inline input-button'];
+   wrapper_class => ['input-button expand'];
 
 around 'after_build_fields' => sub {
    my ($orig, $self) = @_;
 
    $orig->($self);
 
+   $self->set_form_element_attr('novalidate', 'novalidate');
+
+   my $session = $self->context->session;
+
+   unless ($session->enable_2fa) {
+      push @{$self->field('auth_code')->wrapper_class}, 'hide';
+      push @{$self->field('totp_reset')->wrapper_class}, 'hide';
+   }
+
+   unless ($session->id) {
+      push @{$self->field('password_code')->wrapper_class}, 'hide';
+   }
+
    my $method = 'HForms.Util.showIfRequired';
    my $uri    = $self->context->uri_for_action('page/object_property', [], {
       class => 'User', property => 'enable_2fa'
    });
-   my $showif = "${method}('${uri}', 'name', ['auth_code', 'totp_reset'])";
-   my $toggle = "HForms.Toggle.toggleFields(document.getElementById('name'))";
+   my $showif = "${method}('${uri}', 'user_name', ['auth_code', 'totp_reset'])";
+
+   $method = 'HForms.Toggle.toggleFields';
+
+   my $toggle = "${method}(document.getElementById('user_name'))";
    my $field  = $self->field('name');
    my $attr   = $field->element_attr;
 
    $attr->{javascript} = qq{onblur="${toggle}; ${showif}"};
    $field->element_attr($attr);
-   $self->set_form_element_attr('novalidate', 'novalidate');
    return;
 };
 

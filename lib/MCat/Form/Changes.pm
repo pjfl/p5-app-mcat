@@ -10,10 +10,13 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
+has '+title' => default => 'Changes';
+
 has_field 'changes' => type => 'NonEditable';
 
 has 'formatter' => is => 'lazy', isa => class_type('MCat::Markdown'),
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
+
 
 around 'after_build_fields' => sub {
    my ($orig, $self) = @_;

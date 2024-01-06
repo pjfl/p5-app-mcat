@@ -60,14 +60,14 @@ sub login : Auth('none') Nav('Login') {
    my $params = $context->get_body_parameters;
 
    if ($params->{_submit} && $params->{_submit} eq 'password_reset') {
-      $self->_stash_user($context, $params->{name});
+      $self->_stash_user($context, $params->{user_name});
       $self->password_reset($context);
       return;
    }
 
    if ($params->{_submit} && $params->{_submit} eq 'totp_reset') {
       $context->stash(redirect $context->uri_for_action(
-         'page/totp_reset', [$params->{name}, 'reset']
+         'page/totp_reset', [$params->{user_name}, 'reset']
       ), []);
       return;
    }

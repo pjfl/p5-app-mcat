@@ -10,6 +10,8 @@ use HTML::StateTable::Moo;
 extends 'HTML::StateTable';
 with    'HTML::StateTable::Role::Form';
 
+has '+max_width' => default => '50rem';
+
 has '+no_count' => default => TRUE;
 
 has '+paging' => default => FALSE;
@@ -39,7 +41,7 @@ has_column 'name' =>
    options => { notraits => TRUE },
    width   => '8rem';
 
-has_column 'value' => label => SPC, width => '10rem';
+has_column 'value' => label => SPC, min_width => '20rem';
 
 use namespace::autoclean -except => TABLE_META;
 

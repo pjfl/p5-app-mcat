@@ -309,16 +309,18 @@ HFilters.Editor = (function() {
             const fieldNode = this.node.data[field];
             if (!fieldNode.group) content.push(await fieldNode.render());
          }
-         content.push(this.h.div({ className: 'node-rule-edit-footer' }, [
+         const footer = this.h.div({ className: 'node-rule-edit-footer' }, [
             this.h.button({
                className: 'node-rule-edit-cancel',
-               onclick: function() { this.cancelEditorChanges() }.bind(this)
-            }, 'Cancel'),
+               onclick: function() { this.cancelEditorChanges() }.bind(this),
+            }, this.h.span('Cancel')),
             this.h.button({
                className: 'node-rule-edit-save',
-               onclick: function() { this.saveEditorChanges() }.bind(this)
-            }, 'OK')
-         ]));
+               onclick: function() { this.saveEditorChanges() }.bind(this),
+            }, this.h.span('OK'))
+         ]);
+         this.animateButtons(footer);
+         content.push(footer);
          const el = this.h.fieldset({
             className: 'node-rule-edit',
             onkeypress: function(event) { this.keyPressed(event) }.bind(this)

@@ -33,6 +33,8 @@ has_field 'name' => type => 'Display', label => 'User Name';
 
 has_field 'email' => type => 'Display', label => 'Email Address';
 
+has_field 'timezone' => type => 'Timezone';
+
 has_field 'enable_2fa' => type => 'Boolean', label => 'Enable 2FA';
 
 has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
@@ -72,8 +74,6 @@ has_field 'theme' => type => 'Select', default => 'light', options => [
    { label => 'Dark', value => 'dark' },
    { label => 'Light', value => 'light' },
 ];
-
-has_field 'timezone' => type => 'Timezone';
 
 has_field 'submit' => type => 'Button';
 

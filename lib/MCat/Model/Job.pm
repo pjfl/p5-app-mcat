@@ -13,6 +13,10 @@ has '+moniker' => default => 'job';
 sub base : Auth('admin') {
    my ($self, $context) = @_;
 
+   if ($context->action =~ m{ /status \z }mx) {
+      $context->stash('nav')->container_layout(NUL);
+   }
+
    $context->stash('nav')->finalise;
 
    return;
