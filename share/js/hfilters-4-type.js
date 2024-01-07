@@ -40,10 +40,13 @@ HFilters.Type = (function() {
          return name + '-' + idCache[name]++;
       }
       async timezoneOptions() {
+         if (!this._timezoneObject) {
+            const url = this.apiURL('get', 'timezones');
+            const { object } = await this.bitch.sucks(url);
+            this._timezoneObject = object;
+         }
          const options = [];
-         const url = this.apiURL('get', 'timezones');
-         const { object } = await this.bitch.sucks(url);
-         for (const zone of object['timezones']) {
+         for (const zone of this._timezoneObject['timezones']) {
             options.push(this.h.option({
                selected: (this.timezone && this.timezone == zone),
                value: zone
@@ -201,13 +204,12 @@ HFilters.Type = (function() {
          return this.createTypeContainer(this.label, await this.renderInput());
       }
       async renderInput() {
-         const placeHolder = 'YYYY-MM-DD';
          this.input = this.h.input({
             className: 'type-date-absolute type-field-date',
             id: this.generateId('type-field-date'),
-            placeholder: placeHolder,
+            placeholder: this._placeHolder(),
             type: 'text',
-            value: this.toDateString()
+            value: this._toLocaleDateString(this.toDateString())
          });
          this.timezoneSelect = this.h.select({
             className: 'type-date-absolute type-field-timezone',
@@ -244,7 +246,8 @@ HFilters.Type = (function() {
          return dateString || '';
       }
       update() {
-         const date = this.input.value.replace(/[\s\-]+/g, '/');
+         const value = this._fromLocaleDateString(this.input.value);
+         const date = value.replace(/[\s\-]+/g, '/');
          if (date.match(/^\d{4}\/\d\d\/\d\d$/)) {
             this.date = new Date(date);
             if (this.isTooOld(this.date)) window.alert(
@@ -254,9 +257,26 @@ HFilters.Type = (function() {
          }
          else {
             this.date = new Date('');
-            window.alert('Dates must be in YYYY-MM-DD format');
+            window.alert('Dates must be in ' + this._placeHolder() + ' format');
             throw 'Bad date format';
          }
+      }
+      _fromLocaleDateString(dateString) {
+         const testDate = new Date('2001/11/9').toLocaleDateString();
+         if (testDate.match(/^11\/09/)) {
+            const parts = dateString.split(/\//);
+            return parts[2] + '/' + parts[0] + '/' + parts[1];
+         }
+         return dateString.split(/\//).reverse().join('/');
+      }
+      _placeHolder() {
+         const testDate = new Date('2001/11/9').toLocaleDateString();
+         if (testDate.match(/^11\/09/)) return 'MM/DD/YYYY';
+         return 'DD/MM/YYYY';
+      }
+      _toLocaleDateString(dateString) {
+         if (!dateString) return '';
+         return new Date(dateString).toLocaleDateString();
       }
    }
    class TypeDateRelative extends Type {
@@ -420,7 +440,7 @@ HFilters.Type = (function() {
          const button = this.h.button({
             className: 'type-field-button',
             onclick: function(event) { this._clickHandler() }.bind(this)
-         }, '...');
+         }, this.h.span('...'));
          return [button, this.input];
       }
       toDisplay() {

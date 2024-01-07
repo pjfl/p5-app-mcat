@@ -107,7 +107,7 @@ HFilters.NodeTree = (function() {
          parent.nodes.splice(index + offset, 0, newNode);
       }
       nodeClick(node) {
-         if (this.selectedNode == node) {
+         if (node && this.selectedNode == node) {
             this.selectRule();
             this.registry.fire('ruleunselect', node);
          }
@@ -161,6 +161,8 @@ HFilters.NodeTree = (function() {
       }
       removeRule(node) {
          const parent = node.parentNode;
+         if (parent.type == 'Logic.Container' && node.type == 'Rule.Empty')
+            return;
          this.unselectRule();
          this.registry.fire('ruleunselect', node);
          if (parent.type == 'Logic.Container') {

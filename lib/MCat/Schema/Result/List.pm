@@ -3,7 +3,7 @@ package MCat::Schema::Result::List;
 use overload '""' => sub { $_[0]->_as_string },
              '+'  => sub { $_[0]->_as_number }, fallback => 1;
 
-use HTML::Forms::Constants qw( FALSE TRUE );
+use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( now_dt );
 use MCat::Object::Link;
 use Try::Tiny;
@@ -164,7 +164,7 @@ sub _as_string {
 # Private functions
 sub _filter_link {
    my $table  = shift;
-   my $filter = $table->result->filter;
+   my $filter = $table->result->filter or return NUL;
    my $link   = $table->context->uri_for_action('filter/view', [$filter->id]);
 
    return MCat::Object::Link->new({ link => $link , value => $filter->name });

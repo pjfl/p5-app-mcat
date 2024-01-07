@@ -240,11 +240,14 @@ HFilters.Node = (function() {
          return false;
       }
       render() {
-         this.inner = this.h.div({ className: 'node-rule-box-inner' });
-         this.el = this.h.div({
-            className: 'node-rule-box',
-            onclick: function(event) { this.nodeClick() }.bind(this)
-         }, this.inner);
+         this.inner = this.h.div({
+            className: 'node-rule-box-inner',
+            onclick: function(event) {
+               if (event.target.className == 'node-rule-remove-button') return;
+               this.nodeClick();
+            }.bind(this)
+         });
+         this.el = this.h.div({ className: 'node-rule-box' }, this.inner);
          this.renderRuleManagement();
          this.update();
          const classStatus = this.isEmpty() ? ' empty' : '';

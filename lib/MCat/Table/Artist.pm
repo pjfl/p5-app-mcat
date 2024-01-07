@@ -65,6 +65,19 @@ has '+title_location' => default => 'inner';
 
 has 'list_id' => is => 'ro', isa => Int, predicate => 'has_list_id';
 
+after 'BUILD' => sub {
+   my $self = shift;
+
+   if ($self->has_list_id) {
+      my $list_rs   = $self->context->model('List');
+      my $list_name = $list_rs->find($self->list_id)->name;
+
+      $self->caption("Artists in List ${list_name}");
+   }
+
+   return;
+};
+
 set_table_name 'artist';
 
 setup_resultset sub {
@@ -73,17 +86,12 @@ setup_resultset sub {
 
    return $rs unless $self->has_list_id;
 
-   my $list_rs   = $self->context->model('List');
-   my $list_name = $list_rs->find($self->list_id)->name;
-
-   $self->caption("Artists in List ${list_name}");
-
-   my $list_rs = $self->context->model('ListArtist');
+   my $join_rs = $self->context->model('ListArtist');
    my $where   = { list_id => $self->list_id };
 
-   $list_rs = $list_rs->search($where)->get_column('artistid');
+   $join_rs = $join_rs->search($where)->get_column('artistid');
 
-   return $rs->search({ 'me.artistid' => { -in => $list_rs->as_query } });
+   return $rs->search({ 'me.artistid' => { -in => $join_rs->as_query } });
 };
 
 has_column 'check' =>

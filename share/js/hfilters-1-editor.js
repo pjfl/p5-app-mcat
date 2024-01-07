@@ -41,6 +41,7 @@ HFilters.Editor = (function() {
       }
       centerNode(node, big) {
          const nodePos = this.getNodeCenter(node);
+         if (!nodePos) return;
          this.treeScrollFx.clearTimer();
          this.treeScrollBigFx.clearTimer();
          const effect = big ? this.treeScrollBigFx : this.treeScrollFx;
@@ -77,6 +78,8 @@ HFilters.Editor = (function() {
          const editorSize = this.h.getDimensions(this.editorDisplay);
          const nodeOffset = this.h.elementOffset(node.wrapper, this.tree.el);
          const nodeSize = this.h.getDimensions(node.el);
+         if (nodeOffset.left == 0 && nodeOffset.top == 0 && nodeSize.height == 0
+             && nodeSize.width == 0) return;
          const x = -nodeOffset.left
                + (editorSize.width / 2)
                - (nodeSize.width / 2);
@@ -309,7 +312,7 @@ HFilters.Editor = (function() {
             const fieldNode = this.node.data[field];
             if (!fieldNode.group) content.push(await fieldNode.render());
          }
-         const footer = this.h.div({ className: 'node-rule-edit-footer' }, [
+         content.push(this.h.div({ className: 'node-rule-edit-footer' }, [
             this.h.button({
                className: 'node-rule-edit-cancel',
                onclick: function() { this.cancelEditorChanges() }.bind(this),
@@ -318,14 +321,16 @@ HFilters.Editor = (function() {
                className: 'node-rule-edit-save',
                onclick: function() { this.saveEditorChanges() }.bind(this),
             }, this.h.span('OK'))
-         ]);
-         this.animateButtons(footer);
-         content.push(footer);
+         ]));
          const el = this.h.fieldset({
             className: 'node-rule-edit',
             onkeypress: function(event) { this.keyPressed(event) }.bind(this)
          }, content);
-         return this.h.div({ className: 'node-rule-edit-container' }, el);
+         const container = this.h.div({
+            className: 'node-rule-edit-container'
+         }, el);
+         this.animateButtons(container);
+         return container;
       }
       saveEditorChanges() {
          if (this.node.updateValue() == false) return;

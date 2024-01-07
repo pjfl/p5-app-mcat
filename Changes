@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Fixes filter editor node remove bug
           - Unified dialog titles
           - Shiny buttons all round
           - Refreshing button style

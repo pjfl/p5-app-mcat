@@ -17,6 +17,14 @@ after 'BUILD' => sub {
    my $self = shift;
 
    $self->paging(FALSE) if $self->has_artistid;
+
+   if ($self->has_list_id) {
+      my $list_rs   = $self->context->model('List');
+      my $list_name = $list_rs->find($self->list_id)->name;
+
+      $self->caption("CDs in List ${list_name}");
+   }
+
    return;
 };
 
@@ -31,12 +39,12 @@ setup_resultset sub {
 
    return $rs unless $self->has_list_id;
 
-   my $list_rs = $self->context->model('ListCd');
+   my $join_rs = $self->context->model('ListCd');
    my $where   = { list_id => $self->list_id };
 
-   $list_rs = $list_rs->search($where)->get_column('cdid');
+   $join_rs = $join_rs->search($where)->get_column('cdid');
 
-   return $rs->search({ 'me.cdid' => { -in => $list_rs->as_query } });
+   return $rs->search({ 'me.cdid' => { -in => $join_rs->as_query } });
 };
 
 has_column 'artist_name' =>

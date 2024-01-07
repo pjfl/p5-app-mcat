@@ -586,6 +586,44 @@ header {
         display: inline-block; margin-left: 1rem;
         .node-rule-edit-container {
             color: #colours[text]; min-width: 12rem;
+            button {
+                background: #grads[button-bg];
+                border: 2px outset #colours[button-border];
+                border-radius: 50px; color: #colours[link];
+                cursor: pointer; display: inline-block;
+                line-height: 0.8rem; margin: 0.5rem 0; overflow: hidden;
+                padding: 0.25rem 0.75rem; position: relative;
+                text-decoration: none;
+                transition: border 0.5s, color 0.5s;
+                span {
+                    font-family: #fonts[system];
+                    font-size: 0.7rem; letter-spacing: 0.1rem;
+                    position: relative; text-decoration: none;
+                    text-transform: uppercase; z-index: 3;
+                }
+            }
+            button:hover {
+                border: 2px inset #colours[button-border];
+                color: #colours[button-text];
+            }
+            button::before {
+                background: #grads[button-border-bg]; content: '';
+                display: block; height: 3rem; left: var(--x);
+                opacity: 0; position: absolute;
+                top: var(--y); transform: translate(-50%, -50%);
+                transition: opacity 0.5s; width: 3rem; z-index: 1;
+            }
+            button:hover::before {
+                opacity: 1;
+            }
+            button::after {
+                background: #grads[button-bg];
+                border-radius: 50px; content: '';
+                inset: 3px; position: absolute; z-index: 2;
+            }
+            button[disabled=disabled], button[disabled=disabled]::after {
+                background: #grads[button-disabled-bg];
+            }
             .node-rule-edit {
                 border-collapse: separate; border-spacing: 0 0.5rem;
                 border-radius: 5px; padding: 0 1rem;
@@ -595,48 +633,6 @@ header {
                 }
                 .node-rule-edit-footer {
                     display: flex; justify-content: space-between;
-                    button {
-                        background: #grads[button-bg];
-                        border: 2px outset #colours[button-border];
-                        border-radius: 50px; color: #colours[link];
-                        cursor: pointer; display: inline-block;
-                        line-height: 0.8rem; margin: 0.5rem 0; overflow: hidden;
-                        padding: 0.25rem 0.75rem; position: relative;
-                        text-decoration: none;
-                        transition: border 0.5s, color 0.5s;
-                        span {
-                            font-family: #fonts[system];
-                            font-size: 0.7rem; letter-spacing: 0.1rem;
-                            position: relative; text-decoration: none;
-                            text-transform: uppercase; z-index: 3;
-                        }
-                    }
-                    button:hover {
-                        border: 2px inset #colours[button-border];
-                        color: #colours[button-text];
-                    }
-                    button::before {
-                        background: #grads[button-border-bg]; content: '';
-                        display: block; height: 3rem; left: var(--x);
-                        opacity: 0; position: absolute;
-                        top: var(--y); transform: translate(-50%, -50%);
-                        transition: opacity 0.5s; width: 3rem; z-index: 1;
-                    }
-                    button:hover::before {
-                        opacity: 1;
-                    }
-                    button::after {
-                        background: #grads[button-bg];
-                        border-radius: 50px; content: '';
-                        inset: 3px; position: absolute; z-index: 2;
-                    }
-                    button[disabled=disabled],
-                    button[disabled=disabled]::after {
-                        background: #grads[button-disabled-bg];
-                    }
-                }
-                .type-date-relative input {
-                    width: 40px;
                 }
             }
         }
@@ -644,19 +640,22 @@ header {
     .type-container {
         align-items: center; display: flex; flex-wrap: wrap;
         justify-content: flex-start;
-        button[type=submit], input[type=text] {
+        input[type=text] {
             border-radius: 5px; font-family: #fonts[data];
         }
         label {
             font-family: #fonts[system]; font-size: 0.8rem;
-            line-height: 1rem;
-            padding: 0.5rem 0.5rem 0.5rem 0; white-space: nowrap;
+            line-height: 1rem; padding: 0.5rem 0.5rem 0.5rem 0;
+            white-space: nowrap;
         }
         select {
             font-family: #fonts[data];
         }
         select, input {
             max-width: #sizes[filter-input-max-width];
+        }
+        .type-date-relative input {
+            text-align: right; width: 4ch;
         }
         .type-field-date {
             width: 16ch;
@@ -677,6 +676,9 @@ header {
         label {
             min-width: 3.5rem;
         }
+    }
+    .type-container.type-numeric-value input.type-string {
+        text-align: right; width: 7rem;
     }
 }
 .filter-resizer {

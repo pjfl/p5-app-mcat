@@ -10,7 +10,7 @@ use Scalar::Util qw( weaken );
 my $class = __PACKAGE__;
 
 $class->load_namespaces;
-$class->load_components('Schema::Versioned');
+#$class->load_components('Schema::Versioned');
 
 my $config;
 
@@ -19,7 +19,8 @@ sub config {
 
    $config = $value if defined $value;
 
-   $self->upgrade_directory($config->sqldir->as_string);
+   $self->upgrade_directory($config->sqldir->as_string)
+      if $self->can('upgrade_directory');
 
    return $config;
 }
