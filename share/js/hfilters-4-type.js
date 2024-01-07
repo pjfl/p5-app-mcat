@@ -205,11 +205,9 @@ HFilters.Type = (function() {
          this.input = this.h.input({
             className: 'type-date-absolute type-field-date',
             id: this.generateId('type-field-date'),
-            onblur: function(event) {
-               if (this.input.value == '') this.input.value = placeHolder;
-            }.bind(this),
+            placeholder: placeHolder,
             type: 'text',
-            value: this.toDateString() || placeHolder
+            value: this.toDateString()
          });
          this.timezoneSelect = this.h.select({
             className: 'type-date-absolute type-field-timezone',
@@ -447,7 +445,7 @@ HFilters.Type = (function() {
       }
       _clickHandler() {
          const callback = function(data) {
-            this.input.value = data.value
+            if (data) this.input.value = data.value;
          }.bind(this);
          HFilters.Modal.create({
             callback: function(ok, popup, data) { if (ok) callback(data) },

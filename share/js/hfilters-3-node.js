@@ -255,12 +255,22 @@ HFilters.Node = (function() {
       }
       renderRuleBox(contents = []) {
          this.title = this.h.div({ className: 'node-rule-title' }, this.label);
-         this.status = this.h.div(
-            { className: 'node-rule-status' }, this.warning
-         );
-         const box = this.h.div(
-            { className: 'rule-string' }, [this.title, this.status, ...contents]
-         );
+         this.removeEl = this.h.span({
+            className: 'node-rule-remove-button',
+            onclick: function(event) {
+               event.preventDefault();
+               this.registry.fire('removeruleclick', this);
+            }.bind(this)
+         }, '×');
+         const titleWrapper = this.h.div({
+            className: 'node-rule-title-wrapper'
+         }, [this.title, this.removeEl]);
+         this.status = this.h.div({
+            className: 'node-rule-status'
+         }, this.warning);
+         const box = this.h.div({
+            className: 'rule-string'
+         }, [titleWrapper, this.status, ...contents]);
          if (this.isValid()) {
             this.el.classList.remove('rule-error');
             this.status.innerHTML = '';
@@ -287,14 +297,6 @@ HFilters.Node = (function() {
             title: 'AND'
          });
          this.el.appendChild(this.addAnd);
-         this.removeEl = this.h.span({
-            className: 'node-rule-remove-button',
-            onclick: function(event) {
-               event.preventDefault();
-               this.registry.fire('removeruleclick', this);
-            }.bind(this)
-         }, '×');
-         this.el.appendChild(this.removeEl);
       }
       select() {
          if (this.el) this.el.id = 'node-selected';
