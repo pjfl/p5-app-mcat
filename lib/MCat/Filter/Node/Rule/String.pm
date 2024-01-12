@@ -29,14 +29,18 @@ sub _to_abstract {
 
    if ($args->{insensitive}) {
       $lhs = sprintf $self->_template, $self->field->value($args);
-      $value = lc $self->string->value;
+      $value = lc $self->_value;
    }
    else {
       $lhs = $self->field->value($args);
-      $value = $self->string->value;
+      $value = $self->_value;
    }
 
    return $lhs => { $self->_operator => $value };
+}
+
+sub _value {
+   return shift->string->value;
 }
 
 use namespace::autoclean;

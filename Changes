@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Inline server field validation
           - Fixes filter editor node remove bug
           - Unified dialog titles
           - Shiny buttons all round

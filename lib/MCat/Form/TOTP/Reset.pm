@@ -12,6 +12,7 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
+has '+name'         => default => 'TOTP_Reset';
 has '+title'        => default => 'TOTP Reset Request';
 has '+info_message' => default => 'Answer the security questions';
 has '+no_update'    => default => TRUE;
@@ -25,8 +26,11 @@ has_field 'name' => type => 'Display', label => 'User Name';
 
 has_field 'password' => type => 'Password', required => TRUE;
 
-has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
-   required => TRUE, size => 12;
+has_field 'mobile_phone' =>
+   type          => 'PosInteger',
+   label         => 'Mobile #',
+   required      => TRUE,
+   size          => 12;
 
 has_field 'postcode' => required => TRUE, size => 8;
 

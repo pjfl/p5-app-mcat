@@ -569,14 +569,15 @@ HFilters.Type = (function() {
       renderInput() {
          const inputId = this.generateId('type-checkbox');
          const label = this.h.label({
-            className: 'type-negate', 'for': inputId
+            className: 'type-negate', 'htmlFor': inputId
          }, 'Negate rule');
          this.input = this.h.input({
             checked: this.negate,
             className: 'type-checkbox type-negate', id: inputId,
             type: 'checkbox', value: 1
          });
-         return [this.input, label];
+         const attr = { className: 'checkbox-wrapper' };
+         return [this.h.span(attr, this.input), label];
       }
       toDisplay() {
          return this.toString();

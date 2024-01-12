@@ -11,31 +11,46 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
+has '+name'         => default => 'Login';
 has '+title'        => default => 'Login';
-has '+info_message' => default => 'Enter your username and password';
+has '+info_message' => default => 'Enter your user name and password';
 has '+item_class'   => default => 'User';
+
+my $change_js = q{HForms.Util.fieldChange('login', '%s')};
 
 has_field 'name' =>
    html_name    => 'user_name',
    input_param  => 'user_name',
    label        => 'User Name',
    required     => TRUE,
+   tags         => { label_tag => 'span' },
    title        => 'Enter your user name',
    toggle       => { -set => ['password_reset'] },
    toggle_event => 'onblur';
 
-has_field 'password' => type => 'Password', required => TRUE;
+has_field 'password' =>
+   type         => 'Password',
+   element_attr => {
+      javascript => 'onblur="' . sprintf($change_js, 'password') . '"'
+   },
+   tags         => { label_tag => 'span' },
+   required     => TRUE;
 
 has_field 'auth_code' =>
    type          => 'Digits',
+   element_attr => {
+      javascript => 'onblur="' . sprintf($change_js, 'auth_code') . '"'
+   },
    label         => 'Auth. Code',
-   required      => TRUE,
    size          => 6,
+   tags          => { label_tag => 'span' },
    title         => 'Enter the Authenticator code',
    wrapper_class => ['input-integer'];
 
 has_field 'login' =>
    type          => 'Button',
+   disabled      => TRUE,
+   element_attr  => { 'data-field-depends' => [qw(user_name password)] },
    html_name     => 'submit',
    label         => 'Login',
    value         => 'login',
@@ -76,7 +91,7 @@ around 'after_build_fields' => sub {
    }
 
    unless ($session->id) {
-      push @{$self->field('password_code')->wrapper_class}, 'hide';
+      push @{$self->field('password_reset')->wrapper_class}, 'hide';
    }
 
    my $method = 'HForms.Util.showIfRequired';
@@ -88,10 +103,11 @@ around 'after_build_fields' => sub {
    $method = 'HForms.Toggle.toggleFields';
 
    my $toggle = "${method}(document.getElementById('user_name'))";
+   my $change = sprintf $change_js, 'user_name';
    my $field  = $self->field('name');
    my $attr   = $field->element_attr;
 
-   $attr->{javascript} = qq{onblur="${toggle}; ${showif}"};
+   $attr->{javascript} = qq{onblur="${toggle}; ${showif}; ${change}"};
    $field->element_attr($attr);
    return;
 };

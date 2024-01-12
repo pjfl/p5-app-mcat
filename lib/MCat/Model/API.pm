@@ -18,6 +18,7 @@ has '+moniker' => default => 'api';
 
 has 'routes' => is => 'ro', isa => HashRef, default => sub {
    return {
+      'api/form/field/validate' => 'api/form/*/field/*/validate',
       'api/navigation_messages' => 'api/navigation/collect/messages',
       'api/object_get'          => 'api/object/*/get',
       'api/table_action'        => 'api/table/*/action',

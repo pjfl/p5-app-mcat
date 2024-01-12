@@ -4,16 +4,19 @@
     button-disabled-bg: gainsboro;
     button-hover: limegreen;
     button-text: black;
-    close: red;
+    checkbox-false-bg: firebrick;
+    checkbox-true-bg: seagreen;
+    close: firebrick;
     contrast: white;
     filter-connector: gray;
     filter-editor-bg: gainsboro;
+    filter-resizer-bg: ivory;
     filter-rule-editor-bg: ivory;
     filter-rule-status-bg: lightpink;
     frame-exception-bg: lightpink;
     link: seagreen;
     message-bg: linen;
-    message-border: red;
+    message-border: firebrick;
     message-text: black;
     modal-bg: linen;
     muted: gray;
@@ -57,6 +60,9 @@
     );
 }
 #sizes() {
+    checkbox-height: 1.25rem;
+    checkbox-knob-width: 20px;
+    checkbox-width: 40px;
     filter-editor-height: 400px;
     filter-editor-width: 850px;
     filter-editor-max-height: 800px;
@@ -391,11 +397,11 @@ header {
 .filter-container {
     align-items: flex-start; display: flex; justify-content: center;
     position: relative;
-    h3, label, table, td, th, tbody, tr {
+    h3, table, td, th, tbody, tr {
         border: 0; font-family: inherit; font-size: 100%; font-style: inherit;
         font-weight: inherit; vertical-align: baseline;
     }
-    h3, label, table, {
+    h3, table, {
         margin: 0; padding: 0;
     }
     table {
@@ -502,7 +508,15 @@ header {
             font-size: 0.8rem;
             position: relative;
             .node-rule-box-inner {
-                min-width: 6rem; padding-bottom: 0.25rem;
+                min-width: 6rem;
+                div > div:nth-child(3) {
+                    padding-top: 0.25rem;
+                }
+                div > div:last-child {
+                    border-bottom-left-radius: 2px;
+                    border-bottom-right-radius: 2px;
+                    padding-bottom: 0.25rem;
+                }
             }
             .node-rule-add-and {
                 border-left: 10px solid transparent;
@@ -591,7 +605,7 @@ header {
                 border: 2px outset #colours[button-border];
                 border-radius: 50px; color: #colours[link];
                 cursor: pointer; display: inline-block;
-                line-height: 0.8rem; margin: 0.5rem 0; overflow: hidden;
+                line-height: 0.8rem; overflow: hidden;
                 padding: 0.25rem 0.75rem; position: relative;
                 text-decoration: none;
                 transition: border 0.5s, color 0.5s;
@@ -632,21 +646,25 @@ header {
                     white-space: nowrap;
                 }
                 .node-rule-edit-footer {
-                    display: flex; justify-content: space-between;
+                    display: flex; margin: 0.5rem 0;
+                    justify-content: space-between;
                 }
             }
         }
     }
     .type-container {
-        align-items: center; display: flex; flex-wrap: wrap;
-        justify-content: flex-start;
+        align-items: center; border-collapse: collapse; display: flex;
+        flex-wrap: wrap; margin: 0.5rem 0; justify-content: flex-start;
         input[type=text] {
             border-radius: 5px; font-family: #fonts[data];
         }
         label {
             font-family: #fonts[system]; font-size: 0.8rem;
-            line-height: 1rem; padding: 0.5rem 0.5rem 0.5rem 0;
+            line-height: 1rem; padding-right: 0.5rem;
             white-space: nowrap;
+        }
+        label.type-negate {
+            padding-left: 0.25rem; padding-top: 0.25rem;
         }
         select {
             font-family: #fonts[data];
@@ -663,16 +681,49 @@ header {
         .type-field-date:placeholder-shown {
             font-style: italic;
         }
-       .type-list-button {
+        .type-list-button {
             margin-right: 0.5rem;
         }
         .type-list-display {
             font-size: 0.8rem;
         }
+        .checkbox-wrapper {
+            display: inline-block; isolation: isolate; position: relative;
+            input[type=checkbox] {
+                height: #sizes[checkbox-height]; margin: 0; opacity: 0;
+                position: relative; top: 4px; width: #sizes[checkbox-width];
+                z-index: 3;
+            }
+        }
+        .checkbox-wrapper::after {
+            background: #grads[button-bg];
+            border: 2px inset #colours[button-border]; border-radius: 10px;
+            content: ''; display: block; position: absolute;
+            height: #sizes[checkbox-height]; left: 0; top: 4px;
+            width: #sizes[checkbox-knob-width]; z-index: 2;
+        }
+        .checkbox-wrapper:has(input[type=checkbox]:checked)::after {
+            left: #sizes[checkbox-knob-width];
+        }
+        .checkbox-wrapper::before {
+            background: #colours[checkbox-false-bg];
+            border: 2px inset #colours[button-border]; border-radius: 10px;
+            content: ''; display: block; position: absolute;
+            height: #sizes[checkbox-height]; left: 0; top: 4px;
+            width: #sizes[checkbox-width]; z-index: 1;
+        }
+        .checkbox-wrapper:has(input[type=checkbox]:checked)::before {
+            background: #colours[checkbox-true-bg];
+        }
+    }
+    .type-container.type-date-absolute-date,
+    .type-container.type-date-absolute-time-zone {
+        margin-bottom: 0;
     }
     .type-container.type-date-relative-days,
     .type-container.type-date-relative-months,
     .type-container.type-date-relative-years {
+        margin-bottom: 0;
         label {
             min-width: 3.5rem;
         }
@@ -680,11 +731,12 @@ header {
     .type-container.type-numeric-value input.type-string {
         text-align: right; width: 7rem;
     }
+    .type-container.type-field-field, .type-container.type-list-list {
+        row-gap: 5px;
+    }
 }
 .filter-resizer {
-    background: ivory; border-bottom: 1px solid lightgray;
-    border-left: 1px solid white; border-right: 1px solid lightgray;
-    border-top: 1px solid white; bottom: 0; cursor: row-resize;
+    background: #colours[filter-resizer-bg]; bottom: 0; cursor: row-resize;
     font-size: 1px; height: 6px; left: 0.25rem; position: absolute;
     right: 0.25rem;
 }
