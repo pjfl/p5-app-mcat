@@ -24,7 +24,7 @@ has_field 'name' =>
    label        => 'User Name',
    required     => TRUE,
    tags         => { label_tag => 'span' },
-   title        => 'Enter your user name',
+   title        => 'Enter your user name or email address',
    toggle       => { -set => ['password_reset'] },
    toggle_event => 'onblur';
 
@@ -104,11 +104,9 @@ around 'after_build_fields' => sub {
 
    my $toggle = "${method}(document.getElementById('user_name'))";
    my $change = sprintf $change_js, 'user_name';
-   my $field  = $self->field('name');
-   my $attr   = $field->element_attr;
+   my $attr   = $self->field('name')->element_attr;
 
    $attr->{javascript} = qq{onblur="${toggle}; ${showif}; ${change}"};
-   $field->element_attr($attr);
    return;
 };
 
@@ -134,58 +132,55 @@ sub validate {
 
    return if $self->result->has_errors;
 
-   my $field   = $self->field('name');
-   my $name    = $field->value;
    my $context = $self->context;
+   my $name    = $self->field('name');
+   my ($username, $realm) = reverse split m{ : }mx, $name->value;
+   my $options = { prefetch => ['profile', 'role'] };
+   my $args    = { username => $username, options => $options };
+   my $user    = $context->find_user($args, $realm);
+
+   return $name->add_error('User [_1] unknown', $username) unless $user;
+
    my $session = $context->session;
-   my $user    = $context->model($self->item_class)->find({ name => $name });
-
-   return $field->add_error('User [_1] unknown', $name) unless $user;
-
    my $passwd  = $self->field('password');
    my $code    = $self->field('auth_code');
 
+   $args = { user => $user, password => $passwd->value, code => $code->value };
+
    try {
       $session->authenticated(FALSE);
-      $user->authenticate($passwd->value, $code->value);
+      $context->authenticate($args, $realm);
       $session->authenticated(TRUE);
-      $session->id($user->id);
-      $session->role($user->role->name);
-      $session->username($user->name);
    }
-   catch_class [
-      'IncorrectAuthCode' => sub { $code->add_error($_->original) },
-      'IncorrectPassword' => sub { $passwd->add_error($_->original) },
-      'PasswordExpired' => sub {
-         my $message = $_->original;
-         my $changep = $context->uri_for_action('page/password', [$user->id]);
+   catch_class $self->_handlers($user, $passwd, $code);
 
-         $context->stash( redirect $changep, [$message] );
-         $context->stash('redirect')->{level} = 'alert' if $self->has_log;
-         $passwd->add_error($message);
-      },
-      'Unspecified' => sub { $self->add_form_error($_->original) },
-      'Authentication' => sub { $self->add_form_error($_->original) },
-      '*' => sub {
-         $self->add_form_error(blessed $_ ? $_->original : "${_}");
-         $self->log->alert($_, $self->context) if $self->has_log;
-      }
-   ];
-
-   if ($session->authenticated) {
-      my $profile = $user->profile ? $user->profile->value : {};
-
-      $session->enable_2fa($profile->{enable_2fa} ? TRUE : FALSE);
-      $session->link_display($profile->{link_display})
-         if defined $profile->{link_display};
-      $session->menu_location($profile->{menu_location})
-         if defined $profile->{menu_location};
-      $session->skin($profile->{skin}) if defined $profile->{skin};
-      $session->theme($profile->{theme}) if defined $profile->{theme};
-      $session->timezone($profile->{timezone}) if defined $profile->{timezone};
-   }
+   $context->update_session($args, $realm) if $session->authenticated;
 
    return;
+}
+
+# Private methods
+sub _handlers {
+   my ($self, $user, $passwd, $code) = @_;
+
+   my $context = $self->context;
+
+   return [
+      'IncorrectAuthCode' => sub { $code->add_error($_->original) },
+      'IncorrectPassword' => sub { $passwd->add_error($_->original) },
+      'PasswordExpired'   => sub {
+         my $changep = $context->uri_for_action('page/password', [$user->id]);
+
+         $context->stash(redirect $changep, [$_->original]);
+         $context->stash('redirect')->{level} = 'alert' if $self->has_log;
+      },
+      'Authentication' => sub { $self->add_form_error($_->original) },
+      'Unspecified'    => sub { $self->add_form_error($_->original) },
+      '*' => sub {
+         $self->add_form_error(blessed $_ ? $_->original : "${_}");
+         $self->log->alert($_, $context) if $self->has_log;
+      }
+   ];
 }
 
 use namespace::autoclean -except => META;

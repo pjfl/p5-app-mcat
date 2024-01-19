@@ -10,9 +10,15 @@ sub active {
 }
 
 sub find_by_key {
-   my ($self, $name) = @_;
+   my ($self, $key, $options) = @_;
 
-   return $self->find($name, { key => 'user_name_uniq' });
+   return unless $key;
+
+   return $self->find($key, $options // {}) if $key =~ m{ \A \d+ \z }mx;
+
+   my $select = [ { 'me.name' => $key }, { 'me.email' => $key } ];
+
+   return $self->search({ -or => $select }, $options // {})->first;
 }
 
 1;

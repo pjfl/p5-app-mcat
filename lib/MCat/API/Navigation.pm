@@ -12,10 +12,10 @@ sub messages : Auth('none') {
    my ($self, $context, @args) = @_;
 
    if ($self->name eq 'collect') {
-      my $messages
-         = $context->session->collect_status_messages($context->request);
+      my $session  = $context->session;
+      my $messages = $session->collect_status_messages($context->request);
 
-      $context->stash( json => $messages );
+      $context->stash(json => [ reverse @{$messages} ]);
    }
    else { throw 'Object [_1] unknown api attribute name', [$self->name] }
 

@@ -1,6 +1,7 @@
 // -*- coding: utf-8; -*-
 // Package HFilters.Node
 HFilters.Node = (function() {
+   const FilterEditor = HFilters.Editor.manager;
    const classes = [];
    classes.push('Node');
    class Node {
@@ -23,7 +24,7 @@ HFilters.Node = (function() {
       constructor(data) {
          super(data);
          this.nodes = [];
-         this.registry = HFilters.Editor.createRegistrar(
+         this.registry = FilterEditor.createRegistrar(
             ['addclick', 'addwrapclick']
          );
       }
@@ -181,7 +182,7 @@ HFilters.Node = (function() {
    class Rule extends Node {
       constructor(data) {
          super(data);
-         this.registry = HFilters.Editor.createRegistrar(
+         this.registry = FilterEditor.createRegistrar(
             ['addruleclick', 'editorsave', 'nodeclick', 'removeruleclick']
          );
          this.data = {};
@@ -233,7 +234,7 @@ HFilters.Node = (function() {
          return true;
       }
       nodeClick() {
-         if (HFilters.Editor.editor().treeDragged) return;
+         if (FilterEditor.editor.treeDragged) return;
          this.registry.fire('nodeclick', this);
       }
       notSelectable() {

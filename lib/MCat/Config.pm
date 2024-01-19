@@ -67,6 +67,15 @@ A synonym for 'home'
 
 has 'appldir' => is => 'lazy', isa => Directory, default => sub { shift->home };
 
+=item authentication
+
+Configuration parameters for the plugin authentication system
+
+=cut
+
+has 'authentication' => is => 'ro', isa => HashRef,
+   default => sub { { default_realm => 'DBIC' } };
+
 =item bin
 
 A directory object which locates the applications executable files
@@ -387,10 +396,12 @@ has 'request' => is => 'lazy', isa => HashRef, default => sub {
       request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
       serialise_session_attr => [ qw( id ) ],
       session_attr => {
+         email         => [ Str, NUL ],
          enable_2fa    => [ Bool, FALSE ],
          id            => [ PositiveInt, 0 ],
          link_display  => [ Str, 'both' ],
          menu_location => [ Str, 'header' ],
+         realm         => [ Str, NUL ],
          role          => [ Str, NUL ],
          skin          => [ Str, $self->skin ],
          theme         => [ Str, 'light' ],

@@ -17,7 +17,7 @@ with    'HTML::StateTable::Role::ForceRowLimit';
 with    'HTML::StateTable::Role::Tag';
 with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Chartable';
-with    'HTML::StateTable::Role::Animation';
+#with    'HTML::StateTable::Role::Animation';
 
 has '+caption' => default => 'Artist List';
 

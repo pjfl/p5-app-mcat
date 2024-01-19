@@ -54,6 +54,8 @@ has '_stash' => is => 'ro', isa => HashRef, default => sub {
    return { version => MCat->VERSION };
 };
 
+with 'MCat::Role::Authentication';
+
 sub get_body_parameters {
    my $self = shift; return $self->forms->get_body_parameters($self);
 }

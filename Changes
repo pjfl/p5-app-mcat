@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds multi realm authentication scheme
           - Inline server field validation
           - Fixes filter editor node remove bug
           - Unified dialog titles

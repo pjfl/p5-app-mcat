@@ -3,14 +3,15 @@ package MCat::Schema::Result::User;
 use overload '""' => sub { $_[0]->_as_string },
              '+'  => sub { $_[0]->_as_number }, fallback => 1;
 
-use Auth::GoogleAuth;
-use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::Forms::Types         qw( HashRef );
+use HTML::Forms::Types         qw( Bool HashRef );
+use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use MCat::Util                 qw( digest truncate urandom );
+use Scalar::Util               qw( blessed );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
                                    IncorrectPassword PasswordDisabled
                                    PasswordExpired Unspecified );
+use Auth::GoogleAuth;
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -70,6 +71,8 @@ $class->might_have('profile' => "${result}::Preference", sub {
    };
 });
 
+has 'authenticate_only' => is => 'ro', isa => Bool, default => FALSE;
+
 has 'profile_value' => is => 'lazy', isa => HashRef, default => sub {
    my $self    = shift;
    my $profile = $self->profile;
@@ -124,7 +127,7 @@ sub assert_can_email {
 }
 
 sub authenticate {
-   my ($self, $password, $auth_code, $for_update) = @_;
+   my ($self, $password, $code, $for_update) = @_;
 
    throw AccountInactive, [$self] unless $self->active;
 
@@ -140,10 +143,10 @@ sub authenticate {
 
    return TRUE if !$self->totp_secret || $for_update;
 
-   throw Unspecified, ['Auth. Code'] unless $auth_code;
+   throw Unspecified, ['Auth. Code'] unless $code;
 
    throw IncorrectAuthCode, [$self]
-      unless $self->totp_authenticator->verify($auth_code);
+      unless $self->totp_authenticator->verify($code);
 
    return TRUE;
 }
@@ -181,6 +184,8 @@ sub insert {
    my $columns = { $self->get_inflated_columns };
 
    $self->_encrypt_password($columns, 'password');
+
+   return if $self->authenticate_only;
 
    return $self->next::method;
 }
@@ -228,6 +233,32 @@ sub update {
    $self->_encrypt_password($columns, 'password');
 
    return $self->next::method;
+}
+
+sub update_session {
+   my ($self, $session) = @_;
+
+   return unless $session && blessed $session;
+
+   my $profile = $self->profile_value;
+
+   for my $key (grep { $_ ne 'authenticated' } keys %{$profile}) {
+      my $value       = $profile->{$key};
+      my $value_class = blessed $value;
+
+      if ($value_class && $value_class eq 'JSON::PP::Boolean') {
+         $value = "${value}" ? TRUE : FALSE;
+      }
+
+      $session->$key($value) if defined $value && $session->can($key);
+   }
+
+   $session->email($self->email)     if $session->can('email');
+   $session->id($self->id)           if $session->can('id');
+   $session->role($self->role->name) if $session->can('role');
+   $session->username($self->name)   if $session->can('username');
+
+   return;
 }
 
 # Private methods

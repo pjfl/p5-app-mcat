@@ -1,7 +1,6 @@
 package MCat::Navigation::Attributes;
 
 use strictures;
-use attributes ();
 use namespace::autoclean ();
 
 use Sub::Install qw( install_sub );
@@ -43,20 +42,6 @@ Defines the following methods;
 my $Code_Attr = {};
 
 # Public
-sub attr_for {
-   my ($class, $components, $actionp) = @_;
-
-   $components //= {};
-
-   return unless $actionp;
-
-   my ($moniker, $method) = split m{ / }mx, $actionp;
-   my $component = $components->{$moniker} or return;
-   my $code_ref = $component->can($method) or return;
-
-   return attributes::get($code_ref) // {};
-}
-
 sub import {
    my ($class, @wanted) = @_;
 

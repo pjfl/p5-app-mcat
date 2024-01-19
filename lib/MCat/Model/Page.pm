@@ -17,14 +17,16 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'page';
 
-has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
-   my $self = shift;
+has 'redis' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::Redis'),
+   default => sub {
+      my $self   = shift;
+      my $config = $self->config;
+      my $name   = $config->prefix . '_job_stash';
 
-   return MCat::Redis->new(
-      client_name => $self->config->prefix . '_job_stash',
-      config => $self->config->redis
-   );
-};
+      return MCat::Redis->new(client_name => $name, config => $config->redis);
+   };
 
 # TODO: Show/hide password on change password
 
@@ -76,8 +78,8 @@ sub login : Auth('none') Nav('Login') {
    my $form    = $self->new_form('Login', $options);
 
    if ($form->process( posted => $context->posted )) {
-      my $name     = $form->field('name')->value;
       my $default  = $context->uri_for_action($self->config->redirect);
+      my $name     = $context->session->username;
       my $wanted   = $context->session->wanted;
       my $location = new_uri $context->request->scheme, $wanted if $wanted;
       my $message  = 'User [_1] logged in';
@@ -302,12 +304,11 @@ sub _stash_user {
 
    return unless $id_or_name;
 
-   $id_or_name = { name => $id_or_name } unless $id_or_name =~ m{ \A \d+ \z }mx;
-
-   my $user = $context->model('User')->find($id_or_name)
+   my $realm = $context->session->realm;
+   my $user  = $context->find_user({ username => $id_or_name }, $realm)
       or return $self->error($context, UnknownUser, [$id_or_name]);
 
-   $context->stash( user => $user );
+   $context->stash(user => $user);
    return;
 }
 

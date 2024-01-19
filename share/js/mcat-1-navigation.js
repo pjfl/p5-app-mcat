@@ -342,36 +342,24 @@ MCat.Navigation = (function() {
       }
       animate(item) {
          setTimeout(function() {
-            let opacity = 1;
-            const fadeOut = function() {
-               if (opacity <= 0) return;
-               opacity -= 0.01;
-               item.style.opacity = opacity;
-               requestAnimationFrame(fadeOut);
-            };
-            requestAnimationFrame(fadeOut);
+            item.classList.add('fade');
          }, 1000 * this.displayTime);
       }
       async render(href) {
          const url = new URL(href);
-         const messagesURL = new URL(this.messagesURL);
          const mid = url.searchParams.get('mid');
          if (!mid) return;
+         const messagesURL = new URL(this.messagesURL);
          messagesURL.searchParams.set('mid', mid);
          const { object } = await this.bitch.sucks(messagesURL);
          if (!object) return;
-         let count = 0;
-         this.panel.classList.remove('hide');
          for (const message of object) {
-            const options = {
-               className: 'message-item',
-               onclick: function() {
-                  this.panel.classList.add('hide');
-               }.bind(this)
-            };
-            const item = this.h.div(options, message);
-            if (count++ > 0) this.panel.prepend(item);
-            else this.panel.append(item);
+            if (!message) continue;
+            const item = this.h.div({ className: 'message-item' }, message);
+            item.addEventListener('click', function(event) {
+               item.classList.add('hide');
+            });
+            this.panel.append(item);
             this.items.unshift(item);
             this.animate(item);
          }

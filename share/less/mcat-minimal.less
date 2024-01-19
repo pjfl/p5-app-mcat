@@ -106,7 +106,7 @@ header {
 }
 .frame {
     bottom: 0; overflow: auto; position: fixed; right: 0.5rem;
-    top: #sizes[nav-header-height];
+    top: #sizes[nav-header-height]; z-index: 2;
     .exception {
         background: #colours[frame-exception-bg]; max-width: 50rem;
     }
@@ -741,23 +741,36 @@ header {
     right: 0.25rem;
 }
 .messages-panel {
-    bottom: 1rem; position: absolute; right: 1rem; z-index: 3;
+    bottom: 1rem; position: absolute; right: 1rem;
     .message-item {
         background: #colours[message-bg];
         border: 2px solid #colours[message-border]; border-radius: 5px;
         box-shadow: 3px 3px 3px #colours[panel-shadow];
         color: #colours[message-text]; font-family: #fonts[cursive];
-        margin-top: 1rem; max-width: #sizes[message-max-width];
-        padding: 0.5rem;
+        opacity: 1; position: relative; margin-top: 1rem;
+        max-width: #sizes[message-max-width]; padding: 0.5rem;
+        transition: opacity 1s; z-index: 3;
     }
-}
-.messages-panel.hide {
-    display: none;
+    .message-item.fade {
+        opacity: 0;
+    }
+    .message-item.hide {
+        display: none;
+    }
 }
 .modal-outer-wrapper {
     align-items: center; background: #grads[body-bg]; bottom: 0;
     display: flex; justify-content: center; left: 0; position: absolute;
     right: 0; top: 0; z-index: 4;
+    .modal-container {
+        transition: opacity 0.5s;
+    }
+    .modal-container.in {
+        opacity: 1;
+    }
+    .modal-container.out {
+        opacity: 0;
+    }
     .modal {
         background: #colours[filter-rule-editor-bg];
         border: 1px solid; border-radius: 5px; box-shadow: 3px 3px 3px;
@@ -780,7 +793,7 @@ header {
                 font-weight: normal; margin: 0;
             }
         }
-        .modal-footer, .modal-content-wrapper {
+        .modal-content-wrapper, .modal-footer {
             padding: 0 0.5rem;
         }
         .modal-footer, .modal-header {

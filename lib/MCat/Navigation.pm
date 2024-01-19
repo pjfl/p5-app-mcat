@@ -1,17 +1,17 @@
 package MCat::Navigation;
 
+use attributes ();
 use utf8; # -*- coding: utf-8; -*-
 
-use HTML::StateTable::Constants  qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
-use HTML::StateTable::Types      qw( ArrayRef Bool HashRef PositiveInt
-                                     Str URI );
-use HTTP::Status                 qw( HTTP_OK );
-use MCat::Util                   qw( clear_redirect formpost );
-use Ref::Util                    qw( is_hashref );
-use Scalar::Util                 qw( blessed );
-use Type::Utils                  qw( class_type );
-use Unexpected::Functions        qw( throw NoMethod UnknownModel );
-use MCat::Navigation::Attributes qw();
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
+use HTML::StateTable::Types     qw( ArrayRef Bool HashRef PositiveInt
+                                    Str URI );
+use HTTP::Status                qw( HTTP_OK );
+use MCat::Util                  qw( clear_redirect formpost );
+use Ref::Util                   qw( is_coderef is_hashref );
+use Scalar::Util                qw( blessed );
+use Type::Utils                 qw( class_type );
+use Unexpected::Functions       qw( throw NoMethod UnknownModel );
 use HTML::Tiny;
 use JSON::MaybeXS;
 use Try::Tiny;
@@ -96,7 +96,7 @@ has 'title_abbrev' => is => 'ro', isa => Str, default => 'Nav';
 has 'title_entry' => is => 'lazy', isa => Str, default => sub {
    my $self  = shift;
    my @parts = split m{ / }mx, $self->context->action;
-   my $label = $self->_get_menu_label($parts[0] . '/' . $parts[-1]);
+   my $label = $self->_get_nav_label($parts[0] . '/' . $parts[-1]);
 
    return (split m{ \| }mx, $label)[0] // NUL;
 };
@@ -219,7 +219,7 @@ sub finalise {
    return;
 }
 
-sub fix_status_for_fetch {
+sub finalise_script_request {
    my $self    = shift;
    my $context = $self->context;
 
@@ -244,13 +244,11 @@ sub item {
 
    if (is_hashref $args[0]) {
       $label = shift @args;
-      $label->{name} = $self->_get_menu_label($args[0]);
+      $label->{name} = $self->_get_nav_label($args[0]);
    }
-   else { $label = $self->_get_menu_label($args[0]) }
+   else { $label = $self->_get_nav_label($args[0]) }
 
-   my ($moniker, $method) = split m{ / }mx, $args[0];
-
-   if ($self->model->allowed($self->context, $moniker, $method)) {
+   if ($self->model->is_authorised($self->context, $args[0])) {
       my $list = $self->_lists->{$self->_name}->[1];
       my ($text, $icon);
 
@@ -310,7 +308,7 @@ sub _add_global {
    for my $action (@{$self->global}) {
       my ($moniker, $method) = split m{ / }mx, $action;
 
-      if ($self->model->allowed($self->context, $moniker, $method)) {
+      if ($self->model->is_authorised($self->context, $action)) {
          if ($method eq 'menu') {
             $self->context->models->{$moniker}->menu($self->context);
             $self->_set__name('_global');
@@ -327,24 +325,14 @@ sub _add_global {
    return;
 }
 
-sub _get_attributes {
+sub _get_nav_label {
    my ($self, $action) = @_;
 
-   my ($moniker, $method) = split m{ / }mx, $action;
-   my $model = $self->context->models->{$moniker}
-      or throw UnknownModel, [$moniker];
-   my $code_ref = $model->can($method)
-      or throw NoMethod, [ blessed $model, $method ];
+   my $attr = _get_attributes($self->context, $action);
 
-   return MCat::Navigation::Attributes->fetch($code_ref) // {};
-}
+   return $attr->{Nav}->[0] if $attr && defined $attr->{Nav};
 
-sub _get_menu_label {
-   my ($self, $action) = @_;
-
-   my $menu = $self->_get_attributes($action)->{Nav};
-
-   return $menu ? $menu->[0] : NUL;
+   return NUL;
 }
 
 sub _uri {
@@ -355,6 +343,23 @@ sub _uri {
    return NUL if $action =~ m{ /menu \z }mx;
 
    return $self->context->uri_for_action(@args);
+}
+
+# Private functions
+sub _get_attributes {
+   my ($context, $action) = @_;
+
+   return unless $action;
+
+   return attributes::get($action) // {} if is_coderef $action;
+
+   my ($moniker, $method) = split m{ / }mx, $action;
+   my $component = $context->models->{$moniker}
+      or throw UnknownModel, [$moniker];
+   my $coderef = $component->can($method)
+      or throw NoMethod, [blessed $component, $method];
+
+   return attributes::get($coderef) // {};
 }
 
 1;

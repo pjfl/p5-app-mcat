@@ -71,24 +71,16 @@ has 'table' =>
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
 # Public methods
-sub allowed { # Allows all. Apply a role to modify this for permissions
-   my ($self, $context, $moniker, $method) = @_;
-
-   # Return false and stash a redirect to skip calling requested method
-   return $method;
-}
-
 # Stash exception handler output to print an exception page
 # Also called by component loader if model dies
 sub error {
    my ($self, $context, $proto, $bindv, @args) = @_;
 
+   my $nav = $context->stash('nav');
    my $exception;
 
    if (blessed $proto) { $exception = $proto }
    else {
-      my $nav = $context->stash('nav');
-
       push @args, 'rv', HTTP_OK if $nav && $nav->is_script_request;
 
       $exception = exception $proto, $bindv // [], level => 2, @args;
@@ -106,8 +98,6 @@ sub error {
 
    $self->_finalise_stash($context);
 
-   my $nav = $context->stash->{nav};
-
    $context->stash(redirect2referer $context, [$exception->original])
       if $nav && $nav->is_script_request;
 
@@ -124,15 +114,16 @@ sub execute { # Called by component loader for all model method calls
    my $last_method;
 
    for my $method (split m{ / }mx, $methods) {
-      throw NoMethod, [ blessed $self, $method ] unless $self->can($method);
+      my $coderef = $self->can($method)
+         or throw NoMethod, [blessed $self, $method];
 
-      $method = $self->allowed($context, $self->moniker, $method);
+      $method = NUL unless $self->is_authorised($context, $coderef);
 
       $self->$method($context, @{$context->request->args}) if $method;
 
       return $stash->{response} if $stash->{response};
 
-      $stash->{nav}->fix_status_for_fetch if exists $stash->{nav};
+      $stash->{nav}->finalise_script_request if exists $stash->{nav};
 
       return if $stash->{finalised} || exists $stash->{redirect};
 

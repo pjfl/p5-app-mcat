@@ -537,6 +537,7 @@ HFilters.Editor = (function() {
          this.editor.render();
          return this.editor;
       }
+      createRegistrar(data) { return new Registrar(data) }
       onReady(callback) {
          if (document.readyState != 'loading') callback();
          else if (document.addEventListener)
@@ -551,8 +552,6 @@ HFilters.Editor = (function() {
    }
    const manager = new Manager();
    return {
-      createRegistrar: function(data) { return new Registrar(data) },
-      editor: function() { return manager.editor },
       manager: manager
    };
 })();

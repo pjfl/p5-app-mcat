@@ -1,11 +1,12 @@
 // -*- coding: utf-8; -*-
 // Package HFilters.NodeTree
 HFilters.NodeTree = (function() {
+   const FilterEditor = HFilters.Editor.manager;
    class NodeTree {
       constructor(data, config) {
          this.config = config;
          this.instance = true;
-         this.registry = HFilters.Editor.createRegistrar(
+         this.registry = FilterEditor.createRegistrar(
             ['ruleselect', 'ruleunselect', 'ruleremove']
          );
          try { this.data = typeof data == 'string' ? JSON.parse(data) : data }

@@ -1,7 +1,7 @@
 package MCat::Model::Artist;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect );
+use MCat::Util             qw( redirect redirect2referer );
 use Unexpected::Functions  qw( UnknownArtist Unspecified );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -21,7 +21,7 @@ sub base : Auth('view') {
 
       return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-      $context->stash( artist => $artist );
+      $context->stash(artist => $artist);
       $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
    }
 
@@ -35,15 +35,14 @@ sub create : Nav('Create Artist') {
    my $options = { context => $context, title => 'Create Artist' };
    my $form    = $self->new_form('Artist', $options);
 
-   if ($form->process( posted => $context->posted )) {
-      my $artistid    = $form->item->id;
-      my $artist_view = $context->uri_for_action('artist/view', [$artistid]);
-      my $message     = ['Artist [_1] created', $form->item->name];
+   if ($form->process(posted => $context->posted)) {
+      my $view    = $context->uri_for_action('artist/view', [$form->item->id]);
+      my $message = ['Artist [_1] created', $form->item->name];
 
-      $context->stash( redirect $artist_view, $message );
+      $context->stash(redirect $view, $message);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
@@ -52,7 +51,7 @@ sub delete : Nav('Delete Artist') {
 
    return unless $self->verify_form_post($context);
 
-   my $artist = $context->model('Artist')->find($artistid);
+   my $artist = $context->stash('artist');
 
    return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
@@ -60,29 +59,27 @@ sub delete : Nav('Delete Artist') {
 
    $artist->delete;
 
-   my $artist_list = $context->uri_for_action('artist/list');
+   my $list = $context->uri_for_action('artist/list');
 
-   $context->stash( redirect $artist_list, ['Artist [_1] deleted', $name] );
+   $context->stash(redirect $list, ['Artist [_1] deleted', $name]);
    return;
 }
 
 sub edit : Nav('Edit Artist') {
-   my ($self, $context, $artistid) = @_;
+   my ($self, $context) = @_;
 
-   my $form = $self->new_form('Artist', {
-      context => $context,
-      item    => $context->stash('artist'),
-      title   => 'Edit artist'
-   });
+   my $artist  = $context->stash('artist');
+   my $options = {context => $context, item => $artist, title => 'Edit artist'};
+   my $form    = $self->new_form('Artist', $options);
 
-   if ($form->process( posted => $context->posted )) {
-      my $artist_view = $context->uri_for_action('artist/view', [$artistid]);
-      my $message     = ['Artist [_1] updated', $form->item->name];
+   if ($form->process(posted => $context->posted)) {
+      my $view = $context->uri_for_action('artist/view', [$artist->artistid]);
+      my $message = ['Artist [_1] updated', $form->item->name];
 
-      $context->stash( redirect $artist_view, $message );
+      $context->stash(redirect $view, $message);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
@@ -118,16 +115,17 @@ sub remove {
 }
 
 sub view : Auth('view') Nav('View Artist') {
-   my ($self, $context, $artistid) = @_;
+   my ($self, $context) = @_;
 
-   my $options = { context => $context, artistid => $artistid };
+   my $artist  = $context->stash('artist');
+   my $options = { context => $context, artistid => $artist->artistid };
    my $cds     = $self->new_table('Cd', $options);
 
    $context->stash(table => $self->new_table('Object::View', {
       add_columns => [ 'CDs' => $cds ],
       caption     => 'Artist View',
       context     => $context,
-      result      => $context->stash('artist')
+      result      => $artist
    }));
    return;
 }

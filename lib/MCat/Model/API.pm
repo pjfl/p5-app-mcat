@@ -47,7 +47,7 @@ sub dispatch : Auth('none') {
       unless $coderef;
 
    return $self->error($context, UnauthorisedAPICall, [$class, $method])
-      unless $self->_allowed($context, $coderef);
+      unless $self->_api_allowed($context, $coderef);
 
    return if $context->posted && !$self->verify_form_post($context);
 
@@ -57,7 +57,7 @@ sub dispatch : Auth('none') {
       '*' => sub { $self->error($context, APIMethodFailed, [$class,$method,$_])}
    ];
 
-   $context->stash( json => (delete($context->stash->{response}) || {}) )
+   $context->stash(json => (delete($context->stash->{response}) || {}))
       unless $context->stash('json');
 
    return if $context->stash->{finalised};
@@ -66,12 +66,10 @@ sub dispatch : Auth('none') {
    return;
 }
 
-sub _allowed {
+sub _api_allowed {
    my ($self, $context, $coderef) = @_;
 
-   my $attr = MCat::Navigation::Attributes->fetch($coderef) // {};
-
-   return TRUE if $self->is_authorised($context, $attr);
+   return TRUE if $self->is_authorised($context, $coderef);
 
    clear_redirect $context;
    return FALSE;
