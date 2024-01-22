@@ -220,22 +220,7 @@ sub set_totp_secret {
    return $self->totp_secret;
 }
 
-sub totp_secret {
-   my ($self, $value) = @_; return $self->_profile('totp_secret', $value);
-}
-
-sub update {
-   my ($self, $columns) = @_;
-
-   $self->set_inflated_columns($columns) if $columns;
-
-   $columns = { $self->get_inflated_columns };
-   $self->_encrypt_password($columns, 'password');
-
-   return $self->next::method;
-}
-
-sub update_session {
+sub to_session {
    my ($self, $session) = @_;
 
    return unless $session && blessed $session;
@@ -259,6 +244,21 @@ sub update_session {
    $session->username($self->name)   if $session->can('username');
 
    return;
+}
+
+sub totp_secret {
+   my ($self, $value) = @_; return $self->_profile('totp_secret', $value);
+}
+
+sub update {
+   my ($self, $columns) = @_;
+
+   $self->set_inflated_columns($columns) if $columns;
+
+   $columns = { $self->get_inflated_columns };
+   $self->_encrypt_password($columns, 'password');
+
+   return $self->next::method;
 }
 
 # Private methods

@@ -76,6 +76,7 @@
     @nav-link-both: 7;
     @nav-link-icon: 4;
     @nav-link-text: 6;
+    nav-panel-max-dim: 32rem;
     sidebar-both: unit(@nav-link-both, rem);
     frame-left-both: unit((@nav-link-both + 0.75), rem);
     sidebar-icon: unit(@nav-link-icon, rem);
@@ -169,6 +170,9 @@ header {
         content: ''; display: inline-block; height: 100%;
         margin-left: -0.5rem; width: 1rem;
     }
+    .title-text {
+        position: relative; top: -1rem;
+    }
     .global {
         isolation: isolate;
         .drop-menu img, a img {
@@ -179,25 +183,22 @@ header {
             position: absolute; text-align: left; z-index: 3;
         }
         .nav-panel {
-            left: -1.1rem; max-height: 0; margin-top: 0.85rem;
-            transition: max-height ease-in-out 500ms;
+            left: -1.1rem; margin-top: 0.85rem; max-height: 0;
+            transition: all ease-in-out 500ms;
+        }
+        .nav-panel:active, .nav-panel:hover {
+            max-height: #sizes[nav-panel-max-dim]; overflow: visible;
         }
         .slide-out {
-            left: -5px; max-width: 0; top: -1px; transform: translate(-100%, 0);
-            transition: all ease-in-out 500ms;
+            left: -5px; max-height: 0; max-width: 0; top: -1px;
+            transform: translate(-100%, 0); transition: all ease-in-out 500ms;
             .nav-list li {
                 display: block;
             }
         }
-        .nav-panel.visible {
-            max-height: 32rem;
-        }
-        .slide-out.visible {
-            max-width: 32rem;
-        }
-        .nav-panel:active, .slide-out:active,
-        .nav-panel:hover, .slide-out:hover {
-            overflow: visible;
+        .slide-out.active, .slide-out:hover {
+            max-height: #sizes[nav-panel-max-dim];
+            max-width: #sizes[nav-panel-max-dim]; overflow: visible;
         }
     }
     .nav-control {
@@ -213,9 +214,9 @@ header {
             position: absolute; right: -1rem; text-align: left; top: 2.5rem;
             transition: max-height ease-in-out 500ms; z-index: 3;
         }
-        .nav-panel.visible {
-            max-height: 32rem;
-        }
+    }
+    .nav-control:has(a:hover, form:hover) .nav-panel {
+        max-height: #sizes[nav-panel-max-dim];
     }
     .nav-list {
         display: inline-block; list-style: none; margin: 0; padding: 0;
@@ -279,11 +280,14 @@ header {
     .nav-list.control, .nav-list.context {
         border: 1px solid; border-radius: 3px; padding: 0 0.25rem;
     }
+    .nav-list.context {
+        li.context:has(a:hover, form:hover, .drop-menu:hover) .slide-out {
+            max-height: #sizes[nav-panel-max-dim];
+            max-width: #sizes[nav-panel-max-dim]; overflow: visible;
+        }
+    }
     .nav-menu {
         background: #colours[nav-bg];
-    }
-    .title-text {
-        position: relative; top: -1rem;
     }
 }
 .state-navigation {
@@ -333,12 +337,13 @@ header {
                 position: relative; width: 100%;
             }
             .nav-panel {
-                display: inline-block; left: unset; margin: 0.75rem 0;
-                max-width: 0; transition: all ease-in-out 500ms;
+                display: inline-block; left: unset; margin: 0.6rem 0;
+                max-width: 0;
             }
-            .nav-panel.visible {
-                max-width: 32rem;
-            }
+        }
+        li.global:has(a:hover, form:hover, .drop-menu:hover) .nav-panel {
+            max-height: #sizes[nav-panel-max-dim];
+            max-width: #sizes[nav-panel-max-dim]; overflow: visible;
         }
         li.global:first-child {
             padding-top: 0;
@@ -364,9 +369,6 @@ header {
             height: 2rem; left: -5px; position: absolute;
             width: 5px;
         }
-    }
-    .nav-menu {
-        background: #colours[nav-bg];
     }
     @media (max-width: #sizes[media-break]) {
         top: #sizes[nav-header-height];
@@ -608,7 +610,7 @@ header {
                 line-height: 0.8rem; overflow: hidden;
                 padding: 0.25rem 0.75rem; position: relative;
                 text-decoration: none;
-                transition: border 0.5s, color 0.5s;
+                transition: border 500ms, color 500ms;
                 span {
                     font-family: #fonts[system];
                     font-size: 0.7rem; letter-spacing: 0.1rem;
@@ -625,7 +627,7 @@ header {
                 display: block; height: 3rem; left: var(--x);
                 opacity: 0; position: absolute;
                 top: var(--y); transform: translate(-50%, -50%);
-                transition: opacity 0.5s; width: 3rem; z-index: 1;
+                transition: opacity 500ms; width: 3rem; z-index: 1;
             }
             button:hover::before {
                 opacity: 1;
@@ -763,7 +765,7 @@ header {
     display: flex; justify-content: center; left: 0; position: absolute;
     right: 0; top: 0; z-index: 4;
     .modal-container {
-        transition: opacity 0.5s;
+        transition: opacity 500ms;
     }
     .modal-container.in {
         opacity: 1;
@@ -778,9 +780,6 @@ header {
         .modal-content-wrapper, .modal-footer, .modal-header {
             color: #colours[text];
         }
-        .modal-footer {
-            display: flex; gap: 1rem; justify-content: space-between;
-        }
         .modal-header {
             align-items: center;
             background: #colours[title-bg];
@@ -793,10 +792,7 @@ header {
                 font-weight: normal; margin: 0;
             }
         }
-        .modal-content-wrapper, .modal-footer {
-            padding: 0 0.5rem;
-        }
-        .modal-footer, .modal-header {
+        modal-header, .modal-footer {
             .button {
                 background: #grads[button-bg];
                 border: 2px outset #colours[button-border];
@@ -805,7 +801,7 @@ header {
                 line-height: 0.8rem; margin: 0.5rem 0; overflow: hidden;
                 padding: 0.25rem 0.75rem; position: relative;
                 text-decoration: none;
-                transition: border 0.5s, color 0.5s;
+                transition: border 500ms, color 500ms;
                 span {
                     font-family: #fonts[system];
                     font-size: 0.7rem; letter-spacing: 0.1rem;
@@ -822,7 +818,7 @@ header {
                 display: block; height: 3rem; left: var(--x);
                 opacity: 0; position: absolute;
                 top: var(--y); transform: translate(-50%, -50%);
-                transition: opacity 0.5s; width: 3rem; z-index: 1;
+                transition: opacity 500ms; width: 3rem; z-index: 1;
             }
             .button:hover::before {
                 opacity: 1;
@@ -850,6 +846,12 @@ header {
                 box-shadow: inset 0 0 3px #colours[panel-shadow];
                 color: #colours[text];
             }
+        }
+        .modal-content-wrapper, .modal-footer {
+            padding: 0 0.5rem;
+        }
+        .modal-footer {
+            display: flex; gap: 1rem; justify-content: space-between;
         }
     }
 }

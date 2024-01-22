@@ -68,21 +68,6 @@ MCat.Navigation = (function() {
          this.token = object['verify-token'];
          this.titleEntry = object['title-entry'];
       }
-      menuLeave(context) {
-         return function(event) {
-            event.preventDefault();
-            const panel = this.contextPanels[context];
-            panel.classList.remove('visible');
-            for (const el of panel.getElementsByClassName('visible'))
-               el.classList.remove('visible');
-         }.bind(this);
-      }
-      menuOver(context) {
-         return function(event) {
-            event.preventDefault();
-            this.contextPanels[context].classList.toggle('visible');
-         }.bind(this);
-      }
       async process(action, form) {
          const options = { headers: { prefer: 'render=partial' }, form: form };
          const { location, reload, text }
@@ -140,12 +125,9 @@ MCat.Navigation = (function() {
          if (!isURL) this.appendValue(attr, 'className', 'text');
          const label = isURL
                ? this.h.img({ src: this.controlLabel }) : this.controlLabel;
-         const link = this.h.a({
-            onmouseover: this.menuOver('control')
-         }, this.h.span(attr, label));
+         const link = this.h.a(this.h.span(attr, label));
          this.contextPanels['control'] = this.h.div({
-            className: 'nav-panel control-panel',
-            onmouseleave: this.menuLeave('control')
+            className: 'nav-panel control-panel'
          }, this.renderList(this.menus['_control'], 'control'));
          return this.h.div({
             className: 'nav-control'
@@ -175,13 +157,11 @@ MCat.Navigation = (function() {
             const label = this.renderLabel(icon, text);
             if (href) {
                const attr = { href: href, onclick: this.loadLocation(href) };
-               if (context) attr['onmouseover'] = this.menuOver(context);
                const link = this.h.a(attr, label);
                link.setAttribute('clicklistener', true);
                return this.h.li({ className: menuName, title: title }, link);
             }
             const labelAttr = { className: 'drop-menu' };
-            if (context) labelAttr['onmouseover'] = this.menuOver(context);
             const menuItem = this.h.span(labelAttr, label);
             return this.h.li({ className: menuName, title: title }, menuItem);
          }
@@ -206,6 +186,7 @@ MCat.Navigation = (function() {
       }
       renderList(list, menuName) {
          const [title, itemList] = list;
+         if (!itemList.length) return this.h.span();
          const items = [];
          let context = false;
          let isSelected = false;
@@ -214,7 +195,7 @@ MCat.Navigation = (function() {
                const className
                      = menuName == 'context' ? 'slide-out' : 'nav-panel';
                this.contextPanels[item] = this.h.div({
-                  className: className, onmouseleave: this.menuLeave(item)
+                  className: className
                }, this.renderList(this.menus[item], 'context'));
                context = item;
                continue;

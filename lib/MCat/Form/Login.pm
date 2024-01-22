@@ -141,20 +141,17 @@ sub validate {
 
    return $name->add_error('User [_1] unknown', $username) unless $user;
 
-   my $session = $context->session;
    my $passwd  = $self->field('password');
    my $code    = $self->field('auth_code');
 
    $args = { user => $user, password => $passwd->value, code => $code->value };
 
    try {
-      $session->authenticated(FALSE);
+      $context->logout;
       $context->authenticate($args, $realm);
-      $session->authenticated(TRUE);
+      $context->set_authenticated($args, $realm);
    }
    catch_class $self->_handlers($user, $passwd, $code);
-
-   $context->update_session($args, $realm) if $session->authenticated;
 
    return;
 }

@@ -1,8 +1,10 @@
 package MCat::Logfile::View::Result;
 
-use DateTime::Format::Strptime;
 use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Date HashRef Int Str );
+use Type::Utils                 qw( class_type );
+use DateTime::Format::Strptime;
+use Text::CSV_XS;
 use Moo;
 
 with 'HTML::StateTable::Result::Role';
@@ -31,6 +33,16 @@ Defines the following attributes;
 
 =over 3
 
+=cut
+
+has '_csv' =>
+   is      => 'ro',
+   isa     => class_type('Text::CSV_XS'),
+   default => sub {
+      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
+   };
+
+
 =item line
 
 Each of these result objects is inflated from this required string, a single
@@ -50,23 +62,12 @@ has 'fields' =>
    is      => 'lazy',
    isa     => ArrayRef,
    default => sub {
-      my $self   = shift;
-      my $line   = $self->line or return [];
-      my @fields = ();
-      my $prev;
-      my $qstr;
+      my $self = shift;
+      my $line = $self->line or return [];
 
-      $line =~ s{ (".*?") }{($qstr = $1) =~ y: :~:, $qstr}egmx;
+      $self->_csv->parse($line);
 
-      while (length $line) {
-         $line =~ s{ \A ([^ ]+) (?: [ ]+ | \z ) }{}msx;
-         last if ($prev && $prev eq $line) || !$1;
-         (my $field = $1) =~ s{ (".*?") }{($qstr = $1) =~ y:~: :, $qstr}egmx;
-         push @fields, $field;
-         $prev = $line
-      }
-
-      push @fields, $line;
+      my @fields = ($self->_csv->fields);
 
       return \@fields;
    };
@@ -74,7 +75,7 @@ has 'fields' =>
 =item field_map
 
 Some of the fields in this result contain key/value pairs separated by a colon.
-Split them out to create this hash reference
+Split them out to create this hash reference. Unused
 
 =cut
 
@@ -118,7 +119,7 @@ has 'timestamp' =>
       my $strp = DateTime::Format::Strptime->new(
          pattern => $self->_timestamp_pattern, time_zone => 'UTC'
       );
-      my $value = ($self->fields->[0] // NUL) .SPC. ($self->fields->[1] // NUL);
+      my $value = $self->fields->[0] // NUL;
       my $timestamp = $strp->parse_datetime($value);
 
       unless ($timestamp) {
@@ -147,14 +148,14 @@ has 'pid' =>
 
       return 0 unless $self->remainder_start;
 
-      return _field_value($self->fields->[2], 'p', 0);
+      return _field_value($self->fields->[0], 'p', 0);
    };
 
 has 'pid_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
    default => sub {
-      return [ qw(cut -f 3 -d), q( ), qw(| cut -f 2 -d : | sort -n | uniq) ];
+      return [ qw(cut -f 0 -d), q(,), qw(| cut -f 2 -d : | sort -n | uniq) ];
    };
 
 =item status
@@ -171,18 +172,22 @@ has 'status' =>
 
       return NUL unless $self->remainder_start;
 
-      (my $status = $self->fields->[2] // NUL) =~ s{ [\[\]] }{}gmx;
-      return $status;
+      return $self->fields->[1] // NUL;
    };
 
 has 'status_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
-   default => sub { [ qw(cut -f 3 -d), q( ), qw(| sort | uniq) ] };
+   default => sub {
+      return [ qw(cut -f 2 -d), q(,), qw(| tr -d \" | sort | uniq) ];
+   };
 
-has 'status_filter_values' => is => 'ro', isa => ArrayRef[Str], default => sub {
-   return [qw( ALERT CRITICAL DEBUG ERROR FATAL INFO WARNING )];
-};
+# has 'status_filter_values' =>
+#    is      => 'ro',
+#    isa     => ArrayRef[Str],
+#    default => sub {
+#       return [ qw(ALERT CRITICAL DEBUG ERROR FATAL INFO WARNING) ];
+#    };
 
 =item username
 
@@ -198,14 +203,15 @@ has 'username' =>
 
       return NUL unless $self->remainder_start;
 
-      (my $username = $self->fields->[3] // NUL) =~ s{ [\(\)] }{}gmx;
-      return $username;
+      return $self->fields->[2] // NUL;
    };
 
 has 'username_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
-   default => sub { [ qw(cut -f 4 -d), q( ), qw(| tr -d \(\) | sort | uniq) ] };
+   default => sub {
+      return [ qw(cut -f 3 -d), q(,), qw(| tr -d \" | sort | uniq) ];
+   };
 
 =item source
 
@@ -221,8 +227,14 @@ has 'source' =>
 
       return NUL unless $self->remainder_start;
 
-      (my $source = $self->fields->[4] // NUL) =~ s{ : \z }{}mx;
-      return $source;
+      return $self->fields->[3] // NUL;
+   };
+
+has 'source_filter' =>
+   is      => 'ro',
+   isa     => ArrayRef[Str],
+   default => sub {
+      return [ qw(cut -f 4 -d), q(,), qw(| tr -d \" | sort | uniq) ];
    };
 
 =item remainder
@@ -237,9 +249,10 @@ has 'remainder' =>
    is      => 'lazy',
    isa     => Str,
    default => sub {
-      my $self = shift;
+      my $self  = shift;
+      my $start = $self->remainder_start;
 
-      return join SPC, splice @{$self->fields}, $self->remainder_start;
+      return join SPC, grep { defined } splice @{$self->fields}, $start;
    };
 
 =item remainder_start
@@ -252,7 +265,7 @@ stop and the list of key/value pairs begins
 has 'remainder_start' =>
    is      => 'ro',
    isa     => Int,
-   default => 5,
+   default => 4,
    writer  => '_set_remainder_start';
 
 # Returns the default if the field is undefined. Returns the field value if

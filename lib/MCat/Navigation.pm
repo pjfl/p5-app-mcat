@@ -1,17 +1,15 @@
 package MCat::Navigation;
 
-use attributes ();
 use utf8; # -*- coding: utf-8; -*-
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
+use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
+use HTTP::Status                qw( HTTP_OK );
 use HTML::StateTable::Types     qw( ArrayRef Bool HashRef PositiveInt
                                     Str URI );
-use HTTP::Status                qw( HTTP_OK );
 use MCat::Util                  qw( clear_redirect formpost );
-use Ref::Util                   qw( is_coderef is_hashref );
+use Ref::Util                   qw( is_hashref );
 use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );
-use Unexpected::Functions       qw( throw NoMethod UnknownModel );
 use HTML::Tiny;
 use JSON::MaybeXS;
 use Try::Tiny;
@@ -33,8 +31,11 @@ has 'container_tag' => is => 'ro', isa => Str, default => 'div';
 
 has 'content_name' => is => 'ro', isa => Str, default => 'panel';
 
-has 'context' => is => 'ro', isa => class_type('MCat::Context'),
-   required => TRUE, weak_ref => TRUE;
+has 'context' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Context'),
+   required => TRUE,
+   weak_ref => TRUE;
 
 has 'control_label' => is => 'lazy', isa => Str, init_arg => undef,
    default => sub {
@@ -328,7 +329,7 @@ sub _add_global {
 sub _get_nav_label {
    my ($self, $action) = @_;
 
-   my $attr = _get_attributes($self->context, $action);
+   my $attr = $self->context->get_attributes($action);
 
    return $attr->{Nav}->[0] if $attr && defined $attr->{Nav};
 
@@ -343,23 +344,6 @@ sub _uri {
    return NUL if $action =~ m{ /menu \z }mx;
 
    return $self->context->uri_for_action(@args);
-}
-
-# Private functions
-sub _get_attributes {
-   my ($context, $action) = @_;
-
-   return unless $action;
-
-   return attributes::get($action) // {} if is_coderef $action;
-
-   my ($moniker, $method) = split m{ / }mx, $action;
-   my $component = $context->models->{$moniker}
-      or throw UnknownModel, [$moniker];
-   my $coderef = $component->can($method)
-      or throw NoMethod, [blessed $component, $method];
-
-   return attributes::get($coderef) // {};
 }
 
 1;

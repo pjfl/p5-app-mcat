@@ -19,10 +19,10 @@ has 'schema' =>
    isa      => class_type('DBIx::Class::Schema'),
    required => TRUE;
 
-has 'update_session_method' =>
+has 'to_session_method' =>
    is      => 'ro',
    isa     => Str,
-   default => 'update_session';
+   default => 'to_session';
 
 sub authenticate {
    my ($self, $args) = @_;
@@ -43,7 +43,7 @@ sub find_user {
    return $rs->$method($args->{username}, $args->{options});
 }
 
-sub update_session {
+sub to_session {
    my ($self, $args) = @_;
 
    return unless $args->{user};
@@ -52,7 +52,7 @@ sub update_session {
 
    $session->realm($self->realm) if $session->can('realm');
 
-   my $method = $self->update_session_method;
+   my $method = $self->to_session_method;
 
    return $args->{user}->$method($session);
 }

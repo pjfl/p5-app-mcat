@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Switch to csv logfiles. Switch to css only menus
           - Adds multi realm authentication scheme
           - Inline server field validation
           - Fixes filter editor node remove bug

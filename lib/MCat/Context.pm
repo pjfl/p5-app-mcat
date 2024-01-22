@@ -1,11 +1,14 @@
 package MCat::Context;
 
-use HTML::Forms::Constants qw( FALSE NUL STAR TRUE );
+use attributes ();
+
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL STAR TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Str );
 use HTML::Forms::Util      qw( get_token );
 use List::Util             qw( pairs );
-use Ref::Util              qw( is_arrayref is_hashref );
+use Ref::Util              qw( is_arrayref is_coderef is_hashref );
 use Type::Utils            qw( class_type );
+use Unexpected::Functions  qw( throw NoMethod UnknownModel );
 use MCat::Response;
 use Moo;
 
@@ -55,6 +58,22 @@ has '_stash' => is => 'ro', isa => HashRef, default => sub {
 };
 
 with 'MCat::Role::Authentication';
+
+sub get_attributes {
+   my ($self, $action) = @_;
+
+   return unless $action;
+
+   return attributes::get($action) // {} if is_coderef $action;
+
+   my ($moniker, $method) = split m{ / }mx, $action;
+   my $component = $self->models->{$moniker}
+      or throw UnknownModel, [$moniker];
+   my $coderef = $component->can($method)
+      or throw NoMethod, [blessed $component, $method];
+
+   return attributes::get($coderef) // {};
+}
 
 sub get_body_parameters {
    my $self = shift; return $self->forms->get_body_parameters($self);

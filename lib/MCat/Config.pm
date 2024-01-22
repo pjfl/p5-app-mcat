@@ -236,8 +236,11 @@ class
 
 =cut
 
-has 'logfile' => is => 'lazy', isa => File|Undef, init_arg => undef,
-   default => sub {
+has 'logfile' =>
+   is       => 'lazy',
+   isa      => File|Path|Undef,
+   init_arg => undef,
+   default  => sub {
       my $self = shift; return $self->logdir->catfile($self->_logfile);
    };
 

@@ -1,13 +1,23 @@
 package MCat::Log;
 
-use HTML::Forms::Constants  qw( DOT FALSE TRUE USERNAME );
+use HTML::Forms::Constants  qw( DOT FALSE NUL TRUE USERNAME );
 use Class::Usul::Cmd::Types qw( ConfigProvider );
 use HTML::Forms::Types      qw( Bool );
-use Class::Usul::Cmd::Util  qw( now_dt ns_environment );
+use Class::Usul::Cmd::Util  qw( now_dt ns_environment trim );
+use HTML::StateTable::Util  qw( escape_formula );
 use Ref::Util               qw( is_arrayref is_coderef );
+use Type::Utils             qw( class_type );
+use Text::CSV_XS;
 use Moo;
 
 has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
+
+has '_csv' =>
+   is      => 'ro',
+   isa     => class_type('Text::CSV_XS'),
+   default => sub {
+      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
+   };
 
 has '_debug' =>
    is       => 'lazy',
@@ -26,15 +36,15 @@ around 'BUILDARGS' => sub {
    my $attr = $orig->($self, @args);
 
    if (my $builder = delete $attr->{builder}) {
-      $attr->{config} = $builder->config;
-      $attr->{debug} = $builder->debug;
+      $attr->{config} //= $builder->config;
+      $attr->{debug} //= $builder->debug;
    }
 
    return $attr;
 };
 
 sub alert {
-   return shift->_log('ALERT', @_);
+   return shift->_log('ALERT', NUL, @_);
 }
 
 sub debug {
@@ -42,19 +52,19 @@ sub debug {
 
    return unless $self->_debug;
 
-   return $self->_log('DEBUG', @_);
+   return $self->_log('DEBUG', NUL, @_);
 }
 
 sub error {
-   return shift->_log('ERROR', @_);
+   return shift->_log('ERROR', NUL, @_);
 }
 
 sub fatal {
-   return shift->_log('FATAL', @_);
+   return shift->_log('FATAL', NUL, @_);
 }
 
 sub info {
-   return shift->_log('INFO', @_);
+   return shift->_log('INFO', NUL, @_);
 }
 
 sub log { # For benefit of P::M::LogDispatch
@@ -69,49 +79,61 @@ sub log { # For benefit of P::M::LogDispatch
    $message = $message->() if is_coderef $message;
    $message = is_arrayref $message ? $message->[0] : $message;
 
-   return $self->_log($level, "${leader}: ${message}");
+   return $self->_log($level, $leader, $message);
 }
 
 sub warn {
-   return shift->_log('WARNING', @_);
+   return shift->_log('WARNING', NUL, @_);
 }
 
 # Private methods
 sub _get_leader {
-   my ($self, $context) = @_;
+   my ($self, $message, $context) = @_;
 
-   my $leader = 'Unknown';
+   my $leader;
 
-   return $leader unless $context;
+   if ($context) {
+      if ($context->can('leader')) { $leader = $context->leader }
+      elsif ($context->can('action') && $context->has_action) {
+         my @parts = split m{ / }mx, ucfirst $context->action;
 
-   if ($context->can('leader')) { $leader = $context->leader }
-   elsif ($context->can('action') && $context->has_action) {
-      my @parts = split m{ / }mx, ucfirst $context->action;
-
-      $leader = $parts[0] . DOT . $parts[-1];
+         $leader = $parts[0] . DOT . $parts[-1];
+      }
+      elsif ($context->can('name')) { $leader = ucfirst $context->name }
    }
-   elsif ($context->can('name')) { $leader = ucfirst $context->name }
 
-   return $leader;
+   unless ($leader) {
+      if ($message =~ m{ \A \S+ : }mx) {
+         ($leader, $message) = split m{ : }mx, $message, 2;
+      }
+      else { $leader = 'Unknown' }
+   }
+
+   return ($leader, trim $message);
 }
 
 sub _log {
-   my ($self, $level, $message, $context) = @_;
+   my ($self, $level, $leader, $message, $context) = @_;
 
-   $message //= 'Unknown';
+   $level   ||= 'ERROR';
+   $message ||= 'Unknown';
    $message = "${message}";
    chomp $message;
+   $message =~ s{ \n }{. }gmx;
 
-   $message = $self->_get_leader($context) . ": ${message}"
-      if $message !~ m{ : }mx;
+   ($leader, $message) = $self->_get_leader($message, $context) unless $leader;
 
    my $now      = now_dt->strftime('%Y/%m/%d %T');
    my $username = $context && $context->can('session')
       ? $context->session->username : USERNAME;
 
-   $message = "${now} [${level}] (${username}) ${message}\n";
+   $self->_csv->combine(
+      escape_formula $now, $level, $username, $leader, $message
+   );
 
-   if (my $file = $self->config->logfile) { $file->append($message)->flush }
+   my $line = $self->_csv->string . "\n";
+
+   if (my $file = $self->config->logfile) { $file->append($line)->flush }
    else { CORE::warn $message }
 
    return TRUE;

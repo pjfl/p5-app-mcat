@@ -1,6 +1,6 @@
 package MCat::Role::Authentication;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use HTML::Forms::Types     qw( HashRef Object );
 use Class::Usul::Cmd::Util qw( ensure_class_loaded );
 use Unexpected::Functions  qw( throw Unspecified );
@@ -22,17 +22,28 @@ sub authenticate {
 sub find_user {
    my ($self, $args, $realm) = @_;
 
-   return $self->_find_realm($realm)->find_user($args // {});
+   $args //= {};
+   $args->{session} = $self->session;
+
+   return $self->_find_realm($realm)->find_user($args);
 }
 
-sub update_session {
+sub logout {
+   my $self = shift;
+
+   $self->session->authenticated(FALSE);
+   return;
+}
+
+sub set_authenticated {
    my ($self, $args, $realm) = @_;
 
    $args //= {};
    $args->{user} //= $self->find_user($args, $realm);
    $args->{session} = $self->session;
+   $self->session->authenticated(TRUE);
 
-   return $self->_find_realm($realm)->update_session($args);
+   return $self->_find_realm($realm)->to_session($args);
 }
 
 # Private methods

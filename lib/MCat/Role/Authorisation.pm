@@ -1,10 +1,7 @@
 package MCat::Role::Authorisation;
 
-use attributes ();
-
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use MCat::Util             qw( redirect );
-use Ref::Util              qw( is_coderef );
 use Unexpected::Functions  qw( throw NoUserRole );
 use Moo::Role;
 
@@ -23,9 +20,9 @@ sub is_authorised {
 
    my $user_role = $session->role or throw NoUserRole, [$session->username];
 
-   return TRUE if $role eq $user_role or $user_role eq 'admin';
-
    return TRUE if $role eq 'edit' and $user_role eq 'manager';
+
+   return TRUE if $role eq $user_role or $user_role eq 'admin';
 
    $context->stash(redirect $context->uri_for_action('page/access_denied'), []);
 
@@ -33,24 +30,10 @@ sub is_authorised {
 }
 
 # Private functions
-sub _get_attributes {
-   my ($context, $action) = @_;
-
-   return unless $action;
-
-   return attributes::get($action) // {} if is_coderef $action;
-
-   my ($moniker, $method) = split m{ / }mx, $action;
-   my $component = $context->models->{$moniker} or return;
-   my $coderef = $component->can($method) or return;
-
-   return attributes::get($coderef) // {};
-}
-
 sub _get_auth_role {
    my ($context, $action) = @_;
 
-   my $attr = _get_attributes($context, $action);
+   my $attr = eval { $context->get_attributes($action) };
 
    return $attr->{Auth}->[-1] if $attr && defined $attr->{Auth};
 
@@ -60,7 +43,7 @@ sub _get_auth_role {
 sub _get_nav_label {
    my ($context, $action) = @_;
 
-   my $attr = _get_attributes($context, $action);
+   my $attr = eval { $context->get_attributes($action) };
 
    return $attr->{Nav}->[0] if $attr && defined $attr->{Nav};
 
