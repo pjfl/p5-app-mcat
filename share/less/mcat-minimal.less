@@ -70,19 +70,19 @@
     filter-rule-max-width: 20rem;
     media-break: 680px;
     message-max-width: 16rem;
+    nav-context-width: 8rem;
     nav-control-width: 10rem;
     nav-header-height: 3rem;
-    nav-list-width: 7rem;
     @nav-link-both: 7;
     @nav-link-icon: 4;
     @nav-link-text: 6;
     nav-panel-max-dim: 32rem;
-    sidebar-both: unit(@nav-link-both, rem);
     frame-left-both: unit((@nav-link-both + 0.75), rem);
-    sidebar-icon: unit(@nav-link-icon, rem);
     frame-left-icon: unit((@nav-link-icon + 0.75), rem);
-    sidebar-text: unit(@nav-link-text, rem);
     frame-left-text: unit((@nav-link-text + 0.75), rem);
+    sidebar-both: unit(@nav-link-both, rem);
+    sidebar-icon: unit(@nav-link-icon, rem);
+    sidebar-text: unit(@nav-link-text, rem);
 }
 *, *::before, *::after {
     box-sizing: border-box;
@@ -173,41 +173,62 @@ header {
     .title-text {
         position: relative; top: -1rem;
     }
-    .global {
-        isolation: isolate;
-        .drop-menu img, a img {
-            position: relative; z-index: -1;
+    li.global {
+        isolation: isolate; margin-right: 2.5rem; position: relative;
+        a, .drop-menu {
+            display: block; padding: 0.25rem 0.5rem 0.75rem;
+            img {
+                position: relative; z-index: -1;
+            }
         }
         .nav-panel, .slide-out {
-            background: #colours[panel-bg]; overflow: hidden;
-            position: absolute; text-align: left; z-index: 3;
+            background: #colours[panel-bg]; overflow-y: hidden;
+            position: absolute; text-align: left;
         }
         .nav-panel {
-            left: -1.1rem; margin-top: 0.85rem; max-height: 0;
+            left: -1.1rem; max-height: 0;
+            top: 2.5rem;
             transition: all ease-in-out 500ms;
         }
         .nav-panel:active, .nav-panel:hover {
-            max-height: #sizes[nav-panel-max-dim]; overflow: visible;
+            max-height: #sizes[nav-panel-max-dim];
+        }
+        .nav-panel:has(a:hover, form:hover, .drop-menu:hover) {
+            overflow-y: clip;
         }
         .slide-out {
-            left: -5px; max-height: 0; max-width: 0; top: -1px;
-            transform: translate(-100%, 0); transition: all ease-in-out 500ms;
+            left: 0; top: -1px;
+            transform: translate(0, -100%); transition: all ease-in-out 500ms;
+            z-index: -1;
             .nav-list li {
                 display: block;
             }
+            .slide-out {
+                z-index: -2;
+            }
         }
         .slide-out.active, .slide-out:hover {
-            max-height: #sizes[nav-panel-max-dim];
-            max-width: #sizes[nav-panel-max-dim]; overflow: visible;
+            overflow-y: clip; transform: translate(-100%, 0);
         }
+    }
+    li.global.selected > span::before, li.global.selected > a::before {
+        background: #colours[link]; border-radius: 2px; content: '';
+        display: block; height: 5px; left: 0; position: absolute;
+        top: -0.6rem; width: 100%;
+    }
+    li.global:has(a:hover, form:hover, .drop-menu:hover) .nav-panel {
+        max-height: #sizes[nav-panel-max-dim];
     }
     .nav-control {
         cursor: pointer; display: inline-block; font-size: larger;
         a, .nav-control-label {
             display: inline-block;
         }
+        a {
+            padding: 0.25rem 0.5rem 0.75rem;
+        }
         img {
-            height: 24px; width: 24px; vertical-align: middle;
+            height: 24px; width: 24px; vertical-align: top;
         }
         .nav-panel {
             background: #colours[panel-bg]; max-height: 0; overflow: hidden;
@@ -257,16 +278,8 @@ header {
         }
         li.context.selected::before, li.control.selected::before {
             background: #colours[link]; border-radius: 2px; content: '';
-            height: 2rem; position: absolute; right: -5px; top: 1px;
+            height: 2rem; position: absolute; right: 0; top: 1px;
             width: 5px;
-        }
-        li.global {
-            margin-right: 2.5rem; position: relative;
-        }
-        li.global.selected > span::before, li.global.selected > a::before {
-            background: #colours[link]; border-radius: 2px; content: '';
-            display: block; height: 5px; position: absolute; top: -0.66rem;
-            width: 100%;
         }
         .form-button {
             background: none !important; border: none; color: #colours[link];
@@ -278,12 +291,12 @@ header {
         width: #sizes[nav-control-width];
     }
     .nav-list.control, .nav-list.context {
-        border: 1px solid; border-radius: 3px; padding: 0 0.25rem;
+        border: 1px solid; border-radius: 3px;
     }
     .nav-list.context {
-        li.context:has(a:hover, form:hover, .drop-menu:hover) .slide-out {
-            max-height: #sizes[nav-panel-max-dim];
-            max-width: #sizes[nav-panel-max-dim]; overflow: visible;
+        width: #sizes[nav-context-width];
+        li.context:has(> a:hover, > form:hover, > .drop-menu:hover) .slide-out {
+            transform: translate(-100%, 0);
         }
     }
     .nav-menu {
@@ -337,28 +350,29 @@ header {
                 position: relative; width: 100%;
             }
             .nav-panel {
-                display: inline-block; left: unset; margin: 0.6rem 0;
-                max-width: 0;
+                display: inline-block; left: unset; max-width: 0; top: 1.6rem;
             }
         }
         li.global:has(a:hover, form:hover, .drop-menu:hover) .nav-panel {
             max-height: #sizes[nav-panel-max-dim];
-            max-width: #sizes[nav-panel-max-dim]; overflow: visible;
+            max-width: #sizes[nav-panel-max-dim];
         }
         li.global:first-child {
             padding-top: 0;
+            .nav-panel {
+                top: 0.6rem;
+            }
         }
         li.global.selected > span::before, li.global.selected > a::before {
-            height: 2rem; left: -0.035rem; position: absolute; top: 0.75rem;
+            height: 2rem; left: 0; position: absolute; top: 0.75rem;
             width: 5px;
         }
         .slide-out {
-            display: inline-block; left: unset; margin-left: 0.25rem;
-            position: absolute; top: -1px; transform: unset;
+            display: inline-block; left: unset; position: absolute;
+            transform: unset;
         }
     }
     .nav-list.context {
-        width: #sizes[nav-list-width];
         li.context {
             a, .drop-menu {
                 padding: 0.5rem;
@@ -366,8 +380,7 @@ header {
         }
         li.context.selected::before {
             background: #colours[link]; border-radius: 2px; content: '';
-            height: 2rem; left: -5px; position: absolute;
-            width: 5px;
+            height: 2rem; left: 0; position: absolute; width: 5px;
         }
     }
     @media (max-width: #sizes[media-break]) {
