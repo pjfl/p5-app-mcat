@@ -114,13 +114,13 @@ has '_container' => is => 'lazy', isa => Str, default => sub {
 };
 
 has '_data' => is => 'lazy', isa => HashRef, default => sub {
-   my $self  = shift;
-   my $class = 'state-navigation navigation-'
-      . $self->menu_location . ' link-display-' . $self->link_display;
+   my $self     = shift;
+   my $location = 'navigation-'  . $self->menu_location;
+   my $display  = 'link-display-' . $self->link_display;
 
    return {
-      'id' => 'navigation',
-      'class' => $class,
+      'id'    => 'navigation',
+      'class' => "navigation ${location} ${display}",
       'data-navigation-config' => $self->_json->encode({
          'menus'      => $self->_menus,
          'messages'   => $self->_messages,

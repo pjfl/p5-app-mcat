@@ -2,7 +2,7 @@
 // Package MCat.Navigation
 MCat.Navigation = (function() {
    const dsName       = 'navigationConfig';
-   const triggerClass = 'state-navigation';
+   const triggerClass = 'navigation';
    const StateTable   = HStateTable.Renderer.manager;
    const FilterEditor = HFilters.Editor.manager;
    class Navigation {

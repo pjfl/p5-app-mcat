@@ -7,19 +7,19 @@
     checkbox-false-bg: firebrick;
     checkbox-true-bg: seagreen;
     close: firebrick;
-    contrast: white;
+    contrast: whitesmoke;
     filter-connector: gray;
     filter-editor-bg: gainsboro;
     filter-resizer-bg: ivory;
     filter-rule-editor-bg: ivory;
     filter-rule-status-bg: lightpink;
     frame-exception-bg: lightpink;
+    line-border: gray;
     link: seagreen;
     message-bg: linen;
     message-border: firebrick;
     message-text: black;
     modal-bg: linen;
-    muted: gray;
     nav-bg: bisque;
     panel-bg: linen;
     panel-shadow: gray;
@@ -37,26 +37,28 @@
 }
 #grads() {
     body-bg: linear-gradient(
-        to bottom right, rgba(250,240,230,0), rgba(255,228,196,1)
+        to bottom right, rgba(250,240,230,0), bisque
     );
-    button-bg: linear-gradient(0deg, #colours[button-bg], whitesmoke);
+    button-bg: linear-gradient(0deg, #colours[button-bg], #colours[contrast]);
     button-disabled-bg: linear-gradient(
-        0deg, #colours[button-disabled-bg], whitesmoke
+        0deg, #colours[button-disabled-bg], #colours[contrast]
     );
     button-border-bg: radial-gradient(
         #colours[button-hover], transparent, transparent
     );
-    filters-edge-left: linear-gradient(
-        to right, transparent, transparent 50%, grey 50.001%, grey
+    filter-edge-left: linear-gradient(
+        to right, transparent, transparent 50%, #colours[line-border] 50.001%,
+        #colours[line-border]
     );
-    filters-edge-right: linear-gradient(
-        to right, grey, grey 50%, transparent 50.001%, transparent
+    filter-edge-right: linear-gradient(
+        to right, #colours[line-border], #colours[line-border] 50%,
+        transparent 50.001%, transparent
     );
     filter-lines: linear-gradient(
-        to right, grey 1px, transparent 1px, transparent
+        to right, #colours[line-border] 1px, transparent 1px, transparent
     );
     sidebar-bg: linear-gradient(
-        to bottom, rgba(255,228,196,1), rgba(255,228,196,0)
+        to bottom, #colours[nav-bg], rgba(255,228,196,0)
     );
 }
 #sizes() {
@@ -139,7 +141,7 @@ header {
 .centred {
     display: flex; justify-content: center; line-height: 1.5;
 }
-.sidebar, .state-navigation {
+.sidebar, .navigation {
     align-items: center; display: flex; justify-content: left;
     .nav-title {
         border-top: 0.5rem solid #colours[nav-bg];
@@ -156,7 +158,7 @@ header {
     .nav-title:after {
         border-bottom: 40px solid transparent;
         border-right: 28px solid #colours[nav-bg];
-        content: ' '; display: inline-block; height: 0; width: 0;
+        content: ''; display: inline-block; height: 0; width: 0;
         @media (max-width: #sizes[media-break]) {
             border-bottom: 0; border-right: 0;
             border-top-right-radius: 10px;
@@ -200,7 +202,7 @@ header {
         top: -0.6rem; width: 100%;
     }
     .nav-control {
-        cursor: pointer; display: inline-block; font-size: larger;
+        display: inline-block; font-size: larger;
         a, .nav-control-label {
             display: inline-block;
         }
@@ -263,14 +265,15 @@ header {
         .form-button {
             background: none !important; border: none; color: #colours[link];
             cursor: pointer; font-family: #fonts[system]; font-size: 16px;
-            padding: 0 !important; text-decoration: none;
+            padding: 0 !important; text-align: left; text-decoration: none;
+            width: 100%;
         }
     }
     .nav-list.control {
         width: #sizes[nav-control-width];
     }
     .nav-list.control, .nav-list.context {
-        border: 1px solid #colours[muted]; border-radius: 3px;
+        border: 1px solid #colours[line-border]; border-radius: 3px;
     }
     .nav-list.context {
         width: 100%;
@@ -294,17 +297,17 @@ header {
         overflow-x: visible; width: #sizes[nav-context-width];
     }
 }
-.state-navigation {
+.navigation {
     .nav-menu {
-        border-bottom-right-radius: 10px;
-        display: inline-block; flex-grow: 10; height: #sizes[nav-header-height];
-        padding-right: 1rem; padding-top: 0.5rem; text-align: right;
+        border-bottom-right-radius: 10px; display: inline-block; flex-grow: 10;
+        height: #sizes[nav-header-height]; padding-right: 1rem;
+        padding-top: 0.5rem; text-align: right;
         .nav-control {
             position: relative;
         }
     }
  }
-.state-navigation:before {
+.navigation:before {
     background: #colours[nav-bg];
     border-top: 0.5rem; border-top-left-radius: 20px;
     content: ''; display: inline-block; height: #sizes[nav-header-height];
@@ -312,20 +315,18 @@ header {
         width: 1rem;
     }
 }
-.state-navigation.link-display-both:before {
+.navigation.link-display-both:before {
     width: #sizes[sidebar-both];
 }
-.state-navigation.link-display-icon:before {
+.navigation.link-display-icon:before {
     width: #sizes[sidebar-icon];
 }
-.state-navigation.link-display-text:before {
+.navigation.link-display-text:before {
     width: #sizes[sidebar-text];
 }
-.state-navigation.navigation-header {
-    .title-text {
-        @media (max-width: #sizes[media-break]) {
-            display: none;
-        }
+.navigation.navigation-header .title-text {
+    @media (max-width: #sizes[media-break]) {
+        display: none;
     }
 }
 .sidebar {
@@ -344,7 +345,7 @@ header {
                 display: inline-block; left: unset; top: 1.6rem; width: 0;
             }
         }
-        li.global:has(a:hover, form:hover, .drop-menu:hover) .nav-panel {
+        li.global:hover .nav-panel {
             max-height: #sizes[nav-panel-max-dim];
             width: #sizes[nav-context-width];
         }
@@ -359,9 +360,8 @@ header {
             width: 5px;
         }
         .slide-out {
-            display: inline-block; left: -2px;
-            overflow: hidden; position: absolute;
-            transform: translate(100%, 0);
+            display: inline-block; left: -2px; position: absolute;
+            transform: translate(#sizes[nav-context-width], 0);
         }
     }
     .nav-list.context {
@@ -380,7 +380,7 @@ header {
     }
 }
 .sidebar::after {
-    background: #grads[sidebar-bg]; content: ' '; display: block;
+    background: #grads[sidebar-bg]; content: ''; display: block;
     height: 5rem; margin-top: -0.25rem;
 }
 .sidebar.link-display-both .nav-list.global {
@@ -429,8 +429,8 @@ header {
     .filter-editor {
         -moz-user-select: none;
         background: #colours[filter-editor-bg];
-        border: 1px solid #colours[muted]; border-radius: 5px;
-        box-shadow: 3px 3px 3px; color: #colours[muted];
+        border: 1px solid #colours[line-border]; border-radius: 5px;
+        box-shadow: 3px 3px 3px; color: #colours[panel-shadow];
         height: #sizes[filter-editor-height];
         max-height: #sizes[filter-editor-max-height]; overflow: hidden;
         position: relative; width: #sizes[filter-editor-width];
@@ -482,10 +482,10 @@ header {
         background-repeat: repeat-x;
     }
     th.node-logic-or-edge-left {
-        background: #grads[filters-edge-left];
+        background: #grads[filter-edge-left];
     }
     th.node-logic-or-edge-right {
-        background: #grads[filters-edge-right];
+        background: #grads[filter-edge-right];
     }
     th.node-logic-or-edge-single {
         background-image: none;
@@ -493,24 +493,24 @@ header {
     .node-logic-container-add-and {
         border-left: 10px solid transparent;
         border-right: 10px solid transparent;
-        border-top: 10px solid #colours[muted];
+        border-top: 10px solid #colours[line-border];
         bottom: -12px; cursor: pointer; left: 50%; margin-bottom: 3px;
         margin-left: -10px; position: absolute;
     }
     .node-logic-container-add-or {
         border-bottom: 10px solid transparent;
-        border-left: 10px solid #colours[muted];
+        border-left: 10px solid #colours[line-border];
         border-top: 10px solid transparent;
         cursor: pointer; margin-right: -10px; margin-top: -10px;
         position: absolute; right: 0; top: 50%;
     }
     .node-rule-wrapper {
-        background: #colours[filter-rule-editor-bg];
-        border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[muted];
+        background: #colours[filter-rule-editor-bg]; border-radius: 5px;
+        box-shadow: 3px 3px 3px; color: #colours[panel-shadow];
         margin: 0 auto; max-width: #sizes[filter-rule-max-width];
         position: static;
         .node-rule-box {
-            border: 1px solid #colours[muted];
+            border: 1px solid #colours[line-border];
             border-radius: 5px; color: #colours[text]; cursor: pointer;
             font-size: 0.8rem;
             position: relative;
@@ -528,13 +528,13 @@ header {
             .node-rule-add-and {
                 border-left: 10px solid transparent;
                 border-right: 10px solid transparent;
-                border-top: 10px solid #colours[muted];
+                border-top: 10px solid #colours[line-border];
                 bottom: 0; cursor: pointer; left: 50%;
                 margin-bottom: -12px; margin-left: -9px; position: absolute;
             }
             .node-rule-add-or {
                 border-bottom: 10px solid transparent;
-                border-left: 10px solid #colours[muted];
+                border-left: 10px solid #colours[line-border];
                 border-top: 10px solid transparent;
                 cursor: pointer; margin-right: -12px; margin-top: -10px;
                 position: absolute; right: 0; top: 50%;
@@ -602,8 +602,8 @@ header {
         max-width: 8rem;
     }
     .rule-editor {
-        background: #colours[filter-rule-editor-bg];
-        border-radius: 5px; box-shadow: 3px 3px 3px; color: #colours[muted];
+        background: #colours[filter-rule-editor-bg]; border-radius: 5px;
+        box-shadow: 3px 3px 3px; color: #colours[panel-shadow];
         display: inline-block; margin-left: 1rem;
         .node-rule-edit-container {
             color: #colours[text]; min-width: 12rem;
@@ -781,7 +781,7 @@ header {
     .modal {
         background: #colours[filter-rule-editor-bg];
         border: 1px solid; border-radius: 5px; box-shadow: 3px 3px 3px;
-        color: #colours[muted];
+        color: #colours[panel-shadow];
         .modal-content-wrapper, .modal-footer, .modal-header {
             color: #colours[text];
         }
@@ -795,6 +795,21 @@ header {
             .modal-title {
                 flex-grow: 2; font-family: #fonts[system]; font-size: 1rem;
                 font-weight: normal; margin: 0;
+            }
+            .modal-close {
+                align-items: center; background: #grads[button-bg];
+                border-radius: 3px;
+                box-shadow: 2px 2px 2px #colours[panel-shadow];
+                color: #colours[close]; cursor: pointer;
+                font-family: #fonts[system]; font-size: smaller;
+                font-weight: bold; height: 100%; padding: 0 0.25rem;
+                img {
+                    height: 16px; width: 16px; vertical-align: middle;
+                }
+            }
+            .modal-close:hover {
+                box-shadow: inset 0 0 3px #colours[panel-shadow];
+                color: #colours[text];
             }
         }
         modal-header, .modal-footer {
@@ -835,21 +850,6 @@ header {
             }
             .button[disabled=disabled], .button[disabled=disabled]::after {
                 background: #grads[button-disabled-bg];
-            }
-            .modal-close {
-                align-items: center; background: #grads[button-bg];
-                border-radius: 3px;
-                box-shadow: 2px 2px 2px #colours[panel-shadow];
-                color: #colours[close]; cursor: pointer;
-                font-family: #fonts[system]; font-size: smaller;
-                font-weight: bold; height: 100%; padding: 0 0.25rem;
-                img {
-                    height: 16px; width: 16px; vertical-align: middle;
-                }
-            }
-            .modal-close:hover {
-                box-shadow: inset 0 0 3px #colours[panel-shadow];
-                color: #colours[text];
             }
         }
         .modal-content-wrapper, .modal-footer {
