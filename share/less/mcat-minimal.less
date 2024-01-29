@@ -183,24 +183,21 @@ header {
         }
         .nav-panel {
             background: #colours[panel-bg]; left: -1.1rem; max-height: 0;
-            overflow-y: hidden;position: absolute; text-align: left;
+            overflow-y: hidden; position: absolute; text-align: left;
             top: 2.5rem; transition: all ease-in-out 500ms;
             width: #sizes[nav-context-width];
         }
         .nav-panel:active, .nav-panel:hover {
-            max-height: #sizes[nav-panel-max-dim];
+            overflow-y: visible; max-height: #sizes[nav-panel-max-dim];
         }
-        .nav-panel:has(a:hover, form:hover, .drop-menu:hover) {
-            overflow-y: visible;
-        }
+    }
+    li.global:hover .nav-panel {
+        max-height: #sizes[nav-panel-max-dim];
     }
     li.global.selected > span::before, li.global.selected > a::before {
         background: #colours[link]; border-radius: 2px; content: '';
         display: block; height: 5px; left: 0; position: absolute;
         top: -0.6rem; width: 100%;
-    }
-    li.global:has(a:hover, form:hover, .drop-menu:hover) .nav-panel {
-        max-height: #sizes[nav-panel-max-dim];
     }
     .nav-control {
         cursor: pointer; display: inline-block; font-size: larger;
@@ -216,10 +213,10 @@ header {
         .nav-panel {
             background: #colours[panel-bg]; max-height: 0; overflow: hidden;
             position: absolute; right: -1rem; text-align: left; top: 2.5rem;
-            transition: max-height ease-in-out 500ms; z-index: 3;
+            transition: max-height ease-in-out 500ms;
         }
     }
-    .nav-control:has(a:hover, form:hover) .nav-panel {
+    .nav-control:hover .nav-panel {
         max-height: #sizes[nav-panel-max-dim];
     }
     .nav-list {
@@ -273,43 +270,28 @@ header {
         width: #sizes[nav-control-width];
     }
     .nav-list.control, .nav-list.context {
-        border-bottom: 1px solid #colours[muted];
-        border-top: 1px solid #colours[muted]; border-radius: 3px;
+        border: 1px solid #colours[muted]; border-radius: 3px;
     }
     .nav-list.context {
         width: 100%;
-        li.context:has(> a:hover, > form:hover, > .drop-menu:hover) > .slide-out {
-            overflow: visible; width: #sizes[nav-context-width];
-        }
-        li.context:has(> .slide-out.active, > .slide-out:hover) > .slide-out {
-            overflow: visible; width: #sizes[nav-context-width];
+        li.context:has(> a:hover, > form:hover) > .slide-out {
+            overflow-x: hidden; width: #sizes[nav-context-width];
         }
     }
     .nav-menu {
         background: #colours[nav-bg];
     }
-    .nav-panel::after, .nav-panel::before,
-    .slide-out::after, .slide-out::before {
-        background: #colours[muted]; content: ''; height: 100%;
-        position: absolute; top: 0; width: 1px;
-    }
-    .nav-panel::after, .slide-out::after {
-        right: 0;
-    }
-    .nav-panel::before, .slide-out::before {
-        left: 0;
-    }
     .slide-out {
-        background: #colours[panel-bg]; left: 1px; overflow-x: hidden;
+        background: #colours[panel-bg]; left: 0; overflow-x: hidden;
         position: absolute; text-align: left; top: -1px;
         transform: translate(-100%, 0); transition: all ease-in-out 500ms;
-        width: 0; z-index: -1;
+        width: 0;
         .nav-list li {
             display: block;
         }
-        .slide-out {
-            z-index: -2;
-        }
+    }
+    .slide-out:active, .slide-out:hover {
+        overflow-x: visible; width: #sizes[nav-context-width];
     }
 }
 .state-navigation {
