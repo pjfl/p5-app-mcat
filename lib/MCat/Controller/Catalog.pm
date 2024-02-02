@@ -37,8 +37,6 @@ return (
    'GET|POST + /filter/create + ?*' => sub {['filter/root/base/create',   @_]},
    'GET + /filter/selector/* + ?*'  => sub {['filter/root/base/selector', @_]},
    'GET|POST + /filter/*/edit + ?*' => sub {['filter/root/base/edit',     @_]},
-   'GET|POST + /filter/*/editor + ?*'
-                                    => sub {['filter/root/base/editor',   @_]},
    'POST + /filter/*/delete + ?*'   => sub {['filter/root/base/delete',   @_]},
    'GET + /filter/* + ?*'           => sub {['filter/root/base/view',     @_]},
    'GET + /filter + ?*'             => sub {['filter/root/base/list',     @_]},

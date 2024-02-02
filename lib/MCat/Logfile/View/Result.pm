@@ -23,7 +23,7 @@ MCat::Logfile::View::Result - Music Catalog
 
 =head1 Description
 
-This class represents a line from a logfile. It parses each line as a space
+This class represents a line from a logfile. It parses each line as a comma
 separated list of fields. After some initial positional parameters the rest of
 the line should contain colon separated key/value pairs.
 

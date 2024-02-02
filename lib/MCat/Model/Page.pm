@@ -28,8 +28,6 @@ has 'redis' =>
       return MCat::Redis->new(client_name => $name, config => $config->redis);
    };
 
-# TODO: Show/hide password on change password
-
 sub base : Auth('none') {
    my ($self, $context, $id_or_name) = @_;
 
@@ -44,6 +42,15 @@ sub changes : Auth('none') Nav('Changes') {
    my ($self, $context) = @_;
 
    $context->stash(form => $self->new_form('Changes', { context => $context }));
+   return;
+}
+
+sub configuration : Auth('admin') Nav('Configuration') {
+   my ($self, $context) = @_;
+
+   my $options = { context => $context };
+
+   $context->stash(form => $self->new_form('Configuration', $options));
    return;
 }
 

@@ -3,7 +3,7 @@ package MCat::Table::Logfile::View;
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( Str );
 use Type::Utils                 qw( class_type );
-use HTML::StateTable::ResultSet::Logfile::View;
+use HTML::StateTable::ResultSet::File::View;
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -40,9 +40,9 @@ setup_resultset sub {
    my $self   = shift;
    my $config = $self->context->config;
 
-   return HTML::StateTable::ResultSet::Logfile::View->new(
-      base         => $config->logfile->parent,
-      logfile      => $self->logfile,
+   return HTML::StateTable::ResultSet::File::View->new(
+      directory    => $config->logfile->parent,
+      file         => $self->logfile,
       redis        => $self->redis,
       result_class => 'MCat::Logfile::View::Result',
       table        => $self,

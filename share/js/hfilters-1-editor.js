@@ -34,7 +34,7 @@ HFilters.Editor = (function() {
          editorReg.listen('close', this.tree.selectRule, this.tree);
          editorReg.listen('close', this.testDataChange.bind(this));
 
-         const formName = config['form-name'] || 'filter_editor';
+         const formName = config['form-name'] || 'edit_filter';
          const form = document.getElementById(formName);
          if (!form) console.warn(`Form ${formName} not found`);
          else form.addEventListener('submit', this.submitHandler.bind(this));

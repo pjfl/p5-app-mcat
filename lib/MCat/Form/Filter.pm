@@ -2,12 +2,15 @@ package MCat::Form::Filter;
 
 use HTML::Forms::Constants qw( FALSE META NUL TRUE USERID );
 use HTML::Forms::Types     qw( Int );
+use Scalar::Util           qw( blessed );
+use Try::Tiny;
 use Moo;
 use HTML::Forms::Moo;
 
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
+has '+name'                => default => 'edit_filter';
 has '+title'               => default => 'Filter';
 has '+default_wrapper_tag' => default => 'fieldset';
 has '+do_form_wrapper'     => default => TRUE;
@@ -42,7 +45,30 @@ sub options_table {
 
 has_field 'filter_json' => type => 'Hidden', default => NUL;
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
+
+after 'after_build_fields' => sub {
+   my $self = shift;
+
+   $self->field('core_table')->disabled(TRUE) if $self->item;
+   return;
+};
+
+sub validate {
+   my $self = shift;
+
+   return if $self->result->has_errors;
+
+   my $field = $self->field('filter_json');
+
+   try { $self->item->parse($field->value) }
+   catch {
+      $self->add_form_error(blessed $_ ? $_->original : "${_}");
+      $self->log->alert($_, $self->context) if $self->has_log;
+   };
+
+   return;
+}
 
 use namespace::autoclean -except => META;
 

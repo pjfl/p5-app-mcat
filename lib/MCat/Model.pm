@@ -166,6 +166,7 @@ sub root : Auth('none') {
    }
    else {
       $nav->item('page/login');
+      $nav->item('page/password', [$session->id]);
       $nav->item('page/register', []) if $self->config->registration;
    }
 

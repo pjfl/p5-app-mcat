@@ -1,4 +1,0 @@
-[% form.render %]
-<div class="filter-container"
-   data-filter-config="[% encode_entities(encode_json(filter_config)) %]">
-</div>

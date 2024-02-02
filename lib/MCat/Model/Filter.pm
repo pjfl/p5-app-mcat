@@ -14,7 +14,7 @@ has '+moniker' => default => 'filter';
 sub base {
    my ($self, $context, $filterid) = @_;
 
-   my $nav = $context->stash('nav');
+   my $nav = $context->stash('nav')->list('filter')->item('filter/create');
 
    if ($filterid && $filterid =~ m{ \A \d+ \z }mx) {
       my $filter = $context->model('Filter')->find($filterid);
@@ -22,17 +22,10 @@ sub base {
       return $self->error($context, UnknownFilter, [$filterid]) unless $filter;
 
       $context->stash( filter => $filter );
-      $nav->list('filter_editor')->item('filter/editor', [$filterid]);
-      $nav->list('filter')->item('filter/create');
-      $nav->item(formpost, 'filter/delete', [$filterid]);
-      $nav->item('filter/edit', [$filterid]);
-      $nav->menu('filter_editor')->item('filter/view', [$filterid]);
-   }
-   else {
-      $nav->list('filter')->item('filter/create');
+      $nav->crud('filter', $filterid);
    }
 
-   if ($context->action =~ m{ /editor \z }mx) {
+   if ($context->action =~ m{ /edit \z }mx) {
       $context->stash('nav')->container_layout(NUL);
    }
 
@@ -73,42 +66,24 @@ sub delete : Nav('Delete Filter') {
 
    my $filter_list = $context->uri_for_action('filter/list');
 
-   $context->stash( redirect $filter_list, ['Filter [_1] deleted', $name] );
+   $context->stash(redirect $filter_list, ['Filter [_1] deleted', $name]);
    return;
 }
 
 sub edit : Nav('Edit Filter') {
-   my ($self, $context, $filterid) = @_;
-
-   my $form = $self->new_form('Filter', {
-      context => $context,
-      item    => $context->stash('filter'),
-      title   => 'Edit Filter'
-   });
-
-   if ($form->process( posted => $context->posted )) {
-      my $filter_view = $context->uri_for_action('filter/view', [$filterid]);
-      my $message     = ['Filter [_1] updated', $form->item->name];
-
-      $context->stash( redirect $filter_view, $message );
-   }
-
-   $context->stash( form => $form );
-   return;
-}
-
-sub editor : Nav('Filter Editor') {
    my ($self, $context) = @_;
 
    my $filter  = $context->stash('filter');
-   my $options = { context => $context, item => $filter };
-   my $form    = $self->new_form('Filter::Editor', $options);
+   my $options = {
+      context => $context, item => $filter, title => 'Edit Filter'
+   };
+   my $form    = $self->new_form('Filter', $options);
 
-   if ($form->process( posted => $context->posted )) {
+   if ($form->process(posted => $context->posted)) {
       my $filter_view = $context->uri_for_action('filter/view', [$filter->id]);
       my $message     = ['Filter [_1] updated', $form->item->name];
 
-      $context->stash( redirect $filter_view, $message );
+      $context->stash(redirect $filter_view, $message);
       return;
    }
 
@@ -119,7 +94,7 @@ sub editor : Nav('Filter Editor') {
       'table-id'     => $filter->table_id
    };
 
-   $context->stash( filter_config => $config, form => $form );
+   $context->stash(filter_config => $config, form => $form);
    return;
 }
 

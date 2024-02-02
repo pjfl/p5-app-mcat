@@ -1,18 +1,27 @@
 package MCat::Logfile::List::Result;
 
-use DateTime;
-use File::DataClass::Types      qw( Directory File );
 use HTML::StateTable::Constants qw( FALSE TRUE );
+use File::DataClass::Types      qw( Directory File );
 use HTML::StateTable::Types     qw( Date Int Str );
 use MCat::Util                  qw( local_tz );
 use Type::Utils                 qw( class_type );
+use DateTime;
 use Moo;
 
 with 'HTML::StateTable::Result::Role';
 
-has 'base' => is => 'ro', isa => Directory, required => TRUE;
+has 'directory' => is => 'ro', isa => Directory, required => TRUE;
 
 has 'extension' => is => 'ro', isa => Str, predicate => 'has_extension';
+
+has 'icon' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      my $self = shift;
+
+      return 'img/' . $self->type . '.svg';
+   };
 
 has 'modified' =>
    is      => 'lazy',
@@ -30,7 +39,7 @@ has 'name' =>
    isa     => Str,
    default => sub {
       my $self      = shift;
-      my $name      = $self->path->clone->relative($self->base);
+      my $name      = $self->path->clone->relative($self->directory);
       my $extension = $self->extension;
 
       $name =~ s{ \. $extension \z }{}mx if $self->has_extension;
@@ -38,12 +47,26 @@ has 'name' =>
       return $name;
    };
 
-has 'path' => is => 'ro', isa => File, coerce => TRUE, required => TRUE;
+has 'path' =>
+   is       => 'ro',
+   isa      => File|Directory,
+   coerce   => TRUE,
+   required => TRUE;
 
 has 'size' =>
    is      => 'lazy',
    isa     => Int,
    default => sub { shift->path->stat->{size} };
+
+has 'type' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      my $self = shift;
+      my $path = $self->path;
+
+      return $path->is_file ? 'file' : $path->is_dir ? 'dir' : 'other';
+};
 
 has 'uri_arg' =>
    is      => 'lazy',

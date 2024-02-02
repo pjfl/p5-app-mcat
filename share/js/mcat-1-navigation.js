@@ -165,7 +165,7 @@ MCat.Navigation = (function() {
             const menuItem = this.h.span(labelAttr, label);
             return this.h.li({ className: menuName, title: title }, menuItem);
          }
-         if (text['method'] != 'post') return;
+         if (!text || text['method'] != 'post') return;
          const form = this.h.form({
             action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));

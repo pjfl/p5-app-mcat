@@ -58,10 +58,10 @@ sub _find_realm {
 
    return $self->_realms->{$realm} if $self->_realms->{$realm};
 
-   my $ns    = $config->{namespace} // 'MCat::Authentication::Realms::';
+   my $ns    = $config->{namespace} // 'MCat::Authentication::Realms';
    my $class = $config->{classes}->{$realm} // ucfirst $realm;
 
-   $class = ('+' eq substr $realm, 0, 1) ? substr $realm, 1 : $ns . $class;
+   $class = ('+' eq substr $realm, 0, 1) ? substr $realm, 1 : "${ns}::${class}";
 
    ensure_class_loaded $class;
 

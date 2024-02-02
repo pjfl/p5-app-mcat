@@ -23,12 +23,14 @@ has_field 'password' =>
    type     => 'Password',
    label    => 'New Password',
    required => TRUE,
+   tags     => { reveal => TRUE },
    title    => 'Password must be at least 8 characters';
 
 has_field '_password' =>
    type           => 'PasswordConf',
    label          => 'and again',
-   password_field => 'password';
+   password_field => 'password',
+   tags           => { reveal => TRUE };
 
 has_field 'submit' => type => 'Button';
 

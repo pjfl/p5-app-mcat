@@ -10,7 +10,7 @@
     contrast: whitesmoke;
     filter-connector: gray;
     filter-editor-bg: gainsboro;
-    filter-resizer-bg: ivory;
+    filter-resizer-bg: linen;
     filter-rule-editor-bg: ivory;
     filter-rule-status-bg: lightpink;
     frame-exception-bg: lightpink;
@@ -20,7 +20,9 @@
     message-border: firebrick;
     message-text: black;
     modal-bg: linen;
+    nav-border-highlight: ivory;
     nav-bg: bisque;
+    nav-link-bg: linen;
     panel-bg: linen;
     panel-shadow: gray;
     selected: orange;
@@ -56,6 +58,9 @@
     );
     filter-lines: linear-gradient(
         to right, #colours[line-border] 1px, transparent 1px, transparent
+    );
+    nav-link-hover-bg: linear-gradient(
+        0deg, #colours[nav-bg], #colours[nav-link-bg]
     );
     sidebar-bg: linear-gradient(
         to bottom, #colours[nav-bg], rgba(255,228,196,0)
@@ -155,7 +160,7 @@ header {
             }
         }
     }
-    .nav-title:after {
+    .nav-title::after {
         border-bottom: 40px solid transparent;
         border-right: 28px solid #colours[nav-bg];
         content: ''; display: inline-block; height: 0; width: 0;
@@ -166,7 +171,7 @@ header {
             height: 100%; width: 1rem;
         }
     }
-    .nav-title:before {
+    .nav-title::before {
         border-top-left-radius: 10px;
         box-shadow: inset 0.5rem 0 #colours[nav-bg];
         content: ''; display: inline-block; height: 100%;
@@ -224,16 +229,14 @@ header {
     .nav-list {
         display: inline-block; list-style: none; margin: 0; padding: 0;
         a, .drop-menu {
-            color: #colours[link]; font-family: #fonts[system];
+            border-radius: 3px; color: #colours[link];
+            font-family: #fonts[system];
             img {
                 height: 24px; width: 24px; vertical-align: middle;
             }
         }
         a:link {
             text-decoration: none;
-        }
-        a:active, a:hover, .form-button:hover {
-            font-style: italic;
         }
         li {
             display: inline-block;
@@ -244,6 +247,9 @@ header {
         li.control, li.context {
             display: block; position: relative; white-space: nowrap;
             width: 100%;
+            a:active, a:hover, .form-button:hover {
+                background: #grads[nav-link-hover-bg];
+            }
         }
         li.control a, li.context a, .form-button span {
             display: block; padding: 0.5rem;
@@ -261,10 +267,12 @@ header {
         li.context.selected::before, li.control.selected::before {
             background: #colours[link]; border-radius: 2px; content: '';
             height: 2rem; position: absolute; right: 0; top: 1px; width: 5px;
+            z-index: 3;
         }
         .form-button {
-            background: none !important; border: none; color: #colours[link];
-            cursor: pointer; font-family: #fonts[system]; font-size: 16px;
+            background: #colours[nav-link-bg]; border: none;
+            border-radius: 3px; color: #colours[link]; cursor: pointer;
+            font-family: #fonts[system]; font-size: 16px;
             padding: 0 !important; text-align: left; text-decoration: none;
             width: 100%;
         }
@@ -301,13 +309,21 @@ header {
     .nav-menu {
         border-bottom-right-radius: 10px; display: inline-block; flex-grow: 10;
         height: #sizes[nav-header-height]; padding-right: 1rem;
-        padding-top: 0.5rem; text-align: right;
+        padding-top: 0.5rem; position: relative; text-align: right;
         .nav-control {
             position: relative;
         }
     }
+    .nav-menu::before {
+        background: #colours[nav-bg];
+        border: 1px solid #colours[nav-bg];
+        border-bottom-color: #colours[nav-border-highlight];
+        border-radius: 50%; bottom: -1px; content: ''; display: block;
+        position: absolute; height: 20px; left: -5px;
+        transform: rotate(30deg); width: 20px;
+    }
  }
-.navigation:before {
+.navigation::before {
     background: #colours[nav-bg];
     border-top: 0.5rem; border-top-left-radius: 20px;
     content: ''; display: inline-block; height: #sizes[nav-header-height];
@@ -315,13 +331,13 @@ header {
         width: 1rem;
     }
 }
-.navigation.link-display-both:before {
+.navigation.link-display-both::before {
     width: #sizes[sidebar-both];
 }
-.navigation.link-display-icon:before {
+.navigation.link-display-icon::before {
     width: #sizes[sidebar-icon];
 }
-.navigation.link-display-text:before {
+.navigation.link-display-text::before {
     width: #sizes[sidebar-text];
 }
 .navigation.navigation-header .title-text {
@@ -342,11 +358,12 @@ header {
                 position: relative; width: 100%;
             }
             .nav-panel {
-                display: inline-block; left: unset; top: 1.6rem; width: 0;
+                display: inline-block; left: unset; overflow-x: hidden;
+                top: 1.6rem; width: 0;
             }
         }
         li.global:hover .nav-panel {
-            max-height: #sizes[nav-panel-max-dim];
+            overflow-x: visible; max-height: #sizes[nav-panel-max-dim];
             width: #sizes[nav-context-width];
         }
         li.global:first-child {

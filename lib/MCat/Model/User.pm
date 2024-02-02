@@ -18,8 +18,8 @@ sub base : Auth('view') {
    my $session = $context->session;
 
    if ($userid && ($userid == $session->id || $session->role eq 'admin')) {
-      my $rs   = $context->model('User');
-      my $user = $rs->find($userid, { prefetch => 'profile' });
+      my $args = { username => $userid, options => { prefetch => 'profile' } };
+      my $user = $context->find_user($args, $session->realm);
 
       return $self->error($context, UnknownUser, [$userid]) unless $user;
 

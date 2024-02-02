@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds configuration screen. Merges filter edit/editor
           - CSS menus working
           - CSS menus in header working
           - Another checkpoint for CSS slide off menus

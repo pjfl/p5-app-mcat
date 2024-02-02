@@ -13,20 +13,18 @@ with    'HTML::Forms::Role::Defaults';
 
 has '+name'         => default => 'Login';
 has '+title'        => default => 'Login';
-has '+info_message' => default => 'Enter your user name and password';
+has '+info_message' => default => 'Stop! You have your papers?';
 has '+item_class'   => default => 'User';
 
-my $change_js = q{HForms.Util.fieldChange('login', '%s')};
+my $change_js = q{HForms.Util.fieldChange(['login', 'password_reset'], '%s')};
 
 has_field 'name' =>
-   html_name    => 'user_name',
-   input_param  => 'user_name',
-   label        => 'User Name',
-   required     => TRUE,
-   tags         => { label_tag => 'span' },
-   title        => 'Enter your user name or email address',
-   toggle       => { -set => ['password_reset'] },
-   toggle_event => 'onblur';
+   html_name   => 'user_name',
+   input_param => 'user_name',
+   label       => 'User Name',
+   required    => TRUE,
+   tags        => { label_tag => 'span' },
+   title       => 'Enter your user name or email address';
 
 has_field 'password' =>
    type         => 'Password',
@@ -60,8 +58,12 @@ my $button_js = q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"};
 
 has_field 'password_reset' =>
    type          => 'Button',
+   disabled      => TRUE,
+   element_attr  => {
+      'data-field-depends' => ['user_name'],
+      'javascript'         => $button_js
+   },
    html_name     => 'submit',
-   element_attr  => { javascript => $button_js },
    label         => 'Forgot Password?',
    title         => 'Send password reset email',
    value         => 'password_reset',
@@ -76,10 +78,8 @@ has_field 'totp_reset' =>
    value         => 'totp_reset',
    wrapper_class => ['input-button expand'];
 
-around 'after_build_fields' => sub {
-   my ($orig, $self) = @_;
-
-   $orig->($self);
+after 'after_build_fields' => sub {
+   my $self = shift;
 
    $self->set_form_element_attr('novalidate', 'novalidate');
 
@@ -90,23 +90,15 @@ around 'after_build_fields' => sub {
       push @{$self->field('totp_reset')->wrapper_class}, 'hide';
    }
 
-   unless ($session->id) {
-      push @{$self->field('password_reset')->wrapper_class}, 'hide';
-   }
-
    my $method = 'HForms.Util.showIfRequired';
    my $uri    = $self->context->uri_for_action('page/object_property', [], {
       class => 'User', property => 'enable_2fa'
    });
    my $showif = "${method}('${uri}', 'user_name', ['auth_code', 'totp_reset'])";
-
-   $method = 'HForms.Toggle.toggleFields';
-
-   my $toggle = "${method}(document.getElementById('user_name'))";
    my $change = sprintf $change_js, 'user_name';
    my $attr   = $self->field('name')->element_attr;
 
-   $attr->{javascript} = qq{onblur="${toggle}; ${showif}; ${change}"};
+   $attr->{javascript} = qq{onblur="${showif}; ${change}"};
    return;
 };
 

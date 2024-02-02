@@ -13,13 +13,16 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'logfile';
 
-has 'redis' => is => 'lazy', isa => class_type('MCat::Redis'), default => sub {
-   my $self   = shift;
-   my $config = $self->config;
-   my $name   = $config->prefix . '_logfile_cache';
+has 'redis' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::Redis'),
+   default => sub {
+      my $self   = shift;
+      my $config = $self->config;
+      my $name   = $config->prefix . '_logfile_cache';
 
-   return MCat::Redis->new(client_name => $name, config => $config->redis);
-};
+      return MCat::Redis->new(client_name => $name, config => $config->redis);
+   };
 
 sub base : Auth('admin') {
    my ($self, $context, $logfile) = @_;

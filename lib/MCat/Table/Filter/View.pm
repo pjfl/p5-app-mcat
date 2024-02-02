@@ -12,10 +12,10 @@ has '+form_buttons' => default => sub {
    my $context = $self->context;
 
    return [{
-      action  => $context->uri_for_action('filter/editor', [$self->result->id]),
-      method  => 'get',
+      action    => $context->uri_for_action('filter/edit', [$self->result->id]),
+      method    => 'get',
       selection => 'disable_on_select',
-      value   => 'Filter Editor',
+      value     => 'Edit Filter',
    }];
 };
 

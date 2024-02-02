@@ -32,6 +32,7 @@ return (
 
    'GET + /access_denied + ?*'   => sub {['page/root/base/access_denied', @_]},
    'GET + /changes + ?*'         => sub {['page/root/base/changes',       @_]},
+   'GET + /configuration + ?*'   => sub {['page/root/base/configuration', @_]},
    'GET|POST + /login + ?*'      => sub {['page/root/base/login',         @_]},
    'POST + /logout + ?*'         => sub {['page/root/logout',             @_]},
    'GET|POST + /register/* | /register + ?*'

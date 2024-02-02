@@ -1,12 +1,13 @@
 package MCat::Table::Logfile::List;
 
-use File::DataClass::Types      qw( Directory );
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
-use HTML::StateTable::ResultSet::Logfile::List;
+use File::DataClass::Types      qw( Directory );
+use HTML::StateTable::ResultSet::File::List;
 use Moo;
 use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
+with    'HTML::StateTable::Role::Form';
 
 has '+caption' => default => 'Logfile List';
 
@@ -15,14 +16,16 @@ has '+paging' => default => FALSE;
 setup_resultset sub {
    my $self = shift;
 
-   return HTML::StateTable::ResultSet::Logfile::List->new(
-      base         => $self->context->config->logfile->parent,
+   return HTML::StateTable::ResultSet::File::List->new(
+      directory    => $self->context->config->logfile->parent,
       result_class => 'MCat::Logfile::List::Result',
       table        => $self
    );
 };
 
 set_table_name 'logfile_list';
+
+has_column 'icon' => cell_traits => ['Icon'], label => SPC;
 
 has_column 'name' =>
    label => 'Name',
@@ -44,6 +47,11 @@ has_column 'size' =>
    cell_traits => ['Numeric'],
    label       => 'Size',
    sortable    => TRUE;
+
+has_column 'check' =>
+   cell_traits => ['Checkbox'],
+   label       => SPC,
+   value       => 'name';
 
 use namespace::autoclean -except => TABLE_META;
 

@@ -18,7 +18,10 @@ has_field 'tags' => type => 'Select', multiple => TRUE, size => 4;
 
 has_field 'active' => type => 'Boolean';
 
-has_field 'upvotes' => type => 'PosInteger', validate_inline => TRUE;
+has_field 'upvotes' =>
+   type                => 'PosInteger',
+   validate_inline     => TRUE,
+   validate_when_empty => TRUE;
 
 has_field 'submit' => type => 'Button';
 
