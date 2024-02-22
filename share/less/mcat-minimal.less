@@ -116,7 +116,13 @@ header {
     bottom: 0; overflow: auto; position: fixed; right: 0.5rem;
     top: #sizes[nav-header-height]; z-index: 2;
     .exception {
-        background: #colours[frame-exception-bg]; max-width: 50rem;
+        background: #colours[frame-exception-bg];
+        border: 1px solid #colours[line-border]; border-radius: 5px;
+        box-shadow: 3px 3px 3px #colours[panel-shadow];
+        max-width: 50rem; padding: 0.5rem;
+        h1 {
+            margin: 0.5rem 0;
+        }
     }
 }
 .frame.link-display-both {
@@ -135,6 +141,10 @@ header {
     }
     h1 .content, h2 .content, h3 .content, h4 .content, h5 .content {
         font-family: #fonts[data];
+    }
+    .caption {
+        font-weight: normal; margin: 0; text-transform: uppercase;
+        white-space: nowrap;
     }
     .inline-panel {
         display: inline-block; vertical-align: top;
@@ -417,6 +427,12 @@ header {
 }
 .sidebar.link-display-text::after {
     width: #sizes[sidebar-text];
+}
+.file-preview pre {
+    line-height: 0.5rem;
+}
+.modal .filemanager {
+    margin: 0; min-width: 10rem;
 }
 .filter-container {
     align-items: flex-start; display: flex; justify-content: center;

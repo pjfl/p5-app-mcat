@@ -131,9 +131,9 @@ sub _log {
       escape_formula $now, $level, $username, $leader, $message
    );
 
-   my $line = $self->_csv->string . "\n";
-
-   if (my $file = $self->config->logfile) { $file->append($line)->flush }
+   if (my $file = $self->config->logfile) {
+      $file->appendln($self->_csv->string)->flush;
+   }
    else { CORE::warn $message }
 
    return TRUE;

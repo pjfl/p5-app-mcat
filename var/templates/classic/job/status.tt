@@ -1,2 +1,5 @@
 [% form.render %]
-[% table.render %]
+<div class="job-list">
+   [% subheader(table.caption, '', 'caption') %]
+   [% table.render %]
+</div>

@@ -1,1 +1,4 @@
-[% table.render %]
+<div class="artist-list">
+   [% subheader(table.caption, '', 'caption') %]
+   [% table.render %]
+</div>

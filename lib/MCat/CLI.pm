@@ -79,6 +79,10 @@ sub install : method {
       $path->mkpath(oct '0770') unless $path->exists;
    }
 
+   my $path = $self->config->root->catdir('file');
+
+   $path->mkpath(oct '0770') unless $path->exists;
+
    $self->_create_profile;
 
    my $cmd = $self->config->bin->catfile('mcat-schema');

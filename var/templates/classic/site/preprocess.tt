@@ -1,18 +1,23 @@
 [%
+MACRO pageheader(label, content, classes) BLOCK;
+   '<h1 class="' _ classes.join(' ') _ '">';
+   IF label && content; label _ ': '; ELSIF label; label; END;
+   '<span class="content">'; content | html; '</span></h2>';
+END;
 MACRO header(label, content, classes) BLOCK;
    '<h2 class="' _ classes.join(' ') _ '">';
-   IF label; label _ ': '; END;
+   IF label && content; label _ ': '; ELSIF label; label; END;
    '<span class="content">'; content | html; '</span></h2>';
 END;
 MACRO subheader(label, content, classes) BLOCK;
    '<h3 class="' _ classes.join(' ') _ '">';
-   IF label; label _ ': '; END;
+   IF label && content; label _ ': '; ELSIF label; label; END;
    '<span class="content">'; content | html; '</span></h3>';
 END;
 MACRO html(content) content | html;
 MACRO icon(name, class) BLOCK;
    IF name;
-      classes = ['sprite', html('sprite-' _ name)];
+      classes = ['icon', html('icon-' _ name)];
       classes.push(class) IF class;
       '<span class="' _ classes.join(' ') _ '"></span>';
    END;

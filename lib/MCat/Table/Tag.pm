@@ -15,7 +15,7 @@ has '+caption' => default => 'Tag List';
 
 has '+configurable_action' => default => 'api/table_preference';
 
-has '+configurable_control_location' => default => 'TopLeft';
+has '+configurable_control_location' => default => 'TopRight';
 
 has '+form_buttons' => default => sub {
    return [{

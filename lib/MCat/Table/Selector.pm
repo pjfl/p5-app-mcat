@@ -1,4 +1,4 @@
-package MCat::Table::Selector::List;
+package MCat::Table::Selector;
 
 use HTML::StateTable::Constants qw( FALSE SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( Int );

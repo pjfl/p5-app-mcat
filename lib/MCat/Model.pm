@@ -98,8 +98,11 @@ sub error {
 
    $self->_finalise_stash($context);
 
-   $context->stash(redirect2referer $context, [$exception->original])
-      if $nav && $nav->is_script_request;
+   $nav->finalise_script_request if $nav;
+
+# TODO: Figure out why this was added. Interferes with error message rendering
+#   $context->stash(redirect2referer $context, [$exception->original])
+#      if $nav && $nav->is_script_request;
 
    return;
 }

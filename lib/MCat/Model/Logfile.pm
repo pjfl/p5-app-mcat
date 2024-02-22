@@ -59,7 +59,7 @@ sub list : Auth('admin') Nav('Logfiles') {
 
    my $options = { context => $context };
 
-   $context->stash(table => $self->new_table('Logfile::List', $options));
+   $context->stash(table => $self->new_table('Logfile', $options));
    return;
 }
 

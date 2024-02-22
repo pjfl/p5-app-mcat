@@ -108,17 +108,18 @@ sub list : Nav('Filters') {
 sub selector {
    my ($self, $context, $type) = @_;
 
-   my $name    = 'Selector::' . ucfirst $type;
    my $params  = $context->request->query_parameters;
    my $tableid = $params->{table_id}
       or return $self->error($context, 'Table id not found');
    my $options = { context => $context };
+   my $name    = 'Selector';
 
    if ($type eq 'field') {
       my $table = $context->model('Table')->find($tableid)
          or return $self->error($context, UnknownTable, [$tableid]);
 
       $options->{result_class} = $table->name;
+      $name .= '::' .  ucfirst $type;
    }
    elsif ($type eq 'list') { $options->{table_id} = $tableid }
    else { return $self->error($context, UnknownSelector, [$type]) }

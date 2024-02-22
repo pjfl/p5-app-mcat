@@ -1,9 +1,10 @@
 <div class="exception">
+<h1>Exception Awarded</h1>
 Message: [% exception.original | html %]<br/>
 Thrown by: [% exception.leader %]<br/>
 Created: [% exception.created %]<br />
 Class: [% exception.class %]<br/>
 Version: [% exception.version %]<br/>
 Session updated: [% context.request.session.updated %]<br/>
-Code: [% code %]<br/>
+Code: [% exception.rv %]<br/>
 </div>

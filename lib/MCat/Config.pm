@@ -180,6 +180,24 @@ The output encoding used by the application
 
 has 'encoding' => is => 'ro', isa => Str, default => 'utf-8';
 
+=item filemanager
+
+A hash reference of parameters used to configure the file manager
+
+=cut
+
+has 'filemanager' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
+
+      return {
+         directory => $self->vardir->catdir('filemanager'),
+         sharedir  => 'file'
+      };
+   };
+
 =item layout
 
 The name of the default template to render
@@ -477,7 +495,7 @@ should be served statically by the middleware
 =cut
 
 has 'static' => is => 'ro', isa => Str,
-   default => 'css | favicon.ico | font | img | js | less';
+   default => 'css | file | font | img | js';
 
 =item tempdir
 

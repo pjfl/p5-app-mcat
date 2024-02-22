@@ -27,7 +27,7 @@ sub remove {
 
    return unless $self->verify_form_post($context);
 
-   my $value = $context->request->body_parameters->{data} or return;
+   my $value = $context->get_body_parameters->{data} or return;
    my $runin = $self->jobdaemon->is_running;
    my $count = 0;
 

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds file manager
           - Adds configuration screen. Merges filter edit/editor
           - CSS menus working
           - CSS menus in header working

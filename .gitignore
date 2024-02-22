@@ -32,6 +32,7 @@ var/backup
 var/etc/mcat-local.json
 var/etc/mcat-schema.conf
 var/etc/mcat-profile
+var/filemanager
 var/log
 var/root/css/mcat-classic.css
 var/root/js/mcat.js

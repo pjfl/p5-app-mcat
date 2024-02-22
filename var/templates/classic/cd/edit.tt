@@ -1,4 +1,4 @@
-<div>
+<div class="cd-edit">
 [% subheader('Artist', artist.name) %]
 [% form.render %]
 </div>

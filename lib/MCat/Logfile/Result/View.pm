@@ -1,4 +1,4 @@
-package MCat::Logfile::View::Result;
+package MCat::Logfile::Result::View;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Date HashRef Int Str );
@@ -15,11 +15,11 @@ with 'HTML::StateTable::Result::Role';
 
 =head1 Name
 
-MCat::Logfile::View::Result - Music Catalog
+MCat::Logfile::Result::View - Music Catalog
 
 =head1 Synopsis
 
-   use MCat::Logfile::View::Result;
+   use MCat::Logfile::Result::View;
 
 =head1 Description
 
@@ -54,7 +54,7 @@ has 'line' => is => 'ro', isa => Str, required => TRUE;
 
 =item fields
 
-Each line from the logfile is split on space to produce this list of fields
+Each line from the logfile is split on comma to produce this list of fields
 
 =cut
 

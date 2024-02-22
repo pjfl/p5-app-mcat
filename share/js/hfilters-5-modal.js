@@ -332,6 +332,28 @@ HFilters.Modal = (function() {
             this.h.div({ className: 'modal-content' }, this.content)
          );
          el.appendChild(this.content);
+         if (this.buttons.length) this._renderButtons(el);
+         this.backdrop = new Backdrop();
+         this.backdrop.add(this.el);
+      }
+      _clickHandler(el) {
+         return function(event) {
+            if (event.target.tagName === 'BUTTON') return;
+            if (event.target.tagName === 'SPAN') return;
+            const { left, top } = this.modalHeader.getBoundingClientRect();
+            const { scrollTop } = document.documentElement || document.body;
+            const drag = new Drag({ scrollWrapper: this.dragScrollWrapper });
+            drag.start(event, {
+               dragNode: el,
+               dropTargets: [],
+               dragNodeOffset: {
+                  x: event.clientX - left,
+                  y: (event.clientY + scrollTop) - top
+               }
+            });
+         }.bind(this);
+      }
+      _renderButtons(el) {
          this.buttonBox = this.h.div({ className: 'modal-footer' });
          if (this.resizeElement) {
             const resizeSouth = this.h.div({ className: 'resize-south' });
@@ -356,32 +378,14 @@ HFilters.Modal = (function() {
          });
          this.animateButtons(this.buttonBox);
          el.appendChild(this.buttonBox);
-         this.backdrop = new Backdrop();
-         this.backdrop.add(this.el);
-      }
-      _clickHandler(el) {
-         return function(event) {
-            if (event.target.tagName === 'BUTTON') return;
-            if (event.target.tagName === 'SPAN') return;
-            const { left, top } = this.modalHeader.getBoundingClientRect();
-            const { scrollTop } = document.documentElement || document.body;
-            const drag = new Drag({ scrollWrapper: this.dragScrollWrapper });
-            drag.start(event, {
-               dragNode: el,
-               dropTargets: [],
-               dragNodeOffset: {
-                  x: event.clientX - left,
-                  y: (event.clientY + scrollTop) - top
-               }
-            });
-         }.bind(this);
       }
    }
    Object.assign(Modal.prototype, HFilters.Util.Markup);
    Object.assign(Modal.prototype, HFilters.Util.String);
    class ModalUtil {
-      constructor(url, initValue, valueStore) {
+      constructor(url, formClass, initValue, valueStore) {
          this.url = url;
+         this.formClass = formClass;
          this.initValue = initValue;
          this.valueStore = valueStore;
       }
@@ -454,6 +458,7 @@ HFilters.Modal = (function() {
                }.bind(this));
             };
             HStateTable.Renderer.manager.scan(frame);
+            if (this.formClass) HForms.Util.scan(this.formClass);
          }.bind(this);
          this.getFrameContent(frame, onload);
          return container;
@@ -526,31 +531,39 @@ HFilters.Modal = (function() {
          if (!success) return null;
          const els = this._selectionEls();
          const selected = [];
+         const values = [];
          for (const el of els) {
             if (el.checked) selected.push(el);
+            values.push(el.value);
          }
-         if (this.type === 'radio') {
+         if (this.type == 'checkbox') {
+            this.valueStore = {
+               display: null,
+               value: this._removeUnchecked(this._addIDs(selected), els)
+            };
+         }
+         else if (this.type == 'radio') {
             if (selected && selected.length > 0) {
                this.valueStore = {
-                  value: selected[0].value,
-                  display: selected[0].getAttribute(this.displayAttribute)
+                  display: selected[0].getAttribute(this.displayAttribute),
+                  value: selected[0].value
                };
             }
             if (this.valueStore && this.valueStore.value !== undefined) {
                const tempHash = {};
                tempHash[this.valueStore.value] = 1;
                this.valueStore = {
-                  value: this._removeUnchecked(tempHash, els),
-                  display: this.valueStore.display
+                  display: this.valueStore.display,
+                  value: this._removeUnchecked(tempHash, els)
                };
             }
             else this.valueStore = null;
          }
-         else {
-            this.valueStore = {
-               value: this._removeUnchecked(this._addIDs(selected), els),
-               display: null
-            };
+         else if (this.type == 'text') {
+            this.valueStore = { display: null, value: values };
+         }
+         else if (this.type == 'file') {
+            this.valueStore = { display: null, files: els[0].files };
          }
          return this.valueStore;
       }
@@ -609,18 +622,32 @@ HFilters.Modal = (function() {
          const table = this.frame.querySelector('.' + this.tableClass);
          if (table) pattern = '.' + this.tableClass + ' ' + pattern;
          const selector = this.frame.querySelectorAll.bind(this.frame);
-         if (this.type !== undefined) return selector(pattern + type + ']');
+         if (this.type !== undefined) {
+            return selector(pattern + this.type + ']');
+         }
          let els = selector(pattern + 'radio]');
          if (els && els.length > 0) {
             this.type = 'radio';
             return els;
          }
          els = selector(pattern + 'checkbox]');
-         if (!els || els.length === 0) throw new Error(
-            'Selectors need either a radio button or checkbox column'
+         if (els && els.length > 0) {
+            this.type = 'checkbox';
+            return els;
+         }
+         els = selector(pattern + 'text]');
+         if (els && els.length > 0) {
+            this.type = 'text';
+            return els;
+         }
+         els = selector(pattern + 'file]');
+         if (els && els.length > 0) {
+            this.type = 'file';
+            return els;
+         }
+         throw new Error(
+            'Selectors need either a radio button, checkbox column or text field'
          );
-         this.type = 'checkbox';
-         return els;
       }
    }
    return {
@@ -630,29 +657,36 @@ HFilters.Modal = (function() {
             callback = () => {},
             cancelCallback,
             classList = false,
+            formClass = '',
             labels = ['Cancel', 'OK'],
+            noButtons = false,
             title,
             url,
             validateForm
          } = args;
          let { initValue, valueStore = {} } = args;
-         const util = new ModalUtil(url, initValue, valueStore);
+         const util = new ModalUtil(url, formClass, initValue, valueStore);
          const container = util.getModalContainer();
-         const buttons = [{
-            label: labels[0],
-            onclick(p) {
-               try { callback(false, p, util.getModalValue(false))}
-               catch(e) {}
-               if (cancelCallback) cancelCallback();
-            }
-         }, {
-            label: labels[1],
-            onclick(p) {
-               const modalValue = util.getModalValue(true);
-               if (validateForm && !validateForm(p, modalValue)) return false;
-               return callback(true, p, modalValue);
-            }
-         }];
+         let buttons;
+         if (noButtons) buttons = [];
+         else {
+            buttons = [{
+               label: labels[0],
+               onclick(p) {
+                  try { callback(false, p, util.getModalValue(false))}
+                  catch(e) {}
+                  if (cancelCallback) cancelCallback();
+               }
+            }, {
+               label: labels[1],
+               onclick(p) {
+                  const modalValue = util.getModalValue(true);
+                  if (validateForm && !validateForm(p, modalValue))
+                     return false;
+                  return callback(true, p, modalValue);
+               }
+            }];
+         }
          const options = { noInner: true, classList, buttonClass };
          if (args.closeCallback) options.closeCallback = args.closeCallback;
          const modal = new Modal(title, container, buttons, options);

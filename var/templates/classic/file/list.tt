@@ -1,4 +1,4 @@
-<div class="tag-view">
+<div class="filemanager">
    [% subheader(table.caption, '', 'caption') %]
    [% table.render %]
 </div>

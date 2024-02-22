@@ -44,7 +44,7 @@ setup_resultset sub {
       directory    => $config->logfile->parent,
       file         => $self->logfile,
       redis        => $self->redis,
-      result_class => 'MCat::Logfile::View::Result',
+      result_class => 'MCat::Logfile::Result::View',
       table        => $self,
    );
 };

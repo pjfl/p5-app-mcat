@@ -170,7 +170,6 @@ MCat.Navigation = (function() {
             action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
          form.addEventListener('submit', this.submitFormHandler(form));
-         form.setAttribute('submitlistener', true);
          form.append(this.h.button({
             className: 'form-button', onclick: this.submitHandler(form, name)
          }, this.h.span(this.renderLabel(icon, text['name']))));

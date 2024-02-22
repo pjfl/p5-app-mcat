@@ -1,4 +1,4 @@
-package MCat::Table::Logfile::List;
+package MCat::Table::Logfile;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use File::DataClass::Types      qw( Directory );
@@ -18,14 +18,12 @@ setup_resultset sub {
 
    return HTML::StateTable::ResultSet::File::List->new(
       directory    => $self->context->config->logfile->parent,
-      result_class => 'MCat::Logfile::List::Result',
+      result_class => 'MCat::Logfile::Result::List',
       table        => $self
    );
 };
 
 set_table_name 'logfile_list';
-
-has_column 'icon' => cell_traits => ['Icon'], label => SPC;
 
 has_column 'name' =>
    label => 'Name',
@@ -47,11 +45,6 @@ has_column 'size' =>
    cell_traits => ['Numeric'],
    label       => 'Size',
    sortable    => TRUE;
-
-has_column 'check' =>
-   cell_traits => ['Checkbox'],
-   label       => SPC,
-   value       => 'name';
 
 use namespace::autoclean -except => TABLE_META;
 

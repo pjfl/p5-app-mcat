@@ -1,4 +1,4 @@
-package MCat::Logfile::List::Result;
+package MCat::Logfile::Result::List;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use File::DataClass::Types      qw( Directory File );
@@ -44,8 +44,13 @@ has 'name' =>
 
       $name =~ s{ \. $extension \z }{}mx if $self->has_extension;
 
-      return $name;
+      return "${name}";
    };
+
+has 'owner' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { shift->path->stat->{uid} };
 
 has 'path' =>
    is       => 'ro',
@@ -65,7 +70,7 @@ has 'type' =>
       my $self = shift;
       my $path = $self->path;
 
-      return $path->is_file ? 'file' : $path->is_dir ? 'dir' : 'other';
+      return $path->is_file ? 'file' : $path->is_dir ? 'directory' : 'other';
 };
 
 has 'uri_arg' =>

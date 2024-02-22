@@ -31,7 +31,7 @@ around 'to_psgi_app' => sub {
          vary_user_agent => TRUE;
       mount $config->mount_point => builder {
          enable 'Static',
-            path => qr{ \A / (?: $static) }mx,
+            path => qr{ \A / (?: $static) / }mx,
             root => $config->root;
          enable 'Session', $self->session->middleware_config;
          enable 'LogDispatch', logger => $self->log;

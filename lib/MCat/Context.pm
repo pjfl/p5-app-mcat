@@ -116,6 +116,11 @@ sub uri_for_action {
          last;
       }
 
+      if ($n_stars == 2 and $candidate =~ m{ / \* \. \* }mx) {
+         ($uri = $candidate) =~ s{ / \* \. \* }{}mx;
+         last;
+      }
+
       next if $n_stars != 0 and $n_stars > scalar @{$args // []};
 
       $uri = $candidate;

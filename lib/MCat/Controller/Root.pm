@@ -24,6 +24,17 @@ return (
    'GET + /user/* + ?*'               => sub {['user/root/base/view',      @_]},
    'GET + /user + ?*'                 => sub {['user/root/base/list',      @_]},
 
+   'GET|POST + /filemanager/copy + ?*'   => sub {['file/root/base/copy',   @_]},
+   'GET|POST + /filemanager/create + ?*' => sub {['file/root/base/create', @_]},
+   'GET|POST + /filemanager/properties + ?*'
+                                     => sub {['file/root/base/properties', @_]},
+   'GET|POST + /filemanager/rename + ?*' => sub {['file/root/base/rename', @_]},
+   'GET + /filemanager/upload + ?*'      => sub {['file/root/base/upload', @_]},
+   'POST + /filemanager/upload + *file~ + ?*'
+                                         => sub {['file/root/base/upload', @_]},
+   'GET|POST + /filemanager/*.* + ?*'    => sub {['file/root/base/view',   @_]},
+   'GET + /filemanager + ?*'             => sub {['file/root/base/list',   @_]},
+
    'GET|POST + /job/status + ?*' => sub {['job/root/base/status', @_]},
 
    'POST + /logfile/*/clear + ?*' => sub {['logfile/root/clear_cache', @_]},

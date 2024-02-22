@@ -221,12 +221,9 @@ sub finalise {
 }
 
 sub finalise_script_request {
-   my $self    = shift;
-   my $context = $self->context;
+   my $self = shift;
 
-   return unless exists $context->stash->{redirect};
-
-   $context->stash(code => HTTP_OK) if $self->is_script_request;
+   $self->context->stash(code => HTTP_OK) if $self->is_script_request;
 
    return;
 }
