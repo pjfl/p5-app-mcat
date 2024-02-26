@@ -16,7 +16,8 @@ has '+title'        => default => 'Login';
 has '+info_message' => default => 'Stop! You have your papers?';
 has '+item_class'   => default => 'User';
 
-my $change_js = q{HForms.Util.fieldChange(['login', 'password_reset'], '%s')};
+my $change_js
+   = "HForms.Util.fieldChange(['login', 'password_reset', 'totp_reset'], '%s')";
 
 has_field 'name' =>
    html_name   => 'user_name',
@@ -71,8 +72,12 @@ has_field 'password_reset' =>
 
 has_field 'totp_reset' =>
    type          => 'Button',
+   disabled      => TRUE,
+   element_attr  => {
+      'data-field-depends' => ['user_name'],
+      'javascript'         => $button_js
+   },
    html_name     => 'submit',
-   element_attr  => { javascript => $button_js },
    label         => 'Reset Auth.',
    title         => 'Request a TOTP reset',
    value         => 'totp_reset',

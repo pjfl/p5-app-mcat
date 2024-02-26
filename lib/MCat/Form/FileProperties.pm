@@ -82,12 +82,12 @@ after 'after_build_fields' => sub {
       $self->info_message('No directory properties to update');
    }
 
-   my $js   = sprintf "event.preventDefault(); %s()",
+   my $js   = sprintf "%s(); %s()",
+      'event.preventDefault',
       "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
    my $attr = $self->field('cancel')->element_attr;
 
    $attr->{javascript} = qq{onclick="${js}"};
-
    return;
 };
 

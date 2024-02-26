@@ -193,8 +193,9 @@ has 'filemanager' =>
       my $self = shift;
 
       return {
-         directory => $self->vardir->catdir('filemanager'),
-         sharedir  => 'file'
+         directory  => $self->vardir->catdir('filemanager'),
+         extensions => 'csv|txt',
+         sharedir   => $self->root->catdir('file')
       };
    };
 

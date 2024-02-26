@@ -383,11 +383,12 @@ HFilters.Modal = (function() {
    Object.assign(Modal.prototype, HFilters.Util.Markup);
    Object.assign(Modal.prototype, HFilters.Util.String);
    class ModalUtil {
-      constructor(url, formClass, initValue, valueStore) {
+      constructor(url, formClass, initValue, valueStore, onSubmit) {
          this.url = url;
          this.formClass = formClass;
          this.initValue = initValue;
          this.valueStore = valueStore;
+         this.onSubmit = onSubmit;
       }
       createIcon(args) {
          const {
@@ -459,6 +460,7 @@ HFilters.Modal = (function() {
             };
             HStateTable.Renderer.manager.scan(frame);
             if (this.formClass) HForms.Util.scan(this.formClass);
+            MCat.Navigation.manager.scan(frame, { onSubmit: this.onSubmit });
          }.bind(this);
          this.getFrameContent(frame, onload);
          return container;
@@ -665,7 +667,11 @@ HFilters.Modal = (function() {
             validateForm
          } = args;
          let { initValue, valueStore = {} } = args;
-         const util = new ModalUtil(url, formClass, initValue, valueStore);
+         let modal;
+         const onSubmit = function(event) { modal.close() };
+         const util = new ModalUtil(
+            url, formClass, initValue, valueStore, onSubmit
+         );
          const container = util.getModalContainer();
          let buttons;
          if (noButtons) buttons = [];
@@ -689,7 +695,7 @@ HFilters.Modal = (function() {
          }
          const options = { noInner: true, classList, buttonClass };
          if (args.closeCallback) options.closeCallback = args.closeCallback;
-         const modal = new Modal(title, container, buttons, options);
+         modal = new Modal(title, container, buttons, options);
          modal.render();
          return modal;
       }

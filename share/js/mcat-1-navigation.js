@@ -169,7 +169,7 @@ MCat.Navigation = (function() {
          const form = this.h.form({
             action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
-         form.addEventListener('submit', this.submitFormHandler(form));
+         form.addEventListener('submit', this.submitFormHandler(form, {}));
          form.append(this.h.button({
             className: 'form-button', onclick: this.submitHandler(form, name)
          }, this.h.span(this.renderLabel(icon, text['name']))));
@@ -240,7 +240,7 @@ MCat.Navigation = (function() {
          title.push(this.h.span({ className: 'title-text' }, this.title));
          return this.h.div({ className: 'nav-title' }, title);
       }
-      replaceLinks(container) {
+      replaceLinks(container, options = {}) {
          const url = this.baseURL;
          for (const link of container.getElementsByTagName('a')) {
             const href = link.href + '';
@@ -254,7 +254,9 @@ MCat.Navigation = (function() {
             const action = form.action + '';
             if (action.length && url == action.substring(0, url.length)
                 && !form.getAttribute('submitlistener')) {
-               form.addEventListener('submit', this.submitFormHandler(form));
+               form.addEventListener(
+                  'submit', this.submitFormHandler(form, options)
+               );
             }
          }
       }
@@ -290,19 +292,20 @@ MCat.Navigation = (function() {
          const entry = this.capitalise(this.titleEntry);
          title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
-      submitFormHandler(form) {
+      submitFormHandler(form, options = {}) {
          form.setAttribute('submitlistener', true);
          const action = form.action;
          return function(event) {
             event.preventDefault();
             form.setAttribute('submitter', event.submitter.value);
             this.process(action, form);
+            if (options.onSubmit) options.onSubmit();
          }.bind(this);
       }
       submitHandler(form, name) {
          return function(event) {
-            if (this.confirm) {
-               if (confirm(this.confirm.replace(/\*/, name))) return true;
+            if (this.confirm && confirm(this.confirm.replace(/\*/, name))) {
+               return true;
             }
             else if (confirm()) return true;
             event.preventDefault();
@@ -361,9 +364,7 @@ MCat.Navigation = (function() {
          this.navigator.render();
       }
       onContentLoad() {
-         if (this.navigator) this.navigator.replaceLinks(
-            document.getElementById(this.navigator.contentName)
-         );
+         this.scan(document.getElementById(this.navigator.contentName));
       }
       onReady(callback) {
          if (document.readyState != 'loading') callback();
@@ -378,6 +379,9 @@ MCat.Navigation = (function() {
       }
       renderMessage(href) {
          this.navigator.messages.render(href);
+      }
+      scan(el, options) {
+         if (el && this.navigator) this.navigator.replaceLinks(el, options);
       }
    }
    return {

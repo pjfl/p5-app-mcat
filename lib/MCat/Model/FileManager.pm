@@ -23,12 +23,7 @@ sub base {
 sub copy {
    my ($self, $context) = @_;
 
-   my $options = {
-      action    => NUL,
-      name      => 'FileManager',
-      operation => 'copy',
-      title     => 'Copy File'
-   };
+   my $options = { action => NUL, name => 'FileManager', operation => 'copy' };
    my $message = sub {
       my $form  = shift;
       my $value = $form->field('name')->value;
@@ -43,12 +38,7 @@ sub copy {
 sub create {
    my ($self, $context) = @_;
 
-   my $options = {
-      action    => NUL,
-      name      => 'FileManager',
-      operation => 'mkpath',
-      title     => 'New Folder'
-   };
+   my $options = { action => NUL, name => 'FileManager', operation => 'mkpath'};
    my $message = sub { ['Folder [_1] created', shift->field('name')->value] };
 
    $self->_filemanager_form($context, $options, $message);
@@ -75,27 +65,14 @@ sub paste {
 
    return unless $self->verify_form_post($context);
 
-   my $message = ['Nothing pasted'];
-   my $directory;
+   my ($directory, $message, $selected);
 
    if (my $data = $context->get_body_parameters->{data}) {
-      my $selected = $self->meta_to_path($data->{selected});
-      my $from     = $self->meta_directory($context)->child($selected);
-
-      if ($from->exists) {
-         my $pathname = $from->basename;
-         my $basedir  = $self->meta_directory($context, $directory);
-         my $to       = $basedir->catfile($pathname);
-
-         $from->move($to);
-         $self->meta_move($context, $directory, $from, $pathname);
-         $message = $to->is_file ? 'File [_1] pasted' : 'Folder [_1] pasted';
-         $message = [$message, $pathname];
-      }
-      else { $message = ['Path [_1] not found', $from] }
-
       $directory = $self->meta_to_path($data->{directory});
+      $selected  = $data->{selected};
+      $message   = $self->_move_selected($context, $directory, $selected);
    }
+   else { $message = ['Nothing pasted'] }
 
    $self->_stash_redirect($context, $directory, $message);
    return;
@@ -129,28 +106,11 @@ sub remove {
 
    return unless $self->verify_form_post($context);
 
-   my $count = 0;
-   my ($directory, $message);
+   my ($count, $directory, $message);
 
    if (my $data = $context->get_body_parameters->{data}) {
-      for my $selected (map { $self->meta_to_path($_) } @{$data->{selector}}) {
-         my $path = $self->meta_directory($context)->child($selected);
-
-         next unless $path->exists;
-
-         try {
-            $self->meta_unshare($context, $path);
-
-            if ($path->is_file) { $path->unlink }
-            else { $path->rmdir }
-
-            $self->meta_remove($path);
-            $count++;
-         }
-         catch { $message = ["${_}"] };
-      }
-
       $directory = $self->meta_to_path($data->{directory});
+      ($count, $message) = $self->_remove_selected($context, $data->{selector});
    }
 
    unless ($message) {
@@ -167,12 +127,7 @@ sub remove {
 sub rename {
    my ($self, $context) = @_;
 
-   my $options = {
-      action    => NUL,
-      name      => 'FileManager',
-      operation => 'move',
-      title     => 'Rename File'
-   };
+   my $options = { action => NUL, name => 'FileManager', operation => 'move' };
    my $message = sub {
       my $form  = shift;
       my $value = $form->field('name')->value;
@@ -249,6 +204,59 @@ sub _filemanager_form {
 
    $context->stash(form => $form);
    return;
+}
+
+sub _move_selected {
+   my ($self, $context, $directory, $selected) = @_;
+
+   $selected = $self->meta_to_path($selected);
+
+   my $from = $self->meta_directory($context)->child($selected);
+   my $message;
+
+   if ($from->exists) {
+      my $pathname = $from->basename;
+      my $basedir  = $self->meta_directory($context, $directory);
+      my $to       = $basedir->catfile($pathname);
+
+      $self->meta_unshare($context, $from);
+      $from->move($to);
+      $self->meta_move($context, $directory, $from, $pathname);
+      $self->meta_share($context, $to)
+         if $self->meta_get_shared($context, $directory, $pathname);
+
+      $message = $to->is_file ? 'File [_1] pasted' : 'Folder [_1] pasted';
+      $message = [$message, $pathname];
+   }
+   else { $message = ['Path [_1] not found', $from] }
+
+   return $message;
+}
+
+sub _remove_selected {
+   my ($self, $context, $selector) = @_;
+
+   my $count = 0;
+   my $message;
+
+   for my $selected (map { $self->meta_to_path($_) } @{$selector}) {
+      my $path = $self->meta_directory($context)->child($selected);
+
+      next unless $path->exists;
+
+      try {
+         $self->meta_unshare($context, $path);
+
+         if ($path->is_file) { $path->unlink }
+         else { $path->rmdir }
+
+         $self->meta_remove($path);
+         $count++;
+      }
+      catch { $message = ["${_}"] };
+   }
+
+   return $count, $message;
 }
 
 sub _stash_redirect {

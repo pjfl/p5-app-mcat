@@ -35,5 +35,6 @@ var/etc/mcat-profile
 var/filemanager
 var/log
 var/root/css/mcat-classic.css
+var/root/file
 var/root/js/mcat.js
 var/tmp

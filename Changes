@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Post file manager cleanup
           - Adds file manager
           - Adds configuration screen. Merges filter edit/editor
           - CSS menus working

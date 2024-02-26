@@ -34,8 +34,6 @@ sub validate {
 
    my $context   = $self->context;
    my $directory = $context->get_body_parameters->{directory};
-   # TODO: Implement this
-   my $shared    = $context->get_body_parameters->{shared} // FALSE;
    my $request   = $context->request;
 
    $self->add_form_error('Attribute [_1] not found', 'upload object')

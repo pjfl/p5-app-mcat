@@ -54,11 +54,13 @@ after 'after_build_fields' => sub {
    $self->field('preview')->html($self->formatter->markdown($content));
 
    my $args   = [$self->filename];
-   my $params = { directory => $self->directory};
+   my $params = { directory => $self->directory };
    my $js     = sprintf "%s(); %s('%s', '%s'); %s('%s'); %s()",
       'event.preventDefault',
       'HStateTable.Role.Downloadable.downloader',
-      $context->uri_for_action('file/view', $args, { download => 'true' }),
+      $context->uri_for_action(
+         'file/view', $args, { %{$params}, download => 'true' }
+      ),
       $self->filename,
       'MCat.Navigation.manager.renderLocation',
       $context->uri_for_action('file/list', [], $params),
@@ -67,7 +69,8 @@ after 'after_build_fields' => sub {
 
    $attr->{javascript} = qq{onclick="${js}"};
 
-   $js   = sprintf "event.preventDefault(); %s()",
+   $js   = sprintf "%s(); %s()",
+      'event.preventDefault',
       "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
    $attr = $self->field('cancel')->element_attr;
 

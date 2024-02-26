@@ -51,10 +51,12 @@ sub validate {
    my $operation  = $self->operation;
 
    try {
-      throw 'Already exists' if $directory->child($pathname)->exists;
+      my $to = $directory->child($pathname);
+
+      throw 'Already exists' if $to->exists;
 
       if ($operation eq 'mkpath') {
-         $directory->child($pathname)->mkpath;
+         $to->mkpath;
          $self->meta_add($context, $self->directory, $pathname);
       }
       elsif ($operation eq 'copy' or $operation eq 'move') {
@@ -64,12 +66,17 @@ sub validate {
 
          my $from = $self->meta_directory($context)->catfile($selected);
 
-         $from->$operation($directory->catfile($pathname));
-
          if ($operation eq 'copy') {
+            $from->copy($to);
             $self->meta_add($context, $self->directory, $pathname);
          }
-         else { $self->meta_move($context, $self->directory, $from, $pathname) }
+         else {
+            $self->meta_unshare($context, $from);
+            $from->move($to);
+            $self->meta_move($context, $self->directory, $from, $pathname);
+            $self->meta_share($context, $to)
+               if $self->meta_get_shared($context, $self->directory, $pathname);
+         }
       }
       else { throw "Operation '${operation}' unknown" }
    }
