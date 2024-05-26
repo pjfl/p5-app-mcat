@@ -1,6 +1,6 @@
 package MCat::Model::Cd;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS NUL );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownArtist UnknownCd Unspecified );
 use Web::Simple;
@@ -125,7 +125,7 @@ sub list : Auth('view') Nav('CDs|img/cd.svg') {
 sub view : Auth('view') Nav('View CD') {
    my ($self, $context, $cdid) = @_;
 
-   my $options = { context => $context, cdid => $cdid };
+   my $options = { caption => NUL, context => $context, cdid => $cdid };
    my $tracks  = $self->table->new_with_context('Track', $options);
 
    $context->stash(table => $self->table->new_with_context('Object::View', {

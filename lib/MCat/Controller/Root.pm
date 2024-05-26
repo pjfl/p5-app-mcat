@@ -31,9 +31,11 @@ return (
    'GET|POST + /filemanager/properties + ?*'
                                      => sub {['file/root/base/properties', @_]},
    'GET|POST + /filemanager/rename + ?*' => sub {['file/root/base/rename', @_]},
+   'GET      + /filemanager/select + ?*' => sub {['file/root/base/select', @_]},
    'GET      + /filemanager/upload + ?*' => sub {['file/root/base/upload', @_]},
    'POST     + /filemanager/upload + *file~ + ?*'
                                          => sub {['file/root/base/upload', @_]},
+   'GET      + /filemanager/*/header'    => sub {['file/root/base/header', @_]},
    'GET      + /filemanager + ?*'        => sub {['file/root/base/list',   @_]},
 
    'GET|POST + /job/status + ?*' => sub {['job/root/base/status', @_]},

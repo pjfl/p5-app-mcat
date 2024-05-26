@@ -1,7 +1,7 @@
 package MCat::Table::FileManager;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
-use File::DataClass::Types      qw( Directory Str );
+use File::DataClass::Types      qw( Bool Directory Str );
 use Format::Human::Bytes;
 use HTML::StateTable::ResultSet::File::List;
 use Moo;
@@ -48,9 +48,20 @@ has '_directory' => is => 'ro', isa => Str, init_arg => 'directory';
 
 has 'directory' => is => 'lazy', isa => Directory, init_arg => undef;
 
+has 'extensions' => is => 'ro', isa => Str, default => NUL;
+
 has 'format_number' => is => 'ro', default => sub { Format::Human::Bytes->new };
 
 has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
+
+has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
+
+has '_icons' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      return shift->context->request->uri_for('img/icons.svg')->as_string;
+   };
 
 setup_resultset sub {
    my $self = shift;
@@ -58,7 +69,7 @@ setup_resultset sub {
    return HTML::StateTable::ResultSet::File::List->new(
       allow_directories => TRUE,
       directory         => $self->directory,
-      extension         => NUL,
+      extension         => $self->extensions,
       recurse           => FALSE,
       result_class      => 'MCat::Logfile::Result::List', # TODO: Fix name
       table             => $self
@@ -134,32 +145,31 @@ sub _build_directory {
 }
 
 sub _build_form_buttons {
-   my $self    = shift;
-   my $context = $self->context;
+   my $self  = shift;
+   my $empty = { 'TopLeft' => [], 'BottomLeft' => [], 'BottomRight' => [] };
+
+   return $empty if $self->selectonly;
+
    my $params  = {};
 
    $params->{directory} = $self->_directory if $self->_directory;
    $params->{selected}  = $self->selected   if $self->has_selected;
 
-   my $cut_or_paste;
+   my $context = $self->context;
+   my $cut_or_paste = {
+      action    => 'file/paste',
+      noconfirm => TRUE,
+      selection => 'disable_on_select',
+      value     => 'Paste'
+   };
 
-   if ($self->has_selected) {
-      $cut_or_paste = {
-         action    => 'file/paste',
-         noconfirm => TRUE,
-         selection => 'disable_on_select',
-         value     => 'Paste'
-      };
-   }
-   else {
-      $cut_or_paste = {
-         action    => $context->uri_for_action('file/list', [], $params),
-         method    => 'get',
-         noconfirm => TRUE,
-         selection => 'select_one',
-         value     => 'Cut'
-      };
-   }
+   $cut_or_paste = {
+      action    => $context->uri_for_action('file/list', [], $params),
+      method    => 'get',
+      noconfirm => TRUE,
+      selection => 'select_one',
+      value     => 'Cut'
+   } unless $self->has_selected;
 
    return {
       'TopLeft' => [{
@@ -223,12 +233,17 @@ sub _build_name_link {
    if ($result->type eq 'directory') {
       my $selected = $self->context->request->query_parameters->{selected};
 
-      $params->{directory} = $self->_qualified_directory($result);
-      $params->{selected}  = $selected if $selected;
+      $params->{directory}  = $self->_qualified_directory($result);
+      $params->{extensions} = $self->extensions if $self->extensions;
+      $params->{selected}   = $selected if $selected;
 
-      return $self->context->uri_for_action('file/list', [], $params);
+      my $action = $self->selectonly ? 'file/select' : 'file/list';
+
+      return $self->context->uri_for_action($action, [], $params);
    }
    elsif ($result->type eq 'file') {
+      $cell->column->add_option('modal-icons', $self->_icons);
+
       my $args = [$result->uri_arg];
       my $dir  = $self->_qualified_directory;
 
@@ -259,9 +274,12 @@ sub _build_tag_names {
          $params = { directory => $directory };
       }
 
+      $params->{extensions} = $self->extensions if $self->extensions;
       $params->{selected} = $self->selected if $self->has_selected;
 
-      my $uri = $self->context->uri_for_action('file/list', [], $params);
+      my $action = $self->selectonly ? 'file/select' : 'file/list';
+
+      my $uri = $self->context->uri_for_action($action, [], $params);
 
       push @{$tuples}, [$name, $uri];
    }

@@ -19,8 +19,9 @@ has 'icon' =>
    isa     => Str,
    default => sub {
       my $self = shift;
+      my $req  = $self->table->context->request;
 
-      return 'img/' . $self->type . '.svg';
+      return $req->uri_for('img/' . $self->type . '.svg')->as_string;
    };
 
 has 'modified' =>
@@ -38,11 +39,8 @@ has 'name' =>
    is      => 'lazy',
    isa     => Str,
    default => sub {
-      my $self      = shift;
-      my $name      = $self->path->clone->relative($self->directory);
-      my $extension = $self->extension;
-
-      $name =~ s{ \. $extension \z }{}mx if $self->has_extension;
+      my $self = shift;
+      my $name = $self->path->clone->relative($self->directory);
 
       return "${name}";
    };
@@ -62,6 +60,8 @@ has 'size' =>
    is      => 'lazy',
    isa     => Int,
    default => sub { shift->path->stat->{size} };
+
+has 'table' => is => 'ro', weak_ref => TRUE;
 
 has 'type' =>
    is      => 'lazy',

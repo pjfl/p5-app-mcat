@@ -7,6 +7,7 @@ use HTML::Forms::Types     qw( ArrayRef Bool HashRef Str );
 use HTML::Forms::Util      qw( get_token );
 use List::Util             qw( pairs );
 use Ref::Util              qw( is_arrayref is_coderef is_hashref );
+use Scalar::Util           qw( blessed );
 use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( throw NoMethod UnknownModel );
 use MCat::Response;

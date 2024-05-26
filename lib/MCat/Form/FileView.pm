@@ -65,16 +65,14 @@ after 'after_build_fields' => sub {
       'MCat.Navigation.manager.renderLocation',
       $context->uri_for_action('file/list', [], $params),
       "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
-   my $attr   = $self->field('download')->element_attr;
 
-   $attr->{javascript} = qq{onclick="${js}"};
+   $self->field('download')->element_attr->{javascript} = qq{onclick="${js}"};
 
-   $js   = sprintf "%s(); %s()",
+   $js = sprintf "%s(); %s()",
       'event.preventDefault',
       "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
-   $attr = $self->field('cancel')->element_attr;
 
-   $attr->{javascript} = qq{onclick="${js}"};
+   $self->field('cancel')->element_attr->{javascript} = qq{onclick="${js}"};
    return;
 };
 

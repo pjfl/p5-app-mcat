@@ -103,6 +103,12 @@ has 'field_map' =>
       return $field_map;
    };
 
+=item _resultset
+
+=cut
+
+has '_resultset' => is => 'ro', init_arg => 'resultset';
+
 =item timestamp
 
 This L<DateTime> object is parsed from the first two fields of the logfile
@@ -126,6 +132,10 @@ has 'timestamp' =>
          $self->_set_remainder_start(0);
          $timestamp = NUL;
       }
+
+      my $context = $self->_resultset->table->context;
+
+      $timestamp->set_time_zone($context->session->timezone);
 
       return $timestamp;
    };

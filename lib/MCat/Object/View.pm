@@ -5,7 +5,7 @@ use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Int ResultRole Table Undef );
 use JSON::MaybeXS               qw( encode_json );
 use List::Util                  qw( pairs );
-use Ref::Util                   qw( is_coderef is_plain_hashref );
+use Ref::Util                   qw( is_arrayref is_coderef is_plain_hashref );
 use MCat::Object::Result;
 use Moo;
 use MooX::HandlesVia;
@@ -83,7 +83,9 @@ sub build_results {
       }
       else { $value = $table->result->$colname }
 
-      if (is_plain_hashref $value) { $value = encode_json($value) }
+      if (is_arrayref $value or is_plain_hashref $value) {
+         $value = encode_json($value);
+      }
 
       my $traits = $info->{cell_traits} // [];
       my $name   = $info->{label} // ucfirst $colname;
@@ -95,8 +97,14 @@ sub build_results {
 
    if ($table->has_add_columns) {
       for my $pair (pairs @{$table->add_columns}) {
+         my $value = $pair->value;
+
+         if (is_arrayref $value or is_plain_hashref $value) {
+            $value = encode_json($value);
+         }
+
          push @{$results}, MCat::Object::Result->new(
-            name => $pair->key, value => $pair->value
+            name => $pair->key, value => $value
          );
       }
    }

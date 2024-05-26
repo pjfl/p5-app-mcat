@@ -1,5 +1,7 @@
 Revision history for MCat
 
+          - Import form with file selector
+          - Table captions now in HTML::StateTable
           - Post file manager cleanup
           - Adds file manager
           - Adds configuration screen. Merges filter edit/editor

@@ -303,18 +303,16 @@ HFilters.Modal = (function() {
       }
       keyHandler(event) {
          const { keyCode } = event;
-         if (MODALS.isTopModal(this.ident)) {
-            const btn = this.buttons.find(b => b.key && KEYS[b.key] === keyCode);
-            if (btn) this.buttonHandler(btn);
-            else if (keyCode === KEYS['escape']) this.close();
-         }
+         if (!MODALS.isTopModal(this.ident)) return;
+         const btn = this.buttons.find(b => b.key && KEYS[b.key] === keyCode);
+         if (btn) this.buttonHandler(btn);
+         else if (keyCode === KEYS['escape']) this.close();
       }
       render() {
          const classes = this.classList || '';
          this.el = this.h.div({ className: 'modal ' + classes });
-         const { el } = this;
          this.modalHeader = this.h.div({
-            className: 'modal-header', onmousedown: this._clickHandler(el)
+            className: 'modal-header', onmousedown: this._clickHandler(this.el)
          }, [
             this.h.h1({ className: 'modal-title' }, this.title),
             this.h.span({
@@ -326,13 +324,13 @@ HFilters.Modal = (function() {
             }, '×')
          ]);
          this.modalHeader.setAttribute('draggable', 'draggable');
-         el.appendChild(this.modalHeader);
+         this.el.appendChild(this.modalHeader);
          this.content = this.h.div(
             { className: 'modal-content-wrapper' },
             this.h.div({ className: 'modal-content' }, this.content)
          );
-         el.appendChild(this.content);
-         if (this.buttons.length) this._renderButtons(el);
+         this.el.appendChild(this.content);
+         if (this.buttons.length) this._renderButtons(this.el);
          this.backdrop = new Backdrop();
          this.backdrop.add(this.el);
       }
@@ -383,14 +381,53 @@ HFilters.Modal = (function() {
    Object.assign(Modal.prototype, HFilters.Util.Markup);
    Object.assign(Modal.prototype, HFilters.Util.String);
    class ModalUtil {
-      constructor(url, formClass, initValue, valueStore, onSubmit) {
+      constructor(args, onSubmit) {
+         const {
+            formClass = '',
+            icons = '/icons.svg',
+            initValue,
+            url,
+            valueStore = {}
+         } = args;
+         this.icons = icons;
          this.url = url;
          this.formClass = formClass;
          this.initValue = initValue;
          this.valueStore = valueStore;
          this.onSubmit = onSubmit;
       }
-      createIcon(args) {
+      createModalContainer() {
+         const spinner = this._createSpinner();
+         const loader = this.h.div({ className: 'modal-loader' }, spinner);
+         this.frame = this.h.div({
+            className: 'selector',
+            id: 'selector-frame',
+            style: 'visibility:hidden;'
+         });
+         const container = this.h.div(
+            { className: 'modal-frame-container' }, [loader, this.frame]
+         );
+         this.selector = new Selector(this.frame);
+         this.onload = function() {
+            loader.style.display = 'none';
+            const selector = this.selector;
+            if (this.initValue)
+               selector.setModalValue(this.initValue, this.valueStore);
+            for (const anchor of this.frame.querySelectorAll('a')) {
+               anchor.addEventListener('click', function(event) {
+                  this.valueStore = selector.setValueStore(this.valueStore);
+                  this.initValue = this.valueStore.value;
+               }.bind(this));
+            };
+            this._scan_frame();
+         }.bind(this);
+         this._loadFrameContent(this.url);
+         return container;
+      }
+      getModalValue(success) {
+         return this.selector.getModalValue(success);
+      }
+      _createIcon(args) {
          const {
             attrs = {}, height = 30, classes, name,
             presentational = true, width = 30
@@ -400,30 +437,29 @@ HFilters.Modal = (function() {
             'aria-hidden': presentational ? 'true' : null,
             class: classes, height, width, ...attrs
          };
-         return `
+         const icons = this.icons;
+         const svg = `
 <svg ${Object.keys(newAttrs).filter(attr => newAttrs[attr]).map(attr => `${attr}="${newAttrs[attr]}"`).join(' ')}>
-   <use xlink:href="#icon-${name}"></use>
-</svg>
-         `.trim();
+   <use href="${icons}#icon-${name}"></use>
+</svg>`;
+         return this._frag(svg.trim());
       }
-      createSpinner(modifierClass = '') {
-         const icon = this.createIcon({
-            name: 'spinner', classes: 'loading-unbranded-icon'
+      _createSpinner(modifierClass = '') {
+         const icon = this._createIcon({
+            name: 'spinner', classes: 'loading-icon'
          });
-         return this.frag(`
-<span class="loading-unbranded ${modifierClass}">
-   <span class="loading-unbranded-spinner">${icon}</span>
-</span>
-         `);
+         return this.h.span({
+            className: `loading ${modifierClass}`
+         }, this.h.span({ className: 'loading-spinner' }, icon));
       }
-      frag(content) {
-         document.createRange().createContextualFragment(content);
+      _frag(content) {
+         return document.createRange().createContextualFragment(content);
       }
-      async getFrameContent(frame, onload) {
+      async _loadFrameContent(url) {
          const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
-         const { location, text } = await this.bitch.sucks(this.url, opt);
+         const { location, text } = await this.bitch.sucks(url, opt);
          if (text && text.length > 0) {
-            frame.innerHTML = text;
+            this.frame.innerHTML = text;
          }
          else if (location) {
             // TODO: Deal with
@@ -431,42 +467,19 @@ HFilters.Modal = (function() {
          else {
             console.warn('Neither content nor redirect in response to get');
          }
-         if (onload) onload();
+         if (this.onload) this.onload();
       }
-      getModalContainer() {
-         const spinner = this.createSpinner();
-         const loader = this.h.div({ className: 'modal-loader' }, spinner);
-         const frame = this.h.div({
-            className: 'selector',
-            id: 'selector-frame',
-            style: 'visibility:hidden;'
+      async _scan_frame() {
+         await HStateTable.Renderer.manager.scan(this.frame);
+         if (this.formClass)
+            HForms.Util.scan(this.frame, { formClass: this.formClass });
+         this.frame.style.visibility = 'visible';
+         MCat.Navigation.manager.scan(this.frame, {
+            onSubmit: this.onSubmit,
+            renderLocation: function(href) {
+               this._loadFrameContent(href);
+            }.bind(this)
          });
-         const container = this.h.div(
-            { className: 'modal-frame-container' }, [loader, frame]
-         );
-         this.frame = frame;
-         this.selector = new Selector(frame);
-         const onload = function() {
-            frame.style.visibility = 'visible';
-            loader.style.visibility = 'hidden';
-            const selector = this.selector;
-            if (this.initValue)
-               selector.setModalValue(this.initValue, this.valueStore);
-            for (const atag of frame.querySelectorAll('a')) {
-               atag.addEventListener('click', function() {
-                  this.valueStore = selector.setValueStore(this.valueStore);
-                  this.initValue = this.valueStore.value;
-               }.bind(this));
-            };
-            HStateTable.Renderer.manager.scan(frame);
-            if (this.formClass) HForms.Util.scan(this.formClass);
-            MCat.Navigation.manager.scan(frame, { onSubmit: this.onSubmit });
-         }.bind(this);
-         this.getFrameContent(frame, onload);
-         return container;
-      }
-      getModalValue(success) {
-         return this.selector.getModalValue(success);
       }
    }
    Object.assign(ModalUtil.prototype, HFilters.Util.Bitch);
@@ -648,56 +661,82 @@ HFilters.Modal = (function() {
             return els;
          }
          throw new Error(
-            'Selectors need either a radio button, checkbox column or text field'
+            'Selectors need either a radio, checkbox, text, or file input'
          );
       }
    }
+   const create = function(args) {
+      const {
+         buttonClass,
+         callback = () => {},
+         cancelCallback,
+         classList = false,
+         labels = ['Cancel', 'OK'],
+         noButtons = false,
+         title,
+         validateForm
+      } = args;
+      let modal;
+      const onSubmit = function(event) { modal.close() };
+      const util = new ModalUtil(args, onSubmit);
+      const container = util.createModalContainer();
+      let buttons = [];
+      if (!noButtons) {
+         buttons = [{
+            label: labels[0],
+            onclick(modalObj) {
+               try { callback(false, modalObj, util.getModalValue(false))}
+               catch(e) {}
+               if (cancelCallback) cancelCallback();
+            }
+         }, {
+            label: labels[1],
+            onclick(modalObj) {
+               const modalValue = util.getModalValue(true);
+               if (validateForm && !validateForm(modalObj, modalValue))
+                  return false;
+               return callback(true, modalObj, modalValue);
+            }
+         }];
+      }
+      const options = { buttonClass, classList, noInner: true };
+      if (args.closeCallback) options.closeCallback = args.closeCallback;
+      modal = new Modal(title, container, buttons, options);
+      modal.render();
+      return modal;
+   };
    return {
-      create: function(args) {
+      create: create,
+      createAlert: function(args) {
          const {
-            buttonClass,
             callback = () => {},
-            cancelCallback,
-            classList = false,
-            formClass = '',
-            labels = ['Cancel', 'OK'],
-            noButtons = false,
-            title,
-            url,
-            validateForm
+            classList,
+            icon = 'info',
+            label = 'Okay',
+            text = '',
+            title
          } = args;
-         let { initValue, valueStore = {} } = args;
-         let modal;
-         const onSubmit = function(event) { modal.close() };
-         const util = new ModalUtil(
-            url, formClass, initValue, valueStore, onSubmit
-         );
-         const container = util.getModalContainer();
-         let buttons;
-         if (noButtons) buttons = [];
-         else {
-            buttons = [{
-               label: labels[0],
-               onclick(p) {
-                  try { callback(false, p, util.getModalValue(false))}
-                  catch(e) {}
-                  if (cancelCallback) cancelCallback();
-               }
-            }, {
-               label: labels[1],
-               onclick(p) {
-                  const modalValue = util.getModalValue(true);
-                  if (validateForm && !validateForm(p, modalValue))
-                     return false;
-                  return callback(true, p, modalValue);
-               }
-            }];
-         }
-         const options = { noInner: true, classList, buttonClass };
-         if (args.closeCallback) options.closeCallback = args.closeCallback;
-         modal = new Modal(title, container, buttons, options);
+         const content = document.createElement('div');
+         content.classList.add(`popup-alert-${icon}`);
+         content.appendChild(document.createTextNode(text));
+         const buttons = [{ label, onclick: callback }];
+         const options = { animate: 'jump', fadeSpeed: 200, classList };
+         const modal = new Modal(title, content, buttons, options);
          modal.render();
          return modal;
+      },
+      createSelector: function(args) {
+         const { icons, onchange, target, title = 'Select Item', url } = args;
+         const callback = function(ok, modal, result) {
+            if (!ok) return;
+            const el = document.getElementById(target);
+            const newValue = result.value.replace(/!/g, '/');
+            if (onchange && el.value != newValue)
+               eval(onchange.replace(/%value/g, result.value));
+            el.value = newValue;
+            if (el.focus) el.focus();
+         }.bind(this);
+         return create({ callback, icons, title, url });
       }
    };
 })();

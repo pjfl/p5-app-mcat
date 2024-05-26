@@ -326,7 +326,7 @@ sub _add_global {
 sub _get_nav_label {
    my ($self, $action) = @_;
 
-   my $attr = $self->context->get_attributes($action);
+   my $attr = try { $self->context->get_attributes($action) };
 
    return $attr->{Nav}->[0] if $attr && defined $attr->{Nav};
 

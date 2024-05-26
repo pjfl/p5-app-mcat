@@ -1,6 +1,6 @@
 package MCat::Model::Artist;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS NUL );
 use MCat::Util             qw( redirect redirect2referer );
 use Unexpected::Functions  qw( UnknownArtist Unspecified );
 use Web::Simple;
@@ -118,7 +118,9 @@ sub view : Auth('view') Nav('View Artist') {
    my ($self, $context) = @_;
 
    my $artist  = $context->stash('artist');
-   my $options = { context => $context, artistid => $artist->artistid };
+   my $options = {
+      caption => NUL, context => $context, artistid => $artist->artistid
+   };
    my $cds     = $self->new_table('Cd', $options);
 
    $context->stash(table => $self->new_table('Object::View', {

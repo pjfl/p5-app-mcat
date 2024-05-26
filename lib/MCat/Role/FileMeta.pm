@@ -41,6 +41,44 @@ sub meta_directory {
    return $home->catdir($self->meta_to_path($basedir));
 }
 
+sub meta_get_files { # Unused
+   my ($self, $context, $extensions) = @_;
+
+   my $home     = $self->meta_home($context)->clone;
+   my $filter   = sub { m{ \. (?: $extensions ) \z }mx };
+   my $iterator = $home->deep->filter($filter)->iterator({});
+   my $files    = [];
+
+   while (defined (my $item = $iterator->())) {
+      my $relpath = $item->abs2rel($home);
+      my $label   = $relpath;
+
+      push @{$files}, $label, $relpath;
+   }
+
+   return $files;
+}
+
+sub meta_get_header {
+   my ($self, $context, $selected) = @_;
+
+   $selected = $self->meta_to_path($selected);
+
+   my $file = $self->meta_directory($context)->child($selected);
+
+   return [] unless $file->exists;
+
+   my $line = $file->utf8->head(1);
+
+   $line = substr $line, 1 if ord(substr $line, 0, 1) == 65279; # Remove BOM
+   $line = substr $line, 1 if substr $line, 0, 1 eq '#';
+   $self->_csv->parse($line);
+
+   my @fields = $self->_csv->fields;
+
+   return [ map { { name => $_ } } @fields ];
+}
+
 sub meta_get_owner {
    my ($self, $context, $basedir, $filename) = @_;
 

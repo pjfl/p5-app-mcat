@@ -1,7 +1,10 @@
 package MCat::Model::FileManager;
 
-use HTML::StateTable::Constants qw( FALSE ITERATOR_DOWNLOAD_KEY NUL TRUE );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE ITERATOR_DOWNLOAD_KEY
+                                    NUL TRUE );
+use HTTP::Status                qw( HTTP_OK );
 use MCat::Util                  qw( redirect );
+use Unexpected::Functions       qw( Unspecified );
 use Try::Tiny;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -42,6 +45,17 @@ sub create {
    my $message = sub { ['Folder [_1] created', shift->field('name')->value] };
 
    $self->_filemanager_form($context, $options, $message);
+   return;
+}
+
+sub header {
+   my ($self, $context, $selected) = @_;
+
+   return $self->error($context, Unspecified, ['file']) unless $selected;
+
+   my $header = $self->meta_get_header($context, $selected);
+
+   $context->stash(json => $header, code => HTTP_OK, view => 'json');
    return;
 }
 
@@ -137,6 +151,25 @@ sub rename {
 
    $self->_filemanager_form($context, $options, $message);
    return;
+}
+
+sub select {
+   my ($self, $context) = @_;
+
+   my $options    = { context => $context };
+   my $params     = $context->request->query_parameters;
+   my $directory  = $params->{directory};
+   my $extensions = $params->{extensions};
+   my $selected   = $params->{selected};
+
+   $options->{configurable} = FALSE;
+   $options->{caption}      = NUL;
+   $options->{directory}    = $directory  if $directory;
+   $options->{extensions}   = $extensions if $extensions;
+   $options->{selected}     = $selected   if $selected;
+   $options->{selectonly}   = TRUE;
+
+   $context->stash(table => $self->new_table('FileManager', $options));
 }
 
 sub upload {

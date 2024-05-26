@@ -1,4 +1,1 @@
-<div class="cd-list">
-   [% subheader(table.caption, '', 'caption') %]
-   [% table.render %]
-</div>
+[% table.render %]

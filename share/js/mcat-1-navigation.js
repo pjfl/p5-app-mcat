@@ -45,16 +45,27 @@ MCat.Navigation = (function() {
          item.classList.add('selected');
          return true;
       }
+      confirmHandler(name) {
+         return function(event) {
+            if (this.confirm && confirm(this.confirm.replace(/\*/, name))) {
+               return true;
+            }
+            else if (confirm()) return true;
+            event.preventDefault();
+            return false;
+         }.bind(this);
+      }
       iconImage(icon) {
          return icon && icon.match(/:/) ? this.h.img({ src: icon }) : icon;
       }
       isCurrentHref(href) {
          return history.state && history.state.href == href ? true : false;
       }
-      loadLocation(href) {
+      loadLocation(href, options) {
          return function(event) {
             event.preventDefault();
-            this.renderLocation(href);
+            if (options.renderLocation) options.renderLocation(href);
+            else this.renderLocation(href);
          }.bind(this);
       }
       async loadMenuData(url) {
@@ -141,22 +152,22 @@ MCat.Navigation = (function() {
          const panel = this.h.div(attr);
          panel.innerHTML = html;
          await StateTable.scan(panel);
+         FilterEditor.scan(panel);
+         HForms.Util.scan(panel);
          this.replaceLinks(panel);
          this.contentPanel = document.getElementById(this.contentName);
          this.contentPanel = this.display(
             this.contentContainer, 'contentPanel', panel
          );
-         FilterEditor.scan(panel);
-         HForms.Util.scan(this.skin);
       }
-      renderItem(item, menuName, context) {
+      renderItem(item, menuName) {
          const [text, href, icon] = item;
          const iconImage = this.iconImage(icon);
          const title = iconImage && this.linkDisplay == 'icon' ? text : '';
          if (typeof text != 'object') {
             const label = this.renderLabel(icon, text);
             if (href) {
-               const attr = { href: href, onclick: this.loadLocation(href) };
+               const attr = { href: href, onclick: this.loadLocation(href, {})};
                const link = this.h.a(attr, label);
                link.setAttribute('clicklistener', true);
                return this.h.li({ className: menuName, title: title }, link);
@@ -169,9 +180,9 @@ MCat.Navigation = (function() {
          const form = this.h.form({
             action: href, className: 'inline', method: 'post'
          }, this.h.hidden({ name: '_verify', value: this.token }));
-         form.addEventListener('submit', this.submitFormHandler(form, {}));
+         form.addEventListener('submit', this.submitHandler(form, {}));
          form.append(this.h.button({
-            className: 'form-button', onclick: this.submitHandler(form, name)
+            className: 'form-button', onclick: this.confirmHandler(name)
          }, this.h.span(this.renderLabel(icon, text['name']))));
          return this.h.li({ className: menuName, title: title }, form);
       }
@@ -199,7 +210,7 @@ MCat.Navigation = (function() {
                context = item;
                continue;
             }
-            const listItem = this.renderItem(item, menuName, context);
+            const listItem = this.renderItem(item, menuName);
             if (context) {
                const panel = this.contextPanels[context];
                if (panel.firstChild.classList.contains('selected'))
@@ -246,7 +257,7 @@ MCat.Navigation = (function() {
             const href = link.href + '';
             if (href.length && url == href.substring(0, url.length)
                 && !link.getAttribute('clicklistener')) {
-               link.addEventListener('click', this.loadLocation(href));
+               link.addEventListener('click', this.loadLocation(href, options));
                link.setAttribute('clicklistener', true);
             }
          }
@@ -255,7 +266,7 @@ MCat.Navigation = (function() {
             if (action.length && url == action.substring(0, url.length)
                 && !form.getAttribute('submitlistener')) {
                form.addEventListener(
-                  'submit', this.submitFormHandler(form, options)
+                  'submit', this.submitHandler(form, options)
                );
             }
          }
@@ -292,7 +303,7 @@ MCat.Navigation = (function() {
          const entry = this.capitalise(this.titleEntry);
          title.innerHTML = this.titleAbbrev + ' - ' + entry;
       }
-      submitFormHandler(form, options = {}) {
+      submitHandler(form, options = {}) {
          form.setAttribute('submitlistener', true);
          const action = form.action;
          return function(event) {
@@ -300,16 +311,6 @@ MCat.Navigation = (function() {
             form.setAttribute('submitter', event.submitter.value);
             this.process(action, form);
             if (options.onSubmit) options.onSubmit();
-         }.bind(this);
-      }
-      submitHandler(form, name) {
-         return function(event) {
-            if (this.confirm && confirm(this.confirm.replace(/\*/, name))) {
-               return true;
-            }
-            else if (confirm()) return true;
-            event.preventDefault();
-            return false;
          }.bind(this);
       }
    }

@@ -1,4 +1,1 @@
-<div class="track-view">
-   [% subheader(table.caption, '', 'caption') %]
-   [% table.render %]
-</div>
+[% table.render %]

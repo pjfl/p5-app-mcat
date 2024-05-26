@@ -27,8 +27,8 @@ HFilters.Util = (function() {
    };
    const _events = [
       'onchange', 'onclick', 'ondragenter', 'ondragleave', 'ondragover',
-      'ondragstart', 'ondrop', 'onkeypress', 'onmouseenter', 'onmouseleave',
-      'onmousemove', 'onmouseover', 'onsubmit'
+      'ondragstart', 'ondrop', 'onkeypress', 'onmousedown', 'onmouseenter',
+      'onmouseleave', 'onmousemove', 'onmouseover', 'onsubmit'
    ];
    const _typeof = function(x) {
       if (!x) return;
@@ -184,8 +184,8 @@ HFilters.Util = (function() {
       td(attr, content)       { return this._tag('td', attr, content) }
       textarea(attr, content) { return this._tag('textarea', attr, content) }
       th(attr, content)       { return this._tag('th', attr, content) }
-      tr(attr, content)       { return this._tag('tr', attr, content) }
       thead(attr, content)    { return this._tag('thead', attr, content) }
+      tr(attr, content)       { return this._tag('tr', attr, content) }
       ul(attr, content)       { return this._tag('ul', attr, content) }
       button(attr, content) {
          if (_typeof(attr) == 'object') attr['type'] ||= 'submit';
@@ -262,7 +262,8 @@ HFilters.Util = (function() {
       getOffset(el) {
          const rect = el.getBoundingClientRect();
          return {
-            left: rect.left + window.scrollX, top: rect.top + window.scrollY
+            left: Math.round(rect.left + window.scrollX),
+            top: Math.round(rect.top + window.scrollY)
          };
       }
    }

@@ -17,7 +17,7 @@ has '+info_message' => default => 'Stop! You have your papers?';
 has '+item_class'   => default => 'User';
 
 my $change_js
-   = "HForms.Util.fieldChange(['login', 'password_reset', 'totp_reset'], '%s')";
+   = "HForms.Util.fieldChange('%s', ['login', 'password_reset', 'totp_reset'])";
 
 has_field 'name' =>
    html_name   => 'user_name',
@@ -99,11 +99,11 @@ after 'after_build_fields' => sub {
    my $uri    = $self->context->uri_for_action('page/object_property', [], {
       class => 'User', property => 'enable_2fa'
    });
-   my $showif = "${method}('${uri}', 'user_name', ['auth_code', 'totp_reset'])";
+   my $showif = "${method}('user_name', ['auth_code', 'totp_reset'], '${uri}')";
    my $change = sprintf $change_js, 'user_name';
-   my $attr   = $self->field('name')->element_attr;
+   my $field  = $self->field('name');
 
-   $attr->{javascript} = qq{onblur="${showif}; ${change}"};
+   $field->element_attr->{javascript} = qq{onblur="${showif}; ${change}"};
    return;
 };
 

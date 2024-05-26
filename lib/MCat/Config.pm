@@ -300,7 +300,7 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
          global => [
-            qw( admin/menu artist/list cd/list track/list )
+            qw( admin/menu manager/menu artist/list cd/list track/list )
          ],
       };
    };

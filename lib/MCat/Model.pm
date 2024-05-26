@@ -1,7 +1,7 @@
 package MCat::Model;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status           qw( HTTP_OK );
+use HTTP::Status           qw( HTTP_OK HTTP_INTERNAL_SERVER_ERROR );
 use HTML::Forms::Types     qw( HashRef LoadableClass );
 use HTML::Forms::Util      qw( verify_token );
 use MCat::Util             qw( formpost redirect2referer );
@@ -77,11 +77,12 @@ sub error {
    my ($self, $context, $proto, $bindv, @args) = @_;
 
    my $nav = $context->stash('nav');
+   my $is_script_request = $nav && $nav->is_script_request ? TRUE : FALSE;
    my $exception;
 
    if (blessed $proto) { $exception = $proto }
    else {
-      push @args, 'rv', HTTP_OK if $nav && $nav->is_script_request;
+      push @args, 'rv', HTTP_OK if $is_script_request;
 
       $exception = exception $proto, $bindv // [], level => 2, @args;
    }
@@ -90,8 +91,10 @@ sub error {
 
    my $code = $exception->rv // 0;
 
+   $code = $code > HTTP_OK ? $code : HTTP_INTERNAL_SERVER_ERROR;
+
    $context->stash(
-      code      => $code > HTTP_OK ? $code : HTTP_OK,
+      code      => $is_script_request ? HTTP_OK : $code,
       exception => $exception,
       page      => { %{$self->config->page}, layout => 'page/exception' },
    );
