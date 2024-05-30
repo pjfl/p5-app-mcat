@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adding import log result
           - Import form with file selector
           - Table captions now in HTML::StateTable
           - Post file manager cleanup

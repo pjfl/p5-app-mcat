@@ -24,6 +24,9 @@ $class->add_columns(
       data_type => 'integer', is_nullable => FALSE, default => 0,
       label => 'Upvotes'
    },
+   import_log_id {
+      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID'
+   }
 );
 
 $class->set_primary_key('artistid');
@@ -49,6 +52,11 @@ $class->might_have(
 
 $class->has_many(
    'lists' => "${result}::ListArtist", { 'foreign.artistid' => 'self.artistid' }
+);
+
+$class->might_have(
+   'import_log' => "${result}::ImportLog",
+   { 'foreign.import_log_id' => 'self.import_log_id' }
 );
 
 1;

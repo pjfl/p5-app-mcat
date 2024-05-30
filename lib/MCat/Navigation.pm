@@ -37,20 +37,16 @@ has 'context' =>
    required => TRUE,
    weak_ref => TRUE;
 
-has 'control_label' => is => 'lazy', isa => Str, init_arg => undef,
-   default => sub {
-      my $self = shift;
-
-      return $self->context->request->uri_for($self->_control_label)->as_string
-         if $self->_control_label =~ m{ / }mx;
-
-      return $self->_control_label;
-   };
-
-has '_control_label' => is => 'ro', isa => Str, init_arg => 'control_label',
-   default => '≡';
+has 'control_icon' => is => 'ro', isa => Str, default => 'user-settings';
 
 has 'global' => is => 'ro', isa => ArrayRef, default => sub { [] };
+
+has 'icons' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      return shift->context->request->uri_for('img/icons.svg')->as_string;
+   };
 
 has 'link_display' => is => 'lazy', isa => Str, init_arg => undef,
    default => sub {
@@ -131,7 +127,8 @@ has '_data' => is => 'lazy', isa => HashRef, default => sub {
             'container-layout' => $self->container_layout,
             'container-name'   => $self->container_name,
             'content-name'     => $self->content_name,
-            'control-label'    => $self->control_label,
+            'control-icon'     => $self->control_icon,
+            'icons'            => $self->icons,
             'link-display'     => $self->link_display,
             'location'         => $self->menu_location,
             'logo'             => $self->logo,

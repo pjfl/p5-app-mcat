@@ -470,6 +470,7 @@ HFilters.Type = (function() {
          HFilters.Modal.create({
             callback: function(ok, popup, data) { if (ok) callback(data) },
             cancelCallback: function() {},
+            icons: this.config.icons,
             initValue: null,
             title: 'Select Field',
             url: this.url
@@ -512,6 +513,7 @@ HFilters.Type = (function() {
                HFilters.Modal.create({
                   callback: function(ok, popup, data) { if (ok) callback(data)},
                   cancelCallback: function() {},
+                  icons: this.config.icons,
                   init_value: null,
                   title: 'Select List',
                   url: this.url

@@ -17,6 +17,7 @@ HFilters.Editor = (function() {
          this.field = document.getElementById(fieldName);
          if (!this.field) {
             this.error = `Element ${fieldName} not found`;
+            console.warn(this.error);
             return;
          }
 
@@ -528,14 +529,13 @@ HFilters.Editor = (function() {
    class Manager {
       constructor() {
          this.editor;
-         this.onReady(function() { this.createEditor() }.bind(this));
+//         this.onReady(function() { this.scan() }.bind(this));
       }
-      createEditor(content = document) {
+      scan(content = document) {
          const el = content.getElementsByClassName(triggerClass)[0];
          if (!el) return;
          this.editor = new Editor(el, JSON.parse(el.dataset[dsName]));
          this.editor.render();
-         return this.editor;
       }
       createRegistrar(data) { return new Registrar(data) }
       onReady(callback) {
@@ -545,9 +545,6 @@ HFilters.Editor = (function() {
          else document.attachEvent('onreadystatechange', function() {
             if (document.readyState == 'complete') callback();
          });
-      }
-      scan(content) {
-         this.createEditor(content);
       }
    }
    const manager = new Manager();

@@ -20,14 +20,6 @@ has '+configurable_action' => default => 'api/table_preference';
 
 has '+configurable_control_location' => default => 'TopRight';
 
-has '+configurable_dialog_close' => default => sub {
-   return shift->context->request->uri_for('img/cancel.svg')->as_string;
-};
-
-has '+configurable_label' => default => sub {
-   return shift->context->request->uri_for('img/tune.svg')->as_string;
-};
-
 has '+form_buttons' => default => sub {
    return [{
       action    => 'user/remove',
@@ -38,6 +30,10 @@ has '+form_buttons' => default => sub {
 };
 
 has '+form_control_location' => default => 'BottomRight';
+
+has '+icons' => default => sub {
+   return shift->context->request->uri_for('img/icons.svg')->as_string;
+};
 
 has '+page_control_location' => default => 'TopRight';
 

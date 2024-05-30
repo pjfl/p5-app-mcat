@@ -18,7 +18,7 @@ sub find_by_key {
 
    my $select = [ { 'me.name' => $key }, { 'me.email' => $key } ];
 
-   return $self->search({ -or => $select }, $options // {})->first;
+   return $self->search({ -or => $select }, $options // {})->single;
 }
 
 1;

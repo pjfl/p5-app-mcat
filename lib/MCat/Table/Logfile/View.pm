@@ -16,10 +16,6 @@ has 'logfile' => is => 'ro', isa => Str, required => TRUE;
 
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
 
-has '+filterable_label' => default => sub {
-   return shift->context->request->uri_for('img/filter.svg')->as_string;
-};
-
 has '+form_buttons' => default => sub {
    return [{
       action    => 'logfile/clear_cache',
@@ -29,6 +25,10 @@ has '+form_buttons' => default => sub {
 };
 
 has '+form_control_location' => default => 'BottomLeft';
+
+has '+icons' => default => sub {
+   return shift->context->request->uri_for('img/icons.svg')->as_string;
+};
 
 has '+name' => default => sub { shift->logfile };
 

@@ -89,6 +89,7 @@ sub edit : Nav('Edit Filter') {
 
    my $config = {
       'api-uri'      => 'api/object/*/*',
+      'icons'        => $context->request->uri_for('img/icons.svg')->as_string,
       'request-base' => $context->request->uri_for(NUL)->as_string,
       'selector-uri' => 'filter/selector/*',
       'table-id'     => $filter->table_id

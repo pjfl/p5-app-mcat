@@ -1,7 +1,7 @@
 package MCat::Table::Artist;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
-use HTML::StateTable::Types     qw( Int );
+use HTML::StateTable::Types     qw( Int Str );
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -35,14 +35,6 @@ has '+chartable_type' => default => 'pie';
 
 has '+configurable_action' => default => 'api/table_preference';
 
-has '+configurable_dialog_close' => default => sub {
-   return shift->context->request->uri_for('img/cancel.svg')->as_string;
-};
-
-has '+configurable_label' => default => sub {
-   return shift->context->request->uri_for('img/tune.svg')->as_string;
-};
-
 has '+download_display' => default => FALSE;
 
 has '+form_control_location' => default => 'BottomLeft';
@@ -53,6 +45,10 @@ has '+form_buttons' => default => sub {
       selection => 'select_one',
       value     => 'Remove Artist',
    }];
+};
+
+has '+icons' => default => sub {
+   return shift->context->request->uri_for('img/icons.svg')->as_string;
 };
 
 has '+page_control_location' => default => 'TopRight';

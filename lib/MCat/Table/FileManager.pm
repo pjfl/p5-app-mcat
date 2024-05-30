@@ -19,18 +19,14 @@ has '+caption' => default => 'File Manager';
 
 has '+configurable_action' => default => 'api/table_preference';
 
-has '+configurable_dialog_close' => default => sub {
-   return shift->context->request->uri_for('img/cancel.svg')->as_string;
-};
-
-has '+configurable_label' => default => sub {
-   return shift->context->request->uri_for('img/tune.svg')->as_string;
-};
-
 has '+form_buttons' => default => sub { shift->_build_form_buttons };
 
 has '+form_control_location' =>
    default => sub { [qw(TopLeft BottomLeft BottomRight)] };
+
+has '+icons' => default => sub {
+   return shift->context->request->uri_for('img/icons.svg')->as_string;
+};
 
 has '+paging' => default => FALSE;
 
@@ -55,13 +51,6 @@ has 'format_number' => is => 'ro', default => sub { Format::Human::Bytes->new };
 has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
 
 has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
-
-has '_icons' =>
-   is      => 'lazy',
-   isa     => Str,
-   default => sub {
-      return shift->context->request->uri_for('img/icons.svg')->as_string;
-   };
 
 setup_resultset sub {
    my $self = shift;
@@ -242,7 +231,7 @@ sub _build_name_link {
       return $self->context->uri_for_action($action, [], $params);
    }
    elsif ($result->type eq 'file') {
-      $cell->column->add_option('modal-icons', $self->_icons);
+      $cell->column->add_option('modal-icons', $self->icons);
 
       my $args = [$result->uri_arg];
       my $dir  = $self->_qualified_directory;

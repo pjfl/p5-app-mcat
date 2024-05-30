@@ -3,6 +3,7 @@ package MCat::Model::Import;
 use HTML::Forms::Constants qw( EXCEPTION_CLASS );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownImport Unspecified );
+use Try::Tiny;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -93,6 +94,24 @@ sub list : Nav('Imports') {
    return;
 }
 
+sub update {
+   my ($self, $context) = @_;
+
+   return unless $self->verify_form_post($context);
+
+   my $import = $context->stash('import');
+   my $job;
+
+   try { $job = $self->_import_file($context, $import->id) }
+   catch { $self->error($context, $_) };
+
+   my $view    = $context->uri_for_action('import/view', [$import->id]);
+   my $message = ['Job [_1] created', $job->label];
+
+   $context->stash(redirect $view, $message);
+   return;
+}
+
 sub view : Nav('View Import') {
    my ($self, $context) = @_;
 
@@ -100,6 +119,17 @@ sub view : Nav('View Import') {
 
    $context->stash(table => $self->new_table('Import::View', $options));
    return;
+}
+
+# Private methods
+sub _import_file {
+   my ($self, $context, $id) = @_;
+
+   my $program = $self->config->bin->catfile('mcat-cli');
+   my $command = "${program} -o id=${id} import_file";
+   my $options = { command => $command, name => 'import_file' };
+
+   return $context->model('Job')->create($options);
 }
 
 1;

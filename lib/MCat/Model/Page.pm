@@ -128,18 +128,18 @@ sub object_property : Auth('none') {
    my $class = $req->query_params->('class');
    my $prop  = $req->query_params->('property');
    my $value = $req->query_params->('value', { raw => TRUE });
-   my $body  = { found => \0 };
+   my $resp  = { found => \0 };
 
    if ($value) {
       try { # Defensively written
          my $r = $context->model($class)->find_by_key($value);
 
-         $body->{found} = \1 if $r && $r->execute($prop);
+         $resp->{found} = \1 if $r && $r->execute($prop);
       }
       catch { $self->log->error($_, $context) };
    }
 
-   $context->stash(body => encode_json($body), code => HTTP_OK, view => 'json');
+   $context->stash(json => $resp, code => HTTP_OK, view => 'json');
    return;
 }
 

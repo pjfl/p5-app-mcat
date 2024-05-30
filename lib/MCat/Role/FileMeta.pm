@@ -100,7 +100,7 @@ sub meta_get_shared {
 sub meta_home {
    my ($self, $context) = @_;
 
-   return $context->config->filemanager->{directory};
+   return _meta_get_config($context)->filemanager->{directory};
 }
 
 sub meta_move {
@@ -177,7 +177,7 @@ sub meta_unshare {
 
    return unless $linkpath->exists;
 
-   my $sharedir = $context->config->filemanager->{sharedir};
+   my $sharedir = _meta_get_config($context)->filemanager->{sharedir};
    my $dir      = $linkpath->parent;
 
    $linkpath->unlink;
@@ -237,13 +237,21 @@ sub _meta_get {
 sub _meta_get_linkpath {
    my ($self, $context, $path) = @_;
 
-   my $sharedir = $context->config->filemanager->{sharedir};
+   my $sharedir = _meta_get_config($context)->filemanager->{sharedir};
    my $relpath  = $path->abs2rel($self->meta_directory($context));
 
    return $sharedir->catfile($relpath);
 }
 
 # Private functions
+sub _meta_get_config {
+   my $context = shift;
+
+   return $context->config if $context->can('config');
+
+   return $context;
+}
+
 sub _to_path {
    my $path = shift; $path =~ s{ ! }{/}gmx if defined $path; return $path;
 }

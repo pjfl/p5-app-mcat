@@ -1,6 +1,7 @@
 package MCat::CLI;
 
 use MCat;
+use MCat::Exception;
 use Class::Usul::Cmd::Constants qw( FALSE NUL OK TRUE );
 use HTML::Forms::Constants      qw( EXCEPTION_CLASS );
 use File::DataClass::Types      qw( Directory );
@@ -9,7 +10,7 @@ use English                     qw( -no_match_vars );
 use File::DataClass::IO         qw( io );
 use JSON::MaybeXS               qw( decode_json );
 use Type::Utils                 qw( class_type );
-use Unexpected::Functions       qw( throw Unspecified );
+use Unexpected::Functions       qw( throw UnknownImport Unspecified );
 use MCat::Markdown;
 use MCat::Redis;
 use Moo;
@@ -61,6 +62,25 @@ has 'templatedir' =>
 =cut
 
 sub BUILD {}
+
+=item import_file - Imports a CSV file into the selected table
+
+Uses the import id provided to determine the selected table, the import
+file, and the import mapping
+
+=cut
+
+sub import_file: method {
+   my $self    = shift;
+   my $id      = $self->options->{id} or throw Unspecified, ['id'];
+   my $rs      = $self->schema->resultset('Import');
+   my $import  = $rs->find($id) or throw UnknownImport, [$id];
+   my $count   = $import->process;
+   my $options = { name => 'CLI.import_file' };
+
+   $self->info("Imported ${count} records", $options);
+   return OK;
+}
 
 =item install - Creates directories and starts schema installation
 

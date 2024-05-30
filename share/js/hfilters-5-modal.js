@@ -281,6 +281,7 @@ HFilters.Modal = (function() {
          this.closeCallback = setup.closeCallback;
          this.content = content;
          this.dragScrollWrapper = setup.dragScrollWrapper || '.standard';
+         this.icons = setup.icons;
          this.ident = this.guid();
          this.open = true;
          this.resizeElement = setup.resizeElement;
@@ -315,13 +316,7 @@ HFilters.Modal = (function() {
             className: 'modal-header', onmousedown: this._clickHandler(this.el)
          }, [
             this.h.h1({ className: 'modal-title' }, this.title),
-            this.h.span({
-               className: 'button-icon modal-close',
-               onclick: function(event) {
-                  event.preventDefault();
-                  this.close();
-               }.bind(this)
-            }, '×')
+            this._createCloseIcon()
          ]);
          this.modalHeader.setAttribute('draggable', 'draggable');
          this.el.appendChild(this.modalHeader);
@@ -333,6 +328,20 @@ HFilters.Modal = (function() {
          if (this.buttons.length) this._renderButtons(this.el);
          this.backdrop = new Backdrop();
          this.backdrop.add(this.el);
+      }
+      _createCloseIcon() {
+         const attr = {
+            className: 'button-icon modal-close',
+            onclick: function(event) {
+               event.preventDefault();
+               this.close();
+            }.bind(this)
+         };
+         const icons = this.icons;
+         if (!icons) return this.h.span(attr, 'X');
+         return this.h.span(attr, this.h.icon({
+            className: 'close-icon', icons, name: 'close'
+         }));
       }
       _clickHandler(el) {
          return function(event) {
@@ -427,33 +436,13 @@ HFilters.Modal = (function() {
       getModalValue(success) {
          return this.selector.getModalValue(success);
       }
-      _createIcon(args) {
-         const {
-            attrs = {}, height = 30, classes, name,
-            presentational = true, width = 30
-         } = args;
-         if (Array.isArray(classes)) classes = `${classes.join(' ')}`;
-         const newAttrs = {
-            'aria-hidden': presentational ? 'true' : null,
-            class: classes, height, width, ...attrs
-         };
-         const icons = this.icons;
-         const svg = `
-<svg ${Object.keys(newAttrs).filter(attr => newAttrs[attr]).map(attr => `${attr}="${newAttrs[attr]}"`).join(' ')}>
-   <use href="${icons}#icon-${name}"></use>
-</svg>`;
-         return this._frag(svg.trim());
-      }
       _createSpinner(modifierClass = '') {
-         const icon = this._createIcon({
-            name: 'spinner', classes: 'loading-icon'
+         const icon = HForms.Util.createIcon({
+            name: 'spinner', classes: 'loading-icon', icons: this.icons
          });
          return this.h.span({
             className: `loading ${modifierClass}`
          }, this.h.span({ className: 'loading-spinner' }, icon));
-      }
-      _frag(content) {
-         return document.createRange().createContextualFragment(content);
       }
       async _loadFrameContent(url) {
          const opt = { headers: { prefer: 'render=partial' }, response: 'text'};
@@ -699,14 +688,16 @@ HFilters.Modal = (function() {
             }
          }];
       }
-      const options = { buttonClass, classList, noInner: true };
+      const options = {
+         buttonClass, classList, icons: util.icons, noInner: true
+      };
       if (args.closeCallback) options.closeCallback = args.closeCallback;
       modal = new Modal(title, container, buttons, options);
       modal.render();
       return modal;
    };
    return {
-      create: create,
+      create,
       createAlert: function(args) {
          const {
             callback = () => {},

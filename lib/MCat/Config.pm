@@ -161,7 +161,10 @@ request allows for it
 =cut
 
 has 'deflate_types' => is => 'ro', isa => ArrayRef[Str], default => sub {
-   [ qw( text/css text/html text/javascript application/javascript ) ]
+   return [
+      qw( application/javascript image/svg+xml text/css text/html
+      text/javascript )
+   ];
 };
 
 =item dsn

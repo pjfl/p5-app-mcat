@@ -17,12 +17,7 @@ has 'extension' => is => 'ro', isa => Str, predicate => 'has_extension';
 has 'icon' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub {
-      my $self = shift;
-      my $req  = $self->table->context->request;
-
-      return $req->uri_for('img/' . $self->type . '.svg')->as_string;
-   };
+   default => sub { shift->type };
 
 has 'modified' =>
    is      => 'lazy',

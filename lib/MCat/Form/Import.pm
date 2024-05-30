@@ -48,15 +48,15 @@ has '_rs_names' =>
 
 has_field 'name' => order => 6, required => TRUE;
 
-has_field 'source' => type => 'Selector', display_as => '...', order => 8;
+has_field 'source' => type => 'Selector', display_as => '...', order => 7;
 
 has_field 'field_map' =>
    type        => 'DataStructure',
-   label       => ' ', # Magic space filling transparent character U+200b
-   order       => 20,
+   label       => 'Field Mapping',
+   order       => 9,
    reorderable => TRUE,
    structure   => [{
-      label    => 'Input Fields',
+      label    => 'Source Fields',
       name     => 'name',
       type     => 'text',
    }],
@@ -94,7 +94,7 @@ after 'before_build_fields' => sub {
          default   => $self->_json->encode($col_info),
          fixed     => TRUE,
          form      => $self,
-         label     => 'Field Mapping',
+         label     => ' ', # Magic space filling transparent character U+200b
          name      => $field_name,
          order     => 9 + $count,
          parent    => $self,
@@ -121,7 +121,7 @@ after 'before_build_fields' => sub {
       form         => $self,
       label        => 'Table',
       name         => 'core_table',
-      order        => 7,
+      order        => 8,
       parent       => $self,
       toggle       => $toggle,
       traits       => ['+Toggle'],
@@ -151,6 +151,7 @@ after 'after_build_fields' => sub {
    }));
 
    $self->field('source')->selector("HFilters.Modal.createSelector(${args})");
+   $self->field('field_map')->icons($self->_icons);
    return;
 };
 

@@ -17,7 +17,8 @@ MCat.Navigation = (function() {
          this.containerLayout  = this.properties['container-layout'];
          this.containerName    = this.properties['container-name'];
          this.contentName      = this.properties['content-name'];
-         this.controlLabel     = this.properties['control-label'];
+         this.controlIcon      = this.properties['control-icon'];
+         this.icons            = this.properties['icons'];
          this.linkDisplay      = this.properties['link-display'];
          this.location         = this.properties['location'];
          this.logo             = this.properties['logo'];
@@ -131,18 +132,23 @@ MCat.Navigation = (function() {
          this.replaceLinks(document.getElementById(this.contentName));
       }
       renderControl() {
-         const isURL = this.controlLabel.match(/:/) ? true : false;
-         const attr  = { className: 'nav-control-label' };
-         if (!isURL) this.appendValue(attr, 'className', 'text');
-         const label = isURL
-               ? this.h.img({ src: this.controlLabel }) : this.controlLabel;
-         const link = this.h.a(this.h.span(attr, label));
+         const link = this.h.a(this._createControlIcon());
          this.contextPanels['control'] = this.h.div({
             className: 'nav-panel control-panel'
          }, this.renderList(this.menus['_control'], 'control'));
          return this.h.div({
             className: 'nav-control'
          }, [ link, this.contextPanels['control'] ]);
+      }
+      _createControlIcon() {
+         const icons = this.icons;
+         if (!icons)
+            return this.h.span({ className: 'nav-control-label text' }, '≡');
+         const name = this.controlIcon || 'settings';
+         const icon = this.h.icon({
+            className: 'settings-icon', height: 24, icons, name, width: 24
+         });
+         return this.h.span({ className: 'nav-control-label' }, icon);
       }
       async renderHTML(html) {
          let className = this.containerName;
@@ -151,8 +157,8 @@ MCat.Navigation = (function() {
          const attr  = { id: this.contentName, className: this.contentName };
          const panel = this.h.div(attr);
          panel.innerHTML = html;
+         setTimeout(function() { FilterEditor.scan(panel) }, 500);
          await StateTable.scan(panel);
-         FilterEditor.scan(panel);
          HForms.Util.scan(panel);
          this.replaceLinks(panel);
          this.contentPanel = document.getElementById(this.contentName);

@@ -18,9 +18,9 @@ has '+form_buttons' => default => sub {
       selection => 'disable_on_select',
       value     => 'Edit',
    }, {
-      action    => $context->uri_for_action('import/delete', [$id]),
+      action    => $context->uri_for_action('import/update', [$id]),
       selection => 'disable_on_select',
-      value     => 'Delete',
+      value     => 'Update',
    }];
 };
 

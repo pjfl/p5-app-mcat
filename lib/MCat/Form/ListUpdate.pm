@@ -28,7 +28,7 @@ sub options_filter {
    return [ map { { label => $_->name, value => $_->id } } @{$filters} ];
 }
 
-has_field 'submit' => type => 'Submit';
+has_field 'submit' => type => 'Button';
 
 sub validate {
    my $self      = shift;
