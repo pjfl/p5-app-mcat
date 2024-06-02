@@ -60,6 +60,10 @@ has '_stash' => is => 'ro', isa => HashRef, default => sub {
 
 with 'MCat::Role::Authentication';
 
+sub endpoint {
+   return (split m{ / }mx, shift->stash('method_chain'))[-1];
+}
+
 sub get_attributes {
    my ($self, $action) = @_;
 

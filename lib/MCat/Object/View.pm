@@ -64,6 +64,9 @@ sub build_results {
 
    for my $colname ($source->columns) {
       my $info = $source->columns_info->{$colname};
+
+      next if $info->{hidden};
+
       my $value;
 
       if (my $display = $info->{display}) {

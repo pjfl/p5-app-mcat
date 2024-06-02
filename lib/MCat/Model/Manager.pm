@@ -16,6 +16,7 @@ sub menu : Auth('manager') Nav('Manager|img/manager.svg') {
    $nav->menu('filemanager')->item('file/list');
    $nav->menu('filter')->item('filter/list');
    $nav->menu('import')->item('import/list');
+   $nav->menu('importlog')->item('importlog/list');
    $nav->menu('list')->item('list/list');
    $nav->menu('table')->item('table/list');
    $nav->menu('tag')->item('tag/list');

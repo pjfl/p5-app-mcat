@@ -14,7 +14,7 @@ has '+moniker' => default => 'cd';
 sub base : Auth('view') {
    my ($self, $context, $id) = @_;
 
-   my $method   = (split m{ / }mx, $context->stash('method_chain'))[-1];
+   my $method   = $context->endpoint;
    my $artistid = $id if $method eq 'create' || $method eq 'list';
    my $cdid     = $id if $method eq 'edit'   || $method eq 'view';
    my $nav      = $context->stash('nav')->list('cd');

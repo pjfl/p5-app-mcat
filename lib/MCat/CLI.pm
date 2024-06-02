@@ -72,13 +72,22 @@ file, and the import mapping
 
 sub import_file: method {
    my $self    = shift;
+   my $guid    = $self->options->{guid} or throw Unspecified, ['guid'];
    my $id      = $self->options->{id} or throw Unspecified, ['id'];
+   my $user_id = $self->options->{user_id} or throw Unspecified, ['user_id'];
    my $rs      = $self->schema->resultset('Import');
    my $import  = $rs->find($id) or throw UnknownImport, [$id];
-   my $count   = $import->process;
+   my $result  = $import->process($id, $guid, $user_id);
    my $options = { name => 'CLI.import_file' };
+   my $count   = $result->{count};
 
-   $self->info("Imported ${count} records", $options);
+   $self->info("Imported ${count} records. Import guid ${guid}", $options);
+
+   if ($count = scalar @{$result->{warnings}}) {
+      $self->warning("Failed ${count} records", $options);
+      $self->warning('First error - ' . $result->{warnings}->[0], $options);
+   }
+
    return OK;
 }
 

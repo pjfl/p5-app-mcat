@@ -34,6 +34,10 @@ return (
    'GET + /import/* + ?*'           => sub {['import/root/base/view',   @_]},
    'GET + /import + ?*'             => sub {['import/root/base/list',   @_]},
 
+   'GET + /importlog/* + ?*' => sub {['importlog/root/base/view', @_]},
+   'GET + /import/*/log | /importlog + ?*'
+                             => sub {['importlog/root/base/list', @_]},
+
    'GET|POST + /list/create + ?*'   => sub {['list/root/base/create', @_]},
    'GET|POST + /list/*/edit + ?*'   => sub {['list/root/base/edit',   @_]},
    'POST + /list/*/delete + ?*'     => sub {['list/root/base/delete', @_]},

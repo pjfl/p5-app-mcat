@@ -18,6 +18,8 @@ has_field 'relation' => required => TRUE;
 
 has_field 'key_name' => required => TRUE;
 
+has_field 'constraint_name' => required => TRUE;
+
 has_field 'submit' => type => 'Button';
 
 use namespace::autoclean -except => META;

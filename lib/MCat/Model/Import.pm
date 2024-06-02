@@ -1,8 +1,9 @@
 package MCat::Model::Import;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS );
-use MCat::Util             qw( redirect );
-use Unexpected::Functions  qw( UnknownImport Unspecified );
+use HTML::Forms::Constants       qw( EXCEPTION_CLASS NUL );
+use MCat::Util                   qw( redirect );
+use Web::ComposableRequest::Util qw( bson64id );
+use Unexpected::Functions        qw( UnknownImport Unspecified );
 use Try::Tiny;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -37,11 +38,11 @@ sub create : Nav('Create Import') {
    my $form    = $self->new_form('Import', $options);
 
    if ($form->process(posted => $context->posted)) {
-      my $importid    = $form->item->id;
-      my $import_view = $context->uri_for_action('import/view', [$importid]);
-      my $message     = ['Import [_1] created', $form->item->name];
+      my $importid = $form->item->id;
+      my $view     = $context->uri_for_action('import/view', [$importid]);
+      my $message  = ['Import [_1] created', $form->item->name];
 
-      $context->stash(redirect $import_view, $message);
+      $context->stash(redirect $view, $message);
    }
 
    $context->stash(form => $form);
@@ -58,9 +59,9 @@ sub delete : Nav('Delete Import') {
 
    $item->delete;
 
-   my $import_list = $context->uri_for_action('import/list');
+   my $list = $context->uri_for_action('import/list');
 
-   $context->stash(redirect $import_list, ['Import [_1] deleted', $name]);
+   $context->stash(redirect $list, ['Import [_1] deleted', $name]);
    return;
 }
 
@@ -75,10 +76,10 @@ sub edit : Nav('Edit Import') {
    });
 
    if ($form->process(posted => $context->posted)) {
-      my $import_view = $context->uri_for_action('import/view', [$item->id]);
-      my $message     = ['Import [_1] updated', $form->item->name];
+      my $view    = $context->uri_for_action('import/view', [$item->id]);
+      my $message = ['Import [_1] updated', $form->item->name];
 
-      $context->stash(redirect $import_view, $message);
+      $context->stash(redirect $view, $message);
    }
 
    $context->stash(form => $form);
@@ -100,13 +101,14 @@ sub update {
    return unless $self->verify_form_post($context);
 
    my $import = $context->stash('import');
+   my $guid   = bson64id;
    my $job;
 
-   try { $job = $self->_import_file($context, $import->id) }
+   try   { $job = $self->_import_file($context, $import->id, $guid) }
    catch { $self->error($context, $_) };
 
    my $view    = $context->uri_for_action('import/view', [$import->id]);
-   my $message = ['Job [_1] created', $job->label];
+   my $message = ['Job [_1] created. Import guid [_2]', $job->label, $guid];
 
    $context->stash(redirect $view, $message);
    return;
@@ -115,18 +117,25 @@ sub update {
 sub view : Nav('View Import') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context, result  => $context->stash('import') };
+   my $options = { caption => NUL, context => $context };
+   my $logs    = $self->new_table('ImportLog', $options);
 
-   $context->stash(table => $self->new_table('Import::View', $options));
+   $context->stash(table => $self->new_table('Import::View', {
+      add_columns => [ 'Logs' => $logs ],
+      context     => $context,
+      result      => $context->stash('import')
+   }));
    return;
 }
 
 # Private methods
 sub _import_file {
-   my ($self, $context, $id) = @_;
+   my ($self, $context, $id, $guid) = @_;
 
+   my $user_id = $context->session->id;
    my $program = $self->config->bin->catfile('mcat-cli');
-   my $command = "${program} -o id=${id} import_file";
+   my $args    = "-o guid=${guid} -o id=${id} -o user_id=${user_id}";
+   my $command = "${program} ${args} import_file";
    my $options = { command => $command, name => 'import_file' };
 
    return $context->model('Job')->create($options);

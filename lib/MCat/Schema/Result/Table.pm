@@ -29,6 +29,11 @@ $class->add_columns(
       data_type   => 'text',
       is_nullable => FALSE,
       label       => 'Key Name',
+   },
+   constraint_name => {
+      data_type   => 'text',
+      is_nullable => FALSE,
+      label       => 'Unique Constraint'
    }
 );
 

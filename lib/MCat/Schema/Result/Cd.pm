@@ -23,7 +23,7 @@ $class->add_columns(
       data_type => 'timestamp', is_nullable => TRUE, timezone => 'UTC',
       label => 'Released', cell_traits => ['Date']
    },
-   import_log_id {
+   import_log_id => {
       data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID'
    }
 );
@@ -48,7 +48,7 @@ $class->has_many(
    'lists' => "${result}::ListCd", { 'foreign.cdid' => 'self.cdid' }
 );
 
-$class->might_have(
+$class->belongs_to(
    'import_log' => "${result}::ImportLog",
    { 'foreign.import_log_id' => 'self.import_log_id' }
 );

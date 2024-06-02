@@ -37,14 +37,10 @@ has '_json' =>
 
 has '_max_cols' => is => 'rw', isa => Int;
 
-has '_rs_names' =>
+has '_tables' =>
    is      => 'lazy',
    isa     => ArrayRef,
-   default => sub {
-      my $self = shift;
-
-      return [ map { $_->name } $self->context->model('Table')->all ];
-   };
+   default => sub { [ shift->context->model('Table')->all ] };
 
 has_field 'name' => order => 6, required => TRUE;
 
@@ -77,20 +73,19 @@ has_field 'submit' => type => 'Button';
 
 after 'before_build_fields' => sub {
    my $self     = shift;
-   my $toggle   = {};
    my $count    = 1;
-   my $default  = $self->item ? $self->item->table_id : 1;
    my $max_cols = 0;
+   my $table_id = $self->item ? $self->item->table_id : 1;
+   my $toggle   = {};
 
-   for my $name (@{$self->_rs_names}) {
-      my $col_info = $self->_get_column_info($name);
-      my $ncols = @{$col_info};
-      my $field_name = lc "fields_${name}";
-      my $wrapper_class = [
-         'input-datastructure inline ' . ($count == $default ? NUL : ' hide')
-      ];
-      my $class = 'HTML::Forms::Field::DataStructure';
-      my $field = $self->new_field_with_traits($class, {
+   for my $table (@{$self->_tables}) {
+      my $col_info      = $self->_get_column_info($table);
+      my $ncols         = @{$col_info};
+      my $display_class = ($count == $table_id ? NUL : 'hide');
+      my $table_name    = $table->name;
+      my $field_name    = lc "fields_${table_name}";
+      my $field_class   = 'HTML::Forms::Field::DataStructure';
+      my $field         = $self->new_field_with_traits($field_class, {
          default   => $self->_json->encode($col_info),
          fixed     => TRUE,
          form      => $self,
@@ -99,12 +94,12 @@ after 'before_build_fields' => sub {
          order     => 9 + $count,
          parent    => $self,
          structure => [{
-            label    => "${name} Columns",
+            label    => "${table_name} Columns",
             name     => 'name',
             readonly => TRUE,
             type     => 'text'
          }],
-         wrapper_class => $wrapper_class,
+         wrapper_class => ["input-datastructure inline ${display_class}"],
       });
 
       $self->add_field($field);
@@ -117,7 +112,7 @@ after 'before_build_fields' => sub {
    my $class = 'HTML::Forms::Field::Select';
    my $field = $self->new_field_with_traits($class, {
       element_attr => { javascript => $js },
-      default      => $default - 1,
+      default      => $table_id - 1,
       form         => $self,
       label        => 'Table',
       name         => 'core_table',
@@ -157,14 +152,14 @@ after 'after_build_fields' => sub {
 
 # Private methods
 sub _get_column_info {
-   my ($self, $rs_name) = @_;
+   my ($self, $table) = @_;
 
-   my $rs     = $self->context->model($rs_name);
-   my $info   = $rs->result_source->columns_info;
-   my $fields = [];
+   my $rs       = $self->context->model($table->name);
+   my $col_info = $rs->result_source->columns_info;
+   my $fields   = [];
 
-   for my $attr_name (sort keys %{$info}) {
-      push @{$fields}, { name => $attr_name };
+   for my $col_name (grep { $_ ne $table->key_name } sort keys %{$col_info}) {
+      push @{$fields}, { name => $col_name };
    }
 
    return $fields;

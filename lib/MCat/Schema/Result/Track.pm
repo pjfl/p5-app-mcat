@@ -18,7 +18,7 @@ $class->add_columns(
       label => 'CD', display => 'cd.title'
    },
    title => { data_type => 'text', is_nullable => FALSE, label => 'Title' },
-   import_log_id {
+   import_log_id => {
       data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID'
    }
 );
@@ -37,7 +37,7 @@ $class->has_many(
    'lists' => "${result}::ListTrack", { 'foreign.trackid' => 'self.trackid' }
 );
 
-$class->might_have(
+$class->belongs_to(
    'import_log' => "${result}::ImportLog",
    { 'foreign.import_log_id' => 'self.import_log_id' }
 );

@@ -6,18 +6,32 @@ use DBIx::Class::Moo::ResultClass;
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
 
+$class->load_components('InflateColumn::DateTime');
 $class->table('import_log');
 
 $class->add_columns(
    import_log_id => {
-      cell_traits       => ['Numeric'],
       data_type         => 'integer',
       is_auto_increment => TRUE,
       is_nullable       => FALSE,
       label             => 'Import Log ID'
    },
+   guid => {
+      data_type   => 'text',
+      is_nullable => FALSE,
+      label       => 'Unique ID',
+      sort_case   => 'sensitive'
+   },
+   source => {
+      data_type => 'text', is_nullable => FALSE, label => 'Source File'
+   },
+   import_id => {
+      data_type   => 'integer',
+      display     => 'import.core_table.name',
+      is_nullable => FALSE,
+      label       => 'Imported Into'
+   },
    owner_user_id => {
-      cell_traits => ['Capitalise'],
       data_type   => 'integer',
       display     => 'owner.name',
       is_nullable => FALSE,
@@ -35,19 +49,31 @@ $class->add_columns(
       is_nullable => TRUE,
       timezone    => 'UTC'
    },
-   count => {
-      cell_traits => ['Numeric'],
+   inserted => {
       data_type   => 'integer',
       default     => 0,
-      is_nullable => FALSE;
+      is_nullable => TRUE
+   },
+   updated => {
+      data_type   => 'integer',
+      default     => 0,
+      is_nullable => TRUE
    }
 );
 
 $class->set_primary_key('import_log_id');
 
+$class->belongs_to('import', "${result}::Import", {
+   'foreign.id' => 'self.import_id'
+});
+
 $class->belongs_to('owner', "${result}::User", {
    'foreign.id' => 'self.owner_user_id'
 });
+
+sub count {
+   my $self = shift; return $self->inserted + $self->updated;
+}
 
 1;
 

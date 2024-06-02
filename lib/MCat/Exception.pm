@@ -110,6 +110,9 @@ has_exception 'UnknownSelector' => parent => [$class],
 has_exception 'UnknownImport' => parent => [$class],
    error   => 'Import [_1] not found', rv => HTTP_NOT_FOUND;
 
+has_exception 'UnknownImportLog' => parent => [$class],
+   error   => 'Import log [_1] not found', rv => HTTP_NOT_FOUND;
+
 use namespace::autoclean;
 
 1;
