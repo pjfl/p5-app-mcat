@@ -12,10 +12,10 @@ with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::FileMeta';
 
 has '+do_form_wrapper' => default => FALSE;
-has '+name'         => default => 'FileView';
-has '+info_message' => default => NUL;
-has '+no_update'    => default => TRUE;
-has '+title'        => default => 'File Preview';
+has '+name'            => default => 'FileView';
+has '+info_message'    => default => NUL;
+has '+no_update'       => default => TRUE;
+has '+title'           => default => 'File Preview';
 
 has 'directory' => is => 'ro', isa => Maybe[Str];
 
@@ -57,20 +57,20 @@ after 'after_build_fields' => sub {
    my $params = { directory => $self->directory };
    my $js     = sprintf "%s(); %s('%s', '%s'); %s('%s'); %s()",
       'event.preventDefault',
-      'HStateTable.Role.Downloadable.downloader',
+      'WCom.Table.Role.Downloadable.downloader',
       $context->uri_for_action(
          'file/view', $args, { %{$params}, download => 'true' }
       ),
       $self->filename,
-      'MCat.Navigation.manager.renderLocation',
+      $context->config->navigation_manager . '.renderLocation',
       $context->uri_for_action('file/list', [], $params),
-      "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
+      "WCom.Table.Renderer.manager.tables['filemanager'].modal.close";
 
    $self->field('download')->element_attr->{javascript} = qq{onclick="${js}"};
 
    $js = sprintf "%s(); %s()",
       'event.preventDefault',
-      "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
+      "WCom.Table.Renderer.manager.tables['filemanager'].modal.close";
 
    $self->field('cancel')->element_attr->{javascript} = qq{onclick="${js}"};
    return;

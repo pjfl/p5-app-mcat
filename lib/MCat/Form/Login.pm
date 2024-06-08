@@ -16,8 +16,8 @@ has '+title'        => default => 'Login';
 has '+info_message' => default => 'Stop! You have your papers?';
 has '+item_class'   => default => 'User';
 
-my $change_js
-   = "HForms.Util.fieldChange('%s', ['login', 'password_reset', 'totp_reset'])";
+my $change_fields = "['login', 'password_reset', 'totp_reset']";
+my $change_js     = "WCom.Form.Util.fieldChange('%s', ${change_fields})";
 
 has_field 'name' =>
    html_name   => 'user_name',
@@ -55,7 +55,7 @@ has_field 'login' =>
    value         => 'login',
    wrapper_class => ['input-button expand'];
 
-my $button_js = q{onclick="HForms.Util.unrequire(['auth_code', 'password'])"};
+my $button_js = q{onclick="WCom.Form.Util.unrequire(['auth_code', 'password'])"};
 
 has_field 'password_reset' =>
    type          => 'Button',
@@ -95,7 +95,7 @@ after 'after_build_fields' => sub {
       push @{$self->field('totp_reset')->wrapper_class}, 'hide';
    }
 
-   my $method = 'HForms.Util.showIfRequired';
+   my $method = 'WCom.Form.Util.showIfRequired';
    my $uri    = $self->context->uri_for_action('page/object_property', [], {
       class => 'User', property => 'enable_2fa'
    });

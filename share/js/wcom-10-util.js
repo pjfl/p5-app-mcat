@@ -1,7 +1,35 @@
-// Package MCat.Util
-if (!window.MCat) window.MCat = {};
-if (!MCat.Util) MCat.Util = {};
-MCat.Util = (function() {
+// Package WCom.Util
+if (!window.WCom) window.WCom = {};
+WCom.Util = (function() {
+   const _esc = encodeURIComponent;
+   const _createQueryString = function(obj, traditional = true) {
+      if (!obj) return '';
+      return Object.entries(obj)
+         .filter(([key, val]) => val)
+         .reduce((acc, [k, v]) => {
+            if (traditional && Array.isArray(v))
+               return acc.concat(v.map(i => `${_esc(k)}=${_esc(i)}`));
+            return acc.concat(`${_esc(k)}=${_esc(v)}`);
+         }, []).join('&');
+   };
+   const _createURL = function(url, args, query = {}, options = {}) {
+      for (const arg of args) url = url.replace(/\*/, arg);
+      const q = _createQueryString(
+         Object.entries(query).reduce((acc, [key, val]) => {
+            if (key && (val && val !== '')) acc[key] = val;
+            return acc;
+         }, {})
+      );
+      if (q.length) url += `?${q}`;
+      const base = options.requestBase;
+      if (!base) return url.replace(/^\//, '');
+      return base.replace(/\/+$/, '') + '/' + url.replace(/^\//, '');
+   };
+   const _events = [
+      'onchange', 'onclick', 'ondragenter', 'ondragleave', 'ondragover',
+      'ondragstart', 'ondrop', 'oninput', 'onkeypress', 'onmousedown',
+      'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseover', 'onsubmit'
+   ];
    const _typeof = function(x) {
       if (!x) return;
       const type = typeof x;
@@ -11,11 +39,9 @@ MCat.Util = (function() {
       if (type == 'object' && Array.isArray(x)) return 'array';
       return type;
    };
-   const _events = [
-      'onchange', 'onclick', 'ondragenter', 'ondragleave',
-      'ondragover', 'ondragstart', 'ondrop', 'onmouseenter', 'onmouseleave',
-      'onmouseover', 'onsubmit'
-   ];
+   const _ucfirst = function(s) {
+      return s && s[0].toUpperCase() + s.slice(1) || '';
+   };
    class Bitch {
       _newHeaders() {
          const headers = new Headers();
@@ -31,19 +57,25 @@ MCat.Util = (function() {
                options.headers.set(k, v);
          }
       }
-      async blows(url, options) {
-         options ||= {};
+      async blows(url, options = {}) {
          let want = options.response || 'text'; delete options.response;
          this._setHeaders(options);
          if (options.form) {
-            options.headers.set(
-               'Content-Type', 'application/x-www-form-urlencoded'
-            );
             const form = options.form; delete options.form;
             const data = new FormData(form);
             data.set('_submit', form.getAttribute('submitter'));
-            const params = new URLSearchParams(data);
-            options.body = params.toString();
+            const type = options.enctype || 'application/x-www-form-urlencoded';
+            delete options.enctype;
+            if (type == 'multipart/form-data') {
+               const files = options.files; delete options.files;
+               if (files && files[0]) data.append('file', files[0]);
+               options.body = data;
+            }
+            else {
+               options.headers.set('Content-Type', type);
+               const params = new URLSearchParams(data);
+               options.body = params.toString();
+            }
          }
          if (options.json) {
             options.headers.set('Content-Type', 'application/json');
@@ -74,8 +106,7 @@ MCat.Util = (function() {
          };
          return { response: response };
       }
-      async sucks(url, options) {
-         options ||= {};
+      async sucks(url, options = {}) {
          const want = options.response || 'object'; delete options.response;
          this._setHeaders(options);
          options.method ||= 'GET';
@@ -136,15 +167,22 @@ MCat.Util = (function() {
          }
          return el;
       }
+      typeOf(x)               { return _typeof(x) }
       a(attr, content)        { return this._tag('a', attr, content) }
       caption(attr, content)  { return this._tag('caption', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
+      fieldset(attr, content) { return this._tag('fieldset', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
+      h1(attr, content)       { return this._tag('h1', attr, content) }
+      h2(attr, content)       { return this._tag('h2', attr, content) }
+      h3(attr, content)       { return this._tag('h3', attr, content) }
+      h4(attr, content)       { return this._tag('h4', attr, content) }
       h5(attr, content)       { return this._tag('h5', attr, content) }
       img(attr)               { return this._tag('img', attr) }
       input(attr, content)    { return this._tag('input', attr, content) }
       label(attr, content)    { return this._tag('label', attr, content) }
+      legend(attr, content)   { return this._tag('legend', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }
       nav(attr, content)      { return this._tag('nav', attr, content) }
       option(attr, content)   { return this._tag('option', attr, content) }
@@ -154,9 +192,10 @@ MCat.Util = (function() {
       table(attr, content)    { return this._tag('table', attr, content) }
       tbody(attr, content)    { return this._tag('tbody', attr, content) }
       td(attr, content)       { return this._tag('td', attr, content) }
+      textarea(attr, content) { return this._tag('textarea', attr, content) }
       th(attr, content)       { return this._tag('th', attr, content) }
-      tr(attr, content)       { return this._tag('tr', attr, content) }
       thead(attr, content)    { return this._tag('thead', attr, content) }
+      tr(attr, content)       { return this._tag('tr', attr, content) }
       ul(attr, content)       { return this._tag('ul', attr, content) }
       button(attr, content) {
          if (_typeof(attr) == 'object') attr['type'] ||= 'submit';
@@ -168,6 +207,10 @@ MCat.Util = (function() {
       }
       checkbox(attr) {
          attr['type'] = 'checkbox';
+         return this._tag('input', attr);
+      }
+      file(attr) {
+         attr['type'] = 'file';
          return this._tag('input', attr);
       }
       hidden(attr) {
@@ -190,27 +233,101 @@ MCat.Util = (function() {
 </svg>`;
          return this._frag(svg.trim());
       }
+      radio(attr) {
+         attr['type'] = 'radio';
+         return this._tag('input', attr);
+      }
       text(attr) {
          attr['type'] = 'text';
          return this._tag('input', attr);
       }
+      cumulativeOffset(el) {
+         let valueT = 0;
+         let valueL = 0;
+         if (el.parentNode) {
+            do {
+               valueT += el.offsetTop  || 0;
+               valueL += el.offsetLeft || 0;
+               el = el.offsetParent;
+            } while (el);
+         }
+         return { left: Math.round(valueL), top: Math.round(valueT) };
+      }
+      elementOffset(el, stopEl) {
+         let valueT = 0;
+         let valueL = 0;
+         do {
+            if (el) {
+               valueT += el.offsetTop  || 0;
+               valueL += el.offsetLeft || 0;
+               el = el.offsetParent;
+               if (stopEl && el == stopEl) break;
+            }
+         } while (el);
+         return { left: Math.round(valueL), top: Math.round(valueT) };
+      }
+      getDimensions(el) {
+         if (!el) return { height: 0, width: 0 };
+         const style = el.style || {};
+         if (style.display && style.display !== 'none') {
+            return { height: el.offsetHeight, width: el.offsetWidth };
+         }
+         const originalStyles = {
+            display: style.display,
+            position: style.position,
+            visibility: style.visibility
+         };
+         const newStyles = { display: 'block', visibility: 'hidden' }
+         if (originalStyles.position !== 'fixed')
+            newStyles.position = 'absolute';
+         for (const p in newStyles) style[p] = newStyles[p];
+         const dimensions = { height: el.offsetHeight, width: el.offsetWidth };
+         for (const p in newStyles) style[p] = originalStyles[p];
+         return dimensions;
+      }
+      getCoords(event, coordKey = 'page') {
+         const x = `${coordKey}X`;
+         const y = `${coordKey}Y`;
+         return {
+            x: x in event ? event[x] : event.pageX,
+            y: y in event ? event[y] : event.pageY,
+         };
+      }
+      getOffset(el) {
+         const rect = el.getBoundingClientRect();
+         return {
+            left: Math.round(rect.left + window.scrollX),
+            top: Math.round(rect.top + window.scrollY)
+         };
+      }
    }
-   const esc = encodeURIComponent;
-   const ucfirst = function(s) {
-      return s && s[0].toUpperCase() + s.slice(1) || '';
-   };
    return {
+      Bitch: {
+         bitch: new Bitch(),
+      },
       Markup: { // A role
+         animateButtons: function(container, selector = 'button') {
+            container ||= this.container;
+            for (const el of container.querySelectorAll(selector)) {
+               if (el.getAttribute('movelistener')) continue;
+               el.setAttribute('movelistener', true);
+               el.addEventListener('mousemove', function(event) {
+                  const rect = el.getBoundingClientRect();
+                  const x = Math.floor(
+                     event.pageX - (rect.left + window.scrollX)
+                  );
+                  const y = Math.floor(
+                     event.pageY - (rect.top + window.scrollY)
+                  );
+                  el.style.setProperty('--x', x + 'px');
+                  el.style.setProperty('--y', y + 'px');
+               });
+            }
+         },
          appendValue: function(obj, key, newValue) {
             let existingValue = obj[key] || '';
             if (existingValue) existingValue += ' ';
             obj[key] = existingValue + newValue;
-         },
-         bitch: new Bitch(),
-         capitalise: function(s) {
-            const words = [];
-            for (const word of s.split(' ')) words.push(ucfirst(word));
-            return words.join(' ');
          },
          display: function(container, attribute, obj) {
             if (this[attribute] && container.contains(this[attribute])) {
@@ -224,8 +341,7 @@ MCat.Util = (function() {
             if (typeof value != 'string') return false;
             if (!value.match(new RegExp(`class="${className}"`))) return false;
             return true;
-         },
-         ucfirst: ucfirst
+         }
       },
       Modifiers: { // Another role
          applyTraits: function(obj, namespace, traits, args) {
@@ -241,11 +357,13 @@ MCat.Util = (function() {
             }
          },
          around: function(method, modifier) {
+            const isBindable = func => func.hasOwnProperty('prototype');
             if (!this[method]) {
                throw new Error(`Around no method: ${method}`);
             }
             const original = this[method].bind(this);
-            const around = modifier.bind(this);
+            const around = isBindable(modifier)
+                  ? modifier.bind(this) : modifier;
             this[method] = function(args1, args2, args3, args4, args5) {
                return around(original, args1, args2, args3, args4, args5);
             };
@@ -253,7 +371,33 @@ MCat.Util = (function() {
          resetModifiers: function(methods) {
             for (const method of Object.keys(methods)) delete methods[method];
          }
+      },
+      String: {
+         capitalise: function(s) {
+            const words = [];
+            for (const word of s.split(' ')) words.push(_ucfirst(word));
+            return words.join(' ');
+         },
+         guid: function() {
+            // https://jsfiddle.net/briguy37/2MVFd/
+            let date = new Date().getTime();
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+               const r = ((date + Math.random()) * 16) % 16 | 0;
+               date = Math.floor(date / 16);
+               return (c === 'x' ? r : ((r & 0x3) | 0x8)).toString(16);
+            });
+         },
+         padString: function(string, padSize, pad) {
+            string = string.toString();
+            pad = pad.toString() || ' ';
+            const size = padSize - string.length;
+            if (size < 1) return string;
+            return pad.repeat(size) + string;
+         },
+         ucfirst: _ucfirst
+      },
+      URL: {
+         createURL: _createURL
       }
    };
 })();
-

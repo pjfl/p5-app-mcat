@@ -1,6 +1,6 @@
 // -*- coding: utf-8; -*-
-// Package HFilters.Modal
-HFilters.Modal = (function() {
+// Package WCom.Modal
+WCom.Modal = (function() {
    const KEYS = { enter: 13, escape: 27 };
    const MODALS = (() => {
       let modals = [];
@@ -45,7 +45,7 @@ HFilters.Modal = (function() {
          elParent.classList.remove('in');
       }
    }
-   Object.assign(Backdrop.prototype, HFilters.Util.Markup);
+   Object.assign(Backdrop.prototype, WCom.Util.Markup);
    class Button {
       buttonConfig;
       constructor(args = {}) {
@@ -87,7 +87,7 @@ HFilters.Modal = (function() {
          this.text.nodeValue = text;
       }
    }
-   Object.assign(Button.prototype, HFilters.Util.Markup);
+   Object.assign(Button.prototype, WCom.Util.Markup);
    class Drag {
       constructor(args) {
          this.drag = {};
@@ -272,7 +272,7 @@ HFilters.Modal = (function() {
          this.scrollWrapper.scrollBy(0, Math.floor(event.deltaY / 7));
       }
    }
-   Object.assign(Drag.prototype, HFilters.Util.Markup);
+   Object.assign(Drag.prototype, WCom.Util.Markup);
    class Modal {
       constructor(title, content, buttons, setup) {
          this.buttonClass = setup.buttonClass;
@@ -387,8 +387,8 @@ HFilters.Modal = (function() {
          el.appendChild(this.buttonBox);
       }
    }
-   Object.assign(Modal.prototype, HFilters.Util.Markup);
-   Object.assign(Modal.prototype, HFilters.Util.String);
+   Object.assign(Modal.prototype, WCom.Util.Markup);
+   Object.assign(Modal.prototype, WCom.Util.String);
    class ModalUtil {
       constructor(args, onSubmit) {
          const {
@@ -437,8 +437,8 @@ HFilters.Modal = (function() {
          return this.selector.getModalValue(success);
       }
       _createSpinner(modifierClass = '') {
-         const icon = HForms.Util.createIcon({
-            name: 'spinner', classes: 'loading-icon', icons: this.icons
+         const icon = this.h.icon({
+            name: 'spinner', className: 'loading-icon', icons: this.icons
          });
          return this.h.span({
             className: `loading ${modifierClass}`
@@ -459,11 +459,11 @@ HFilters.Modal = (function() {
          if (this.onload) this.onload();
       }
       async _scan_frame() {
-         await HStateTable.Renderer.manager.scan(this.frame);
+         await WCom.Table.Renderer.manager.scan(this.frame);
          if (this.formClass)
-            HForms.Util.scan(this.frame, { formClass: this.formClass });
+            WCom.Form.Util.scan(this.frame, { formClass: this.formClass });
          this.frame.style.visibility = 'visible';
-         MCat.Navigation.manager.scan(this.frame, {
+         WCom.Navigation.manager.scan(this.frame, {
             onSubmit: this.onSubmit,
             renderLocation: function(href) {
                this._loadFrameContent(href);
@@ -471,8 +471,8 @@ HFilters.Modal = (function() {
          });
       }
    }
-   Object.assign(ModalUtil.prototype, HFilters.Util.Bitch);
-   Object.assign(ModalUtil.prototype, HFilters.Util.Markup);
+   Object.assign(ModalUtil.prototype, WCom.Util.Bitch);
+   Object.assign(ModalUtil.prototype, WCom.Util.Markup);
    class Resizer {
       constructor(el, resizeEl, alsoResize, dir) {
          el.addEventListener('mousedown', function(event) {
@@ -524,7 +524,7 @@ HFilters.Modal = (function() {
          }.bind(this));
       }
    }
-   Object.assign(Resizer.prototype, HFilters.Util.Markup);
+   Object.assign(Resizer.prototype, WCom.Util.Markup);
    class Selector {
       constructor(frame) {
          this.frame = frame;
@@ -575,7 +575,7 @@ HFilters.Modal = (function() {
          if (!value) return;
          this.valueStore = valueHash;
          const values = value.split(',');
-         HFilters.Modal.clientTablePrecheckedValues = values;
+         WCom.Modal.clientTablePrecheckedValues = values;
          let el;
          if (this.type === 'radio') {
             for (const selected of this._selectionEls()) {

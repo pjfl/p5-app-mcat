@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Renames JS files
           - Exposes import log entity
           - Adding import log result
           - Import form with file selector

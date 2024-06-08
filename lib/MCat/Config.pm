@@ -318,7 +318,7 @@ Name of the JS navigation management object
 =cut
 
 has 'navigation_manager' => is => 'ro', isa => Str,
-   default => 'MCat.Navigation.manager';
+   default => 'WCom.Navigation.manager';
 
 =item page
 

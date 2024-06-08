@@ -108,7 +108,7 @@ after 'before_build_fields' => sub {
       $count += 1;
    }
 
-   my $js    = qq{onchange="HForms.Toggle.toggleFields('core_table')"};
+   my $js    = qq{onchange="WCom.Form.Toggle.toggleFields('core_table')"};
    my $class = 'HTML::Forms::Field::Select';
    my $field = $self->new_field_with_traits($class, {
       element_attr => { javascript => $js },
@@ -131,21 +131,19 @@ after 'before_build_fields' => sub {
 
 after 'after_build_fields' => sub {
    my $self     = shift;
-   my $params   = { extensions => $self->extensions };
    my $context  = $self->context;
+   my $params   = { extensions => $self->extensions };
    my $selector = $context->uri_for_action('file/select', [], $params);
    my $header   = $context->uri_for_action('file/header', ['%value']);
    my $args     = encode_entities($self->_json->encode({
       icons    => $self->_icons,
-      onchange => qq{
-         HForms.DataStructure.manager.reload('field_map', '${header}')
-      },
+      onchange => qq{WCom.Form.DataStructure.reload('field_map', '${header}')},
       target   => 'source',
       title    => 'Select File',
       url      => $selector
    }));
 
-   $self->field('source')->selector("HFilters.Modal.createSelector(${args})");
+   $self->field('source')->selector("WCom.Modal.createSelector(${args})");
    $self->field('field_map')->icons($self->_icons);
    return;
 };

@@ -84,7 +84,7 @@ after 'after_build_fields' => sub {
 
    my $js   = sprintf "%s(); %s()",
       'event.preventDefault',
-      "HStateTable.Renderer.manager.tables['filemanager'].modal.close";
+      "WCom.Table.Renderer.manager.tables['filemanager'].modal.close";
    my $attr = $self->field('cancel')->element_attr;
 
    $attr->{javascript} = qq{onclick="${js}"};

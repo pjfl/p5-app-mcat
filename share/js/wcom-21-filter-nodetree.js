@@ -1,12 +1,12 @@
 // -*- coding: utf-8; -*-
-// Package HFilters.NodeTree
-HFilters.NodeTree = (function() {
-   const FilterEditor = HFilters.Editor.manager;
+// Package WCom.Filters.NodeTree
+WCom.Filters.NodeTree = (function() {
+   const filterEditor = WCom.Filters.Editor.manager;
    class NodeTree {
       constructor(data, config) {
          this.config = config;
          this.instance = true;
-         this.registry = FilterEditor.createRegistrar(
+         this.registry = filterEditor.createRegistrar(
             ['ruleselect', 'ruleunselect', 'ruleremove']
          );
          try { this.data = typeof data == 'string' ? JSON.parse(data) : data }
@@ -67,12 +67,13 @@ HFilters.NodeTree = (function() {
       createContainerNode(type, parent) {
          if (parent) throw 'Container nodes cannot be nested';
          const args = { config: this.config, type: 'Logic.Container' };
-         const node = HFilters.Node.create(args);
+         const node = WCom.Filters.Node.create(args);
          node.registry.listen('addwrapclick', this.addWrapperRule, this);
          return node;
       }
       createLogicNode(type, parent) {
-         const node = HFilters.Node.create({ config: this.config, type: type });
+         const args = { config: this.config, type: type };
+         const node = WCom.Filters.Node.create(args);
          node.parentNode = parent;
          if (!node.type.match(/^Logic/))
             throw `${type} is not a logic node type`;
@@ -82,7 +83,7 @@ HFilters.NodeTree = (function() {
       createRuleNode(args, parent) {
          if (!args.type) throw 'Cannot create a node without a type';
          args.config = this.config;
-         const node = HFilters.Node.create(args);
+         const node = WCom.Filters.Node.create(args);
          node.parentNode = parent;
          node.registry.listen('editorsave', this.nodeSave, this);
          node.registry.listen('nodeclick', this.nodeClick, this);
@@ -217,7 +218,7 @@ HFilters.NodeTree = (function() {
          }
       }
    }
-   Object.assign(NodeTree.prototype, HFilters.Util.Markup);
+   Object.assign(NodeTree.prototype, WCom.Util.Markup);
    return {
       create: function(data, config) { return new NodeTree(data, config) }
    };

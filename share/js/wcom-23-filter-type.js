@@ -1,6 +1,6 @@
 // -*- coding: utf-8; -*-
-// Package HFilters.Type
-HFilters.Type = (function() {
+// Package WCom.Filters.Type
+WCom.Filters.Type = (function() {
    const idCache = {};
    class Type {
       constructor(args, label) {
@@ -58,10 +58,10 @@ HFilters.Type = (function() {
          return options;
       }
    }
-   Object.assign(Type.prototype, HFilters.Util.Bitch);
-   Object.assign(Type.prototype, HFilters.Util.Markup);
-   Object.assign(Type.prototype, HFilters.Util.String);
-   Object.assign(Type.prototype, HFilters.Util.URL);
+   Object.assign(Type.prototype, WCom.Util.Bitch);
+   Object.assign(Type.prototype, WCom.Util.Markup);
+   Object.assign(Type.prototype, WCom.Util.String);
+   Object.assign(Type.prototype, WCom.Util.URL);
    class TypeDate extends Type {
       constructor(args, label) {
          super(args, label);
@@ -467,7 +467,7 @@ HFilters.Type = (function() {
          const callback = function(data) {
             if (data) this.input.value = data.value;
          }.bind(this);
-         HFilters.Modal.create({
+         WCom.Modal.create({
             callback: function(ok, popup, data) { if (ok) callback(data) },
             cancelCallback: function() {},
             icons: this.config.icons,
@@ -510,7 +510,7 @@ HFilters.Type = (function() {
          const button = this.h.button({
             className: 'type-list-button',
             onclick: function(event) {
-               HFilters.Modal.create({
+               WCom.Modal.create({
                   callback: function(ok, popup, data) { if (ok) callback(data)},
                   cancelCallback: function() {},
                   icons: this.config.icons,
@@ -606,7 +606,7 @@ HFilters.Type = (function() {
       filterRules(parentRuleClassName) {
          const className = parentRuleClassName.replace(/\./g, '');
          const classes = [];
-         for (const item of HFilters.Node.subclasses(className, true)) {
+         for (const item of WCom.Filters.Node.subclasses(className, true)) {
             if (item.hidden && item.hidden()) continue;
             classes.push({ label: item.label, type: item.type });
          }
@@ -614,7 +614,7 @@ HFilters.Type = (function() {
       }
       filterRuleTypes() {
          const types = [];
-         for (const item of HFilters.Node.subclasses('Rule')) {
+         for (const item of WCom.Filters.Node.subclasses('Rule')) {
             if (item.notSelectable && item.notSelectable()) continue;
             types.push({ label: item.label, type: item.type });
          }

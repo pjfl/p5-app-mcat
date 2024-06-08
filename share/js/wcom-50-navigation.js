@@ -1,10 +1,11 @@
 // -*- coding: utf-8; -*-
-// Package MCat.Navigation
-MCat.Navigation = (function() {
+// Package WCom.Navigation
+WCom.Navigation = (function() {
    const dsName       = 'navigationConfig';
    const triggerClass = 'navigation';
-   const StateTable   = HStateTable.Renderer.manager;
-   const FilterEditor = HFilters.Editor.manager;
+   const formsUtil    = WCom.Form.Util;
+   const stateTable   = WCom.Table.Renderer.manager;
+   const filterEditor = WCom.Filters.Editor.manager;
    class Navigation {
       constructor(container, config) {
          this.container        = container;
@@ -128,7 +129,7 @@ MCat.Navigation = (function() {
       async render() {
          this.messages.render(window.location.href);
          this.redraw();
-         await StateTable.isConstructing();
+         await stateTable.isConstructing();
          this.replaceLinks(document.getElementById(this.contentName));
       }
       renderControl() {
@@ -157,9 +158,9 @@ MCat.Navigation = (function() {
          const attr  = { id: this.contentName, className: this.contentName };
          const panel = this.h.div(attr);
          panel.innerHTML = html;
-         setTimeout(function() { FilterEditor.scan(panel) }, 500);
-         await StateTable.scan(panel);
-         HForms.Util.scan(panel);
+         setTimeout(function() { filterEditor.scan(panel) }, 500);
+         await stateTable.scan(panel);
+         formsUtil.scan(panel);
          this.replaceLinks(panel);
          this.contentPanel = document.getElementById(this.contentName);
          this.contentPanel = this.display(
@@ -320,7 +321,9 @@ MCat.Navigation = (function() {
          }.bind(this);
       }
    }
-   Object.assign(Navigation.prototype, MCat.Util.Markup);
+   Object.assign(Navigation.prototype, WCom.Util.Bitch);
+   Object.assign(Navigation.prototype, WCom.Util.Markup);
+   Object.assign(Navigation.prototype, WCom.Util.String);
    class Messages {
       constructor(config) {
          this.bufferLimit = config['buffer-limit'] || 3;
@@ -358,7 +361,8 @@ MCat.Navigation = (function() {
          }
       }
    }
-   Object.assign(Messages.prototype, MCat.Util.Markup);
+   Object.assign(Messages.prototype, WCom.Util.Bitch);
+   Object.assign(Messages.prototype, WCom.Util.Markup);
    class Manager {
       constructor() {
          this.navigator;

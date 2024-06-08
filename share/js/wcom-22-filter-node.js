@@ -1,7 +1,7 @@
 // -*- coding: utf-8; -*-
-// Package HFilters.Node
-HFilters.Node = (function() {
-   const FilterEditor = HFilters.Editor.manager;
+// Package WCom.Filters.Node
+WCom.Filters.Node = (function() {
+   const filterEditor = WCom.Filters.Editor.manager;
    const classes = [];
    classes.push('Node');
    class Node {
@@ -18,13 +18,13 @@ HFilters.Node = (function() {
          }
       }
    }
-   Object.assign(Node.prototype, HFilters.Util.Markup);
+   Object.assign(Node.prototype, WCom.Util.Markup);
    classes.push('Logic');
    class Logic extends Node {
       constructor(data) {
          super(data);
          this.nodes = [];
-         this.registry = FilterEditor.createRegistrar(
+         this.registry = filterEditor.createRegistrar(
             ['addclick', 'addwrapclick']
          );
       }
@@ -182,7 +182,7 @@ HFilters.Node = (function() {
    class Rule extends Node {
       constructor(data) {
          super(data);
-         this.registry = FilterEditor.createRegistrar(
+         this.registry = filterEditor.createRegistrar(
             ['addruleclick', 'editorsave', 'nodeclick', 'removeruleclick']
          );
          this.data = {};
@@ -207,7 +207,7 @@ HFilters.Node = (function() {
                args.label = fieldObject.label;
                args.matchRadio = fieldObject.matchRadio;
                args.node = this;
-               this.data[name] = HFilters.Type.create(type, args);
+               this.data[name] = WCom.Filters.Type.create(type, args);
             }
          }
       }
@@ -234,7 +234,7 @@ HFilters.Node = (function() {
          return true;
       }
       nodeClick() {
-         if (FilterEditor.editor.treeDragged) return;
+         if (filterEditor.editor.treeDragged) return;
          this.registry.fire('nodeclick', this);
       }
       notSelectable() {

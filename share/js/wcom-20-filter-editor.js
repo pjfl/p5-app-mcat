@@ -1,6 +1,7 @@
 // -*- coding: utf-8; -*-
-// Package HFilters.Editor
-HFilters.Editor = (function() {
+// Package WCom.Filters.Editor
+if (!WCom.Filters) WCom.Filters = {};
+WCom.Filters.Editor = (function() {
    const dsName = 'filterConfig';
    const triggerClass = 'filter-container';
    class Editor {
@@ -22,7 +23,7 @@ HFilters.Editor = (function() {
          }
 
          const value = this.originalValue = this.field.value;
-         try { this.tree = HFilters.NodeTree.create(value, config) }
+         try { this.tree = WCom.Filters.NodeTree.create(value, config) }
          catch (e) { throw `NodeTree.create: ${e}` }
          const treeReg = this.tree.registry;
          treeReg.listen('ruleremove', this.testDataChange.bind(this));
@@ -227,8 +228,8 @@ HFilters.Editor = (function() {
          );
       }
    }
-   Object.assign(Editor.prototype, HFilters.Util.Markup);
-   Object.assign(Editor.prototype, HFilters.Util.String);
+   Object.assign(Editor.prototype, WCom.Util.Markup);
+   Object.assign(Editor.prototype, WCom.Util.String);
    class RuleEditor {
       constructor(config) {
          this.config = config;
@@ -278,7 +279,7 @@ HFilters.Editor = (function() {
          this.registry.fire('close', this);
       }
    }
-   Object.assign(RuleEditor.prototype, HFilters.Util.Markup);
+   Object.assign(RuleEditor.prototype, WCom.Util.Markup);
    class RuleEditorInterface {
       constructor(node) {
          this.node = node;
@@ -339,7 +340,7 @@ HFilters.Editor = (function() {
          this.registry.fire('save', this);
       }
    }
-   Object.assign(RuleEditorInterface.prototype, HFilters.Util.Markup);
+   Object.assign(RuleEditorInterface.prototype, WCom.Util.Markup);
    const FxTransitions = {
       cubicInOut: function(t, b, c, d) {
          if ((t /= d / 2) < 1) return c / 2 * (t * t * t) + b;
