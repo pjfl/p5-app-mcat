@@ -8,7 +8,7 @@ use Moo::Role;
 sub is_authorised {
    my ($self, $context, $action) = @_;
 
-   my $role = _get_auth_role($context, $action) // 'edit';
+   my $role = _get_action_auth($context, $action) // 'edit';
 
    return TRUE if $role eq 'none';
 
@@ -51,7 +51,7 @@ sub _redirect2login {
 }
 
 # Private functions
-sub _get_auth_role {
+sub _get_action_auth {
    my ($context, $action) = @_;
 
    my $attr = eval { $context->get_attributes($action) };

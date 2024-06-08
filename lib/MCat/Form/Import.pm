@@ -108,10 +108,11 @@ after 'before_build_fields' => sub {
       $count += 1;
    }
 
-   my $js    = qq{onchange="WCom.Form.Toggle.toggleFields('core_table')"};
-   my $class = 'HTML::Forms::Field::Select';
-   my $field = $self->new_field_with_traits($class, {
-      element_attr => { javascript => $js },
+   my $resources = $self->context->config->wcom_resources;
+   my $toggle_js = $resources->{toggle} . ".toggleFields('core_table')";
+   my $class     = 'HTML::Forms::Field::Select';
+   my $field     = $self->new_field_with_traits($class, {
+      element_attr => { javascript => qq{onchange="${toggle_js}"} },
       default      => $table_id - 1,
       form         => $self,
       label        => 'Table',
@@ -135,15 +136,17 @@ after 'after_build_fields' => sub {
    my $params   = { extensions => $self->extensions };
    my $selector = $context->uri_for_action('file/select', [], $params);
    my $header   = $context->uri_for_action('file/header', ['%value']);
+   my $ds       = $context->config->wcom_resources->{data_structure};
+   my $modal    = $context->config->wcom_resources->{modal};
    my $args     = encode_entities($self->_json->encode({
       icons    => $self->_icons,
-      onchange => qq{WCom.Form.DataStructure.reload('field_map', '${header}')},
+      onchange => qq{${ds}.reload('field_map', '${header}')},
       target   => 'source',
       title    => 'Select File',
       url      => $selector
    }));
 
-   $self->field('source')->selector("WCom.Modal.createSelector(${args})");
+   $self->field('source')->selector("${modal}.createSelector(${args})");
    $self->field('field_map')->icons($self->_icons);
    return;
 };

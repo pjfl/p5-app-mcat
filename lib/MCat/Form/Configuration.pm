@@ -22,7 +22,9 @@ has '_formatter' =>
 has '_json' =>
    is      => 'ro',
    isa     => class_type(JSON::MaybeXS::JSON),
-   default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
+   default => sub {
+      return JSON::MaybeXS->new( convert_blessed => TRUE );
+   };
 
 has '+title' => default => 'Configuration';
 
@@ -42,7 +44,7 @@ after 'after_build_fields' => sub {
 
          my $v = $t->[$i];
 
-         $v = $self->_json->encode($v) if is_plain_hashref $v or is_arrayref $v;
+         $v = $self->_encode_ref($v) if is_plain_hashref $v or is_arrayref $v;
          $v = "# ${v}"    if $i == 0;
          $v = "\n${v}"    if $i == 2;
          $v = "\n   ${v}" if $i == 3;
@@ -56,6 +58,18 @@ after 'after_build_fields' => sub {
    $self->field('configuration')->html($self->_formatter->markdown($content));
    return;
 };
+
+sub _encode_ref {
+   my ($self, $v) = @_;
+
+   (my $string = $self->_json->encode($v)) =~ s{ \n }{ }gmx;
+
+   $string =~ s{ \{ }{\{ }gmx;
+   $string =~ s{ \} }{ \}}gmx;
+   $string =~ s{ \, }{\, }gmx;
+
+   return $string;
+}
 
 use namespace::autoclean -except => META;
 

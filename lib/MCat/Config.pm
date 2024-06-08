@@ -311,15 +311,6 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
 has '_navigation' => is => 'ro', isa => HashRef, init_arg => 'navigation',
    default => sub { {} };
 
-=item navigation_manager
-
-Name of the JS navigation management object
-
-=cut
-
-has 'navigation_manager' => is => 'ro', isa => Str,
-   default => 'WCom.Navigation.manager';
-
 =item page
 
 Defines the names of the C<site/html> and C<site/wrapper> templates used to
@@ -561,6 +552,24 @@ Directory where all non program files and directories are expected to be found
 
 has 'vardir' => is => 'ro', isa => Directory, coerce => TRUE,
    default => sub { io[qw( var )] };
+
+=item wcom_resources
+
+Names of the JS management objects
+
+=cut
+
+has 'wcom_resources' => is => 'ro', isa => HashRef[Str], default => sub {
+   return {
+      data_structure => 'WCom.Form.DataStructure',
+      downloadable   => 'WCom.Table.Role.Downloadable',
+      form_util      => 'WCom.Form.Util',
+      modal          => 'WCom.Modal',
+      navigation     => 'WCom.Navigation.manager',
+      table_renderer => 'WCom.Table.Renderer.manager',
+      toggle         => 'WCom.Form.Toggle'
+   };
+};
 
 use namespace::autoclean;
 

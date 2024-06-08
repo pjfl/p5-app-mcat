@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Rationalised JS package names
           - Renames JS files
           - Exposes import log entity
           - Adding import log result

@@ -1,7 +1,5 @@
 package MCat::Navigation;
 
-use utf8; # -*- coding: utf-8; -*-
-
 use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
 use HTTP::Status                qw( HTTP_OK );
 use HTML::StateTable::Types     qw( ArrayRef Bool HashRef PositiveInt

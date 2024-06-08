@@ -135,7 +135,7 @@ has 'timestamp' =>
 
       my $context = $self->_resultset->table->context;
 
-      $timestamp->set_time_zone($context->session->timezone);
+      $timestamp->set_time_zone($context->session->timezone) if $timestamp;
 
       return $timestamp;
    };

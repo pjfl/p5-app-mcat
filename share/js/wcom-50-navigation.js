@@ -3,9 +3,9 @@
 WCom.Navigation = (function() {
    const dsName       = 'navigationConfig';
    const triggerClass = 'navigation';
+   const filterEditor = WCom.Filters.Editor.manager;
    const formsUtil    = WCom.Form.Util;
    const stateTable   = WCom.Table.Renderer.manager;
-   const filterEditor = WCom.Filters.Editor.manager;
    class Navigation {
       constructor(container, config) {
          this.container        = container;
@@ -141,16 +141,6 @@ WCom.Navigation = (function() {
             className: 'nav-control'
          }, [ link, this.contextPanels['control'] ]);
       }
-      _createControlIcon() {
-         const icons = this.icons;
-         if (!icons)
-            return this.h.span({ className: 'nav-control-label text' }, '≡');
-         const name = this.controlIcon || 'settings';
-         const icon = this.h.icon({
-            className: 'settings-icon', height: 24, icons, name, width: 24
-         });
-         return this.h.span({ className: 'nav-control-label' }, icon);
-      }
       async renderHTML(html) {
          let className = this.containerName;
          if (this.containerLayout) className += ' ' + this.containerLayout;
@@ -158,10 +148,7 @@ WCom.Navigation = (function() {
          const attr  = { id: this.contentName, className: this.contentName };
          const panel = this.h.div(attr);
          panel.innerHTML = html;
-         setTimeout(function() { filterEditor.scan(panel) }, 500);
-         await stateTable.scan(panel);
-         formsUtil.scan(panel);
-         this.replaceLinks(panel);
+         await this.scan(panel);
          this.contentPanel = document.getElementById(this.contentName);
          this.contentPanel = this.display(
             this.contentContainer, 'contentPanel', panel
@@ -304,6 +291,12 @@ WCom.Navigation = (function() {
             if (linkDisplay != this.linkDisplay) this.redraw();
          }.bind(this);
       }
+      async scan(panel, options = {}) {
+         setTimeout(function() { filterEditor.scan(panel) }, 500);
+         await stateTable.scan(panel);
+         formsUtil.scan(panel, options);
+         this.replaceLinks(panel, options);
+      }
       setHeadTitle() {
          const head  = (document.getElementsByTagName('head'))[0];
          const title = head.querySelector('title');
@@ -319,6 +312,16 @@ WCom.Navigation = (function() {
             this.process(action, form);
             if (options.onSubmit) options.onSubmit();
          }.bind(this);
+      }
+      _createControlIcon() {
+         const icons = this.icons;
+         if (!icons)
+            return this.h.span({ className: 'nav-control-label text' }, '≡');
+         const name = this.controlIcon || 'settings';
+         const icon = this.h.icon({
+            className: 'settings-icon', height: 24, icons, name, width: 24
+         });
+         return this.h.span({ className: 'nav-control-label' }, icon);
       }
    }
    Object.assign(Navigation.prototype, WCom.Util.Bitch);
@@ -375,7 +378,9 @@ WCom.Navigation = (function() {
          this.navigator.render();
       }
       onContentLoad() {
-         this.scan(document.getElementById(this.navigator.contentName));
+         if (!this.navigator) return;
+         const el = document.getElementById(this.navigator.contentName);
+         if (el) this.navigator.replaceLinks(el);
       }
       onReady(callback) {
          if (document.readyState != 'loading') callback();
@@ -392,7 +397,7 @@ WCom.Navigation = (function() {
          this.navigator.messages.render(href);
       }
       scan(el, options) {
-         if (el && this.navigator) this.navigator.replaceLinks(el, options);
+         if (el && this.navigator) this.navigator.scan(el, options);
       }
    }
    return {

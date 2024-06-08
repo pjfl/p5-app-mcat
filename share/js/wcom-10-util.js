@@ -307,7 +307,6 @@ WCom.Util = (function() {
       },
       Markup: { // A role
          animateButtons: function(container, selector = 'button') {
-            container ||= this.container;
             for (const el of container.querySelectorAll(selector)) {
                if (el.getAttribute('movelistener')) continue;
                el.setAttribute('movelistener', true);

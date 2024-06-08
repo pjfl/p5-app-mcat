@@ -63,7 +63,7 @@ has 'table' =>
       return HTML::StateTable::Manager->new({
          log          => $self->log,
          namespace    => "${appclass}::Table",
-         page_manager => $self->config->navigation_manager,
+         page_manager => $self->config->wcom_resources->{navigation},
          view_name    => 'table',
       });
    };
@@ -102,10 +102,6 @@ sub error {
    $self->_finalise_stash($context);
 
    $nav->finalise_script_request if $nav;
-
-# TODO: Figure out why this was added. Interferes with error message rendering
-#   $context->stash(redirect2referer $context, [$exception->original])
-#      if $nav && $nav->is_script_request;
 
    return;
 }

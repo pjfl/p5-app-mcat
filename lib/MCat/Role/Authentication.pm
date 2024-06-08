@@ -50,7 +50,7 @@ sub set_authenticated {
 sub _find_realm {
    my ($self, $realm) = @_;
 
-   my $config = $self->config->authentication;
+   my $config = { %{$self->config->authentication} };
 
    $realm //= $config->{default_realm};
 

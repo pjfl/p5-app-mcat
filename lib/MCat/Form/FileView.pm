@@ -53,24 +53,25 @@ after 'after_build_fields' => sub {
 
    $self->field('preview')->html($self->formatter->markdown($content));
 
-   my $args   = [$self->filename];
-   my $params = { directory => $self->directory };
-   my $js     = sprintf "%s(); %s('%s', '%s'); %s('%s'); %s()",
+   my $args        = [$self->filename];
+   my $params      = { directory => $self->directory };
+   my $resources   = $context->config->wcom_resources;
+   my $modal_close = $resources->{table_renderer}
+                   . ".tables['filemanager'].modal.close";
+   my $js          = sprintf "%s(); %s('%s', '%s'); %s('%s'); %s()",
       'event.preventDefault',
-      'WCom.Table.Role.Downloadable.downloader',
+      $resources->{downloadable} . '.downloader',
       $context->uri_for_action(
          'file/view', $args, { %{$params}, download => 'true' }
       ),
       $self->filename,
-      $context->config->navigation_manager . '.renderLocation',
+      $resources->{navigation} . '.renderLocation',
       $context->uri_for_action('file/list', [], $params),
-      "WCom.Table.Renderer.manager.tables['filemanager'].modal.close";
+      $modal_close;
 
    $self->field('download')->element_attr->{javascript} = qq{onclick="${js}"};
 
-   $js = sprintf "%s(); %s()",
-      'event.preventDefault',
-      "WCom.Table.Renderer.manager.tables['filemanager'].modal.close";
+   $js = sprintf "%s(); %s()", 'event.preventDefault', $modal_close;
 
    $self->field('cancel')->element_attr->{javascript} = qq{onclick="${js}"};
    return;

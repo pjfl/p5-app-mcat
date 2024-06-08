@@ -1,8 +1,8 @@
 // -*- coding: utf-8; -*-
 // Package WCom.Modal
 WCom.Modal = (function() {
-   const KEYS = { enter: 13, escape: 27 };
-   const MODALS = (() => {
+   const keyCodes = { enter: 13, escape: 27 };
+   const modalList = (() => {
       let modals = [];
       return {
          add(id) {
@@ -286,7 +286,7 @@ WCom.Modal = (function() {
          this.open = true;
          this.resizeElement = setup.resizeElement;
          this.title = title;
-         MODALS.add(this.ident);
+         modalList.add(this.ident);
          this.keyHandler = this.keyHandler.bind(this);
          window.addEventListener('keydown', this.keyHandler);
       }
@@ -296,7 +296,7 @@ WCom.Modal = (function() {
       close() {
          if (!this.open) return;
          this.open = false;
-         MODALS.remove(this.ident);
+         modalList.remove(this.ident);
          window.removeEventListener('keydown', this.keyHandler);
          this.backdrop.remove(this.el);
          this.backdrop = null;
@@ -304,10 +304,10 @@ WCom.Modal = (function() {
       }
       keyHandler(event) {
          const { keyCode } = event;
-         if (!MODALS.isTopModal(this.ident)) return;
-         const btn = this.buttons.find(b => b.key && KEYS[b.key] === keyCode);
+         if (!modalList.isTopModal(this.ident)) return;
+         const btn = this.buttons.find(b => b.key && keyCodes[b.key] === keyCode);
          if (btn) this.buttonHandler(btn);
-         else if (keyCode === KEYS['escape']) this.close();
+         else if (keyCode === keyCodes['escape']) this.close();
       }
       render() {
          const classes = this.classList || '';
@@ -392,7 +392,7 @@ WCom.Modal = (function() {
    class ModalUtil {
       constructor(args, onSubmit) {
          const {
-            formClass = '',
+            formClass = 'classic',
             icons = '/icons.svg',
             initValue,
             url,
@@ -416,6 +416,13 @@ WCom.Modal = (function() {
          const container = this.h.div(
             { className: 'modal-frame-container' }, [loader, this.frame]
          );
+         const options = {
+            formClass: this.formClass,
+            onSubmit: this.onSubmit,
+            renderLocation: function(href) {
+               this._loadFrameContent(href);
+            }.bind(this)
+         };
          this.selector = new Selector(this.frame);
          this.onload = function() {
             loader.style.display = 'none';
@@ -428,7 +435,8 @@ WCom.Modal = (function() {
                   this.initValue = this.valueStore.value;
                }.bind(this));
             };
-            this._scan_frame();
+            WCom.Navigation.manager.scan(this.frame, options);
+            this.frame.style.visibility = 'visible';
          }.bind(this);
          this._loadFrameContent(this.url);
          return container;
@@ -457,18 +465,6 @@ WCom.Modal = (function() {
             console.warn('Neither content nor redirect in response to get');
          }
          if (this.onload) this.onload();
-      }
-      async _scan_frame() {
-         await WCom.Table.Renderer.manager.scan(this.frame);
-         if (this.formClass)
-            WCom.Form.Util.scan(this.frame, { formClass: this.formClass });
-         this.frame.style.visibility = 'visible';
-         WCom.Navigation.manager.scan(this.frame, {
-            onSubmit: this.onSubmit,
-            renderLocation: function(href) {
-               this._loadFrameContent(href);
-            }.bind(this)
-         });
       }
    }
    Object.assign(ModalUtil.prototype, WCom.Util.Bitch);

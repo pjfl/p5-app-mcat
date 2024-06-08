@@ -2,6 +2,7 @@ package MCat::Table::Logfile;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use File::DataClass::Types      qw( Directory );
+use Format::Human::Bytes;
 use HTML::StateTable::ResultSet::File::List;
 use Moo;
 use HTML::StateTable::Moo;
@@ -16,6 +17,8 @@ has '+icons' => default => sub {
 };
 
 has '+paging' => default => FALSE;
+
+has 'format_number' => is => 'ro', default => sub { Format::Human::Bytes->new };
 
 setup_resultset sub {
    my $self = shift;
@@ -47,8 +50,11 @@ has_column 'modified' =>
 
 has_column 'size' =>
    cell_traits => ['Numeric'],
-   label       => 'Size',
-   sortable    => TRUE;
+   value       => sub {
+      my $cell = shift;
+
+      return $cell->table->format_number->base2($cell->result->size);
+   };
 
 use namespace::autoclean -except => TABLE_META;
 

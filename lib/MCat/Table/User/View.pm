@@ -23,6 +23,7 @@ has '+form_buttons' => default => sub {
       value     => 'Profile',
    },{
       action    => $context->uri_for_action('user/delete', [$self->result->id]),
+      classes   => 'right',
       selection => 'disable_on_select',
       value     => 'Delete',
    }];

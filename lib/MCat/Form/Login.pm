@@ -18,6 +18,7 @@ has '+item_class'   => default => 'User';
 
 my $change_fields = "['login', 'password_reset', 'totp_reset']";
 my $change_js     = "WCom.Form.Util.fieldChange('%s', ${change_fields})";
+my $unrequire_js  = "WCom.Form.Util.unrequire(['auth_code', 'password'])";
 
 has_field 'name' =>
    html_name   => 'user_name',
@@ -37,7 +38,7 @@ has_field 'password' =>
 
 has_field 'auth_code' =>
    type          => 'Digits',
-   element_attr => {
+   element_attr  => {
       javascript => 'onblur="' . sprintf($change_js, 'auth_code') . '"'
    },
    label         => 'Auth. Code',
@@ -55,14 +56,12 @@ has_field 'login' =>
    value         => 'login',
    wrapper_class => ['input-button expand'];
 
-my $button_js = q{onclick="WCom.Form.Util.unrequire(['auth_code', 'password'])"};
-
 has_field 'password_reset' =>
    type          => 'Button',
    disabled      => TRUE,
    element_attr  => {
       'data-field-depends' => ['user_name'],
-      'javascript'         => $button_js
+      'javascript'         => qq{onclick="${unrequire_js}"}
    },
    html_name     => 'submit',
    label         => 'Forgot Password?',
@@ -75,7 +74,7 @@ has_field 'totp_reset' =>
    disabled      => TRUE,
    element_attr  => {
       'data-field-depends' => ['user_name'],
-      'javascript'         => $button_js
+      'javascript'         => qq{onclick="${unrequire_js}"}
    },
    html_name     => 'submit',
    label         => 'Reset Auth.',
@@ -88,22 +87,22 @@ after 'after_build_fields' => sub {
 
    $self->set_form_element_attr('novalidate', 'novalidate');
 
-   my $session = $self->context->session;
+   my $context = $self->context;
+   my $session = $context->session;
 
    unless ($session->enable_2fa) {
       push @{$self->field('auth_code')->wrapper_class}, 'hide';
       push @{$self->field('totp_reset')->wrapper_class}, 'hide';
    }
 
-   my $method = 'WCom.Form.Util.showIfRequired';
-   my $uri    = $self->context->uri_for_action('page/object_property', [], {
-      class => 'User', property => 'enable_2fa'
-   });
+   my $utils  = $context->config->wcom_resources;
+   my $method = $utils->{form_util} . '.showIfRequired';
+   my $params = { class => 'User', property => 'enable_2fa' };
+   my $uri    = $context->uri_for_action('page/object_property', [], $params);
    my $showif = "${method}('user_name', ['auth_code', 'totp_reset'], '${uri}')";
-   my $change = sprintf $change_js, 'user_name';
-   my $field  = $self->field('name');
+   my $js     = "${showif}; " . sprintf $change_js, 'user_name';
 
-   $field->element_attr->{javascript} = qq{onblur="${showif}; ${change}"};
+   $self->field('name')->element_attr->{javascript} = qq{onblur="${js}"};
    return;
 };
 
