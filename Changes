@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moved onReady function to utils
           - Rationalised JS package names
           - Renames JS files
           - Exposes import log entity

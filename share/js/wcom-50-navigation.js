@@ -4,7 +4,7 @@ WCom.Navigation = (function() {
    const dsName       = 'navigationConfig';
    const triggerClass = 'navigation';
    const filterEditor = WCom.Filters.Editor.manager;
-   const formsUtil    = WCom.Form.Util;
+   const formUtil     = WCom.Form.Util;
    const stateTable   = WCom.Table.Renderer.manager;
    class Navigation {
       constructor(container, config) {
@@ -37,10 +37,7 @@ WCom.Navigation = (function() {
          this.globalMenu;
          this.titleEntry;
          container.append(this.renderTitle());
-         window.addEventListener('popstate', function(event) {
-            if (event.state && event.state.href)
-               this.renderLocation(event.state.href);
-         }.bind(this));
+         window.addEventListener('popstate', this.popstateHandler());
          window.addEventListener('resize', this.resizeHandler());
       }
       addSelected(item) {
@@ -80,6 +77,12 @@ WCom.Navigation = (function() {
          this.menus = object['menus'];
          this.token = object['verify-token'];
          this.titleEntry = object['title-entry'];
+      }
+      popstateHandler() {
+         return function(event) {
+            const state = event.state;
+            if (state && state.href) this.renderLocation(state.href);
+         }.bind(this);
       }
       async process(action, form) {
          const options = { headers: { prefer: 'render=partial' }, form: form };
@@ -241,7 +244,7 @@ WCom.Navigation = (function() {
          }
       }
       renderTitle() {
-         const title = this.logo.length ? [this.h.img({ src: this.logo })] : [];
+         const title = this.logo.length ? [this.iconImage(this.logo)] : [];
          title.push(this.h.span({ className: 'title-text' }, this.title));
          return this.h.div({ className: 'nav-title' }, title);
       }
@@ -294,7 +297,7 @@ WCom.Navigation = (function() {
       async scan(panel, options = {}) {
          setTimeout(function() { filterEditor.scan(panel) }, 500);
          await stateTable.scan(panel);
-         formsUtil.scan(panel, options);
+         formUtil.scan(panel, options);
          this.replaceLinks(panel, options);
       }
       setHeadTitle() {
@@ -369,7 +372,9 @@ WCom.Navigation = (function() {
    class Manager {
       constructor() {
          this.navigator;
-         this.onReady(function() { this.createNavigation() }.bind(this));
+         WCom.Util.Event.onReady(
+            function() { this.createNavigation() }.bind(this)
+         );
       }
       createNavigation() {
          const el = document.getElementsByClassName(triggerClass)[0];
@@ -381,14 +386,6 @@ WCom.Navigation = (function() {
          if (!this.navigator) return;
          const el = document.getElementById(this.navigator.contentName);
          if (el) this.navigator.replaceLinks(el);
-      }
-      onReady(callback) {
-         if (document.readyState != 'loading') callback();
-         else if (document.addEventListener)
-            document.addEventListener('DOMContentLoaded', callback);
-         else document.attachEvent('onreadystatechange', function() {
-            if (document.readyState == 'complete') callback();
-         });
       }
       renderLocation(href) {
          this.navigator.renderLocation(href);

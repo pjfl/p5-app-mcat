@@ -530,7 +530,6 @@ WCom.Filters.Editor = (function() {
    class Manager {
       constructor() {
          this.editor;
-//         this.onReady(function() { this.scan() }.bind(this));
       }
       scan(content = document) {
          const el = content.getElementsByClassName(triggerClass)[0];
@@ -539,17 +538,8 @@ WCom.Filters.Editor = (function() {
          this.editor.render();
       }
       createRegistrar(data) { return new Registrar(data) }
-      onReady(callback) {
-         if (document.readyState != 'loading') callback();
-         else if (document.addEventListener)
-            document.addEventListener('DOMContentLoaded', callback);
-         else document.attachEvent('onreadystatechange', function() {
-            if (document.readyState == 'complete') callback();
-         });
-      }
    }
-   const manager = new Manager();
    return {
-      manager: manager
+      manager: new Manager()
    };
 })();

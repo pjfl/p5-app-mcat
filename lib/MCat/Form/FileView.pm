@@ -55,15 +55,14 @@ after 'after_build_fields' => sub {
 
    my $args        = [$self->filename];
    my $params      = { directory => $self->directory };
+   my $down_params = { %{$params}, download => 'true' };
    my $resources   = $context->config->wcom_resources;
    my $modal_close = $resources->{table_renderer}
                    . ".tables['filemanager'].modal.close";
    my $js          = sprintf "%s(); %s('%s', '%s'); %s('%s'); %s()",
       'event.preventDefault',
       $resources->{downloadable} . '.downloader',
-      $context->uri_for_action(
-         'file/view', $args, { %{$params}, download => 'true' }
-      ),
+      $context->uri_for_action('file/view', $args, $down_params),
       $self->filename,
       $resources->{navigation} . '.renderLocation',
       $context->uri_for_action('file/list', [], $params),
