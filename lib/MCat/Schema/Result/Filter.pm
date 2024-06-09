@@ -3,7 +3,7 @@ package MCat::Schema::Result::Filter;
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( now_dt );
 use Type::Utils            qw( class_type );
-use MCat::Filter::Parser;
+use HTML::Filter::Parser;
 use DBIx::Class::Moo::ResultClass;
 
 use Data::Dumper;
@@ -64,7 +64,7 @@ $class->belongs_to('core_table', "${result}::Table", {
 
 has 'parser' =>
    is      => 'lazy',
-   isa     => class_type('MCat::Filter::Parser'),
+   isa     => class_type('HTML::Filter::Parser'),
    default => sub {
       my $self   = shift;
       my $config = $self->result_source->schema->config;
@@ -72,7 +72,7 @@ has 'parser' =>
       if ($config->can('filter_config')) { $config = $config->filter_config }
       else { $config = {} }
 
-      return MCat::Filter::Parser->new(config => $config);
+      return HTML::Filter::Parser->new(config => $config);
    };
 
 sub insert {

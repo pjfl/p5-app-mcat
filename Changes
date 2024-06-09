@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moved filter code to HTML::Filter
           - Moved onReady function to utils
           - Rationalised JS package names
           - Renames JS files
