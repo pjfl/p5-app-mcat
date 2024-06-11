@@ -672,7 +672,8 @@ WCom.Modal = (function() {
             onclick(modalObj) {
                try { callback(false, modalObj, util.getModalValue(false))}
                catch(e) {}
-               if (cancelCallback) cancelCallback();
+               if (cancelCallback) return cancelCallback();
+               return true;
             }
          }, {
             label: labels[1],

@@ -1,8 +1,8 @@
 // -*- coding: utf-8; -*-
 // Package WCom.Navigation
 WCom.Navigation = (function() {
+   const navId        = 'navigation';
    const dsName       = 'navigationConfig';
-   const triggerClass = 'navigation';
    const filterEditor = WCom.Filters.Editor.manager;
    const formUtil     = WCom.Form.Util;
    const stateTable   = WCom.Table.Renderer.manager;
@@ -132,17 +132,27 @@ WCom.Navigation = (function() {
       async render() {
          this.messages.render(window.location.href);
          this.redraw();
-         await stateTable.isConstructing();
+         if (stateTable) await stateTable.isConstructing();
          this.replaceLinks(document.getElementById(this.contentName));
       }
       renderControl() {
-         const link = this.h.a(this._createControlIcon());
+         const link = this.h.a(this.renderControlIcon());
          this.contextPanels['control'] = this.h.div({
             className: 'nav-panel control-panel'
          }, this.renderList(this.menus['_control'], 'control'));
          return this.h.div({
             className: 'nav-control'
          }, [ link, this.contextPanels['control'] ]);
+      }
+      renderControlIcon() {
+         const icons = this.icons;
+         if (!icons)
+            return this.h.span({ className: 'nav-control-label text' }, '≡');
+         const name = this.controlIcon || 'settings';
+         const icon = this.h.icon({
+            className: 'settings-icon', height: 24, icons, name, width: 24
+         });
+         return this.h.span({ className: 'nav-control-label' }, icon);
       }
       async renderHTML(html) {
          let className = this.containerName;
@@ -295,10 +305,10 @@ WCom.Navigation = (function() {
          }.bind(this);
       }
       async scan(panel, options = {}) {
-         setTimeout(function() { filterEditor.scan(panel) }, 500);
-         await stateTable.scan(panel);
-         formUtil.scan(panel, options);
+         if (stateTable) await stateTable.scan(panel, options);
+         if (formUtil) formUtil.scan(panel, options);
          this.replaceLinks(panel, options);
+         if (filterEditor) filterEditor.scan(panel, options);
       }
       setHeadTitle() {
          const head  = (document.getElementsByTagName('head'))[0];
@@ -316,16 +326,6 @@ WCom.Navigation = (function() {
             if (options.onSubmit) options.onSubmit();
          }.bind(this);
       }
-      _createControlIcon() {
-         const icons = this.icons;
-         if (!icons)
-            return this.h.span({ className: 'nav-control-label text' }, '≡');
-         const name = this.controlIcon || 'settings';
-         const icon = this.h.icon({
-            className: 'settings-icon', height: 24, icons, name, width: 24
-         });
-         return this.h.span({ className: 'nav-control-label' }, icon);
-      }
    }
    Object.assign(Navigation.prototype, WCom.Util.Bitch);
    Object.assign(Navigation.prototype, WCom.Util.Markup);
@@ -336,7 +336,9 @@ WCom.Navigation = (function() {
          this.displayTime = config['display-time'] || 20;
          this.messagesURL = config['messages-url'];
          this.items = [];
-         this.panel = this.h.div({ className: 'messages-panel' });
+         this.panel = this.h.div({
+            className: 'messages-panel', id: 'messages'
+         });
          document.body.append(this.panel);
       }
       animate(item) {
@@ -377,7 +379,7 @@ WCom.Navigation = (function() {
          );
       }
       createNavigation() {
-         const el = document.getElementsByClassName(triggerClass)[0];
+         const el = document.getElementById(navId);
          if (!el) return;
          this.navigator = new Navigation(el, JSON.parse(el.dataset[dsName]));
          this.navigator.render();
@@ -388,10 +390,10 @@ WCom.Navigation = (function() {
          if (el) this.navigator.replaceLinks(el);
       }
       renderLocation(href) {
-         this.navigator.renderLocation(href);
+         if (this.navigator) this.navigator.renderLocation(href);
       }
       renderMessage(href) {
-         this.navigator.messages.render(href);
+         if (this.navigator) this.navigator.messages.render(href);
       }
       scan(el, options) {
          if (el && this.navigator) this.navigator.scan(el, options);
