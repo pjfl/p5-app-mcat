@@ -58,7 +58,7 @@ sub create : Nav('Create List') {
 sub delete : Nav('Delete List') {
    my ($self, $context, $listid) = @_;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $list = $context->model('List')->find($listid);
 

@@ -49,7 +49,7 @@ sub dispatch : Auth('none') {
    return $self->error($context, UnauthorisedAPICall, [$class, $method])
       unless $self->_api_allowed($context, $coderef);
 
-   return if $context->posted && !$self->verify_form_post($context);
+   return if $context->posted && !$context->verify_form_post;
 
    try { $handler->$method($context, @args) }
    catch_class [

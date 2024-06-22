@@ -52,7 +52,7 @@ sub create : Nav('Create Import') {
 sub delete : Nav('Delete Import') {
    my ($self, $context) = @_;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $item = $context->stash('import');
    my $name = $item->name;
@@ -98,7 +98,7 @@ sub list : Nav('Imports') {
 sub update {
    my ($self, $context) = @_;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $import = $context->stash('import');
    my $guid   = bson64id;

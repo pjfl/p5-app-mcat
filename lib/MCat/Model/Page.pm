@@ -102,7 +102,7 @@ sub login : Auth('none') Nav('Login') {
 sub logout : Auth('view') Nav('Logout') {
    my ($self, $context) = @_;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $default = $context->uri_for_action('page/login');
    my $message = 'User [_1] logged out';
@@ -181,7 +181,7 @@ sub password_reset : Auth('none') {
    }
 
    return unless $context->posted;
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    unless ($user->can_email) {
       my $login   = $context->uri_for_action('page/login');

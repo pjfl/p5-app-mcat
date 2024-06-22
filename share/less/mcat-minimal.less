@@ -95,7 +95,7 @@ header {
         border: 1px solid #colours[line-border]; border-radius: 5px;
         box-shadow: 3px 3px 3px #colours[panel-shadow];
         max-width: 50rem; padding: 0.5rem;
-        h1 {
+        h1, h2, h3 {
             margin: 0.5rem 0;
         }
     }
@@ -193,14 +193,14 @@ header {
             display: inline-block;
         }
         a {
-            padding: 0.25rem 0.5rem 0.75rem;
+            padding: 0.5rem;
         }
         img {
             height: 24px; width: 24px; vertical-align: top;
         }
         .nav-panel {
             background: #colours[panel-bg]; max-height: 0; overflow: hidden;
-            position: absolute; right: -1rem; text-align: left; top: 2.5rem;
+            position: absolute; right: -1rem; text-align: left; top: 3rem;
             transition: max-height ease-in-out 500ms;
         }
     }
@@ -321,9 +321,20 @@ header {
 .navigation.link-display-text::before {
     width: #sizes[sidebar-text];
 }
-.navigation.navigation-header .title-text {
-    @media (max-width: #sizes[media-break]) {
-        display: none;
+.navigation.navigation-header {
+    li.global a {
+        padding: 0.5rem;
+        img {
+            padding-right: 0.25rem;
+        }
+    }
+    .nav-menu {
+        padding-top: 0;
+    }
+    .title-text {
+        @media (max-width: #sizes[media-break]) {
+            display: none;
+        }
     }
 }
 .sidebar {

@@ -17,7 +17,7 @@ use HTML::StateTable::Constants qw();
 use Web::ComposableRequest::Constants qw();
 use Moo;
 
-with 'MCat::Config::Loader';
+with 'Web::Components::Role::ConfigLoader';
 
 my $except = [
    qw( BUILDARGS BUILD DOES connect_info has_config_file has_config_home

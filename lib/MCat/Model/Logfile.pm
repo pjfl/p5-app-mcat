@@ -40,7 +40,7 @@ sub clear_cache : Auth('admin') {
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $path = $context->config->logfile->parent->catfile("${logfile}.log");
 

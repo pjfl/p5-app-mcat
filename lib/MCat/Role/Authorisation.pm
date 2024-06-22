@@ -33,11 +33,11 @@ sub is_authorised {
 sub _redirect2login {
    my ($self, $context) = @_;
 
-   my $login    = $context->uri_for_action('page/login');
-   my $wanted   = $context->request->uri;
-   my $session  = $context->session;
-   my ($method) = reverse split m{ / }mx, $context->stash('method_chain');
-   my $action   = $self->can($method // NUL);
+   my $login   = $context->uri_for_action('page/login');
+   my $wanted  = $context->request->uri;
+   my $session = $context->session;
+   my $method  = $context->endpoint;
+   my $action  = $self->can($method // NUL);
 
    # Redirect to wanted on successful login. Only set wanted to "legit" uris
    $session->wanted("${wanted}") unless $session->wanted

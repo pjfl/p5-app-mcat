@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moved Model to Web::Components. Moved verify_form_post to context
           - Added some html ids for faster selecting
           - Moved filter code to HTML::Filter
           - Moved onReady function to utils

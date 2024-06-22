@@ -6,7 +6,7 @@ use overload '""' => sub { $_[0]->_as_string },
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( Bool HashRef );
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
-use MCat::Util                 qw( digest truncate urandom );
+use MCat::Util                 qw( create_token digest truncate urandom );
 use Scalar::Util               qw( blessed );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
                                    IncorrectPassword PasswordDisabled
@@ -110,9 +110,7 @@ sub _is_encrypted ($) {
 sub _new_salt ($$) {
    my ($type, $lf) = @_;
 
-   my $token = digest(urandom())->hexdigest;
-
-   return "\$${type}\$${lf}\$" . (en_base64(pack('H*', substr($token, 0, 32))));
+   return "\$${type}\$${lf}\$" . (en_base64(pack('H*', create_token)));
 }
 
 # Public methods
@@ -183,7 +181,7 @@ sub insert {
    my $self    = shift;
    my $columns = { $self->get_inflated_columns };
 
-   $self->_encrypt_password($columns, 'password');
+   $self->_encrypt_password_column($columns);
 
    return if $self->authenticate_only;
 
@@ -256,7 +254,7 @@ sub update {
    $self->set_inflated_columns($columns) if $columns;
 
    $columns = { $self->get_inflated_columns };
-   $self->_encrypt_password($columns, 'password');
+   $self->_encrypt_password_column($columns);
 
    return $self->next::method;
 }
@@ -270,10 +268,10 @@ sub _as_string {
    return $_[0]->name;
 }
 
-sub _encrypt_password {
-   my ($self, $columns, $column_name) = @_;
+sub _encrypt_password_column {
+   my ($self, $columns) = @_;
 
-   my $password = $columns->{$column_name} or return;
+   my $password = $columns->{password} or return;
 
    return if _is_disabled $password or _is_encrypted $password;
 

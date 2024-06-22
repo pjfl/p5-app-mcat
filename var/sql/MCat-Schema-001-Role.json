@@ -1,4 +1,4 @@
 {
    "fields": "name",
-   "rows": [ "view", "edit", "admin" ]
+   "rows": [ "view", "edit", "manager", "admin" ]
 }

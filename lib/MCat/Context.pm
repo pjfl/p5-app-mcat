@@ -4,12 +4,12 @@ use attributes ();
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL STAR TRUE );
 use HTML::Forms::Types     qw( ArrayRef Bool HashRef Str );
-use HTML::Forms::Util      qw( get_token );
+use HTML::Forms::Util      qw( get_token verify_token );
 use List::Util             qw( pairs );
 use Ref::Util              qw( is_arrayref is_coderef is_hashref );
 use Scalar::Util           qw( blessed );
 use Type::Utils            qw( class_type );
-use Unexpected::Functions  qw( throw NoMethod UnknownModel );
+use Unexpected::Functions  qw( throw BadToken NoMethod UnknownModel );
 use MCat::Response;
 use Moo;
 
@@ -21,10 +21,9 @@ has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'forms' => is => 'ro', isa => class_type('HTML::Forms::Manager'),
-   weak_ref => TRUE;
-
-has 'jobdaemon' => is => 'lazy', isa => class_type('App::Job::Daemon'),
+has 'jobdaemon' =>
+   is      => 'lazy',
+   isa     => class_type('App::Job::Daemon'),
    default => sub { shift->models->{job}->jobdaemon };
 
 has 'models' => is => 'ro', isa => HashRef, default => sub { {} };
@@ -72,6 +71,9 @@ sub get_attributes {
    return attributes::get($action) // {} if is_coderef $action;
 
    my ($moniker, $method) = split m{ / }mx, $action;
+
+   return {} unless $moniker && $method;
+
    my $component = $self->models->{$moniker}
       or throw UnknownModel, [$moniker];
    my $coderef = $component->can($method)
@@ -81,7 +83,19 @@ sub get_attributes {
 }
 
 sub get_body_parameters {
-   my $self = shift; return $self->forms->get_body_parameters($self);
+   my $self    = shift;
+   my $request = $self->request;
+
+   return { %{$request->body_parameters->mixed // {}} }
+      if $request->isa('Plack::Request');
+
+   return { %{$request->body_parameters // {}} }
+      if $request->isa('Catalyst::Request')
+      || $request->isa('Web::ComposableRequest::Base');
+
+   return $request->parameters if $request->can('parameters');
+
+   return {};
 }
 
 sub model {
@@ -149,7 +163,19 @@ sub uri_for_action {
 sub verification_token {
    my $self = shift;
 
-   return get_token($self->config->token_lifetime, $self->session->serialise);
+   return get_token $self->config->token_lifetime, $self->session->serialise;
+}
+
+sub verify_form_post {
+   my $self = shift;
+
+   my $token  = $self->get_body_parameters->{_verify};
+   my $reason = verify_token $token, $self->session->serialise;
+
+   return TRUE unless $reason;
+
+   $self->models->{page}->error($self, BadToken, [$reason], level => 3);
+   return FALSE;
 }
 
 sub view {

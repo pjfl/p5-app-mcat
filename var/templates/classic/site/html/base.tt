@@ -10,10 +10,9 @@
    <meta name="generator" content="[% config.name %] v[% version %]">
    <title>[% nav.title_abbrev _ ' - ' _ nav.title_entry %]</title>
    <link rel="shortcut icon" href="[% uri_for('img/favicon.ico') %]">
-[% skin = context.session.skin || config.skin -%]
-[% css = uri_for('css/mcat-' _ skin _ '.css') -%]
+[% css = uri_for('css/' _ config.prefix _ '-' _ skin _ '.css') -%]
    <link rel="stylesheet" href="[% css %]" type="text/css">
-   <script src="[% uri_for('js/mcat.js') %]"></script>
+   <script src="[% uri_for('js/' _ config.prefix _ '.js') %]"></script>
    <script src="https://code.highcharts.com/highcharts.js"></script>
 </head>
 <body id="body">

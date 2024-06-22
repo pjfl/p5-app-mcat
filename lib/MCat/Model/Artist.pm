@@ -49,7 +49,7 @@ sub create : Nav('Create Artist') {
 sub delete : Nav('Delete Artist') {
    my ($self, $context, $artistid) = @_;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $artist = $context->stash('artist');
 
@@ -99,7 +99,7 @@ sub list : Auth('view') Nav('Artists|img/artist.svg') {
 sub remove {
    my ($self, $context) = @_;
 
-   return unless $self->verify_form_post($context);
+   return unless $context->verify_form_post;
 
    my $value = $context->request->body_parameters->{data} or return;
    my $rs    = $context->model('Artist');
