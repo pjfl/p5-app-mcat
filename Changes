@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moves clear_redirect to Context
           - Moves JobDaemon object to schema class
           - Moved Model to Web::Components. Moved verify_form_post to context
           - Added some html ids for faster selecting

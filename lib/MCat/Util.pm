@@ -14,7 +14,7 @@ use URI::http;
 use URI::https;
 
 use Sub::Exporter -setup => { exports => [
-   qw( base64_decode base64_encode clear_redirect digest create_token formpost
+   qw( base64_decode base64_encode digest create_token formpost
        local_tz new_uri redirect redirect2referer truncate urandom uri_escape )
 ]};
 
@@ -124,10 +124,6 @@ sub base64_encode (;$) {
    }
 
    return join q(), @y;
-}
-
-sub clear_redirect ($) {
-   return delete shift->stash->{redirect};
 }
 
 sub create_token () {
