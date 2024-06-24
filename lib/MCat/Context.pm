@@ -21,11 +21,6 @@ has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'jobdaemon' =>
-   is      => 'lazy',
-   isa     => class_type('App::Job::Daemon'),
-   default => sub { shift->models->{job}->jobdaemon };
-
 has 'models' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'posted' => is => 'lazy', isa => Bool,
@@ -167,15 +162,10 @@ sub verification_token {
 }
 
 sub verify_form_post {
-   my $self = shift;
+   my $self  = shift;
+   my $token = $self->get_body_parameters->{_verify};
 
-   my $token  = $self->get_body_parameters->{_verify};
-   my $reason = verify_token $token, $self->session->serialise;
-
-   return TRUE unless $reason;
-
-   $self->models->{page}->error($self, BadToken, [$reason], level => 3);
-   return FALSE;
+   return verify_token $token, $self->session->serialise;
 }
 
 sub view {

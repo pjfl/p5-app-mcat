@@ -1,7 +1,20 @@
 package MCat::Role::Schema;
 
 use Type::Utils qw( class_type );
+use MCat::JobServer;
 use Moo::Role;
+
+has 'jobdaemon' =>
+   is      => 'lazy',
+   isa     => class_type('MCat::JobServer'),
+   default => sub {
+      my $self = shift;
+
+      return MCat::JobServer->new(config => {
+         appclass => $self->config->appclass,
+         pathname => $self->config->bin->catfile('mcat-jobserver'),
+      });
+   };
 
 has 'schema' =>
    is      => 'lazy',
@@ -13,8 +26,7 @@ has 'schema' =>
 
       $class->config($self->config) if $class->can('config');
 
-      $schema->jobdaemon($self->jobdaemon)
-         if $schema->can('jobdaemon') && $self->can('jobdaemon');
+      $schema->jobdaemon($self->jobdaemon) if $schema->can('jobdaemon');
 
       return $schema;
    };

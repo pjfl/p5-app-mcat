@@ -45,11 +45,14 @@ has_field 'postcode' =>
 
 has_field 'skin' =>
    type    => 'Select',
-   default => sub { $_[0]->context->config->skin },
    options => [
       { label => 'Classic', value => 'classic' },
       { label => 'None', value => 'none' },
    ];
+
+sub default_skin {
+   return shift->context->config->skin;
+}
 
 has_field 'menu_location' =>
    type    => 'Select',

@@ -5,7 +5,6 @@ use MCat::Util             qw( formpost );
 use Type::Utils            qw( class_type );
 use HTML::Forms::Manager;
 use HTML::StateTable::Manager;
-use MCat::JobServer;
 use Web::Components::Navigation;
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -26,18 +25,6 @@ has 'form' =>
 
       return HTML::Forms::Manager->new({
          namespace => "${appclass}::Form", schema => $self->schema
-      });
-   };
-
-has 'jobdaemon' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::JobServer'),
-   default => sub {
-      my $self = shift;
-
-      return MCat::JobServer->new(config => {
-         appclass => $self->config->appclass,
-         pathname => $self->config->bin->catfile('mcat-jobserver'),
       });
    };
 
