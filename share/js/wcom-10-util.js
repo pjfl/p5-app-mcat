@@ -301,6 +301,7 @@ WCom.Util = (function() {
          };
       }
    }
+   const registeredCallbacks = [];
    return {
       Bitch: {
          bitch: new Bitch(),
@@ -313,6 +314,12 @@ WCom.Util = (function() {
             else document.attachEvent('onreadystatechange', function() {
                if (document.readyState == 'complete') callback();
             });
+         },
+         register: function(callback) {
+            registeredCallbacks.push(callback);
+         },
+         callbacks: function() {
+            return registeredCallbacks;
          }
       },
       Markup: { // A role

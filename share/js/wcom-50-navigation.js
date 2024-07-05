@@ -55,7 +55,15 @@ WCom.Navigation = (function() {
          }.bind(this);
       }
       iconImage(icon) {
-         return icon && icon.match(/:/) ? this.h.img({ src: icon }) : icon;
+         if (icon && icon.match(/:/)) {
+            return this.h.img({ src: icon });
+         }
+         else if (icon) {
+            const icons = this.icons;
+            if (!icons) return this.h.span({ className: 'text' }, '≡');
+            return this.h.icon({ className: 'icon', icons, name: icon });
+         }
+         return icon;
       }
       isCurrentHref(href) {
          return history.state && history.state.href == href ? true : false;
@@ -309,6 +317,8 @@ WCom.Navigation = (function() {
          if (formUtil) formUtil.scan(panel, options);
          this.replaceLinks(panel, options);
          if (filterEditor) filterEditor.scan(panel, options);
+         for (const scanCallback of WCom.Util.Event.callbacks())
+            scanCallback(panel, options);
       }
       setHeadTitle() {
          const head  = (document.getElementsByTagName('head'))[0];

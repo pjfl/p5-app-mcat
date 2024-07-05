@@ -25,7 +25,7 @@ sub base : Auth('admin') {
 sub remove {
    my ($self, $context) = @_;
 
-   return unless $context->verify_form_post;
+   return unless $self->verify_form_post($context);
 
    my $value = $context->get_body_parameters->{data} or return;
    my $runin = $self->jobdaemon->is_running;

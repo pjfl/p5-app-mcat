@@ -165,7 +165,7 @@ header {
         isolation: isolate; margin-right: 2.5rem; position: relative;
         a, .drop-menu {
             display: block; padding: 0.25rem 0.5rem 0.75rem;
-            img {
+            img, svg {
                 padding-right: 0.25rem; position: relative; z-index: -1;
             }
         }
@@ -212,7 +212,7 @@ header {
         a, .drop-menu {
             border-radius: 3px; color: #colours[link];
             font-family: #fonts[system];
-            img {
+            img, svg {
                 height: 24px; width: 24px; vertical-align: middle;
             }
         }
@@ -524,5 +524,21 @@ header {
         .modal-footer {
             display: flex; gap: 1rem; justify-content: space-between;
         }
+    }
+}
+.state-container {
+    display: flex;
+    .box {
+        display: flex;
+    }
+    .box-tile, .job-tile {
+        border: 1px solid grey; border-radius: 5px; color: black;
+        margin: 0.25rem; padding: 0.25rem;
+    }
+    .box-tile.active, .job-tile.active {
+        background: lightgreen;
+    }
+    .title a {
+        text-decoration: none;
     }
 }

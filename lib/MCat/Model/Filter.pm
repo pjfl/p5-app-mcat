@@ -54,7 +54,7 @@ sub create : Nav('Create Filter') {
 sub delete : Nav('Delete Filter') {
    my ($self, $context, $filterid) = @_;
 
-   return unless $context->verify_form_post;
+   return unless $self->verify_form_post($context);
 
    my $filter = $context->model('Filter')->find($filterid);
 

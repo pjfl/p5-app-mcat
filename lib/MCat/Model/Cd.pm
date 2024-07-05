@@ -68,7 +68,7 @@ sub create : Nav('Create CD') {
 sub delete : Nav('Delete CD') {
    my ($self, $context, $cdid) = @_;
 
-   return unless $context->verify_form_post;
+   return unless $self->verify_form_post($context);
 
    my $cd = $context->model('Cd')->find($cdid);
 

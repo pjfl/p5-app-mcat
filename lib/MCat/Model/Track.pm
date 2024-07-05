@@ -69,7 +69,7 @@ sub create : Nav('Create Track') {
 sub delete : Nav('Delete Track') {
    my ($self, $context, $trackid) = @_;
 
-   return unless $context->verify_form_post;
+   return unless $self->verify_form_post($context);
 
    my $track = $context->model('Track')->find($trackid);
 

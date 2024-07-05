@@ -467,12 +467,11 @@ sub _local_config {
    my $file = $self->config->local_config_file;
 
    if ($data) {
-      $self->_file_schema->data_dump({ path => $file->assert, data => $data });
+      $self->_file_schema->dump({ path => $file->assert, data => $data });
       return $data;
    }
 
-   return $self->_file_schema->data_load(paths => [$file]) // {}
-      if $file->exists;
+   return $self->_file_schema->load($file) // {} if $file->exists;
 
    return {};
 }

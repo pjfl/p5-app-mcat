@@ -77,7 +77,7 @@ sub list : Nav('File Manager') {
 sub paste {
    my ($self, $context) = @_;
 
-   return unless $context->verify_form_post;
+   return unless $self->verify_form_post($context);
 
    my ($directory, $message, $selected);
 
@@ -118,7 +118,7 @@ sub properties {
 sub remove {
    my ($self, $context) = @_;
 
-   return unless $context->verify_form_post;
+   return unless $self->verify_form_post($context);
 
    my ($count, $directory, $message);
 
