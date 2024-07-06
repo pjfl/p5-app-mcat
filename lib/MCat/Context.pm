@@ -2,14 +2,14 @@ package MCat::Context;
 
 use attributes ();
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL STAR TRUE );
-use HTML::Forms::Types     qw( ArrayRef Bool HashRef Str );
-use HTML::Forms::Util      qw( get_token verify_token );
-use List::Util             qw( pairs );
-use Ref::Util              qw( is_arrayref is_coderef is_hashref );
-use Scalar::Util           qw( blessed );
-use Type::Utils            qw( class_type );
-use Unexpected::Functions  qw( throw BadToken NoMethod UnknownModel );
+use Class::Usul::Cmd::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use Unexpected::Types           qw( ArrayRef Bool HashRef Str );
+use HTML::Forms::Util           qw( get_token verify_token );
+use List::Util                  qw( pairs );
+use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
+use Scalar::Util                qw( blessed );
+use Type::Utils                 qw( class_type );
+use Unexpected::Functions       qw( throw BadToken NoMethod UnknownModel );
 use MCat::Response;
 use Moo;
 
@@ -23,7 +23,9 @@ has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'models' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'posted' => is => 'lazy', isa => Bool,
+has 'posted' =>
+   is      => 'lazy',
+   isa     => Bool,
    default => sub { lc shift->request->method eq 'post' ? TRUE : FALSE };
 
 has 'request' =>
@@ -32,25 +34,33 @@ has 'request' =>
    required => TRUE,
    weak_ref => TRUE;
 
-has 'response' => is => 'ro', isa => class_type('MCat::Response'),
+has 'response' =>
+   is      => 'ro',
+   isa     => class_type('MCat::Response'),
    default => sub { MCat::Response->new };
 
 has 'session' => is => 'lazy', default => sub { shift->request->session };
 
-has 'time_zone' => is => 'lazy', isa => Str,
+has 'time_zone' =>
+   is      => 'lazy',
+   isa     => Str,
    default => sub { shift->session->timezone };
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has '_api_routes' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift;
+has '_api_routes' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
 
-   return exists $self->models->{api} ? $self->models->{api}->routes : {};
-};
+      return exists $self->models->{api} ? $self->models->{api}->routes : {};
+   };
 
-has '_stash' => is => 'ro', isa => HashRef, default => sub {
-   return { version => MCat->VERSION };
-};
+has '_stash' =>
+   is      => 'ro',
+   isa     => HashRef,
+   default => sub { { version => MCat->VERSION } };
 
 with 'MCat::Role::Authentication';
 

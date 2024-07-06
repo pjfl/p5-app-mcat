@@ -1,7 +1,7 @@
 package MCat::Redis;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
-use HTML::StateTable::Types     qw( HashRef Int Str );
+use Class::Usul::Cmd::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use Unexpected::Types           qw( HashRef Int Str );
 use List::Util                  qw( shuffle );
 use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );

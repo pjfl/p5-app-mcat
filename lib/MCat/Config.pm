@@ -2,19 +2,16 @@ package MCat::Config;
 
 use utf8; # -*- coding: utf-8; -*-
 
-use English                qw( -no_match_vars );
-use File::DataClass::IO    qw( io );
-use File::DataClass::Types qw( Path Directory File LoadableClass
-                               OctalNum Undef );
-use HTML::Forms::Constants qw( FALSE NUL TRUE );
-use HTML::Forms::Types     qw( ArrayRef Bool HashRef Object PositiveInt Str );
-use HTML::Forms::Util      qw( cipher );
-use IO::Socket::SSL        qw( SSL_VERIFY_NONE );
-use MCat::Util             qw( base64_decode local_tz );
+use Class::Usul::Cmd::Constants qw( FALSE NUL SECRET TRUE );
+use IO::Socket::SSL             qw( SSL_VERIFY_NONE );
+use File::DataClass::Types      qw( ArrayRef Bool Directory File HashRef
+                                    LoadableClass Object OctalNum Path
+                                    PositiveInt Str Undef );
+use Class::Usul::Cmd::Util      qw( decrypt );
+use English                     qw( -no_match_vars );
+use File::DataClass::IO         qw( io );
+use MCat::Util                  qw( local_tz );
 use MCat::Exception;
-use Class::Usul::Cmd::Constants qw();
-use HTML::StateTable::Constants qw();
-use Web::ComposableRequest::Constants qw();
 use Moo;
 
 with 'Web::Components::Role::ConfigLoader';
@@ -25,9 +22,7 @@ my $except = [
 ];
 
 Class::Usul::Cmd::Constants->Dump_Except($except);
-HTML::Forms::Constants->Exception_Class('MCat::Exception');
-HTML::StateTable::Constants->Exception_Class('MCat::Exception');
-Web::ComposableRequest::Constants->Exception_Class('MCat::Exception');
+Class::Usul::Cmd::Constants->Exception_Class('MCat::Exception');
 
 =encoding utf-8
 
@@ -95,7 +90,7 @@ and decrypted
 
 has 'connect_info' => is => 'lazy', isa => ArrayRef, default => sub {
    my $self     = shift;
-   my $password = cipher->decrypt(base64_decode $self->db_password);
+   my $password = decrypt SECRET, $self->db_password;
 
    return [$self->dsn, $self->db_username, $password, $self->db_extra];
 };

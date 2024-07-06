@@ -7,7 +7,6 @@ use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( Bool HashRef );
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use MCat::Util                 qw( create_token digest truncate urandom );
-use Scalar::Util               qw( blessed );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
                                    IncorrectPassword PasswordDisabled
                                    PasswordExpired Unspecified );
@@ -216,32 +215,6 @@ sub set_totp_secret {
    return $self->totp_secret(NUL) if $current && !$enabled;
 
    return $self->totp_secret;
-}
-
-sub to_session {
-   my ($self, $session) = @_;
-
-   return unless $session && blessed $session;
-
-   my $profile = $self->profile_value;
-
-   for my $key (grep { $_ ne 'authenticated' } keys %{$profile}) {
-      my $value       = $profile->{$key};
-      my $value_class = blessed $value;
-
-      if ($value_class && $value_class eq 'JSON::PP::Boolean') {
-         $value = "${value}" ? TRUE : FALSE;
-      }
-
-      $session->$key($value) if defined $value && $session->can($key);
-   }
-
-   $session->email($self->email)     if $session->can('email');
-   $session->id($self->id)           if $session->can('id');
-   $session->role($self->role->name) if $session->can('role');
-   $session->username($self->name)   if $session->can('username');
-
-   return;
 }
 
 sub totp_secret {

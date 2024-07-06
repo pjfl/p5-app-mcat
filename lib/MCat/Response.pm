@@ -1,7 +1,7 @@
 package MCat::Response;
 
-use HTML::Forms::Constants qw( NUL );
-use HTML::Forms::Types     qw( ArrayRef );
+use Class::Usul::Cmd::Constants qw( NUL );
+use Unexpected::Types           qw( ArrayRef );
 use Moo;
 
 has 'body' => is => 'rw';

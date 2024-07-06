@@ -1,11 +1,11 @@
 package MCat::Object::View;
 
-use Data::Page;
 use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Int ResultRole Table Undef );
 use JSON::MaybeXS               qw( encode_json );
 use List::Util                  qw( pairs );
 use Ref::Util                   qw( is_arrayref is_coderef is_plain_hashref );
+use Data::Page;
 use MCat::Object::Result;
 use Moo;
 use MooX::HandlesVia;

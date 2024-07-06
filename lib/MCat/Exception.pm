@@ -1,15 +1,17 @@
 package MCat::Exception;
 
-use DateTime;
-use HTML::Forms::Types    qw( Int Object );
 use HTTP::Status          qw( HTTP_BAD_REQUEST HTTP_NOT_FOUND
                               HTTP_UNAUTHORIZED );
+use Unexpected::Types     qw( Int Object );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( has_exception );
+use DateTime;
 use MCat;
 use Moo;
 
-extends 'HTML::Forms::Exception', 'HTML::StateTable::Exception';
+extends 'Class::Usul::Cmd::Exception',
+   'HTML::Forms::Exception',
+   'HTML::StateTable::Exception',
 
 has 'created' =>
    is      => 'ro',

@@ -31,7 +31,7 @@ has_field 'name' =>
 has_field 'password' =>
    type         => 'Password',
    element_attr => {
-      javascript => 'onblur="' . sprintf($change_js, 'password') . '"'
+      javascript => 'oninput="' . sprintf($change_js, 'password') . '"'
    },
    tags         => { label_tag => 'span' },
    required     => TRUE;
@@ -98,7 +98,9 @@ after 'after_build_fields' => sub {
    my $utils  = $context->config->wcom_resources;
    my $method = $utils->{form_util} . '.showIfRequired';
    my $params = { class => 'User', property => 'enable_2fa' };
-   my $uri    = $context->uri_for_action('page/object_property', [], $params);
+   my $uri    = $context->uri_for_action(
+      'api/object_fetch', ['property'], $params
+   );
    my $showif = "${method}('user_name', ['auth_code', 'totp_reset'], '${uri}')";
    my $js     = "${showif}; " . sprintf $change_js, 'user_name';
 

@@ -1,8 +1,8 @@
 package MCat::API::Table;
 
-use HTML::Forms::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
-use HTML::Forms::Types     qw( Str );
-use Unexpected::Functions  qw( throw UnknownModel );
+use Class::Usul::Cmd::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
+use Unexpected::Types           qw( Str );
+use Unexpected::Functions       qw( throw UnknownModel );
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -25,11 +25,12 @@ sub action : Auth('view') {
 sub preference : Auth('view') {
    my ($self, $context, @args) = @_;
 
-   my $name  = $self->_preference_name;
-   my $value = $context->get_body_parameters->{data} if $context->posted;
-   my $pref  = $self->_preference($context, $name, $value);
+   my $name   = $self->_preference_name;
+   my $value  = $context->get_body_parameters->{data} if $context->posted;
+   my $pref   = $self->_preference($context, $name, $value);
+   my $result = $pref ? $pref->value : {};
 
-   $context->stash( json => $pref ? $pref->value : {} );
+   $context->stash(json => $result);
    return;
 }
 

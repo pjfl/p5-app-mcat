@@ -1,8 +1,8 @@
 package MCat::API::Form;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTML::Forms::Types     qw( Str );
-use Unexpected::Functions  qw( throw );
+use Class::Usul::Cmd::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use Unexpected::Types           qw( Str );
+use Unexpected::Functions       qw( throw );
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -11,7 +11,7 @@ has 'name' => is => 'ro', isa => Str, required => TRUE;
 sub field : Auth('view') {
    my ($self, $context, $field_name, $operation) = @_;
 
-   my $reason = NUL;
+   my $result = { reason => 'Unknown operation' };
 
    if ($operation eq 'validate') {
       my $value   = $context->request->query_parameters->{value};
@@ -22,11 +22,10 @@ sub field : Auth('view') {
 
       $form->setup_form({ $field_name => $value });
       $field->validate_field;
-      $reason = [$field->result->all_errors];
+      $result = { reason => [$field->result->all_errors] };
    }
-   else { $reason = 'Unknown operation' }
 
-   $context->stash(json => { reason => $reason });
+   $context->stash(json => $result);
    return;
 }
 
