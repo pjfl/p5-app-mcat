@@ -46,8 +46,8 @@ WCom.Navigation = (function() {
       }
       confirmHandler(name) {
          return function(event) {
-            if (this.confirm && confirm(this.confirm.replace(/\*/, name))) {
-               return true;
+            if (this.confirm) {
+               if (confirm(this.confirm.replace(/\*/, name))) return true;
             }
             else if (confirm()) return true;
             event.preventDefault();
@@ -80,7 +80,7 @@ WCom.Navigation = (function() {
          history.pushState(state, 'Unused', url); // API Darwin award
          url.searchParams.set('navigation', true);
          const { object } = await this.bitch.sucks(url);
-         if (!object) return;
+         if (!object || !object['menus']) return;
          this.containerLayout = object['container-layout'];
          this.menus = object['menus'];
          this.token = object['verify-token'];
@@ -127,7 +127,9 @@ WCom.Navigation = (function() {
          console.log('Recovered state ' + count + ' ' + state.href);
       }
       redraw() {
+         if (!this.menus) return;
          const content = [this.renderControl()];
+         if (!this.menus['_global']) return;
          const global = this.renderList(this.menus['_global'], 'global');
          if (this.location == 'header') content.unshift(global);
          const cMenu = this.h.nav({ className: 'nav-menu' }, content);
@@ -144,13 +146,13 @@ WCom.Navigation = (function() {
          this.replaceLinks(document.getElementById(this.contentName));
       }
       renderControl() {
+         if (!this.menus['_control']) return;
+         let attr = { className: 'nav-panel control-panel' };
+         const list = this.renderList(this.menus['_control'], 'control');
+         this.contextPanels['control'] = this.h.div(attr, list);
+         attr = { className: 'nav-control' };
          const link = this.h.a(this.renderControlIcon());
-         this.contextPanels['control'] = this.h.div({
-            className: 'nav-panel control-panel'
-         }, this.renderList(this.menus['_control'], 'control'));
-         return this.h.div({
-            className: 'nav-control'
-         }, [ link, this.contextPanels['control'] ]);
+         return this.h.div(attr, [link, this.contextPanels['control']]);
       }
       renderControlIcon() {
          const icons = this.icons;
@@ -217,11 +219,12 @@ WCom.Navigation = (function() {
          let isSelected = false;
          for (const item of itemList) {
             if (typeof item == 'string' && this.menus[item]) {
-               const className
-                     = menuName == 'context' ? 'slide-out' : 'nav-panel';
-               this.contextPanels[item] = this.h.div({
-                  className: className
-               }, this.renderList(this.menus[item], 'context'));
+               let className = 'nav-panel';
+               if (menuName == 'context' || menuName == 'control')
+                  className = 'slide-out';
+               this.contextPanels[item] = this.h.div(
+                  { className }, this.renderList(this.menus[item], 'context')
+               );
                context = item;
                continue;
             }

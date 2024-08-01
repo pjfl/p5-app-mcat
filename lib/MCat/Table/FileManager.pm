@@ -15,6 +15,24 @@ with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Tag';
 with    'MCat::Role::FileMeta';
 
+has 'directory' =>
+   is       => 'lazy',
+   isa      => Directory,
+   init_arg => undef,
+   default  => sub {
+      my $self = shift;
+
+      return $self->meta_directory($self->context, $self->_directory);
+   };
+
+has 'extensions' => is => 'ro', isa => Str, default => NUL;
+
+has 'moniker' => is => 'ro', isa => Str, default => 'file';
+
+has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
+
+has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
+
 has '+caption' => default => 'File Manager';
 
 has '+configurable_action' => default => 'api/table_preference';
@@ -40,17 +58,18 @@ has '+tag_names' => default => sub { shift->_build_tag_names };
 
 has '+title_location' => default => 'outer';
 
+has '_action' => is => 'lazy', isa => Str, default => sub {
+   my $self    = shift;
+   my $moniker = $self->moniker;
+
+   return $self->selectonly ? "${moniker}/select" : "${moniker}/list";
+};
+
 has '_directory' => is => 'ro', isa => Str, init_arg => 'directory';
 
-has 'directory' => is => 'lazy', isa => Directory, init_arg => undef;
-
-has 'extensions' => is => 'ro', isa => Str, default => NUL;
-
-has 'format_number' => is => 'ro', default => sub { Format::Human::Bytes->new };
-
-has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
-
-has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
+has '_format_number' => is => 'ro', default => sub {
+   return Format::Human::Bytes->new;
+};
 
 setup_resultset sub {
    my $self = shift;
@@ -74,7 +93,7 @@ has_column 'name' =>
    link        => sub {
       my $cell = shift; return $cell->table->_build_name_link($cell);
    },
-   options  => { 'trigger-modal' => 'modal' },
+   options  => { 'title' => 'File Preview', 'trigger-modal' => 'modal' },
    sortable => TRUE;
 
 has_column 'owner' =>
@@ -104,7 +123,7 @@ has_column 'size' =>
    value       => sub {
       my $cell = shift;
 
-      return $cell->table->format_number->base2($cell->result->size);
+      return $cell->table->_format_number->base2($cell->result->size);
    };
 
 has_column 'modified' => cell_traits => ['DateTime'], sortable => TRUE;
@@ -118,6 +137,14 @@ has_column 'check' =>
       return $cell->table->_qualified_directory($cell->result);
    };
 
+after 'BUILD' => sub {
+   my $self = shift;
+
+   $self->get_column('name')->add_option('modal-icons', $self->icons);
+
+   return;
+};
+
 sub highlight_row {
    my ($self, $row) = @_;
 
@@ -127,12 +154,6 @@ sub highlight_row {
 }
 
 # Private methods
-sub _build_directory {
-   my $self = shift;
-
-   return $self->meta_directory($self->context, $self->_directory);
-}
-
 sub _build_form_buttons {
    my $self  = shift;
    my $empty = { 'TopLeft' => [], 'BottomLeft' => [], 'BottomRight' => [] };
@@ -145,15 +166,16 @@ sub _build_form_buttons {
    $params->{selected}  = $self->selected   if $self->has_selected;
 
    my $context = $self->context;
+   my $moniker = $self->moniker;
    my $cut_or_paste = {
-      action    => 'file/paste',
+      action    => "${moniker}/paste",
       noconfirm => TRUE,
       selection => 'disable_on_select',
       value     => 'Paste'
    };
 
    $cut_or_paste = {
-      action    => $context->uri_for_action('file/list', [], $params),
+      action    => $context->uri_for_action("${moniker}/list", [], $params),
       method    => 'get',
       noconfirm => TRUE,
       selection => 'select_one',
@@ -162,7 +184,7 @@ sub _build_form_buttons {
 
    return {
       'TopLeft' => [{
-         action    => $context->uri_for_action('file/create', [], $params),
+         action    => $context->uri_for_action("${moniker}/create", [], $params),
          display   => 'modal',
          field     => 'name',
          formclass => 'filemanager',
@@ -170,7 +192,7 @@ sub _build_form_buttons {
          selection => 'disable_on_select',
          value     => 'New Folder'
       }, {
-         action    => $context->uri_for_action('file/upload', [], $params),
+         action    => $context->uri_for_action("${moniker}/upload", [], $params),
          display   => 'modal',
          field     => 'file',
          formclass => 'filemanager',
@@ -179,7 +201,7 @@ sub _build_form_buttons {
          value     => 'Upload'
       }],
       'BottomLeft' => [{
-         action    => $context->uri_for_action('file/properties', [], $params),
+         action    => $context->uri_for_action("${moniker}/properties", [], $params),
          display   => 'modal',
          formclass => 'filemanager',
          method    => 'get',
@@ -187,7 +209,7 @@ sub _build_form_buttons {
          selection => 'select_one',
          value     => 'Properties'
       },{
-         action    => $context->uri_for_action('file/copy', [], $params),
+         action    => $context->uri_for_action("${moniker}/copy", [], $params),
          display   => 'modal',
          field     => 'name',
          formclass => 'filemanager',
@@ -197,7 +219,7 @@ sub _build_form_buttons {
       },
       $cut_or_paste,
       {
-         action    => $context->uri_for_action('file/rename', [], $params),
+         action    => $context->uri_for_action("${moniker}/rename", [], $params),
          display   => 'modal',
          field     => 'name',
          formclass => 'filemanager',
@@ -206,7 +228,7 @@ sub _build_form_buttons {
          value     => 'Rename'
       }],
       'BottomRight' => [{
-         action    => 'file/remove',
+         action    => "${moniker}/remove",
          selection => 'selection',
          value     => 'Delete',
       }]
@@ -226,20 +248,17 @@ sub _build_name_link {
       $params->{extensions} = $self->extensions if $self->extensions;
       $params->{selected}   = $selected if $selected;
 
-      my $action = $self->selectonly ? 'file/select' : 'file/list';
-
-      return $self->context->uri_for_action($action, [], $params);
+      return $self->context->uri_for_action($self->_action, [], $params);
    }
    elsif ($result->type eq 'file') {
-      $cell->column->add_option('modal-icons', $self->icons);
-
-      my $args = [$result->uri_arg];
-      my $dir  = $self->_qualified_directory;
+      my $action = $self->moniker . '/view';
+      my $args   = [$result->uri_arg];
+      my $dir    = $self->_qualified_directory;
 
       $params->{directory} = $dir if $dir;
       $params->{modal} = 'true';
 
-      return $self->context->uri_for_action('file/view', $args, $params);
+      return $self->context->uri_for_action($action, $args, $params);
    }
 
    return;
@@ -266,9 +285,7 @@ sub _build_tag_names {
       $params->{extensions} = $self->extensions if $self->extensions;
       $params->{selected} = $self->selected if $self->has_selected;
 
-      my $action = $self->selectonly ? 'file/select' : 'file/list';
-
-      my $uri = $self->context->uri_for_action($action, [], $params);
+      my $uri = $self->context->uri_for_action($self->_action, [], $params);
 
       push @{$tuples}, [$name, $uri];
    }

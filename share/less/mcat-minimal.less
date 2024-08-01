@@ -50,6 +50,7 @@
     );
 }
 #sizes() {
+    exception-label-min-width: 10rem;
     media-break: 680px;
     message-max-width: 16rem;
     nav-context-width: 8rem;
@@ -90,15 +91,6 @@ header {
 .frame {
     bottom: 0; overflow: auto; position: fixed; right: 0.5rem;
     top: #sizes[nav-header-height]; z-index: 2;
-    .exception {
-        background: #colours[frame-exception-bg];
-        border: 1px solid #colours[line-border]; border-radius: 5px;
-        box-shadow: 3px 3px 3px #colours[panel-shadow];
-        max-width: 50rem; padding: 0.5rem;
-        h1, h2, h3 {
-            margin: 0.5rem 0;
-        }
-    }
 }
 .frame.link-display-both {
     left: #sizes[frame-left-both];
@@ -108,6 +100,28 @@ header {
 }
 .frame.link-display-text {
     left: #sizes[frame-left-text];
+}
+.frame .exception, .modal .exception {
+    background: #colours[frame-exception-bg];
+    border: 1px solid #colours[line-border]; border-radius: 5px;
+    box-shadow: 3px 3px 3px #colours[panel-shadow];
+    margin: 0.5rem 0; max-width: 50rem; padding: 0.5rem;
+    h1, h2, h3 {
+        margin: 0.5rem 0;
+        span.content {
+            font-family: #fonts[system];
+        }
+    }
+    svg.error {
+        height: 40px; width: 40px; vertical-align: middle;
+    }
+    .line {
+        display: flex;
+        label {
+            font-family: #fonts[system];
+            min-width: #sizes[exception-label-min-width];
+        }
+    }
 }
 .standard {
     display: inline-block; padding-top: 0.5rem; text-align: left;
@@ -200,8 +214,11 @@ header {
         }
         .nav-panel {
             background: #colours[panel-bg]; max-height: 0; overflow: hidden;
-            position: absolute; right: -1rem; text-align: left; top: 3rem;
-            transition: max-height ease-in-out 500ms;
+            position: absolute; right: -1rem; text-align: left; top: 2.5rem;
+            transition: all ease-in-out 500ms;
+        }
+        .nav-panel:hover {
+            overflow: visible;
         }
     }
     .nav-control:hover .nav-panel {
@@ -258,15 +275,18 @@ header {
             width: 100%;
         }
     }
-    .nav-list.control {
-        width: #sizes[nav-control-width];
-    }
-    .nav-list.control, .nav-list.context {
+    .nav-list.context, .nav-list.control {
         border: 1px solid #colours[line-border]; border-radius: 3px;
     }
     .nav-list.context {
         width: 100%;
         li.context:has(> a:hover, > form:hover) > .slide-out {
+            overflow-x: hidden; width: #sizes[nav-context-width];
+        }
+    }
+    .nav-list.control {
+        width: #sizes[nav-control-width];
+        li.control:has(> a:hover, > form:hover) > .slide-out {
             overflow-x: hidden; width: #sizes[nav-context-width];
         }
     }
@@ -407,11 +427,26 @@ header {
 .sidebar.link-display-text::after {
     width: #sizes[sidebar-text];
 }
+.documentation {
+    font-family: #fonts[system]; padding-top: 0.5rem;
+    h1 {
+        font-size: 1rem;
+    }
+    h2 {
+        font-size: 0.8rem;
+    }
+    h1, h2 {
+        margin: 0 0 0.25rem 0;
+    }
+    p, ul {
+        font-size: 0.8rem; margin: 0 0 0.5rem 0;
+    }
+    pre {
+        margin: 0 0 0.5rem 2rem;
+    }
+}
 .file-preview pre {
     line-height: 0.5rem;
-}
-.modal .filemanager {
-    margin: 0; min-width: 10rem;
 }
 .messages-panel {
     bottom: 1rem; position: absolute; right: 1rem;
@@ -431,12 +466,15 @@ header {
         display: none;
     }
 }
+.modal .filemanager {
+    margin: 0; min-width: 10rem;
+}
 .modal-outer-wrapper {
-    align-items: center; background: #grads[body-bg]; bottom: 0;
-    display: flex; justify-content: center; left: 0; position: absolute;
+    background: #grads[body-bg]; bottom: 0; left: 0; position: absolute;
     right: 0; top: 0; z-index: 4;
     .modal-container {
-        transition: opacity 500ms;
+        align-items: center; display: flex; height: 100%;
+        justify-content: center; transition: opacity 500ms;
     }
     .modal-container.in {
         opacity: 1;
@@ -446,18 +484,17 @@ header {
     }
     .modal {
         background: #colours[modal-editor-bg];
-        border: 1px solid; border-radius: 5px; box-shadow: 3px 3px 3px;
-        color: #colours[panel-shadow];
-        .modal-content-wrapper, .modal-footer, .modal-header {
-            color: #colours[text];
-        }
+        border: 1px solid; border-radius: 5px;
+        box-shadow: 3px 3px 3px #colours[panel-shadow];
+        color: #colours[text]; max-height: 90%; max-width: 80%;
+        overflow: auto;
         .modal-header {
             align-items: center;
             background: #colours[title-bg];
             border-bottom: 1px solid #colours[title-border];
             border-top-left-radius: 5px; border-top-right-radius: 5px;
             display: flex; justify-content: space-between;
-            padding: 0.25rem 0.5rem;
+            padding: 0.25rem 0.5rem; position: sticky; top: 0; z-index: 5;
             .modal-title {
                 flex-grow: 2; font-family: #fonts[system]; font-size: 1rem;
                 font-weight: normal; margin: 0;

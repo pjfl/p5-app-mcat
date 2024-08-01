@@ -34,16 +34,17 @@ sub _redirect2login {
    my ($self, $context) = @_;
 
    my $login   = $context->uri_for_action('page/login');
+   my $uri_len = length $login->as_string;
    my $wanted  = $context->request->uri;
    my $session = $context->session;
    my $method  = $context->endpoint;
    my $action  = $self->can($method // NUL);
 
    # Redirect to wanted on successful login. Only set wanted to "legit" uris
-   $session->wanted("${wanted}") unless $session->wanted
-      || $wanted->query_form('navigation')
-      || ($login eq substr $wanted, 0, length $login)
-      || !_get_nav_label($context, $action);
+   $session->wanted("${wanted}") if !$session->wanted
+      && !$wanted->query_form('navigation')
+      && ($login->as_string ne substr $wanted->as_string, 0, $uri_len)
+      && _get_nav_label($context, $action);
 
    $context->stash(redirect $login, ['Authentication required']);
 
@@ -53,6 +54,8 @@ sub _redirect2login {
 # Private functions
 sub _get_action_auth {
    my ($context, $action) = @_;
+
+   return unless $action;
 
    my $attr = eval { $context->get_attributes($action) };
 
@@ -68,7 +71,7 @@ sub _get_nav_label {
 
    my $attr = eval { $context->get_attributes($action) };
 
-   return $attr->{Nav}->[0] if $attr && defined $attr->{Nav};
+   return $attr->{Nav}->[-1] if $attr && defined $attr->{Nav};
 
    return;
 }

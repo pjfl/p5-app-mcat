@@ -3,7 +3,6 @@ package MCat::Logfile::Result::List;
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use File::DataClass::Types      qw( Directory File );
 use HTML::StateTable::Types     qw( Date Int Str );
-use MCat::Util                  qw( local_tz );
 use Type::Utils                 qw( class_type );
 use DateTime;
 use Moo;
@@ -23,11 +22,15 @@ has 'modified' =>
    is      => 'lazy',
    isa     => Date,
    default => sub {
-      my $self = shift;
-
-      return DateTime->from_epoch(
-         epoch => $self->path->stat->{mtime}, time_zone => local_tz
+      my $self     = shift;
+      my $context  = $self->table->context;
+      my $dt       = DateTime->from_epoch(
+         epoch     => $self->path->stat->{mtime},
+         time_zone => $context->config->local_tz
       );
+
+      $dt->set_time_zone($context->session->timezone);
+      return $dt;
    };
 
 has 'name' =>

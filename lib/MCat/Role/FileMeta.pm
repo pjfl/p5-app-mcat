@@ -1,10 +1,13 @@
 package MCat::Role::FileMeta;
 
-use HTML::Forms::Constants qw( FALSE NUL TRUE );
-use HTML::StateTable::Util qw( escape_formula );
-use Type::Utils            qw( class_type );
+use HTML::StateTable::Constants qw( FALSE NUL TRUE );
+use HTML::StateTable::Types     qw( Str );
+use HTML::StateTable::Util      qw( escape_formula );
+use Type::Utils                 qw( class_type );
 use Text::CSV_XS;
 use Moo::Role;
+
+has 'meta_config_attr' => is => 'ro', isa => Str, default => 'filemanager';
 
 has '_csv' =>
    is      => 'lazy',
@@ -100,7 +103,7 @@ sub meta_get_shared {
 sub meta_home {
    my ($self, $context) = @_;
 
-   return _meta_get_config($context)->filemanager->{directory};
+   return $self->_meta_get_config($context)->{directory};
 }
 
 sub meta_move {
@@ -177,7 +180,7 @@ sub meta_unshare {
 
    return unless $linkpath->exists;
 
-   my $sharedir = _meta_get_config($context)->filemanager->{sharedir};
+   my $sharedir = $self->_meta_get_config($context)->{sharedir};
    my $dir      = $linkpath->parent;
 
    $linkpath->unlink;
@@ -234,24 +237,27 @@ sub _meta_get {
    return $meta;
 }
 
+sub _meta_get_config {
+   my ($self, $context) = @_;
+
+   my $config_attr = $self->meta_config_attr;
+
+   return $context->config->$config_attr()
+      if $context->can('config') && $context->config->can($config_attr);
+
+   return $context->$config_attr();
+}
+
 sub _meta_get_linkpath {
    my ($self, $context, $path) = @_;
 
-   my $sharedir = _meta_get_config($context)->filemanager->{sharedir};
+   my $sharedir = $self->_meta_get_config($context)->{sharedir};
    my $relpath  = $path->abs2rel($self->meta_directory($context));
 
    return $sharedir->catfile($relpath);
 }
 
 # Private functions
-sub _meta_get_config {
-   my $context = shift;
-
-   return $context->config if $context->can('config');
-
-   return $context;
-}
-
 sub _to_path {
    my $path = shift; $path =~ s{ ! }{/}gmx if defined $path; return $path;
 }

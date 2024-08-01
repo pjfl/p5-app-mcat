@@ -353,6 +353,11 @@ WCom.Util = (function() {
             return obj;
          },
          h: new HtmlTiny(),
+         isHTML: function(value) {
+            if (typeof value != 'string') return false;
+            if (value.match(new RegExp('^<(\S?)[^>]>.?|<.*?/>'))) return true;
+            return false;
+         },
          isHTMLOfClass: function(value, className) {
             if (typeof value != 'string') return false;
             if (!value.match(new RegExp(`class="${className}"`))) return false;
@@ -389,7 +394,7 @@ WCom.Util = (function() {
          }
       },
       String: {
-         capitalise: function(s) {
+         capitalise: function(s = '') {
             const words = [];
             for (const word of s.split(' ')) words.push(_ucfirst(word));
             return words.join(' ');

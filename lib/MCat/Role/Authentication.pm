@@ -29,12 +29,11 @@ sub find_user {
 }
 
 sub logout {
-   my $self = shift;
+   my $self    = shift;
    my $session = $self->session;
 
    $session->authenticated(FALSE);
    $session->role(NUL) if $session->can('role');
-   $session->wanted(NUL) if $session->can('wanted');
    return;
 }
 
@@ -45,8 +44,8 @@ sub set_authenticated {
    $args->{user} //= $self->find_user($args, $realm);
    $args->{session} = $self->session;
    $self->session->authenticated(TRUE);
-   $self->_find_realm($realm)->to_session($args);
-   return;
+
+   return $self->_find_realm($realm)->to_session($args);
 }
 
 # Private methods

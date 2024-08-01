@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Fixes redirect to wanted after login
           - Moves to_session from User result to DBIC auth role
           - Adds register method for JS modules
           - Moves clear_redirect to Context
