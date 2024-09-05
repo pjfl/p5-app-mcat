@@ -355,7 +355,7 @@ WCom.Util = (function() {
          h: new HtmlTiny(),
          isHTML: function(value) {
             if (typeof value != 'string') return false;
-            if (value.match(new RegExp('^<(\S?)[^>]>.?|<.*?/>'))) return true;
+            if (value.match(new RegExp('^<'))) return true;
             return false;
          },
          isHTMLOfClass: function(value, className) {

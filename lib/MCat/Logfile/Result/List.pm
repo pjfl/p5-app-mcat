@@ -38,9 +38,8 @@ has 'name' =>
    isa     => Str,
    default => sub {
       my $self = shift;
-      my $name = $self->path->clone->relative($self->directory);
 
-      return "${name}";
+      return $self->path->clone->relative($self->directory)->as_string;
    };
 
 has 'owner' =>

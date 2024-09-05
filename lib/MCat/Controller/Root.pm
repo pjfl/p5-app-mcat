@@ -41,7 +41,7 @@ return (
    'GET|POST + /job/status + ?*' => sub {['job/root/base/status', @_]},
 
    'POST     + /logfile/*/clear + ?*' => sub {['logfile/root/clear_cache', @_]},
-   'GET      + /logfile/* + ?*'       => sub {['logfile/root/base/view',   @_]},
+   'GET      + /logfile/*.* + ?*'     => sub {['logfile/root/base/view',   @_]},
    'GET      + /logfile + ?*'         => sub {['logfile/root/base/list',   @_]},
 
    'GET      + /access_denied + ?*'

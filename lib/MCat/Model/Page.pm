@@ -37,7 +37,7 @@ sub base : Auth('none') {
 
 sub access_denied : Auth('none') {}
 
-sub changes : Auth('none') Nav('Changes') {
+sub changes : Auth('view') Nav('Changes') {
    my ($self, $context) = @_;
 
    $context->stash(form => $self->new_form('Changes', { context => $context }));

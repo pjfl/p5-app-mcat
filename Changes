@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - System going unstable
           - Fixes redirect to wanted after login
           - Moves to_session from User result to DBIC auth role
           - Adds register method for JS modules

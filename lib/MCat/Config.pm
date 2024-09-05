@@ -11,6 +11,9 @@ use Class::Usul::Cmd::Util      qw( decrypt );
 use English                     qw( -no_match_vars );
 use File::DataClass::IO         qw( io );
 use MCat::Util                  qw( local_tz );
+use HTML::StateTable::Constants qw( );
+use HTML::Forms::Constants      qw( );
+use Web::ComposableRequest::Constants qw( );
 use MCat::Exception;
 use Moo;
 
@@ -23,6 +26,9 @@ my $except = [
 
 Class::Usul::Cmd::Constants->Dump_Except($except);
 Class::Usul::Cmd::Constants->Exception_Class('MCat::Exception');
+HTML::StateTable::Constants->Exception_Class('MCat::Exception');
+HTML::Forms::Constants->Exception_Class('MCat::Exception');
+Web::ComposableRequest::Constants->Exception_Class('MCat::Exception');
 
 =encoding utf-8
 
@@ -122,6 +128,17 @@ The username used to connect to the database
 
 has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
 
+=item C<deployment>
+
+Defaults to C<development>. Should be overridden in the local configuration
+file. Used to modify the server output depending on deployment environment.
+For example, any value not C<development> will prevent the rendering of an
+exception to the end user
+
+=cut
+
+has 'deployment' => is => 'ro', isa => Str, default => 'development';
+
 =item default_password
 
 The password used when creating new users
@@ -197,14 +214,6 @@ has 'filemanager' =>
       };
    };
 
-=item layout
-
-The name of the default template to render
-
-=cut
-
-has 'layout' => is => 'ro', isa => Str, default => 'not_found';
-
 =item loader_attr
 
 Configuration parameters used by the component loader
@@ -222,6 +231,14 @@ Locale used if an attempt is made to localise error messages
 =cut
 
 has 'locale' => is => 'ro', isa => Str, default => 'en_GB';
+
+=item C<local_tz>
+
+The applications local time zone
+
+=cut
+
+has 'local_tz' => is => 'ro', isa => Str, default => 'Europe/London';
 
 =item lock_attributes
 
@@ -305,16 +322,6 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
 
 has '_navigation' => is => 'ro', isa => HashRef, init_arg => 'navigation',
    default => sub { {} };
-
-=item page
-
-Defines the names of the C<site/html> and C<site/wrapper> templates used to
-produce all the pages
-
-=cut
-
-has 'page' => is => 'ro', isa => HashRef,
-   default => sub { { html => 'base', wrapper => 'standard' } };
 
 =item pathname
 
@@ -495,6 +502,16 @@ The temporary directory used by the application
 
 has 'tempdir' => is => 'lazy', isa => Directory,
    default => sub { shift->vardir->catdir('tmp') };
+
+=item template_wrappers
+
+Defines the names of the C<site/html> and C<site/wrapper> templates used to
+produce all the pages
+
+=cut
+
+has 'template_wrappers' => is => 'ro', isa => HashRef,
+   default => sub { { html => 'base', wrapper => 'standard' } };
 
 =item token_lifetime
 

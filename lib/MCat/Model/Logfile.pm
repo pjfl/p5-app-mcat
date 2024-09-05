@@ -42,7 +42,7 @@ sub clear_cache : Auth('admin') {
 
    return unless $self->verify_form_post($context);
 
-   my $path = $context->config->logfile->parent->catfile("${logfile}.log");
+   my $path = $context->config->logfile->parent->catfile($logfile);
 
    return $self->error($context, NotFound, ["${path}"]) unless $path->exists;
 
@@ -69,7 +69,7 @@ sub view : Auth('admin') Nav('View Logfile') {
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
    my $options = {
-      caption => "${logfile} Logfile View",
+      caption => "${logfile} File View",
       context => $context,
       logfile => $logfile,
       redis   => $self->redis

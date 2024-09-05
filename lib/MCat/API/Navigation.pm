@@ -1,7 +1,7 @@
 package MCat::API::Navigation;
 
 use Class::Usul::Cmd::Constants qw( EXCEPTION_CLASS FALSE TRUE );
-use Unexpexted::Types           qw( Str );
+use Unexpected::Types           qw( Str );
 use Unexpected::Functions       qw( throw );
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning

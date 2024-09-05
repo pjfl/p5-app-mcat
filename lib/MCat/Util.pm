@@ -6,17 +6,19 @@ use strictures;
 use Digest                qw( );
 use English               qw( -no_match_vars );
 use File::DataClass::IO   qw( io );
+use HTML::Entities        qw( encode_entities );
 use JSON::MaybeXS         qw( encode_json );
 use Ref::Util             qw( is_hashref );
 use Unexpected::Functions qw( throw );
 use URI::Escape           qw( );
 use URI::http;
 use URI::https;
+use DateTime;
+use DateTime::Format::Human;
 
-use Sub::Exporter -setup => { exports => [
-   qw( base64_decode base64_encode digest create_token formpost
-       local_tz new_uri redirect redirect2referer truncate urandom uri_escape )
-]};
+use Sub::Exporter -setup => { exports => [ qw( base64_decode base64_encode
+   create_token digest dt_from_epoch dt_human encode_for_html formpost local_tz
+   new_uri redirect redirect2referer truncate urandom uri_escape ) ]};
 
 my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);
@@ -149,6 +151,26 @@ sub digest ($) {
    $digest->add($seed);
 
    return $digest;
+}
+
+sub dt_from_epoch ($;$) {
+   my ($epoch, $tz) = @_;
+
+   return DateTime->from_epoch(
+      epoch => $epoch, locale => 'en_GB', time_zone => $tz // 'UTC'
+   );
+}
+
+sub dt_human ($) {
+   my $dt  = shift;
+   my $fmt = DateTime::Format::Human->new(evening => 19, night => 23);
+
+   $dt->set_formatter($fmt);
+   return $dt;
+}
+
+sub encode_for_html ($) {
+   return encode_entities(encode_json(shift));
 }
 
 sub formpost () {

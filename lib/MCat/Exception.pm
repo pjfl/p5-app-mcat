@@ -6,18 +6,24 @@ use Unexpected::Types     qw( Int Object );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( has_exception );
 use DateTime;
+use DateTime::Format::Strptime;
 use MCat;
 use Moo;
 
 extends 'Class::Usul::Cmd::Exception',
    'HTML::Forms::Exception',
-   'HTML::StateTable::Exception',
+   'HTML::StateTable::Exception';
 
 has 'created' =>
    is      => 'ro',
    isa     => class_type('DateTime'),
    default => sub {
-      return DateTime->now( locale => 'en_GB', time_zone => 'UTC' );
+      my $dt  = DateTime->now(locale => 'en_GB', time_zone => 'UTC');
+      my $fmt = DateTime::Format::Strptime->new(pattern => '%F %R');
+
+      $dt->set_formatter($fmt);
+
+      return $dt;
    };
 
 has 'rv' => is => 'ro', isa => Int, default => 1;
