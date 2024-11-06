@@ -149,6 +149,9 @@ WCom.Util = (function() {
                if (_events.includes(prop)) {
                   el.addEventListener(prop.replace(/^on/, ''), attr[prop]);
                }
+               else if (prop == 'required') {
+                  el.setAttribute(prop, prop);
+               }
                else { el[prop] = attr[prop]; }
             }
          }
@@ -185,6 +188,7 @@ WCom.Util = (function() {
       legend(attr, content)   { return this._tag('legend', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }
       nav(attr, content)      { return this._tag('nav', attr, content) }
+      optgroup(attr, content) { return this._tag('optgroup', attr, content) }
       option(attr, content)   { return this._tag('option', attr, content) }
       select(attr, content)   { return this._tag('select', attr, content) }
       span(attr, content)     { return this._tag('span', attr, content) }
@@ -197,6 +201,7 @@ WCom.Util = (function() {
       thead(attr, content)    { return this._tag('thead', attr, content) }
       tr(attr, content)       { return this._tag('tr', attr, content) }
       ul(attr, content)       { return this._tag('ul', attr, content) }
+      upload(attr, content)   { return this._tag('upload', attr, content) }
       button(attr, content) {
          if (_typeof(attr) == 'object') attr['type'] ||= 'submit';
          else {

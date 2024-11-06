@@ -573,7 +573,7 @@ Names of the JS management objects
 
 has 'wcom_resources' => is => 'ro', isa => HashRef[Str], default => sub {
    return {
-      data_structure => 'WCom.Form.DataStructure',
+      data_structure => 'WCom.Form.DataStructure.manager',
       downloadable   => 'WCom.Table.Role.Downloadable',
       form_util      => 'WCom.Form.Util',
       modal          => 'WCom.Modal',

@@ -29,17 +29,17 @@ has_field 'name' =>
    title       => 'Enter your user name or email address';
 
 has_field 'password' =>
-   type         => 'Password',
-   element_attr => {
-      javascript => 'oninput="' . sprintf($change_js, 'password') . '"'
+   type          => 'Password',
+   element_attr  => {
+      javascript => { oninput => sprintf $change_js, 'password' }
    },
-   tags         => { label_tag => 'span' },
-   required     => TRUE;
+   tags          => { label_tag => 'span' },
+   required      => TRUE;
 
 has_field 'auth_code' =>
    type          => 'Digits',
    element_attr  => {
-      javascript => 'onblur="' . sprintf($change_js, 'auth_code') . '"'
+      javascript => { onblur => sprintf $change_js, 'auth_code' }
    },
    label         => 'Auth. Code',
    size          => 6,
@@ -61,7 +61,7 @@ has_field 'password_reset' =>
    disabled      => TRUE,
    element_attr  => {
       'data-field-depends' => ['user_name'],
-      'javascript'         => qq{onclick="${unrequire_js}"}
+      'javascript'         => { onclick => $unrequire_js }
    },
    html_name     => 'submit',
    label         => 'Forgot Password?',
@@ -74,7 +74,7 @@ has_field 'totp_reset' =>
    disabled      => TRUE,
    element_attr  => {
       'data-field-depends' => ['user_name'],
-      'javascript'         => qq{onclick="${unrequire_js}"}
+      'javascript'         => { onclick => $unrequire_js }
    },
    html_name     => 'submit',
    label         => 'Reset Auth.',
@@ -90,7 +90,7 @@ after 'after_build_fields' => sub {
    my $context = $self->context;
    my $session = $context->session;
 
-   unless ($session->enable_2fa) {
+   if (defined $session->enable_2fa && !$session->enable_2fa) {
       push @{$self->field('auth_code')->wrapper_class}, 'hide';
       push @{$self->field('totp_reset')->wrapper_class}, 'hide';
    }
@@ -101,10 +101,10 @@ after 'after_build_fields' => sub {
    my $uri    = $context->uri_for_action(
       'api/object_fetch', ['property'], $params
    );
-   my $showif = "${method}('user_name', ['auth_code', 'totp_reset'], '${uri}')";
-   my $js     = "${showif}; " . sprintf $change_js, 'user_name';
+   my $showif  = "${method}('user_name', ['auth_code','totp_reset'], '${uri}')";
+   my $blur_js = "${showif}; " . sprintf $change_js, 'user_name';
 
-   $self->field('name')->element_attr->{javascript} = qq{onblur="${js}"};
+   $self->field('name')->element_attr->{javascript} = { onblur => $blur_js };
    return;
 };
 
