@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Updated metadata
           - Switched to JS rendered forms
           - System going unstable
           - Fixes redirect to wanted after login

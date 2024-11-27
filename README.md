@@ -8,7 +8,8 @@ MCat - Music Catalog
 
 # Description
 
-A demo program for [Web::Components](https://metacpan.org/pod/Web%3A%3AComponents), [HTML::Forms](https://metacpan.org/pod/HTML%3A%3AForms), and [HTML::StateTable](https://metacpan.org/pod/HTML%3A%3AStateTable)
+A demo web application for [Web::Components](https://metacpan.org/pod/Web%3A%3AComponents), [HTML::Forms](https://metacpan.org/pod/HTML%3A%3AForms), and
+[HTML::StateTable](https://metacpan.org/pod/HTML%3A%3AStateTable)
 
 # Configuration and Environment
 

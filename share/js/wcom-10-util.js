@@ -30,6 +30,9 @@ WCom.Util = (function() {
       'ondragstart', 'ondrop', 'oninput', 'onkeypress', 'onmousedown',
       'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseover', 'onsubmit'
    ];
+   const _htmlProps = [
+      'disabled', 'readonly', 'required'
+   ];
    const _typeof = function(x) {
       if (!x) return;
       const type = typeof x;
@@ -149,7 +152,7 @@ WCom.Util = (function() {
                if (_events.includes(prop)) {
                   el.addEventListener(prop.replace(/^on/, ''), attr[prop]);
                }
-               else if (prop == 'required') {
+               else if (_htmlProps.includes(prop)) {
                   el.setAttribute(prop, prop);
                }
                else { el[prop] = attr[prop]; }
