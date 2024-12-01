@@ -2,7 +2,6 @@
    "local_config_file": "mcat-local.json",
    "logfile": "mcat.log",
    "navigation": {
-      "control_label": "img/settings.svg",
       "logo": "img/logo.svg"
    },
    "redis": {

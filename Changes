@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moving JS to Web::Components
           - Updated metadata
           - Switched to JS rendered forms
           - System going unstable

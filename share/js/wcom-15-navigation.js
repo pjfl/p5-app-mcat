@@ -3,9 +3,6 @@
 WCom.Navigation = (function() {
    const navId        = 'navigation';
    const dsName       = 'navigationConfig';
-   const filterEditor = WCom.Filters.Editor.manager;
-   const formUtil     = WCom.Form.Util;
-   const stateTable   = WCom.Table.Renderer.manager;
    class Navigation {
       constructor(container, config) {
          this.container        = container;
@@ -39,6 +36,26 @@ WCom.Navigation = (function() {
          container.append(this.renderTitle());
          window.addEventListener('popstate', this.popstateHandler());
          window.addEventListener('resize', this.resizeHandler());
+      }
+      addEventListeners(container, options = {}) {
+         const url = this.baseURL;
+         for (const link of container.getElementsByTagName('a')) {
+            const href = link.href + '';
+            if (href.length && url == href.substring(0, url.length)
+                && !link.getAttribute('clicklistener')) {
+               link.addEventListener('click', this.loadLocation(href, options));
+               link.setAttribute('clicklistener', true);
+            }
+         }
+         for (const form of container.getElementsByTagName('form')) {
+            const action = form.action + '';
+            if (action.length && url == action.substring(0, url.length)
+                && !form.getAttribute('submitlistener')) {
+               form.addEventListener(
+                  'submit', this.submitHandler(form, options)
+               );
+            }
+         }
       }
       addSelected(item) {
          item.classList.add('selected');
@@ -126,24 +143,10 @@ WCom.Navigation = (function() {
          }
          console.log('Recovered state ' + count + ' ' + state.href);
       }
-      redraw() {
-         if (!this.menus) return;
-         const content = [this.renderControl()];
-         if (!this.menus['_global']) return;
-         const global = this.renderList(this.menus['_global'], 'global');
-         if (this.location == 'header') content.unshift(global);
-         const cMenu = this.h.nav({ className: 'nav-menu' }, content);
-         this.headerMenu = this.display(this.container, 'headerMenu', cMenu);
-         if (this.location == 'header') return;
-         const container = document.getElementById(this.location);
-         const gMenu = this.h.nav({ className: 'nav-menu' }, global);
-         this.globalMenu = this.display(container, 'globalMenu', gMenu);
-      }
       async render() {
          this.messages.render(window.location.href);
-         this.redraw();
-         if (stateTable) await stateTable.isConstructing();
-         this.replaceLinks(document.getElementById(this.contentName));
+         this.renderMenu();
+         this.scan(this.contentPanel);
       }
       renderControl() {
          if (!this.menus['_control']) return;
@@ -254,7 +257,7 @@ WCom.Navigation = (function() {
             await this.loadMenuData(url);
             await this.renderHTML(text);
             this.setHeadTitle();
-            this.redraw();
+            this.renderMenu();
          }
          else if (location) {
             this.messages.render(location);
@@ -264,30 +267,23 @@ WCom.Navigation = (function() {
             console.warn('Neither content nor redirect in response to get');
          }
       }
+      renderMenu() {
+         if (!this.menus) return;
+         const content = [this.renderControl()];
+         if (!this.menus['_global']) return;
+         const global = this.renderList(this.menus['_global'], 'global');
+         if (this.location == 'header') content.unshift(global);
+         const cMenu = this.h.nav({ className: 'nav-menu' }, content);
+         this.headerMenu = this.display(this.container, 'headerMenu', cMenu);
+         if (this.location == 'header') return;
+         const container = document.getElementById(this.location);
+         const gMenu = this.h.nav({ className: 'nav-menu' }, global);
+         this.globalMenu = this.display(container, 'globalMenu', gMenu);
+      }
       renderTitle() {
          const title = this.logo.length ? [this.iconImage(this.logo)] : [];
          title.push(this.h.span({ className: 'title-text' }, this.title));
          return this.h.div({ className: 'nav-title' }, title);
-      }
-      replaceLinks(container, options = {}) {
-         const url = this.baseURL;
-         for (const link of container.getElementsByTagName('a')) {
-            const href = link.href + '';
-            if (href.length && url == href.substring(0, url.length)
-                && !link.getAttribute('clicklistener')) {
-               link.addEventListener('click', this.loadLocation(href, options));
-               link.setAttribute('clicklistener', true);
-            }
-         }
-         for (const form of container.getElementsByTagName('form')) {
-            const action = form.action + '';
-            if (action.length && url == action.substring(0, url.length)
-                && !form.getAttribute('submitlistener')) {
-               form.addEventListener(
-                  'submit', this.submitHandler(form, options)
-               );
-            }
-         }
       }
       resizeHandler() {
          return function(event) {
@@ -312,16 +308,13 @@ WCom.Navigation = (function() {
                frame.classList.add('link-display-' + original);
                this.linkDisplay = original;
             }
-            if (linkDisplay != this.linkDisplay) this.redraw();
+            if (linkDisplay != this.linkDisplay) this.renderMenu();
          }.bind(this);
       }
       async scan(panel, options = {}) {
-         if (stateTable) await stateTable.scan(panel, options);
-         if (formUtil) formUtil.scan(panel, options);
-         this.replaceLinks(panel, options);
-         if (filterEditor) filterEditor.scan(panel, options);
          for (const scanCallback of WCom.Util.Event.callbacks())
             scanCallback(panel, options);
+         this.addEventListeners(panel, options);
       }
       setHeadTitle() {
          const head  = (document.getElementsByTagName('head'))[0];
@@ -400,7 +393,7 @@ WCom.Navigation = (function() {
       onContentLoad() {
          if (!this.navigator) return;
          const el = document.getElementById(this.navigator.contentName);
-         if (el) this.navigator.replaceLinks(el);
+         if (el) this.navigator.addEventListeners(el);
       }
       renderLocation(href) {
          if (this.navigator) this.navigator.renderLocation(href);
