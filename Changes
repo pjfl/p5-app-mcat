@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Filter now renders inside form
           - Moving JS to Web::Components
           - Updated metadata
           - Switched to JS rendered forms

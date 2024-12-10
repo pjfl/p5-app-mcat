@@ -24,9 +24,7 @@ t/ipc_srlock*
 *.tar.gz
 MCat-*
 share/css
-share/js/wcom-2*
-share/js/wcom-3*
-share/js/wcom-4*
+share/js/wcom-*
 share/less/hfilter-minimal.less
 share/less/hforms-minimal.less
 share/less/hstatetable-minimal.less

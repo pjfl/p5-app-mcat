@@ -1,4 +1,1 @@
 [% form.render %]
-<div id="filter-container" class="filter-container"
-   data-filter-config="[% encode_for_html(filter_config) %]">
-</div>

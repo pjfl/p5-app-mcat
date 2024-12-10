@@ -25,10 +25,6 @@ sub base {
       $nav->crud('filter', $filterid);
    }
 
-   if ($context->action =~ m{ /edit \z }mx) {
-      $context->stash('nav')->container_layout(NUL);
-   }
-
    $nav->finalise;
    return;
 }
@@ -77,7 +73,7 @@ sub edit : Nav('Edit Filter') {
    my $options = {
       context => $context, item => $filter, title => 'Edit Filter'
    };
-   my $form    = $self->new_form('Filter', $options);
+   my $form = $self->new_form('Filter', $options);
 
    if ($form->process(posted => $context->posted)) {
       my $filter_view = $context->uri_for_action('filter/view', [$filter->id]);
@@ -87,15 +83,7 @@ sub edit : Nav('Edit Filter') {
       return;
    }
 
-   my $config = {
-      'api-uri'      => 'api/object/*/*',
-      'icons'        => $context->request->uri_for('img/icons.svg')->as_string,
-      'request-base' => $context->request->uri_for(NUL)->as_string,
-      'selector-uri' => 'filter/selector/*',
-      'table-id'     => $filter->table_id
-   };
-
-   $context->stash(filter_config => $config, form => $form);
+   $context->stash(form => $form);
    return;
 }
 

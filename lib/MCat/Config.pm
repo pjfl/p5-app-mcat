@@ -17,7 +17,7 @@ use Web::ComposableRequest::Constants qw( );
 use MCat::Exception;
 use Moo;
 
-with 'Web::Components::Role::ConfigLoader';
+with 'Web::Components::ConfigLoader';
 
 my $except = [
    qw( BUILDARGS BUILD DOES connect_info has_config_file has_config_home
@@ -85,6 +85,19 @@ A directory object which locates the applications executable files
 
 has 'bin' => is => 'lazy', isa => Directory,
    default => sub { shift->pathname->parent };
+
+=item component_loader
+
+Configuration parameters used by the L<Web::Components::Loader|component loader>
+
+=cut
+
+has 'component_loader' =>
+   is      => 'ro',
+   isa     => HashRef,
+   default => sub {
+      return { should_log_errors => FALSE, should_log_messages => TRUE };
+   };
 
 =item connect_info
 
@@ -158,8 +171,8 @@ has 'default_route' => is => 'ro', isa => Str, default => '/mcat/artist';
 
 =item default_view
 
-The default is to create HTML pages. Model methods can rely on this being
-set automatically
+The C<moniker> of view that creates HTML pages. Model methods can rely on this
+being stashed automatically as the C<view> attribute
 
 =cut
 
@@ -213,16 +226,6 @@ has 'filemanager' =>
          sharedir   => $self->root->catdir('file')
       };
    };
-
-=item loader_attr
-
-Configuration parameters used by the component loader
-
-=cut
-
-has 'loader_attr' => is => 'ro', isa => HashRef, default => sub {
-   return { should_log_errors => FALSE, should_log_messages => TRUE };
-};
 
 =item locale
 
