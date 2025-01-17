@@ -23,11 +23,8 @@ README.pod
 t/ipc_srlock*
 *.tar.gz
 MCat-*
-share/css
-share/js/wcom-*
-share/less/hfilter-minimal.less
-share/less/hforms-minimal.less
-share/less/hstatetable-minimal.less
+share/js
+share/less
 var/backup
 var/etc/mcat-local.json
 var/etc/mcat-schema.conf

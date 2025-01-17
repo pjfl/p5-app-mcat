@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moved LESS to Web::Components
           - Filter now renders inside form
           - Moving JS to Web::Components
           - Updated metadata
