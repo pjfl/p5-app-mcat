@@ -87,7 +87,7 @@ after 'after_build_fields' => sub {
                    . ".tables['filemanager'].modal.close";
    my $js          = sprintf "%s(); %s()", 'event.preventDefault', $modal_close;
 
-   $self->field('cancel')->element_attr->{javascript} = qq{onclick="${js}"};
+   $self->field('cancel')->element_attr->{javascript} = { onclick => $js };
    return;
 };
 

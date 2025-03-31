@@ -68,11 +68,11 @@ after 'after_build_fields' => sub {
       $context->uri_for_action('file/list', [], $params),
       $modal_close;
 
-   $self->field('download')->element_attr->{javascript} = qq{onclick="${js}"};
+   $self->field('download')->element_attr->{javascript} = { onclick => $js };
 
    $js = sprintf "%s(); %s()", 'event.preventDefault', $modal_close;
 
-   $self->field('cancel')->element_attr->{javascript} = qq{onclick="${js}"};
+   $self->field('cancel')->element_attr->{javascript} = { onclick => $js };
    return;
 };
 
