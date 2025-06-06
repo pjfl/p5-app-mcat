@@ -1,5 +1,6 @@
 package MCat::Controller::Root;
 
+use Web::Components::Util qw( build_routes );
 use Web::Simple;
 
 with 'Web::Components::Role';
@@ -7,59 +8,51 @@ with 'Web::Components::ReverseMap';
 
 has '+moniker' => default => 'z_root'; # Must sort to last place
 
-sub dispatch_request {
-return (
-   'GET|POST + /api/** + ?*' => sub {['api/root/dispatch', @_]},
+sub dispatch_request { build_routes
+   'GET|POST + /api/** + ?*' => 'api/root/dispatch',
 
-   'GET|POST + /user/create + ?*'     => sub {['user/root/base/create',    @_]},
-   'GET      + /user/property + ?*'   => sub {['page/root/object_property',@_]},
-   'POST     + /user/*/delete + ?*'   => sub {['user/root/base/delete',    @_]},
-   'GET|POST + /user/*/edit + ?*'     => sub {['user/root/base/edit',      @_]},
-   'GET|POST + /user/*/password/* + ?*'
-                                  => sub {['page/root/base/password_reset',@_]},
-   'GET|POST + /user/*/password + ?*' => sub {['page/root/base/password',  @_]},
-   'GET|POST + /user/*/profile + ?*'  => sub {['user/root/base/profile',   @_]},
-   'GET|POST + /user/*/totp/* + ?*'   => sub {['page/root/base/totp_reset',@_]},
-   'GET      + /user/*/totp + ?*'     => sub {['user/root/base/totp',      @_]},
-   'GET      + /user/* + ?*'          => sub {['user/root/base/view',      @_]},
-   'GET      + /user + ?*'            => sub {['user/root/base/list',      @_]},
+   'GET|POST + /user/create + ?*'       => 'user/root/base/create',
+   'GET      + /user/property + ?*'     => 'page/root/object_property',
+   'POST     + /user/*/delete + ?*'     => 'user/root/base/delete',
+   'GET|POST + /user/*/edit + ?*'       => 'user/root/base/edit',
+   'GET|POST + /user/*/password/* + ?*' => 'page/root/base/password_reset',
+   'GET|POST + /user/*/password + ?*'   => 'page/root/base/password',
+   'GET|POST + /user/*/profile + ?*'    => 'user/root/base/profile',
+   'GET|POST + /user/*/totp/* + ?*'     => 'page/root/base/totp_reset',
+   'GET      + /user/*/totp + ?*'       => 'user/root/base/totp',
+   'GET      + /user/* + ?*'            => 'user/root/base/view',
+   'GET      + /user + ?*'              => 'user/root/base/list',
 
-   'GET|POST + /filemanager/copy + ?*'   => sub {['file/root/base/copy',   @_]},
-   'GET|POST + /filemanager/create + ?*' => sub {['file/root/base/create', @_]},
-   'GET|POST + /filemanager/preview/*.* + ?*'
-                                         => sub {['file/root/base/view',   @_]},
-   'GET|POST + /filemanager/properties + ?*'
-                                     => sub {['file/root/base/properties', @_]},
-   'GET|POST + /filemanager/rename + ?*' => sub {['file/root/base/rename', @_]},
-   'GET      + /filemanager/select + ?*' => sub {['file/root/base/select', @_]},
-   'GET      + /filemanager/upload + ?*' => sub {['file/root/base/upload', @_]},
-   'POST     + /filemanager/upload + *file~ + ?*'
-                                         => sub {['file/root/base/upload', @_]},
-   'GET      + /filemanager/*/header'    => sub {['file/root/base/header', @_]},
-   'GET      + /filemanager + ?*'        => sub {['file/root/base/list',   @_]},
+   'GET|POST + /filemanager/copy + ?*'            => 'file/root/base/copy',
+   'GET|POST + /filemanager/create + ?*'          => 'file/root/base/create',
+   'GET|POST + /filemanager/preview/*.* + ?*'     => 'file/root/base/view',
+   'GET|POST + /filemanager/properties + ?*'      => 'file/root/base/properties',
+   'GET|POST + /filemanager/rename + ?*'          => 'file/root/base/rename',
+   'GET      + /filemanager/select + ?*'          => 'file/root/base/select',
+   'GET      + /filemanager/upload + ?*'          => 'file/root/base/upload',
+   'POST     + /filemanager/upload + *file~ + ?*' => 'file/root/base/upload',
+   'GET      + /filemanager/*/header'             => 'file/root/base/header',
+   'GET      + /filemanager + ?*'                 => 'file/root/base/list',
 
-   'GET|POST + /job/status + ?*' => sub {['job/root/base/status', @_]},
+   'GET|POST + /job/status + ?*' => 'job/root/base/status',
 
-   'POST     + /logfile/*/clear + ?*' => sub {['logfile/root/clear_cache', @_]},
-   'GET      + /logfile/*.* + ?*'     => sub {['logfile/root/base/view',   @_]},
-   'GET      + /logfile + ?*'         => sub {['logfile/root/base/list',   @_]},
+   'POST     + /logfile/*/clear + ?*' => 'logfile/root/clear_cache',
+   'GET      + /logfile/*.* + ?*'     => 'logfile/root/base/view',
+   'GET      + /logfile + ?*'         => 'logfile/root/base/list',
 
-   'GET      + /access_denied + ?*'
-                                  => sub {['page/root/base/access_denied', @_]},
-   'GET      + /changes + ?*'     => sub {['page/root/base/changes',       @_]},
-   'GET      + /configuration + ?*'
-                                  => sub {['page/root/base/configuration', @_]},
-   'GET|POST + /login + ?*'       => sub {['page/root/base/login',         @_]},
-   'POST     + /logout + ?*'      => sub {['page/root/logout',             @_]},
-   'GET|POST + /register/* | /register + ?*'
-                                  => sub {['page/root/base/register',      @_]},
+   'GET      + /access_denied + ?*'          => 'page/root/base/access_denied',
+   'GET      + /changes + ?*'                => 'page/root/base/changes',
+   'GET      + /configuration + ?*'          => 'page/root/base/configuration',
+   'GET|POST + /login + ?*'                  => 'page/root/base/login',
+   'POST     + /logout + ?*'                 => 'page/root/logout',
+   'GET|POST + /register/* | /register + ?*' => 'page/root/base/register',
 
-   'GET    + /** + ?*' => sub {['page/root/not_found', @_]},
-   'GET    + ?*'       => sub {['page/root/default',   @_]},
-   'HEAD   + ?*'       => sub {['page/root/not_found', @_]},
-   'PUT    + ?*'       => sub {['page/root/not_found', @_]},
-   'POST   + ?*'       => sub {['page/root/not_found', @_]},
-   'DELETE + ?*'       => sub {['page/root/not_found', @_]},
-)}
+   'GET    + /** + ?*' => 'page/root/not_found',
+   'GET    + ?*'       => 'page/root/default',
+   'HEAD   + ?*'       => 'page/root/not_found',
+   'PUT    + ?*'       => 'page/root/not_found',
+   'POST   + ?*'       => 'page/root/not_found',
+   'DELETE + ?*'       => 'page/root/not_found',
+}
 
 1;

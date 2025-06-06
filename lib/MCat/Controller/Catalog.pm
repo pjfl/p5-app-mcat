@@ -1,5 +1,6 @@
 package MCat::Controller::Catalog;
 
+use Web::Components::Util qw( build_routes );
 use Web::Simple;
 
 with 'Web::Components::Role';
@@ -7,62 +8,60 @@ with 'Web::Components::ReverseMap';
 
 has '+moniker' => default => 'catalog';
 
-sub dispatch_request {
-return (
-   'GET|POST + /artist/create + ?*' => sub {['artist/root/base/create', @_]},
-   'GET|POST + /artist/*/edit + ?*' => sub {['artist/root/base/edit',   @_]},
-   'POST + /artist/*/delete + ?*'   => sub {['artist/root/base/delete', @_]},
-   'GET + /artist/* + ?*'           => sub {['artist/root/base/view',   @_]},
-   'GET + /artist + ?*'             => sub {['artist/root/base/list',   @_]},
+sub dispatch_request { build_routes
+   'GET|POST + /artist/create + ?*'   => 'artist/root/base/create',
+   'GET|POST + /artist/*/edit + ?*'   => 'artist/root/base/edit',
+   'POST     + /artist/*/delete + ?*' => 'artist/root/base/delete',
+   'GET      + /artist/* + ?*'        => 'artist/root/base/view',
+   'GET      + /artist + ?*'          => 'artist/root/base/list',
 
-   'GET|POST + /artist/*/cd/create + ?*' => sub {['cd/root/base/create', @_]},
-   'GET|POST + /cd/*/edit + ?*'          => sub {['cd/root/base/edit',   @_]},
-   'POST + /cd/*/delete + ?*'            => sub {['cd/root/base/delete', @_]},
-   'GET + /cd/* + ?*'                    => sub {['cd/root/base/view',   @_]},
-   'GET + /artist/*/cd | /cd + ?*'       => sub {['cd/root/base/list',   @_]},
+   'GET|POST + /artist/*/cd/create + ?*' => 'cd/root/base/create',
+   'GET|POST + /cd/*/edit + ?*'          => 'cd/root/base/edit',
+   'POST     + /cd/*/delete + ?*'        => 'cd/root/base/delete',
+   'GET      + /cd/* + ?*'               => 'cd/root/base/view',
+   'GET      + /artist/*/cd | /cd + ?*'  => 'cd/root/base/list',
 
-   'GET|POST + /cd/*/track/create + ?*' => sub {['track/root/base/create', @_]},
-   'GET|POST + /track/*/edit + ?*'      => sub {['track/root/base/edit',   @_]},
-   'POST + /track/*/delete + ?*'        => sub {['track/root/base/delete', @_]},
-   'GET + /track/* + ?*'                => sub {['track/root/base/view',   @_]},
-   'GET + /cd/*/track | /track + ?*'    => sub {['track/root/base/list',   @_]},
+   'GET|POST + /cd/*/track/create + ?*'   => 'track/root/base/create',
+   'GET|POST + /track/*/edit + ?*'        => 'track/root/base/edit',
+   'POST     + /track/*/delete + ?*'      => 'track/root/base/delete',
+   'GET      + /track/* + ?*'             => 'track/root/base/view',
+   'GET      + /cd/*/track | /track + ?*' => 'track/root/base/list',
 
-   'GET|POST + /import/create + ?*' => sub {['import/root/base/create', @_]},
-   'GET|POST + /import/*/edit + ?*' => sub {['import/root/base/edit',   @_]},
-   'POST + /import/*/delete + ?*'   => sub {['import/root/base/delete', @_]},
-   'POST + /import/*/update + ?*'   => sub {['import/root/base/update', @_]},
-   'GET + /import/* + ?*'           => sub {['import/root/base/view',   @_]},
-   'GET + /import + ?*'             => sub {['import/root/base/list',   @_]},
+   'GET|POST + /import/create + ?*'   => 'import/root/base/create',
+   'GET|POST + /import/*/edit + ?*'   => 'import/root/base/edit',
+   'POST     + /import/*/delete + ?*' => 'import/root/base/delete',
+   'POST     + /import/*/update + ?*' => 'import/root/base/update',
+   'GET      + /import/* + ?*'        => 'import/root/base/view',
+   'GET      + /import + ?*'          => 'import/root/base/list',
 
-   'GET + /importlog/* + ?*' => sub {['importlog/root/base/view', @_]},
-   'GET + /import/*/log | /importlog + ?*'
-                             => sub {['importlog/root/base/list', @_]},
+   'GET      + /importlog/* + ?*'               => 'importlog/root/base/view',
+   'GET      + /import/*/log | /importlog + ?*' => 'importlog/root/base/list',
 
-   'GET|POST + /list/create + ?*'   => sub {['list/root/base/create', @_]},
-   'GET|POST + /list/*/edit + ?*'   => sub {['list/root/base/edit',   @_]},
-   'POST + /list/*/delete + ?*'     => sub {['list/root/base/delete', @_]},
-   'GET|POST + /list/*/update + ?*' => sub {['list/root/base/update', @_]},
-   'GET + /list/* + ?*'             => sub {['list/root/base/view',   @_]},
-   'GET + /list + ?*'               => sub {['list/root/base/list',   @_]},
+   'GET|POST + /list/create + ?*'   => 'list/root/base/create',
+   'GET|POST + /list/*/edit + ?*'   => 'list/root/base/edit',
+   'POST     + /list/*/delete + ?*' => 'list/root/base/delete',
+   'GET|POST + /list/*/update + ?*' => 'list/root/base/update',
+   'GET      + /list/* + ?*'        => 'list/root/base/view',
+   'GET      + /list + ?*'          => 'list/root/base/list',
 
-   'GET|POST + /filter/create + ?*' => sub {['filter/root/base/create',   @_]},
-   'GET + /filter/selector/* + ?*'  => sub {['filter/root/base/selector', @_]},
-   'GET|POST + /filter/*/edit + ?*' => sub {['filter/root/base/edit',     @_]},
-   'POST + /filter/*/delete + ?*'   => sub {['filter/root/base/delete',   @_]},
-   'GET + /filter/* + ?*'           => sub {['filter/root/base/view',     @_]},
-   'GET + /filter + ?*'             => sub {['filter/root/base/list',     @_]},
+   'GET|POST + /filter/create + ?*'     => 'filter/root/base/create',
+   'GET      + /filter/selector/* + ?*' => 'filter/root/base/selector',
+   'GET|POST + /filter/*/edit + ?*'     => 'filter/root/base/edit',
+   'POST     + /filter/*/delete + ?*'   => 'filter/root/base/delete',
+   'GET      + /filter/* + ?*'          => 'filter/root/base/view',
+   'GET      + /filter + ?*'            => 'filter/root/base/list',
 
-   'GET|POST + /table/create + ?*' => sub {['table/root/base/create', @_]},
-   'GET|POST + /table/*/edit + ?*' => sub {['table/root/base/edit',   @_]},
-   'POST + /table/*/delete + ?*'   => sub {['table/root/base/delete', @_]},
-   'GET + /table/* + ?*'           => sub {['table/root/base/view',   @_]},
-   'GET + /table + ?*'             => sub {['table/root/base/list',   @_]},
+   'GET|POST + /table/create + ?*'   => 'table/root/base/create',
+   'GET|POST + /table/*/edit + ?*'   => 'table/root/base/edit',
+   'POST     + /table/*/delete + ?*' => 'table/root/base/delete',
+   'GET      + /table/* + ?*'        => 'table/root/base/view',
+   'GET      + /table + ?*'          => 'table/root/base/list',
 
-   'GET|POST + /tag/create + ?*' => sub {['tag/root/base/create', @_]},
-   'GET|POST + /tag/*/edit + ?*' => sub {['tag/root/base/edit',   @_]},
-   'POST + /tag/*/delete + ?*'   => sub {['tag/root/base/delete', @_]},
-   'GET + /tag/* + ?*'           => sub {['tag/root/base/view',   @_]},
-   'GET + /tag + ?*'             => sub {['tag/root/base/list',   @_]},
-)}
+   'GET|POST + /tag/create + ?*'   => 'tag/root/base/create',
+   'GET|POST + /tag/*/edit + ?*'   => 'tag/root/base/edit',
+   'POST     + /tag/*/delete + ?*' => 'tag/root/base/delete',
+   'GET      + /tag/* + ?*'        => 'tag/root/base/view',
+   'GET      + /tag + ?*'          => 'tag/root/base/list',
+}
 
 1;

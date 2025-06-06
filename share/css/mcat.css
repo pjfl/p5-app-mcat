@@ -526,24 +526,15 @@ form.classic .alert-info {
   padding: 0.5rem 0 0;
 }
 form.classic .ds-add-icon {
-  background: linear-gradient(0deg, bisque, whitesmoke);
-  border-radius: 3px;
-  box-shadow: 2px 2px 2px gray;
-  color: seagreen;
-  cursor: pointer;
   font-family: Roboto, system-ui, sans-serif;
   font-size: smaller;
   font-weight: bold;
-  padding: 0.25rem;
 }
 form.classic .ds-add-icon svg {
   vertical-align: middle;
 }
-form.classic .ds-add-icon:hover {
-  box-shadow: inset 0 0 3px gray;
-}
 form.classic .ds-form {
-  border-spacing: 0;
+  border-spacing: 0 0.5rem;
   position: relative;
 }
 form.classic .ds-form th {
@@ -554,9 +545,13 @@ form.classic .ds-form th {
 form.classic .ds-form tr {
   vertical-align: middle;
 }
+form.classic .ds-form tr.separate {
+  background: linear-gradient(0deg, whitesmoke, ivory);
+  border-radius: 5px;
+  box-shadow: 3px 3px 3px gray;
+}
 form.classic .ds-form tr.separate .ds-field,
 form.classic .ds-form tr.separate .ds-remove {
-  border-bottom: 1px solid gray;
   padding-bottom: 0.5rem;
 }
 form.classic .ds-form .ds-field {
@@ -567,6 +562,12 @@ form.classic .ds-form .ds-field.hide,
 form.classic .ds-form .ds-reorderable.hide,
 form.classic .ds-form .ds-remove.hide {
   display: none;
+}
+form.classic .ds-form .ds-input.input-text[readonly=readonly] {
+  background: ivory;
+  border: 0;
+  border-radius: 0;
+  color: black;
 }
 form.classic .ds-form .ds-output {
   font-size: 0.8rem;
@@ -720,6 +721,9 @@ form.classic .input-field textarea {
   display: table-cell;
   font-family: 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif;
   max-width: 20rem;
+}
+form.classic .input-field textarea {
+  min-width: 20rem;
 }
 form.classic .input-field input,
 form.classic .input-field select.select-multiple,
@@ -931,8 +935,9 @@ form.classic .input-button.inline {
   display: inline-flex;
 }
 form.classic .input-button.right {
+  margin-right: 0;
   position: absolute;
-  right: 0.5rem;
+  right: 0;
 }
 form.classic .input-captcha input,
 form.classic .input-captcha .field-label,
@@ -1619,6 +1624,7 @@ body {
 .state-table .table-form .table-button span,
 .state-table .table-form button span,
 .state-table .dialog-form button span {
+  font-family: Roboto, system-ui, sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.1rem;
   position: relative;
@@ -1766,16 +1772,23 @@ body {
   margin: 0;
   padding: 0;
 }
-header {
+header,
+footer {
   margin: 0 0.5rem;
   position: sticky;
-  top: 0;
   z-index: 3;
 }
 @media (max-width: 680px) {
-  header {
+  header,
+  footer {
     margin: 0;
   }
+}
+header {
+  top: 0;
+}
+footer {
+  bottom: 0;
 }
 .frame {
   bottom: 0;

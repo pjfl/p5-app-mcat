@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Using build_routes from Web::Components
           - Form JS set using a hash ref not string
           - Moved LESS to Web::Components
           - Filter now renders inside form
