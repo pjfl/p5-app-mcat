@@ -88,7 +88,7 @@ has 'bin' => is => 'lazy', isa => Directory,
 
 =item component_loader
 
-Configuration parameters used by the L<Web::Components::Loader|component loader>
+Configuration parameters used by the L<component loader|Web::Components::Loader>
 
 =cut
 
@@ -301,8 +301,8 @@ has 'name' => is => 'ro', isa => Str, default => 'Music Catalog';
 
 =item navigation
 
-Hash reference of configuration attributes applied the the L<MCat::Navigation>
-object
+Hash reference of configuration attributes applied the the
+L<navigation|Web::Components::Navigation> object
 
 =cut
 
@@ -314,11 +314,11 @@ has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
          messages => {
             'buffer-limit' => $self->request->{max_messages}
          },
-         title => $self->name . ' v' . MCat->VERSION,
+         title => $self->name,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
          global => [
-            qw( admin/menu manager/menu artist/list cd/list track/list )
+            qw( artist/list cd/list track/list manager/menu admin/menu )
          ],
       };
    };
