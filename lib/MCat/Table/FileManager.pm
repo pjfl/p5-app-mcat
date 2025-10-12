@@ -77,7 +77,7 @@ setup_resultset sub {
    return HTML::StateTable::ResultSet::File::List->new(
       allow_directories => TRUE,
       directory         => $self->directory,
-      extension         => $self->extensions,
+      extensions        => $self->extensions,
       recurse           => FALSE,
       result_class      => 'MCat::Logfile::Result::List', # TODO: Fix name
       table             => $self

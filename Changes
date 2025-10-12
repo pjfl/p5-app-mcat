@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Some logic moved to HTML view from wrapper template
           - Updated page template and using CSS grid form forms
           - Using build_routes from Web::Components
           - Form JS set using a hash ref not string

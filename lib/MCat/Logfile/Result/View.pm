@@ -143,31 +143,6 @@ has 'timestamp' =>
 # The expected format of the timestamp on the logfile line
 has '_timestamp_pattern' => is => 'ro', isa => Str, default => '%Y/%m/%d %T';
 
-=item pid
-
-The operating system id (integer) of the process that created this logfile line.
-Unused
-
-=cut
-
-has 'pid' =>
-   is      => 'lazy',
-   isa     => Int,
-   default => sub {
-      my $self = shift;
-
-      return 0 unless $self->remainder_start;
-
-      return _field_value($self->fields->[0], 'p', 0);
-   };
-
-has 'pid_filter' =>
-   is      => 'ro',
-   isa     => ArrayRef[Str],
-   default => sub {
-      return [ qw(cut -f 0 -d), q(,), qw(| cut -f 2 -d : | sort -n | uniq) ];
-   };
-
 =item status
 
 An enumerated field (string) that represents status of the logfile line
@@ -237,15 +212,48 @@ has 'source' =>
 
       return NUL unless $self->remainder_start;
 
-      return $self->fields->[3] // NUL;
+      my $source = $self->fields->[3] // NUL;
+
+      $source =~ s{ \[ \d+ \] \z }{}mx;
+
+      return $source;
    };
 
 has 'source_filter' =>
    is      => 'ro',
    isa     => ArrayRef[Str],
    default => sub {
-      return [ qw(cut -f 4 -d), q(,), qw(| tr -d \" | sort | uniq) ];
+      return [ qw(cut -f 4 -d), q(,), qw(| tr -d \" | cut -f 1 -d), q([),
+               qw(| sort | uniq) ];
    };
+
+=item pid
+
+The operating system id (integer) of the process that created this logfile line
+
+=cut
+
+has 'pid' =>
+   is      => 'lazy',
+   isa     => Int,
+   default => sub {
+      my $self = shift;
+
+      return 0 unless $self->remainder_start;
+
+      my $source = $self->fields->[3] // NUL;
+
+      my ($pid) = $source =~ m{ \[ (\d+) \] \z }mx;
+
+      return $pid || 0;
+   };
+
+#has 'pid_filter' =>
+#   is      => 'ro',
+#   isa     => ArrayRef[Str],
+#   default => sub {
+#      return [ qw(cut -f 0 -d), q(,), qw(| cut -f 2 -d : | sort -n | uniq) ];
+#   };
 
 =item remainder
 

@@ -227,6 +227,15 @@ has 'filemanager' =>
       };
    };
 
+=item C<icons>
+
+A partial string path from the document root to the file containing SVG
+symbols used when generating HTML
+
+=cut
+
+has 'icons' => is => 'ro', isa => Str, default => 'img/icons.svg';
+
 =item locale
 
 Locale used if an attempt is made to localise error messages

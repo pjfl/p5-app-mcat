@@ -187,6 +187,14 @@ sub insert {
    return $self->next::method;
 }
 
+sub is_authorised {
+   my ($self, $session) = @_;
+
+   return FALSE unless $session;
+
+   return $self->id == $session->id || $session->role eq 'admin' ? TRUE : FALSE;
+}
+
 sub mobile_phone {
    my ($self, $value) = @_; return $self->_profile('mobile_phone', $value);
 }

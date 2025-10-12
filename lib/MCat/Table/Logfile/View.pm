@@ -8,6 +8,7 @@ use Moo;
 use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
+with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Form';
@@ -15,6 +16,10 @@ with    'HTML::StateTable::Role::Form';
 has 'logfile' => is => 'ro', isa => Str, required => TRUE;
 
 has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
+
+has '+configurable_action' => default => 'api/table_preference';
+
+has '+configurable_control_location' => default => 'TopRight';
 
 has '+form_buttons' => default => sub {
    return [{
@@ -24,15 +29,17 @@ has '+form_buttons' => default => sub {
    }];
 };
 
-has '+form_control_location' => default => 'BottomLeft';
+has '+form_control_location' => default => 'BottomRight';
 
-has '+icons' => default => sub {
-   return shift->context->request->uri_for('img/icons.svg')->as_string;
-};
+has '+icons' => default => sub { shift->context->uri_for_icons->as_string };
 
 has '+name' => default => sub { shift->logfile };
 
-has '+page_control_location' => default => 'TopRight';
+has '+page_control_location' => default => 'TopLeft';
+
+has '+page_size_control_location' => default => 'BottomLeft';
+
+has '+searchable_control_location' => default => 'TopRight';
 
 has '+title_location' => default => 'inner';
 
@@ -69,9 +76,14 @@ has_column 'source' =>
    filterable => TRUE,
    searchable => TRUE,
    sortable   => TRUE,
-   width      => '15rem';
+   width      => '10rem';
 
-has_column 'remainder' => label => 'Line', searchable => TRUE;
+has_column 'pid' => cell_traits => ['Numeric'], searchable => TRUE;
+
+has_column 'remainder' =>
+   cell_traits => ['Remainder'],
+   label       => 'Line',
+   searchable  => TRUE;
 
 use namespace::autoclean -except => TABLE_META;
 

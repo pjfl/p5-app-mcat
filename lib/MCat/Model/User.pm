@@ -15,19 +15,19 @@ sub base : Auth('view') {
    my ($self, $context, $userid) = @_;
 
    my $nav = $context->stash('nav')->list('user')->item('user/create');
-   my $session = $context->session;
 
-   if ($userid && ($userid == $session->id || $session->role eq 'admin')) {
+   if ($userid) {
+      my $session = $context->session;
       my $args = { username => $userid, options => { prefetch => 'profile' } };
       my $user = $context->find_user($args, $session->realm);
 
       return $self->error($context, UnknownUser, [$userid]) unless $user;
 
+      return $self->error($context, UnauthorisedAccess)
+         unless $user->is_authorised($session);
+
       $context->stash(user => $user);
       $nav->crud('user', $userid);
-   }
-   elsif ($userid) {
-      return $self->error($context, UnauthorisedAccess);
    }
 
    $nav->finalise;

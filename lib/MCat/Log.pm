@@ -103,7 +103,7 @@ sub _get_leader {
    }
 
    unless ($leader) {
-      if ($message =~ m{ \A \S+ : }mx) {
+      if ($message =~ m{ \A [^:]+ : }mx) {
          ($leader, $message) = split m{ : }mx, $message, 2;
       }
       else { $leader = 'Unknown' }
@@ -134,7 +134,7 @@ sub _log {
    if (my $file = $self->config->logfile) {
       $file->appendln($self->_csv->string)->flush;
    }
-   else { CORE::warn $message }
+   else { CORE::warn "${leader}: ${message}\n" }
 
    return TRUE;
 }

@@ -47,8 +47,12 @@ sub _build__templater {
 sub _add_tt_defaults {
    my ($self, $context) = @_; weaken $context;
 
-   my $session = $context->session; weaken $session;
-   my $tz      = $session->timezone;
+   my $session    = $context->session; weaken $session;
+   my $prefix     = $self->config->prefix;
+   my $skin       = $session->skin || $self->config->skin;
+   my $stylesheet = $context->request->uri_for("css/${prefix}-${skin}.css");
+   my $javascript = $context->request->uri_for("js/${prefix}.js");
+   my $tz         = $session->timezone;
 
    return {
       dt_from_epoch   => sub { dt_from_epoch shift, $tz },
@@ -56,9 +60,12 @@ sub _add_tt_defaults {
       dt_user         => sub { my $dt = shift; $dt->set_time_zone($tz); $dt },
       encode_entities => \&encode_entities,
       encode_for_html => \&encode_for_html,
+      javascript      => $javascript->as_string,
       process_attrs   => \&process_attrs,
       session         => $session,
       status_message  => \&status_message,
+      stylesheet      => $stylesheet->as_string,
+      token           => sub { $context->verification_token },
       uri_for         => sub { $context->request->uri_for(@_) },
       uri_for_action  => sub { $context->uri_for_action(@_) },
       %{$context->stash},
