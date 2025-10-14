@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Stash now initiaised with more attributes from HTML view
           - Some logic moved to HTML view from wrapper template
           - Updated page template and using CSS grid form forms
           - Using build_routes from Web::Components

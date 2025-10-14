@@ -21,6 +21,15 @@ has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 
 has 'controllers' => is => 'ro', isa => HashRef, default => sub { {} };
 
+has 'icons_uri' =>
+   is      => 'lazy',
+   isa     => class_type('URI'),
+   default => sub {
+      my $self = shift;
+
+      return $self->request->uri_for($self->config->icons);
+   };
+
 has 'models' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'posted' =>
@@ -46,15 +55,6 @@ has 'time_zone' =>
    isa     => Str,
    default => sub { shift->session->timezone };
 
-has 'uri_for_icons' =>
-   is      => 'lazy',
-   isa     => class_type('URI'),
-   default => sub {
-      my $self = shift;
-
-      return $self->request->uri_for($self->config->icons);
-   };
-
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has '_api_routes' =>
@@ -67,9 +67,24 @@ has '_api_routes' =>
    };
 
 has '_stash' =>
-   is      => 'ro',
+   is      => 'lazy',
    isa     => HashRef,
-   default => sub { { version => MCat->VERSION } };
+   default => sub {
+      my $self       = shift;
+      my $prefix     = $self->config->prefix;
+      my $skin       = $self->session->skin || $self->config->skin;
+      my $stylesheet = $self->request->uri_for("css/${prefix}-${skin}.css");
+      my $javascript = $self->request->uri_for("js/${prefix}.js");
+
+      return {
+         javascript         => $javascript->as_string,
+         session_updated    => $self->session->updated,
+         stylesheet         => $stylesheet->as_string,
+         theme              => $self->session->theme,
+         verification_token => $self->verification_token,
+         version            => MCat->VERSION
+      };
+   };
 
 with 'MCat::Role::Authentication';
 
