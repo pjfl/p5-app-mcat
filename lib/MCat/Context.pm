@@ -9,7 +9,7 @@ use List::Util                  qw( pairs );
 use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
 use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );
-use Unexpected::Functions       qw( throw BadToken NoMethod UnknownModel );
+use Unexpected::Functions       qw( throw NoMethod UnknownModel );
 use MCat::Response;
 use Moo;
 

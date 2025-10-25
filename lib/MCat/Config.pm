@@ -141,7 +141,7 @@ The username used to connect to the database
 
 has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
 
-=item C<deployment>
+=item deployment
 
 Defaults to C<development>. Should be overridden in the local configuration
 file. Used to modify the server output depending on deployment environment.
@@ -227,7 +227,7 @@ has 'filemanager' =>
       };
    };
 
-=item C<icons>
+=item icons
 
 A partial string path from the document root to the file containing SVG
 symbols used when generating HTML
@@ -235,6 +235,14 @@ symbols used when generating HTML
 =cut
 
 has 'icons' => is => 'ro', isa => Str, default => 'img/icons.svg';
+
+=item keywords
+
+Space separated list of keywords which appear in the meta of the HTML pages
+
+=cut
+
+has 'keywords' => is => 'ro', isa => Str, default => 'music cataloging';
 
 =item locale
 
@@ -244,7 +252,7 @@ Locale used if an attempt is made to localise error messages
 
 has 'locale' => is => 'ro', isa => Str, default => 'en_GB';
 
-=item C<local_tz>
+=item local_tz
 
 The applications local time zone
 
@@ -591,7 +599,6 @@ has 'wcom_resources' => is => 'ro', isa => HashRef[Str], default => sub {
       modal          => 'WCom.Modal',
       navigation     => 'WCom.Navigation.manager',
       table_renderer => 'WCom.Table.Renderer.manager',
-      toggle         => 'WCom.Form.Toggle'
    };
 };
 

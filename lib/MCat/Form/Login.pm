@@ -24,8 +24,8 @@ has_field 'name' =>
    html_name   => 'user_name',
    input_param => 'user_name',
    label       => 'User Name',
+   label_top   => TRUE,
    required    => TRUE,
-   tags        => { label_tag => 'span' },
    title       => 'Enter your user name or email address';
 
 has_field 'password' =>
@@ -33,7 +33,7 @@ has_field 'password' =>
    element_attr  => {
       javascript => { oninput => sprintf $change_js, 'password' }
    },
-   tags          => { label_tag => 'span' },
+   label_top     => TRUE,
    required      => TRUE;
 
 has_field 'auth_code' =>
@@ -42,8 +42,8 @@ has_field 'auth_code' =>
       javascript => { onblur => sprintf $change_js, 'auth_code' }
    },
    label         => 'Auth. Code',
+   label_top     => TRUE,
    size          => 6,
-   tags          => { label_tag => 'span' },
    title         => 'Enter the Authenticator code',
    wrapper_class => ['input-integer'];
 

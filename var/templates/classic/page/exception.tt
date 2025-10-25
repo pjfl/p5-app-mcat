@@ -17,7 +17,7 @@
 [%    END -%]
   <div class="line">
     <label>Class</label>
-      <span>[% exception.class %] v[% exception.version %]</span>
+    <span>[% exception.class %] v[% exception.version %]</span>
   </div>
   <div class="line">
     <label>Created</label><span>[% dt_user(exception.created) %]</span>

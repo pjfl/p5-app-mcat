@@ -112,19 +112,17 @@ after 'before_build_fields' => sub {
       $count += 1;
    }
 
-   my $resources = $self->context->config->wcom_resources;
-   my $toggle_js = $resources->{toggle} . ".toggleFields('core_table')";
    my $class     = 'HTML::Forms::Field::Select';
    my $field     = $self->new_field_with_traits($class, {
-      element_attr => { javascript => { onchange => $toggle_js } },
-      default      => $table_id - 1,
-      form         => $self,
-      label        => 'Table',
-      name         => 'core_table',
-      order        => 8,
-      parent       => $self,
-      toggle       => $toggle,
-      traits       => ['+Toggle'],
+      default          => $table_id - 1,
+      form             => $self,
+      label            => 'Table',
+      name             => 'core_table',
+      order            => 8,
+      parent           => $self,
+      toggle           => $toggle,
+      toggle_animation => FALSE,
+      traits           => ['+Toggle'],
    });
    my $accessor = $field->parent->full_accessor if $field->parent;
 

@@ -26,7 +26,9 @@ has '+init_object' => default => sub {
    return $value;
 };
 
-has 'user' => is => 'ro', isa => class_type('MCat::Schema::Result::User'),
+has 'user' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Schema::Result::User'),
    required => TRUE;
 
 has_field 'name' => type => 'Display', label => 'User Name';
@@ -35,13 +37,20 @@ has_field 'email' => type => 'Display', label => 'Email Address';
 
 has_field 'timezone' => type => 'Timezone';
 
-has_field 'enable_2fa' => type => 'Boolean', label => 'Enable 2FA';
+has_field 'enable_2fa' =>
+   type   => 'Boolean',
+   label  => 'Enable 2FA',
+   toggle => { -checked => ['mobile_phone', 'postcode'] };
 
-has_field 'mobile_phone' => type => 'PosInteger', label => 'Mobile #',
-   size => 12, title => 'Additional security question used by 2FA token reset';
+has_field 'mobile_phone' =>
+   type  => 'PosInteger',
+   label => 'Mobile #',
+   size  => 12,
+   title => 'Additional security question used by 2FA token reset';
 
 has_field 'postcode' =>
-   size => 8, title => 'Additional security question used by 2FA token reset';
+   size  => 8,
+   title => 'Additional security question used by 2FA token reset';
 
 has_field 'skin' =>
    type    => 'Select',
@@ -80,6 +89,17 @@ has_field 'theme' => type => 'Select', default => 'light', options => [
 
 has_field 'submit' => type => 'Button';
 
+after 'after_build_fields' => sub {
+   my $self = shift;
+
+   unless ($self->user->enable_2fa) {
+      $self->field('mobile_phone')->add_wrapper_class('hide');
+      $self->field('postcode')->add_wrapper_class('hide');
+   }
+
+   return;
+};
+
 sub validate {
    my $self       = shift;
    my $enable_2fa = $self->field('enable_2fa')->value ? TRUE : FALSE;
@@ -100,7 +120,6 @@ sub validate {
    }, {
       key  => 'preference_user_id_name_uniq'
    });
-
 
    $user->set_totp_secret($enable_2fa);
 
