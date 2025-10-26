@@ -573,8 +573,15 @@ used in the encrypting of passwords
 
 =cut
 
-has 'user' => is => 'ro', isa => HashRef,
-   default => sub { { load_factor => 14 } };
+has 'user' => is => 'ro', isa => HashRef, default => sub {
+   return {
+      default_password => 'welcome',
+      default_role     => 'view',
+      load_factor      => 14,
+      min_name_len     => 3,
+      min_password_len => 3,
+   };
+};
 
 =item vardir
 
