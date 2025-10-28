@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Icons URI in context used throughout
           - Leaner login form
           - Form toggle cleanup
           - Stash now initiaised with more attributes from HTML view

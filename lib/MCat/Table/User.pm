@@ -31,9 +31,7 @@ has '+form_buttons' => default => sub {
 
 has '+form_control_location' => default => 'BottomRight';
 
-has '+icons' => default => sub {
-   return shift->context->request->uri_for('img/icons.svg')->as_string;
-};
+has '+icons' => default => sub { shift->context->icons_uri->as_string };
 
 has '+page_control_location' => default => 'TopRight';
 

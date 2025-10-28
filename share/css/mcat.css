@@ -768,23 +768,39 @@ form.classic .input-selector {
 }
 form.classic .data-structure button,
 form.classic .input-button button,
-form.classic .input-selector button {
+form.classic .input-selector button,
+form.classic .data-structure a.form-button,
+form.classic .input-button a.form-button,
+form.classic .input-selector a.form-button {
   background: linear-gradient(0deg, bisque, whitesmoke);
   border: 2px outset gainsboro;
   border-radius: 50px;
   color: seagreen;
   cursor: pointer;
+  display: inline-block;
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1rem;
+  line-height: 0.8rem;
   overflow: hidden;
-  padding: 0.25rem 0.75rem;
+  padding: 0.366rem 0.75rem;
   position: relative;
-  transition: 0.5s;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border 0.5s, color 0.5s;
 }
 form.classic .data-structure button span,
 form.classic .input-button button span,
 form.classic .input-selector button span,
+form.classic .data-structure a.form-button span,
+form.classic .input-button a.form-button span,
+form.classic .input-selector a.form-button span,
 form.classic .data-structure button svg,
 form.classic .input-button button svg,
-form.classic .input-selector button svg {
+form.classic .input-selector button svg,
+form.classic .data-structure a.form-button svg,
+form.classic .input-button a.form-button svg,
+form.classic .input-selector a.form-button svg {
   font-size: 0.7rem;
   letter-spacing: 0.1rem;
   position: relative;
@@ -794,23 +810,35 @@ form.classic .input-selector button svg {
 }
 form.classic .data-structure button span.icon-wrapper,
 form.classic .input-button button span.icon-wrapper,
-form.classic .input-selector button span.icon-wrapper {
+form.classic .input-selector button span.icon-wrapper,
+form.classic .data-structure a.form-button span.icon-wrapper,
+form.classic .input-button a.form-button span.icon-wrapper,
+form.classic .input-selector a.form-button span.icon-wrapper {
   display: block;
 }
 form.classic .data-structure button span.icon-wrapper svg,
 form.classic .input-button button span.icon-wrapper svg,
-form.classic .input-selector button span.icon-wrapper svg {
+form.classic .input-selector button span.icon-wrapper svg,
+form.classic .data-structure a.form-button span.icon-wrapper svg,
+form.classic .input-button a.form-button span.icon-wrapper svg,
+form.classic .input-selector a.form-button span.icon-wrapper svg {
   vertical-align: top;
 }
 form.classic .data-structure button:hover,
 form.classic .input-button button:hover,
-form.classic .input-selector button:hover {
+form.classic .input-selector button:hover,
+form.classic .data-structure a.form-button:hover,
+form.classic .input-button a.form-button:hover,
+form.classic .input-selector a.form-button:hover {
   border: 2px inset gainsboro;
   color: black;
 }
 form.classic .data-structure button::before,
 form.classic .input-button button::before,
-form.classic .input-selector button::before {
+form.classic .input-selector button::before,
+form.classic .data-structure a.form-button::before,
+form.classic .input-button a.form-button::before,
+form.classic .input-selector a.form-button::before {
   background: radial-gradient(limegreen, transparent, transparent);
   content: '';
   display: block;
@@ -826,12 +854,18 @@ form.classic .input-selector button::before {
 }
 form.classic .data-structure button:hover::before,
 form.classic .input-button button:hover::before,
-form.classic .input-selector button:hover::before {
+form.classic .input-selector button:hover::before,
+form.classic .data-structure a.form-button:hover::before,
+form.classic .input-button a.form-button:hover::before,
+form.classic .input-selector a.form-button:hover::before {
   opacity: 1;
 }
 form.classic .data-structure button::after,
 form.classic .input-button button::after,
-form.classic .input-selector button::after {
+form.classic .input-selector button::after,
+form.classic .data-structure a.form-button::after,
+form.classic .input-button a.form-button::after,
+form.classic .input-selector a.form-button::after {
   background: linear-gradient(0deg, bisque, whitesmoke);
   border-radius: 50px;
   content: '';
@@ -862,24 +896,6 @@ form.classic .input-button.right {
   margin-right: 0;
   position: absolute;
   right: 0.5rem;
-}
-form.classic .input-button a.form-button {
-  background: linear-gradient(0deg, bisque, whitesmoke);
-  border: 2px outset gainsboro;
-  border-radius: 50px;
-  color: seagreen;
-  cursor: pointer;
-  display: inline-block;
-  font-family: Roboto, system-ui, sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 0.1rem;
-  line-height: 0.8rem;
-  overflow: hidden;
-  padding: 0.366rem 0.75rem;
-  position: relative;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: border 0.5s, color 0.5s;
 }
 form.classic .input-selector button {
   grid-area: selector;
@@ -1105,6 +1121,8 @@ form.classic.filemanager {
   margin: 0.5rem 0 !important;
 }
 .form-messages {
+  display: inline-flex;
+  flex-direction: column;
   padding-bottom: 0.5rem;
 }
 .form-messages .alert .card {
@@ -1135,8 +1153,8 @@ form.classic.filemanager {
   background: lightpink;
   padding: 0.25rem;
 }
+.form-messages .alert-error,
 .form-messages .alert-error-message {
-  display: block;
   margin-left: -0.25rem;
 }
 .selector form.classic {
@@ -1838,6 +1856,9 @@ body {
 }
 .state-table.object-view td.boolean {
   text-align: left;
+}
+.state-table.object-view tr {
+  line-height: 1.5rem;
 }
 .state-table.object-view .caption {
   margin-left: 0.5rem;

@@ -598,16 +598,19 @@ Names of the JS management objects
 
 =cut
 
-has 'wcom_resources' => is => 'ro', isa => HashRef[Str], default => sub {
-   return {
-      data_structure => 'WCom.Form.DataStructure.manager',
-      downloadable   => 'WCom.Table.Role.Downloadable',
-      form_util      => 'WCom.Form.Util',
-      modal          => 'WCom.Modal',
-      navigation     => 'WCom.Navigation.manager',
-      table_renderer => 'WCom.Table.Renderer.manager',
+has 'wcom_resources' =>
+   is      => 'ro',
+   isa     => HashRef[Str],
+   default => sub {
+      return {
+         data_structure => 'WCom.Form.DataStructure.manager',
+         downloadable   => 'WCom.Table.Role.Downloadable',
+         form_util      => 'WCom.Form.Util',
+         modal          => 'WCom.Modal',
+         navigation     => 'WCom.Navigation.manager',
+         table_renderer => 'WCom.Table.Renderer.manager',
+      };
    };
-};
 
 use namespace::autoclean;
 

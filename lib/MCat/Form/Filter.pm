@@ -30,12 +30,12 @@ has 'filter_config' =>
 
       return {} unless $self->item;
 
-      my $req = $self->context->request;
+      my $base = $self->context->request->uri_for(NUL);
 
       return {
          'api-uri'      => 'api/object/*/*',
-         'icons'        => $req->uri_for('img/icons.svg')->as_string,
-         'request-base' => $req->uri_for(NUL)->as_string,
+         'icons'        => $self->context->icons_uri->as_string,
+         'request-base' => $base->as_string,
          'selector-uri' => 'filter/selector/*',
          'table-id'     => $self->item->table_id
       };

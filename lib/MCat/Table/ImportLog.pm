@@ -13,9 +13,7 @@ with    'HTML::StateTable::Role::Filterable';
 
 has '+configurable_action' => default => 'api/table_preference';
 
-has '+icons' => default => sub {
-   return shift->context->request->uri_for('img/icons.svg')->as_string;
-};
+has '+icons' => default => sub { shift->context->icons_uri->as_string };
 
 has '+page_size_control_location' => default => 'BottomLeft';
 

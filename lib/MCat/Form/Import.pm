@@ -24,9 +24,7 @@ has 'extensions' => is => 'ro', isa => Str, default => 'csv';
 has '_icons' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub {
-      return shift->context->request->uri_for('img/icons.svg')->as_string;
-   };
+   default => sub { shift->context->icons_uri->as_string };
 
 has '_json' =>
    is      => 'lazy',
