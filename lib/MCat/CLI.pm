@@ -12,15 +12,17 @@ use JSON::MaybeXS               qw( decode_json );
 use Type::Utils                 qw( class_type );
 use Unexpected::Functions       qw( throw UnknownImport Unspecified );
 use MCat::Markdown;
-use MCat::Redis;
 use Moo;
 use Class::Usul::Cmd::Options;
 
 extends 'Class::Usul::Cmd';
 with    'MCat::Role::Config';
+with    'MCat::Role::Redis';
 with    'MCat::Role::Log';
 with    'MCat::Role::Schema';
 with    'Web::Components::Role::Email';
+
+has '+redis_client_name' => is => 'ro', default => 'job_stash';
 
 has 'assetdir' =>
    is      => 'lazy',
@@ -31,18 +33,6 @@ has 'formatter' =>
    is      => 'lazy',
    isa     => class_type('MCat::Markdown'),
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
-
-has 'redis' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::Redis'),
-   default => sub {
-      my $self = shift;
-
-      return MCat::Redis->new(
-         client_name => $self->config->prefix . '_job_stash',
-         config => $self->config->redis
-      );
-   };
 
 has 'templatedir' =>
    is      => 'lazy',
@@ -304,7 +294,7 @@ sub _load_stash {
    my ($self, $quote) = @_;
 
    my $token    = $self->options->{token} or throw Unspecified, ['token'];
-   my $encoded  = $self->redis->get($token)
+   my $encoded  = $self->redis_client->get($token)
       or throw 'Token [_1] not found', [$token];
    my $stash    = decode_json($encoded);
    my $template = delete $stash->{template};

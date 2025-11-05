@@ -33,13 +33,16 @@ has 'filter_config' =>
       my $base = $self->context->request->uri_for(NUL);
 
       return {
-         'api-uri'      => 'api/object/*/*',
-         'icons'        => $self->context->icons_uri->as_string,
-         'request-base' => $base->as_string,
-         'selector-uri' => 'filter/selector/*',
-         'table-id'     => $self->item->table_id
+         'api-uri'           => 'api/object/*/*',
+         'icons'             => $self->context->icons_uri->as_string,
+         'request-base'      => $base->as_string,
+         'rule-editor-width' => $self->filter_editor_width,
+         'selector-uri'      => 'filter/selector/*',
+         'table-id'          => $self->item->table_id
       };
    };
+
+has 'filter_editor_width' => is => 'ro', isa => Int, default => 300;
 
 has_field 'name' => required => TRUE;
 
@@ -71,7 +74,11 @@ sub default_owner {
 
 has_field 'filter_json' => type => 'Hidden', default => NUL;
 
-has_field 'filter_editor' => type => 'NoValue', do_label => FALSE, html => NUL;
+has_field 'filter_editor' =>
+   type     => 'NoValue',
+   do_label => FALSE,
+   html     => NUL,
+   wrapper_class => ['input-filter'];
 
 has_field 'submit' => type => 'Button';
 

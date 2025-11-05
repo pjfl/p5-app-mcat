@@ -8,7 +8,7 @@ use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 has 'name' => is => 'ro', isa => Str, required => TRUE;
 
-sub field : Auth('view') {
+sub field : Auth('none') {
    my ($self, $context, $field_name, $operation) = @_;
 
    my $result = { reason => 'Unknown operation' };

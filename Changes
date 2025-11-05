@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds a Redis role
           - Icons URI in context used throughout
           - Leaner login form
           - Form toggle cleanup

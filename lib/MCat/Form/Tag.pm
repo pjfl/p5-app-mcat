@@ -7,8 +7,9 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
-has '+title'        => default => 'Tag';
-has '+info_message' => default => 'Create or edit tags';
+has '+form_wrapper_class' => default => sub { ['narrow'] };
+has '+info_message'       => default => 'Create or edit tags';
+has '+title'              => default => 'Tag';
 
 has_field 'name', required => TRUE;
 

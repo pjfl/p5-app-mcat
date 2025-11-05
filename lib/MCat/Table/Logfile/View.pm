@@ -15,7 +15,10 @@ with    'HTML::StateTable::Role::Form';
 
 has 'logfile' => is => 'ro', isa => Str, required => TRUE;
 
-has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
+has 'redis_client' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Redis'),
+   required => TRUE;
 
 has '+configurable_action' => default => 'api/table_preference';
 
@@ -50,7 +53,7 @@ setup_resultset sub {
    return HTML::StateTable::ResultSet::File::View->new(
       directory    => $config->logfile->parent,
       file         => $self->logfile,
-      redis        => $self->redis,
+      redis        => $self->redis_client,
       result_class => 'MCat::Logfile::Result::View',
       table        => $self,
    );

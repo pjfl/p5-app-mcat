@@ -4,25 +4,16 @@ use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use Type::Utils                 qw( class_type );
 use MCat::Util                  qw( redirect2referer );
 use Unexpected::Functions       qw( Unspecified NotFound );
-use MCat::Redis;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
+with    'MCat::Role::Redis';
 
 has '+moniker' => default => 'logfile';
 
-has 'redis' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::Redis'),
-   default => sub {
-      my $self   = shift;
-      my $config = $self->config;
-      my $name   = $config->prefix . '_logfile_cache';
-
-      return MCat::Redis->new(client_name => $name, config => $config->redis);
-   };
+has '+redis_client_name' => is => 'ro', default => 'logfile_cache';
 
 sub base : Auth('admin') {
    my ($self, $context, $logfile) = @_;
@@ -46,7 +37,7 @@ sub clear_cache : Auth('admin') {
 
    return $self->error($context, NotFound, ["${path}"]) unless $path->exists;
 
-   $self->redis->del($_) for ($self->redis->keys("${path}!*"));
+   $self->redis_client->del($_) for ($self->redis_client->keys("${path}!*"));
 
    my $message = ['Cache cleared [_1]', "${path}"];
 
@@ -69,10 +60,10 @@ sub view : Auth('admin') Nav('View Logfile') {
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
    my $options = {
-      caption => "${logfile} File View",
-      context => $context,
-      logfile => $logfile,
-      redis   => $self->redis
+      caption      => "${logfile} File View",
+      context      => $context,
+      logfile      => $logfile,
+      redis_client => $self->redis_client,
    };
    $context->stash(table => $self->new_table('Logfile::View', $options));
    return;

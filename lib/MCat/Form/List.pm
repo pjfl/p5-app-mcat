@@ -8,9 +8,10 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
-has '+title'        => default => 'List';
-has '+info_message' => default => 'You know what to do';
-has '+item_class'   => default => 'List';
+has '+title'              => default => 'List';
+has '+form_wrapper_class' => default => sub { ['narrow'] };
+has '+info_message'       => default => 'You know what to do';
+has '+item_class'         => default => 'List';
 
 has_field 'name' => required => TRUE;
 

@@ -12,16 +12,25 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
+has '+name'         => default => 'Register';
 has '+title'        => default => 'Registration Request';
 has '+info_message' => default => 'Answer the registration questions';
 has '+item_class'   => default => 'User';
 has '+no_update'    => default => TRUE;
 
-has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
+has 'redis_client' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Redis'),
+   required => TRUE;
 
 has_field 'name' => label => 'User Name', required => TRUE;
 
-has_field 'email' => type => 'Email', required => TRUE;
+has_field 'email' =>
+   type                => 'Email',
+   required            => TRUE,
+   validate_inline     => TRUE,
+   validate_when_empty => TRUE;
+
 
 has_field 'submit' => type => 'Button';
 
@@ -31,9 +40,9 @@ sub validate {
    my $name  = $self->field('name');
    my $email = $self->field('email');
 
-   $name->add_error('User name [_1] not unique', [$name->value])
+   $name->add_error("User name '[_1]' not unique", $name->value)
       if $rs->find({ name  => $name->value });
-   $email->add_error('Email address [_1] not unique', [$email->value])
+   $email->add_error("Email address '[_1]' not unique", $email->value)
       if $rs->find({ email => $email->value });
 
    return if $self->result->has_errors;
@@ -69,7 +78,7 @@ sub _create_email {
       username    => $name->value,
    };
 
-   $self->redis->set($token, encode_json($options));
+   $self->redis_client->set($token, encode_json($options));
 
    my $program = $context->config->bin->catfile('mcat-cli');
    my $command = "${program} -o token=${token} send_message email";

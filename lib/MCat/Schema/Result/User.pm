@@ -70,8 +70,6 @@ $class->might_have('profile' => "${result}::Preference", sub {
    };
 });
 
-has 'authenticate_only' => is => 'ro', isa => Bool, default => FALSE;
-
 has 'profile_value' => is => 'lazy', isa => HashRef, default => sub {
    my $self    = shift;
    my $profile = $self->profile;
@@ -181,8 +179,6 @@ sub insert {
    my $columns = { $self->get_inflated_columns };
 
    $self->_encrypt_password_column($columns);
-
-   return if $self->authenticate_only;
 
    return $self->next::method;
 }

@@ -7,25 +7,16 @@ use MCat::Util             qw( create_token new_uri redirect );
 use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( PageNotFound UnauthorisedAccess
                                UnknownToken UnknownUser );
-use MCat::Redis;
-use Web::Simple;
+use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
+with    'MCat::Role::Redis';
 
 has '+moniker' => default => 'page';
 
-has '_redis' =>
-   is      => 'lazy',
-   isa     => class_type('MCat::Redis'),
-   default => sub {
-      my $self   = shift;
-      my $config = $self->config;
-      my $name   = $config->prefix . '_job_stash';
-
-      return MCat::Redis->new(client_name => $name, config => $config->redis);
-   };
+has '+redis_client_name' => is => 'ro', default => 'job_stash';
 
 sub base : Auth('none') {
    my ($self, $context, $id_or_name) = @_;
@@ -143,7 +134,7 @@ sub password_reset : Auth('none') {
    my $changep = $context->uri_for_action('page/password', [$user->id]);
 
    if (!$context->posted && $token && $token ne 'reset') {
-      my $stash = $self->_redis->get($token)
+      my $stash = $self->redis_client->get($token)
          or return $self->error($context, UnknownToken, [$token]);
 
       $user->update({password => $stash->{password}, password_expired => TRUE});
@@ -151,7 +142,7 @@ sub password_reset : Auth('none') {
       my $message = 'User [_1] password reset';
 
       $context->stash(redirect $changep, [$message, "${user}"]);
-      $self->_redis->remove($token);
+      $self->redis_client->remove($token);
       return;
    }
 
@@ -196,7 +187,9 @@ sub register : Auth('none') Nav('Register') {
       if !$context->posted && $token;
 
    my $form = $self->new_form('Register', {
-      context => $context, log => $self->log, redis => $self->_redis
+      context      => $context,
+      log          => $self->log,
+      redis_client => $self->redis_client
    });
 
    if ($form->process( posted => $context->posted )) {
@@ -218,20 +211,20 @@ sub totp_reset : Auth('none') {
    my $user = $context->stash('user') or return;
 
    if (!$context->posted && $token && $token ne 'reset') {
-      my $stash = $self->_redis->get($token)
+      my $stash = $self->redis_client->get($token)
          or return $self->error($context, UnknownToken, [$token]);
       my $options = { context => $context, user => $user };
 
       $context->stash(form => $self->new_form('TOTP::Secret', $options));
-      $self->_redis->remove($token);
+      $self->redis_client->remove($token);
       return;
    }
 
    my $form = $self->new_form('TOTP::Reset', {
-      context => $context,
-      log     => $self->log,
-      redis   => $self->_redis,
-      user    => $user
+      context      => $context,
+      log          => $self->log,
+      redis_client => $self->redis_client,
+      user         => $user,
    });
 
    if ($form->process( posted => $context->posted )) {
@@ -250,10 +243,11 @@ sub totp_reset : Auth('none') {
 sub _create_user {
    my ($self, $context, $token) = @_;
 
-   my $stash = $self->_redis->get($token)
+   my $stash     = $self->redis_client->get($token)
       or return $self->error($context, UnknownToken, [$token]);
-   my $role  = $context->model('Role')->find({ name => 'view' });
-   my $args  = {
+   my $role_name = $self->config->user->{default_role} // 'view';
+   my $role      = $context->model('Role')->find({ name => $role_name });
+   my $args      = {
       email            => $stash->{email},
       name             => $stash->{username},
       password         => $stash->{password},
@@ -265,14 +259,14 @@ sub _create_user {
    my $message = 'User [_1] created';
 
    $context->stash(redirect $changep, [$message, $user->name]);
-   $self->_redis->remove($token);
+   $self->redis_client->remove($token);
    return;
 }
 
 sub _send_email {
    my ($self, $context, $token, $args) = @_;
 
-   $self->_redis->set($token, encode_json($args));
+   $self->redis_client->set($token, encode_json($args));
 
    my $program = $self->config->bin->catfile('mcat-cli');
    my $command = "${program} -o token=${token} send_message email";

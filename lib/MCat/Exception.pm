@@ -71,7 +71,7 @@ has_exception 'UnauthorisedAPICall' => parents => [$class],
    rv      => HTTP_UNAUTHORIZED;
 
 has_exception 'UnknownAPIClass' => parents => [$class],
-   error   => 'API class [_1] not found', rv => HTTP_NOT_FOUND;
+   error   => 'API class [_1] not found - [_2]', rv => HTTP_NOT_FOUND;
 
 has_exception 'UnknownAPIMethod' => parents => [$class],
    error   => 'Class [_1] has no [_2] method', rv => HTTP_NOT_FOUND;

@@ -17,9 +17,14 @@ has '+title'        => default => 'TOTP Reset Request';
 has '+info_message' => default => 'Answer the security questions';
 has '+no_update'    => default => TRUE;
 
-has 'redis' => is => 'ro', isa => class_type('MCat::Redis'), required => TRUE;
+has 'redis_client' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Redis'),
+   required => TRUE;
 
-has 'user' => is => 'ro', isa => class_type('MCat::Schema::Result::User'),
+has 'user' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Schema::Result::User'),
    required => TRUE;
 
 has_field 'name' => type => 'Display', label => 'User Name';
@@ -84,7 +89,7 @@ sub _create_email {
    my $actionp = 'page/totp_reset';
    my $link    = $context->uri_for_action($actionp, [$user->id, $token]);
 
-   $self->redis->set($token, encode_json({
+   $self->redis_client->set($token, encode_json({
       application => $context->config->name,
       link        => "${link}",
       recipients  => [$user->id],
