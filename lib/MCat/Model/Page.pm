@@ -186,13 +186,10 @@ sub register : Auth('none') Nav('Register') {
    return $self->_create_user($context, $token)
       if !$context->posted && $token;
 
-   my $form = $self->new_form('Register', {
-      context      => $context,
-      log          => $self->log,
-      redis_client => $self->redis_client
-   });
+   my $options = { context => $context, log => $self->log };
+   my $form    = $self->new_form('Register', $options);
 
-   if ($form->process( posted => $context->posted )) {
+   if ($form->process(posted => $context->posted)) {
       my $job     = $context->stash->{job};
       my $login   = $context->uri_for_action('page/login');
       my $message = 'Registration request [_1] dispatched';

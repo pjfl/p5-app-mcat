@@ -3,7 +3,6 @@ package MCat::Form::Register;
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META TRUE );
 use JSON::MaybeXS          qw( encode_json );
 use MCat::Util             qw( create_token redirect );
-use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( catch_class );
 use Try::Tiny;
 use Moo;
@@ -11,6 +10,7 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
+with    'MCat::Role::JSONParser';
 
 has '+name'         => default => 'Register';
 has '+title'        => default => 'Registration Request';
@@ -18,10 +18,7 @@ has '+info_message' => default => 'Answer the registration questions';
 has '+item_class'   => default => 'User';
 has '+no_update'    => default => TRUE;
 
-has 'redis_client' =>
-   is       => 'ro',
-   isa      => class_type('MCat::Redis'),
-   required => TRUE;
+has '+redis_client_name' => is => 'ro', default => 'job_stash';
 
 has_field 'name' => label => 'User Name', required => TRUE;
 

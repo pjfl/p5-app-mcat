@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds form_classes to job and job lock tables
           - Adds a Redis role
           - Icons URI in context used throughout
           - Leaner login form

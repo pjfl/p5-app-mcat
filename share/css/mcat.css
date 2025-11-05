@@ -1227,18 +1227,8 @@ form.classic.filemanager {
 body {
   counter-reset: section;
 }
-.state-table {
-  text-align: left;
-}
 .state-table caption {
   display: none;
-}
-.state-table .caption {
-  font-family: Roboto, system-ui, sans-serif;
-  font-weight: normal;
-  margin: 0;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 .state-table table {
   border-collapse: collapse;
@@ -1323,10 +1313,19 @@ body {
 .state-table table tr.inactive {
   background: gainsboro;
 }
-.state-table .active-control-label {
-  font-family: Roboto, system-ui, sans-serif;
+.state-table .chart-container,
+.state-table .table-container {
+  display: inline-block;
+  text-align: left;
+  vertical-align: top;
 }
-.state-table .active-control-label,
+.state-table .caption {
+  font-family: Roboto, system-ui, sans-serif;
+  font-weight: normal;
+  margin: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
 .state-table .download-link,
 .state-table .page-control a,
 .state-table .page-control li,
@@ -1416,7 +1415,6 @@ body {
   background-image: linear-gradient(0deg, gainsboro, whitesmoke);
   border: 2px outset gainsboro;
   border-radius: 50px 0 0 50px;
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.6);
   color: gray;
   display: inline-block;
   font-family: Roboto, system-ui, sans-serif;
@@ -1494,6 +1492,12 @@ body {
 }
 .state-table .active-control {
   display: inline;
+}
+.state-table .active-control-label {
+  color: gray;
+  cursor: pointer;
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: small;
 }
 .state-table .bottom-control,
 .state-table .top-control {
@@ -1779,11 +1783,6 @@ body {
 }
 .state-table .grab-handle-cell:hover {
   background: orange;
-}
-.state-table .chart-container,
-.state-table .table-container {
-  display: inline-block;
-  vertical-align: top;
 }
 .state-table .table-form .credit-control {
   display: flex;
@@ -2551,8 +2550,8 @@ footer {
 }
 .messages-panel {
   bottom: 2rem;
+  left: 1rem;
   position: absolute;
-  right: 1rem;
   z-index: 3;
 }
 .messages-panel .message-item {

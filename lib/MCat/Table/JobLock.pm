@@ -13,4 +13,6 @@ has '+form_buttons' => default => sub {
    }];
 };
 
+has '+form_classes' => default => sub { ['classic', 'fieldset'] };
+
 1;

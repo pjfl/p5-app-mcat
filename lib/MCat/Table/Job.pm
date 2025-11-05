@@ -13,6 +13,8 @@ has '+form_buttons' => default => sub {
    }];
 };
 
+has '+form_classes' => default => sub { ['classic', 'fieldset'] };
+
 has '+icons' => default => sub { shift->context->icons_uri->as_string };
 
 use namespace::autoclean;
