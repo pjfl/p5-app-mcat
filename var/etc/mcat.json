@@ -1,6 +1,6 @@
 {
    "local_config_file": "mcat-local.json",
-   "logfile": "mcat.log",
+   "logfile": "mcat.csv",
    "navigation": {
       "logo": "img/logo.svg"
    },

@@ -5,6 +5,7 @@ use overload '""' => sub { $_[0]->_as_string },
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( now_dt );
+use MCat::Util             qw( dt_human );
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -36,8 +37,9 @@ $class->add_columns(
       cell_traits => ['Numeric'], label => 'Max. Runs'
    },
    period => {
-      data_type => 'smallint', default_value => 300, is_nullable => FALSE,
-      cell_traits => ['Numeric']
+      data_type => 'smallint', default_value => 300,
+      display => sub { dt_human shift->result->period },
+      is_nullable => FALSE, cell_traits => ['Numeric']
    },
    command => { data_type => 'text', is_nullable => FALSE, label => 'Command' },
 );
@@ -61,7 +63,7 @@ sub insert {
 }
 
 sub label {
-   return $_[0]->_as_string . ($_[0]->run ? '#' . $_[0]->run : NUL);
+   return $_[0]->_as_string . '#' . ($_[0]->run + 1);
 }
 
 sub update {

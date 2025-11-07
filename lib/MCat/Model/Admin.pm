@@ -16,7 +16,6 @@ sub menu : Auth('admin') Nav('Admin|img/admin.svg') {
    $nav->menu('page')->item('page/configuration');
    $nav->menu('job')->item('job/status');
    $nav->menu('logfile')->item('logfile/list');
-   $nav->menu('user')->item('user/list');
    return;
 }
 

@@ -184,11 +184,14 @@ sub insert {
 }
 
 sub is_authorised {
-   my ($self, $session) = @_;
+   my ($self, $session, $roles) = @_;
 
    return FALSE unless $session;
 
-   return $self->id == $session->id || $session->role eq 'admin' ? TRUE : FALSE;
+   my $role          = $session->role;
+   my $is_authorised = join NUL, grep { $_ eq $role } @{$roles // []};
+
+   return $self->id == $session->id || $is_authorised ? TRUE : FALSE;
 }
 
 sub mobile_phone {

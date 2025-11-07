@@ -2,7 +2,7 @@ package MCat::CLI;
 
 use MCat;
 use MCat::Exception;
-use Class::Usul::Cmd::Constants qw( FALSE NUL OK TRUE );
+use Class::Usul::Cmd::Constants qw( FAILED FALSE NUL OK TRUE );
 use HTML::Forms::Constants      qw( EXCEPTION_CLASS );
 use File::DataClass::Types      qw( Directory );
 use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
@@ -194,6 +194,7 @@ sub send_message : method {
    my $stash    = $self->_load_stash($quote);
    my $attaches = $self->_qualify_assets(delete $stash->{attachments});
    my $log_opts = { name => 'CLI.send_message' };
+   my $success;
 
    if ($sink eq 'email') {
       my $recipients = delete $stash->{recipients};
@@ -218,13 +219,13 @@ sub send_message : method {
          }
          else { $stash->{email} = $id_or_email }
 
-         $self->_send_email($stash, $attaches);
+         $success = $self->_send_email($stash, $attaches);
       }
    }
-   elsif ($sink eq 'sms') { $self->_send_sms($stash) }
+   elsif ($sink eq 'sms') { $success = $self->_send_sms($stash) }
    else { throw 'Message sink [_1] unknown', [$sink] }
 
-   return OK;
+   return $success ? OK : FAILED;
 }
 
 =item update_list - Updates list using a filter
@@ -354,11 +355,15 @@ sub _send_email {
 
    $post->{attachments} = $attaches if $attaches;
 
-   my ($id)    = $self->send_email($post);
+   my ($id) = $self->try_to_send_email($post);
+
+   return FALSE unless $id;
+
    my $options = { args => [$stash->{email}, $id], name => 'CLI.send_message' };
 
    $self->info('Emailed [_1] message id. [_2]', $options);
-   return;
+
+   return TRUE;
 }
 
 sub _send_sms { ... }

@@ -1,2 +1,3 @@
+[% job_table.render %]
+[% lock_table.render %]
 [% form.render %]
-[% table.render %]

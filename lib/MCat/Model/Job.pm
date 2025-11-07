@@ -13,10 +13,6 @@ has '+moniker' => default => 'job';
 sub base : Auth('admin') {
    my ($self, $context) = @_;
 
-   if ($context->action =~ m{ /status \z }mx) {
-      $context->stash('nav')->container_layout(NUL);
-   }
-
    $context->stash('nav')->finalise;
 
    return;
@@ -28,15 +24,17 @@ sub remove {
    return unless $self->verify_form_post($context);
 
    my $value = $context->get_body_parameters->{data} or return;
-   my $runin = $self->jobdaemon->is_running;
+   my $type  = 'Lock';
    my $count = 0;
 
    for my $key (@{$value->{selector}}) {
-      if ($runin) {
+      if ($key =~ m{ \A \d+ \z }mx) {
          if (my $job = $context->model('Job')->find($key)) {
             $job->delete;
             $count++;
          }
+
+         $type = 'Job';
       }
       else {
          my $jdpid = $self->jobdaemon->daemon_pid;
@@ -47,7 +45,7 @@ sub remove {
       }
    }
 
-   my $objects = ($runin ? 'Job' : 'Lock') . ($count > 1 ? 's' : NUL);
+   my $objects = $type . ($count > 1 ? 's' : NUL);
 
    $context->stash(redirect2referer $context, ["${count} ${objects} deleted"]);
    return;
@@ -59,19 +57,12 @@ sub status : Auth('admin') Nav('Job Status') {
    return $self->_status_button_handler($context) if $context->posted;
 
    my $options = { context => $context, jobdaemon => $self->jobdaemon };
-   my $form    = $self->new_form('JobStatus', $options);
 
-   $context->stash( form => $form );
+   $context->stash( form => $self->new_form('JobStatus', $options) );
+   $context->stash( lock_table => $self->new_table('JobLock', $options) );
 
-   if ($self->jobdaemon->is_running) {
-      $options = { context => $context, resultset => $context->model('Job') };
-      $context->stash( table => $self->new_table('Job', $options) );
-   }
-   else {
-      $options = { context => $context, jobdaemon => $self->jobdaemon };
-      $context->stash( table => $self->new_table('JobLock', $options) );
-   }
-
+   $options = { context => $context, resultset => $context->model('Job') };
+   $context->stash( job_table => $self->new_table('Job', $options) );
    return;
 }
 

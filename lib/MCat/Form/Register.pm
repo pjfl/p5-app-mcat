@@ -1,7 +1,6 @@
 package MCat::Form::Register;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META TRUE );
-use JSON::MaybeXS          qw( encode_json );
 use MCat::Util             qw( create_token redirect );
 use Unexpected::Functions  qw( catch_class );
 use Try::Tiny;
@@ -10,7 +9,6 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
-with    'MCat::Role::JSONParser';
 
 has '+name'         => default => 'Register';
 has '+title'        => default => 'Registration Request';
@@ -18,7 +16,10 @@ has '+info_message' => default => 'Answer the registration questions';
 has '+item_class'   => default => 'User';
 has '+no_update'    => default => TRUE;
 
-has '+redis_client_name' => is => 'ro', default => 'job_stash';
+has 'config' => is => 'lazy', default => sub { shift->context->config };
+
+with 'MCat::Role::JSONParser';
+with 'MCat::Role::Redis';
 
 has_field 'name' => label => 'User Name', required => TRUE;
 
@@ -75,7 +76,7 @@ sub _create_email {
       username    => $name->value,
    };
 
-   $self->redis_client->set($token, encode_json($options));
+   $self->redis_client->set($token, $self->json_parser->encode($options));
 
    my $program = $context->config->bin->catfile('mcat-cli');
    my $command = "${program} -o token=${token} send_message email";

@@ -262,6 +262,8 @@ has 'local_tz' => is => 'ro', isa => Str, default => 'Europe/London';
 
 =item lock_attributes
 
+Configuration attributes for L<IPC::SRLock>. Currently unused
+
 =cut
 
 has 'lock_attributes' => is => 'lazy', isa => HashRef, default => sub {
@@ -273,6 +275,15 @@ has 'lock_attributes' => is => 'lazy', isa => HashRef, default => sub {
       type  => 'redis',
    };
 };
+
+=item log_message_maxlen
+
+Maximum length of a logfile message in characters. If zero (the default) no
+limit is applied
+
+=cut
+
+has 'log_message_maxlen' => is => 'ro', isa => PositiveInt, default => 0;
 
 =item logdir
 
@@ -503,6 +514,29 @@ and upgrade the database
 
 has 'sqldir' => is => 'lazy', isa => Directory,
    default => sub { shift->vardir->catdir('sql') };
+
+=item state_cookie
+
+Array reference used to instantiate the session state cookie. See
+L<Plack::Session::State::Cookie>
+
+=cut
+
+has 'state_cookie' =>
+   is      => 'lazy',
+   isa     => ArrayRef,
+   default => sub {
+      my $self = shift;
+
+      return [
+         expires     => 7_776_000,
+         httponly    => TRUE,
+         path        => $self->mount_point,
+         samesite    => 'None',
+         secure      => TRUE,
+         session_key => $self->prefix . '_session',
+      ];
+   };
 
 =item static
 

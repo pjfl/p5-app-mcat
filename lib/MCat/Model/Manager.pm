@@ -20,6 +20,7 @@ sub menu : Auth('manager') Nav('Manager|img/manager.svg') {
    $nav->menu('list')->item('list/list');
    $nav->menu('table')->item('table/list');
    $nav->menu('tag')->item('tag/list');
+   $nav->menu('user')->item('user/list');
    return;
 }
 

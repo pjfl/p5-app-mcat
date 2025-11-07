@@ -24,7 +24,7 @@ sub base : Auth('view') {
       return $self->error($context, UnknownUser, [$userid]) unless $user;
 
       return $self->error($context, UnauthorisedAccess)
-         unless $user->is_authorised($session);
+         unless $user->is_authorised($session, ['admin', 'manager']);
 
       $context->stash(user => $user);
       $nav->crud('user', $userid);
@@ -93,6 +93,10 @@ sub profile : Auth('view') Nav('Profile') {
    my ($self, $context, $userid) = @_;
 
    my $user = $context->stash('user');
+
+   return $self->error($context, UnauthorisedAccess)
+      if $context->posted && !$user->is_authorised($context->session,['admin']);
+
    my $form = $self->new_form('Profile', { context => $context, user => $user});
 
    if ($form->process(posted => $context->posted)) {
@@ -107,7 +111,7 @@ sub profile : Auth('view') Nav('Profile') {
    return;
 }
 
-sub list : Auth('admin') Nav('Users') {
+sub list : Auth('manager') Nav('Users') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, resultset => $context->model('User') };
@@ -137,13 +141,18 @@ sub remove : Auth('admin') {
 sub totp : Auth('view') Nav('View TOTP') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context, user => $context->stash('user') };
+   my $user = $context->stash('user');
+
+   return $self->error($context, UnauthorisedAccess)
+      unless $user->is_authorised($context->session, ['admin']);
+
+   my $options = { context => $context, user => $user };
 
    $context->stash(form => $self->new_form('TOTP::Secret', $options));
    return;
 }
 
-sub view : Auth('admin') Nav('View User') {
+sub view : Auth('manager') Nav('View User') {
    my ($self, $context, $userid) = @_;
 
    my $options = { context => $context, result => $context->stash('user') };
