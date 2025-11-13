@@ -559,10 +559,10 @@ form.classic .input-field:has(label.field-label) {
   align-items: baseline;
   column-gap: 0.5rem;
   display: grid;
-  grid-template-columns: var(--label-width) min-content auto;
+  grid-template-columns: var(--label-width) auto auto;
   grid-template-areas: "label input selector" "label alert alert";
   justify-items: start;
-  min-width: 12rem;
+  min-width: 15rem;
 }
 form.classic .input-field.label-right:has(label.field-label) {
   grid-template-columns: min-content auto var(--label-width);
@@ -915,7 +915,10 @@ form.classic .input-display span {
   font-size: 0.8rem;
   grid-area: input;
   padding: 0.125rem 0.35rem;
-  white-space: nowrap;
+}
+form.classic .input-display span.breaking-text {
+  white-space: wrap;
+  max-width: 15rem;
 }
 form.classic .input-display:has(img) {
   align-items: flex-start !important;
@@ -2071,9 +2074,12 @@ footer {
 }
 .standard-container .standard .panel {
   display: flex;
-  flex-wrap: wrap;
   gap: 1rem;
-  justify-content: space-evenly;
+}
+.standard-container .standard .panel .block-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 .standard-container .centred {
   justify-content: center;

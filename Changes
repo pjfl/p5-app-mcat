@@ -1,5 +1,7 @@
 Revision history for MCat
 
+          - Limit log message length
+          - Weakened resultset attributes in log view classes
           - Session config now in config class. Use JSONParser role
           - Adds form_classes to job and job lock tables
           - Adds a Redis role

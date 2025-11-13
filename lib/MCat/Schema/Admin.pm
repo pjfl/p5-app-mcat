@@ -324,8 +324,11 @@ sub _create_database {
    my $cmd;
 
    if ($driver eq 'pg') {
-      $cmd = "psql -h ${host} -q -t -U postgres -w -c "
-           . "\"create database ${dbname} owner ${user} encoding 'UTF8';\"";
+      my $sql = "create database ${dbname} owner ${user} encoding 'UTF8'; "
+         . "alter database ${dbname} set TIMEZONE = 'UTC'; "
+         . "create extension if not exists tablefunc";
+
+      $cmd = qq{psql -h ${host} -q -t -U postgres -w -c "${sql}"};
    }
 
    throw 'No create database command for driver [_1]', [$driver] unless $cmd;
@@ -352,6 +355,8 @@ sub _create_user {
    my $upasswd = $self->user_password;
    my $driver  = $self->_driver;
    my $cmd;
+
+   throw 'Must set a user password' unless length $upasswd;
 
    if ($driver eq 'pg') {
       $cmd = "psql -h ${host} -q -t -U postgres -w -c "
@@ -461,17 +466,19 @@ sub _list_population_classes {
 sub _local_config {
    my ($self, $data) = @_;
 
-   throw 'Local config file undefined'
-      unless $self->config->has_local_config_file;
+   my $config = $self->config;
 
-   my $file = $self->config->local_config_file;
+   throw 'Local config file undefined' unless $config->has_local_config_file;
+
+   my $file = $config->local_config_file;
+   my $path = $file->exists ? $file : $config->config_home->child("${file}");
 
    if ($data) {
-      $self->_file_schema->dump({ path => $file->assert, data => $data });
+      $self->_file_schema->dump({ path => $path->assert, data => $data });
       return $data;
    }
 
-   return $self->_file_schema->load($file) // {} if $file->exists;
+   return $self->_file_schema->load($file) // {} if $path->exists;
 
    return {};
 }

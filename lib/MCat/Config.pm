@@ -1,7 +1,5 @@
 package MCat::Config;
 
-use utf8; # -*- coding: utf-8; -*-
-
 use Class::Usul::Cmd::Constants qw( FALSE NUL SECRET TRUE );
 use IO::Socket::SSL             qw( SSL_VERIFY_NONE );
 use File::DataClass::Types      qw( ArrayRef Bool Directory File HashRef
@@ -74,7 +72,9 @@ Configuration parameters for the plugin authentication system
 
 =cut
 
-has 'authentication' => is => 'ro', isa => HashRef,
+has 'authentication' =>
+   is      => 'ro',
+   isa     => HashRef,
    default => sub { { default_realm => 'DBIC' } };
 
 =item bin
@@ -83,7 +83,9 @@ A directory object which locates the applications executable files
 
 =cut
 
-has 'bin' => is => 'lazy', isa => Directory,
+has 'bin' =>
+   is      => 'lazy',
+   isa     => Directory,
    default => sub { shift->pathname->parent };
 
 =item component_loader
@@ -107,12 +109,15 @@ and decrypted
 
 =cut
 
-has 'connect_info' => is => 'lazy', isa => ArrayRef, default => sub {
-   my $self     = shift;
-   my $password = decrypt SECRET, $self->db_password;
+has 'connect_info' =>
+   is      => 'lazy',
+   isa     => ArrayRef,
+   default => sub {
+      my $self     = shift;
+      my $password = decrypt SECRET, $self->db_password;
 
-   return [$self->dsn, $self->db_username, $password, $self->db_extra];
-};
+      return [$self->dsn, $self->db_username, $password, $self->db_extra];
+   };
 
 =item db_extra
 
@@ -120,14 +125,16 @@ Additional attributes passed to the database connection method
 
 =cut
 
-has 'db_extra' => is => 'ro', isa => HashRef,
+has 'db_extra' =>
+   is      => 'ro',
+   isa     => HashRef,
    default => sub { { AutoCommit => TRUE } };
 
 =item db_password
 
 Password used to connect to the database. This has no default. It should be
 set using the command 'bin/mcat-cli --set-db-password' before the application
-is started
+is started by the same user as the one which will be running the application
 
 =cut
 
@@ -185,12 +192,15 @@ request allows for it
 
 =cut
 
-has 'deflate_types' => is => 'ro', isa => ArrayRef[Str], default => sub {
-   return [
-      qw( application/javascript image/svg+xml text/css text/html
-      text/javascript )
-   ];
-};
+has 'deflate_types' =>
+   is      => 'ro',
+   isa     => ArrayRef[Str],
+   default => sub {
+      return [
+         qw( application/javascript image/svg+xml text/css text/html
+             text/javascript )
+      ];
+   };
 
 =item dsn
 
@@ -266,15 +276,18 @@ Configuration attributes for L<IPC::SRLock>. Currently unused
 
 =cut
 
-has 'lock_attributes' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift;
+has 'lock_attributes' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
 
-   return {
-      name  => $self->prefix . '_locks',
-      redis => $self->redis,
-      type  => 'redis',
+      return {
+         name  => $self->prefix . '_locks',
+         redis => $self->redis,
+         type  => 'redis',
+      };
    };
-};
 
 =item log_message_maxlen
 
@@ -285,19 +298,21 @@ limit is applied
 
 has 'log_message_maxlen' => is => 'ro', isa => PositiveInt, default => 0;
 
-=item logdir
+=item logsdir
 
 Directory containing logfiles
 
 =cut
 
-has 'logdir' => is => 'lazy', isa => Directory,
+has 'logsdir' =>
+   is      => 'lazy',
+   isa     => Directory,
    default => sub { shift->vardir->catdir('log') };
 
 =item logfile
 
 Set in the configuration file, the name of the logfile used by the logging
-class
+class. If left unset the logging class will emit warnings to C<stderr>
 
 =cut
 
@@ -306,7 +321,11 @@ has 'logfile' =>
    isa      => File|Path|Undef,
    init_arg => undef,
    default  => sub {
-      my $self = shift; return $self->logdir->catfile($self->_logfile);
+      my $self = shift;
+
+      return unless $self->_logfile;
+
+      return $self->logsdir->catfile($self->_logfile);
    };
 
 has '_logfile' => is => 'ro', isa => Str, init_arg => 'logfile';
@@ -334,25 +353,29 @@ L<navigation|Web::Components::Navigation> object
 
 =cut
 
-has 'navigation' => is => 'lazy', isa => HashRef, init_arg => undef,
-   default => sub {
+has 'navigation' =>
+   is       => 'lazy',
+   isa      => HashRef,
+   init_arg => undef,
+   default  => sub {
       my $self = shift;
 
       return {
-         messages => {
-            'buffer-limit' => $self->request->{max_messages}
-         },
-         title => $self->name,
+         messages     => { 'buffer-limit' => $self->request->{max_messages} },
+         title        => $self->name,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
-         global => [
+         global       => [
             qw( artist/list cd/list track/list manager/menu admin/menu )
          ],
       };
    };
 
-has '_navigation' => is => 'ro', isa => HashRef, init_arg => 'navigation',
-   default => sub { {} };
+has '_navigation' =>
+   is       => 'ro',
+   isa      => HashRef,
+   init_arg => 'navigation',
+   default  => sub { {} };
 
 =item pathname
 
@@ -360,13 +383,16 @@ File object for absolute pathname to the running program
 
 =cut
 
-has 'pathname' => is => 'ro', isa => File, default => sub {
-   my $name = $PROGRAM_NAME;
+has 'pathname' =>
+   is      => 'ro',
+   isa     => File,
+   default => sub {
+      my $name = $PROGRAM_NAME;
 
-   $name = '-' eq substr($name, 0, 1) ? $EXECUTABLE_NAME : $name;
+      $name = '-' eq substr($name, 0, 1) ? $EXECUTABLE_NAME : $name;
 
-   return io((split m{ [ ][\-][ ] }mx, $name)[0])->absolute;
-};
+      return io((split m{ [ ][\-][ ] }mx, $name)[0])->absolute;
+   };
 
 =item prefix
 
@@ -436,29 +462,32 @@ session object
 
 =cut
 
-has 'request' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift;
+has 'request' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
 
-   return {
-      max_messages => 3,
-      prefix => $self->prefix,
-      request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
-      serialise_session_attr => [ qw( id ) ],
-      session_attr => {
-         email         => [ Str, NUL ],
-         enable_2fa    => [ Bool, FALSE ],
-         id            => [ PositiveInt, 0 ],
-         link_display  => [ Str, 'both' ],
-         menu_location => [ Str, 'header' ],
-         realm         => [ Str, NUL ],
-         role          => [ Str, NUL ],
-         skin          => [ Str, $self->skin ],
-         theme         => [ Str, 'light' ],
-         timezone      => [ Str, local_tz ],
-         wanted        => [ Str, NUL ],
-      },
+      return {
+         max_messages => 3,
+         prefix => $self->prefix,
+         request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
+         serialise_session_attr => [ qw( id ) ],
+         session_attr => {
+            email         => [ Str, NUL ],
+            enable_2fa    => [ Bool, FALSE ],
+            id            => [ PositiveInt, 0 ],
+            link_display  => [ Str, 'both' ],
+            menu_location => [ Str, 'header' ],
+            realm         => [ Str, NUL ],
+            role          => [ Str, NUL ],
+            skin          => [ Str, $self->skin ],
+            theme         => [ Str, 'light' ],
+            timezone      => [ Str, local_tz ],
+            wanted        => [ Str, NUL ],
+         },
+      };
    };
-};
 
 =item root
 
@@ -466,7 +495,9 @@ Directory which is the document root for assets being served by the application
 
 =cut
 
-has 'root' => is => 'lazy', isa => Directory,
+has 'root' =>
+   is      => 'lazy',
+   isa     => Directory,
    default => sub { shift->vardir->catdir('root') };
 
 =item rundir
@@ -475,7 +506,9 @@ Used to store runtime files
 
 =cut
 
-has 'rundir' => is => 'lazy', isa => Directory,
+has 'rundir' =>
+   is      => 'lazy',
+   isa     => Directory,
    default => sub { shift->tempdir };
 
 =item schema_class
@@ -484,7 +517,10 @@ The name of the lazily loaded database schema class
 
 =cut
 
-has 'schema_class' => is => 'lazy', isa => LoadableClass, coerce => TRUE,
+has 'schema_class' =>
+   is      => 'lazy',
+   isa     => LoadableClass,
+   coerce  => TRUE,
    default => 'MCat::Schema';
 
 =item script
@@ -493,7 +529,9 @@ Name of the program being executed. Appears on the manual page output
 
 =cut
 
-has 'script' => is => 'lazy', isa => Str,
+has 'script' =>
+   is      => 'lazy',
+   isa     => Str,
    default => sub { shift->pathname->basename };
 
 =item skin
@@ -512,7 +550,9 @@ and upgrade the database
 
 =cut
 
-has 'sqldir' => is => 'lazy', isa => Directory,
+has 'sqldir' =>
+   is      => 'lazy',
+   isa     => Directory,
    default => sub { shift->vardir->catdir('sql') };
 
 =item state_cookie
@@ -545,7 +585,9 @@ should be served statically by the middleware
 
 =cut
 
-has 'static' => is => 'ro', isa => Str,
+has 'static' =>
+   is      => 'ro',
+   isa     => Str,
    default => 'css | file | font | img | js';
 
 =item tempdir
@@ -554,7 +596,9 @@ The temporary directory used by the application
 
 =cut
 
-has 'tempdir' => is => 'lazy', isa => Directory,
+has 'tempdir' =>
+   is      => 'lazy',
+   isa     => Directory,
    default => sub { shift->vardir->catdir('tmp') };
 
 =item template_wrappers
@@ -564,7 +608,9 @@ produce all the pages
 
 =cut
 
-has 'template_wrappers' => is => 'ro', isa => HashRef,
+has 'template_wrappers' =>
+   is      => 'ro',
+   isa     => HashRef,
    default => sub { { html => 'base', wrapper => 'standard' } };
 
 =item token_lifetime
@@ -581,16 +627,22 @@ Configuration for sending emails
 
 =cut
 
-has 'transport_attr' => is => 'lazy', isa => HashRef, init_arg => undef,
-   default => sub {
+has 'transport_attr' =>
+   is       => 'lazy',
+   isa      => HashRef,
+   init_arg => undef,
+   default  => sub {
       return {
          ssl_options => { SSL_verify_mode => SSL_VERIFY_NONE },
          %{shift->_transport_attr}
       };
    };
 
-has '_transport_attr' => is => 'ro', isa => HashRef, default => sub { {} },
-   init_arg => 'transport_attr';
+has '_transport_attr' =>
+   is       => 'ro',
+   isa      => HashRef,
+   init_arg => 'transport_attr',
+   default  => sub { {} };
 
 =item umask
 
@@ -607,15 +659,18 @@ used in the encrypting of passwords
 
 =cut
 
-has 'user' => is => 'ro', isa => HashRef, default => sub {
-   return {
-      default_password => 'welcome',
-      default_role     => 'view',
-      load_factor      => 14,
-      min_name_len     => 3,
-      min_password_len => 3,
+has 'user' =>
+   is      => 'ro',
+   isa     => HashRef,
+   default => sub {
+      return {
+         default_password => 'welcome',
+         default_role     => 'view',
+         load_factor      => 14,
+         min_name_len     => 3,
+         min_password_len => 3,
+      };
    };
-};
 
 =item vardir
 
@@ -623,7 +678,10 @@ Directory where all non program files and directories are expected to be found
 
 =cut
 
-has 'vardir' => is => 'ro', isa => Directory, coerce => TRUE,
+has 'vardir' =>
+   is      => 'ro',
+   isa     => Directory,
+   coerce  => TRUE,
    default => sub { io[qw( var )] };
 
 =item wcom_resources
