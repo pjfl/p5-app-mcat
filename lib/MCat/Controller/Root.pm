@@ -36,6 +36,15 @@ sub dispatch_request { build_routes
 
    'GET|POST + /job/status + ?*' => 'job/root/base/status',
 
+   'GET      + /bug/attachment/* + ?*'      => 'bug/root/attachment',
+   'GET|POST + /bug/create + ?*'            => 'bug/root/base/create',
+   'GET      + /bug/*/attach + ?*'          => 'bug/root/base/attach',
+   'POST     + /bug/*/attach + *file~ + ?*' => 'bug/root/base/attach',
+   'POST     + /bug/*/delete + ?*'          => 'bug/root/base/delete',
+   'GET|POST + /bug/*/edit + ?*'            => 'bug/root/base/edit',
+   'GET|POST + /bug/* + ?*'                 => 'bug/root/base/view',
+   'GET      + /bug + ?*'                   => 'bug/root/base/list',
+
    'POST     + /logfile/*/clear + ?*' => 'logfile/root/clear_cache',
    'GET      + /logfile/*.* + ?*'     => 'logfile/root/base/view',
    'GET      + /logfile + ?*'         => 'logfile/root/base/list',

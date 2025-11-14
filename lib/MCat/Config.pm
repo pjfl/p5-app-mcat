@@ -88,6 +88,26 @@ has 'bin' =>
    isa     => Directory,
    default => sub { shift->pathname->parent };
 
+=item bug_attachments
+
+A hash reference of parameters used to configure the bug attachment uploads
+
+=cut
+
+has 'bug_attachments' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
+
+      return {
+         directory  => $self->vardir->catdir('bugs'),
+         extensions => 'csv|doc|png|txt',
+         max_size   => 5_120_000,
+         sharedir   => $self->rootdir->catdir('bugs')
+      };
+   };
+
 =item component_loader
 
 Configuration parameters used by the L<component loader|Web::Components::Loader>

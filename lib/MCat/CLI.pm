@@ -90,21 +90,27 @@ sees the right directories
 =cut
 
 sub install : method {
-   my $self = shift;
+   my $self   = shift;
+   my $config = $self->config;
 
-   for my $dir (qw( backup log tmp )) {
-      my $path = $self->config->vardir->catdir($dir);
+   for my $dir (qw( backup bugs log tmp )) {
+      my $path = $config->vardir->catdir($dir);
 
       $path->mkpath(oct '0770') unless $path->exists;
    }
 
-   my $path = $self->config->root->catdir('file');
+   # Share directory for bug attachments
+   my $path = $config->root->catdir('bugs');
+
+   $path->mkpath(oct '0770') unless $path->exists;
+
+   $path = $config->root->catdir('file');
 
    $path->mkpath(oct '0770') unless $path->exists;
 
    $self->_create_profile;
 
-   my $cmd = $self->config->bin->catfile('mcat-schema');
+   my $cmd = $config->bin->catfile('mcat-schema');
 
    $self->_install_schema($cmd) if $cmd->exists;
 

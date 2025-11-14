@@ -72,7 +72,9 @@ Thumbs.db
 \bvar/etc/mcat-local.json
 \bvar/etc/mcat-profile
 \bvar/etc/mcat-schema.conf
+\bvar/filemanager
 \bvar/log
+\bvar/root/file
 \bvar/tmp
 
 \bvar/sql/MCat-Schema-[\d\.]+-[\d\.]+-PostgreSQL.sql

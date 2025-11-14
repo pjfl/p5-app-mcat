@@ -2,6 +2,7 @@ package MCat::Util;
 
 use utf8; # -*- coding: utf-8; -*-
 use strictures;
+use parent 'Exporter::Tiny';
 
 use Digest                qw( );
 use English               qw( -no_match_vars );
@@ -16,9 +17,9 @@ use URI::https;
 use DateTime;
 use DateTime::Format::Human;
 
-use Sub::Exporter -setup => { exports => [ qw( base64_decode base64_encode
-   create_token digest dt_from_epoch dt_human encode_for_html formpost local_tz
-   new_uri redirect redirect2referer truncate urandom uri_escape ) ]};
+our @EXPORT = qw( base64_decode base64_encode create_token digest dt_from_epoch
+                  dt_human encode_for_html formpost local_tz new_uri redirect
+                  redirect2referer truncate urandom uri_escape );
 
 my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);

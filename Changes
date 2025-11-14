@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Added Bugs
           - Limit log message length
           - Weakened resultset attributes in log view classes
           - Session config now in config class. Use JSONParser role

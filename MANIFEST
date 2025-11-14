@@ -1,12 +1,3 @@
-'var/filemanager/Router Logs/Archive/copy.csv'
-'var/filemanager/Router Logs/Archive/log.txt'
-'var/filemanager/Router Logs/Archive/loggy.txt'
-'var/filemanager/Router Logs/Archive/testy.csv'
-'var/filemanager/Router Logs/log(1).txt'
-'var/filemanager/Router Logs/log.txt'
-'var/root/file/Router Logs/Archive/copy.csv'
-'var/root/file/Router Logs/Archive/loggy.txt'
-'var/root/file/Router Logs/log(1).txt'
 Build.PL
 Changes
 MANIFEST
@@ -24,11 +15,15 @@ lib/MCat/Authentication/Realms/DBIC.pm
 lib/MCat/CLI.pm
 lib/MCat/Config.pm
 lib/MCat/Config/Loader.pm
+lib/MCat/Constants.pm
 lib/MCat/Context.pm
 lib/MCat/Controller/Catalog.pm
 lib/MCat/Controller/Root.pm
 lib/MCat/Exception.pm
 lib/MCat/Form/Artist.pm
+lib/MCat/Form/AttachmentView.pm
+lib/MCat/Form/BugAttachment.pm
+lib/MCat/Form/BugReport.pm
 lib/MCat/Form/Cd.pm
 lib/MCat/Form/ChangePassword.pm
 lib/MCat/Form/Changes.pm
@@ -60,6 +55,7 @@ lib/MCat/Model.pm
 lib/MCat/Model/API.pm
 lib/MCat/Model/Admin.pm
 lib/MCat/Model/Artist.pm
+lib/MCat/Model/Bug.pm
 lib/MCat/Model/Cd.pm
 lib/MCat/Model/FileManager.pm
 lib/MCat/Model/Filter.pm
@@ -88,11 +84,15 @@ lib/MCat/Role/Config.pm
 lib/MCat/Role/FileMeta.pm
 lib/MCat/Role/JSONParser.pm
 lib/MCat/Role/Log.pm
+lib/MCat/Role/Redis.pm
 lib/MCat/Role/Schema.pm
 lib/MCat/Role/Session.pm
 lib/MCat/Schema.pm
 lib/MCat/Schema/Admin.pm
 lib/MCat/Schema/Result/Artist.pm
+lib/MCat/Schema/Result/Bug.pm
+lib/MCat/Schema/Result/BugAttachment.pm
+lib/MCat/Schema/Result/BugComment.pm
 lib/MCat/Schema/Result/Cd.pm
 lib/MCat/Schema/Result/Filter.pm
 lib/MCat/Schema/Result/Import.pm
@@ -115,6 +115,7 @@ lib/MCat/Schema/ResultSet/User.pm
 lib/MCat/Server.pm
 lib/MCat/Session.pm
 lib/MCat/Table/Artist.pm
+lib/MCat/Table/Bugs.pm
 lib/MCat/Table/Cd.pm
 lib/MCat/Table/FileManager.pm
 lib/MCat/Table/Filter.pm
@@ -143,23 +144,23 @@ lib/MCat/View/JSON.pm
 lib/MCat/View/Table.pm
 share/css/mcat.css
 share/js/wcom-10-util.js
-share/js/wcom-11-modal.js
-share/js/wcom-20-filter-editor.js
-share/js/wcom-21-filter-nodetree.js
-share/js/wcom-22-filter-node.js
-share/js/wcom-23-filter-type.js
-share/js/wcom-30-form-util.js
-share/js/wcom-31-form-ds.js
-share/js/wcom-32-form-toggle.js
-share/js/wcom-33-form-renderer.js
+share/js/wcom-15-navigation.js
+share/js/wcom-16-modal.js
+share/js/wcom-20-form-util.js
+share/js/wcom-21-form-ds.js
+share/js/wcom-22-form-toggle.js
+share/js/wcom-23-form-renderer.js
+share/js/wcom-30-filter-editor.js
+share/js/wcom-31-filter-nodetree.js
+share/js/wcom-32-filter-node.js
+share/js/wcom-33-filter-type.js
 share/js/wcom-40-table-renderer.js
 share/js/wcom-41-table-role.js
 share/js/wcom-42-table-celltrait.js
 share/js/wcom-43-table-columntrait.js
 share/js/wcom-44-table-rowtrait.js
-share/js/wcom-50-navigation.js
 share/less/hfilter-minimal.less
-share/less/mcat-minimal.less
+share/less/wcom-minimal.less
 t/02pod.t
 t/03podcoverage.t
 t/05kwalitee.t
@@ -169,14 +170,7 @@ t/10test_script.t
 t/boilerplate.pm
 var/etc/mcat-uml.dia
 var/etc/mcat.json
-var/filemanager/Baz/test.txt
-var/filemanager/Baz/test1.txt
-var/filemanager/artist.csv
-var/filemanager/log.txt
-var/filemanager/loggy.txt
-var/filemanager/test3.txt
 var/root/css/mcat-classic.css
-var/root/file/loggy.txt
 var/root/img/admin.svg
 var/root/img/artist.svg
 var/root/img/cd.svg
@@ -185,6 +179,7 @@ var/root/img/icons.svg
 var/root/img/logo.svg
 var/root/img/manager.svg
 var/root/img/tracks.svg
+var/root/js/highcharts.js
 var/root/js/mcat.js
 var/sql/MCat-Schema-0.1.57-PostgreSQL.sql
 var/sql/MCat-Schema-0.2.10-PostgreSQL.sql
@@ -199,6 +194,12 @@ var/templates/classic/artist/create.tt
 var/templates/classic/artist/edit.tt
 var/templates/classic/artist/list.tt
 var/templates/classic/artist/view.tt
+var/templates/classic/bug/attach.tt
+var/templates/classic/bug/attachment.tt
+var/templates/classic/bug/create.tt
+var/templates/classic/bug/edit.tt
+var/templates/classic/bug/list.tt
+var/templates/classic/bug/view.tt
 var/templates/classic/cd/create.tt
 var/templates/classic/cd/edit.tt
 var/templates/classic/cd/list.tt
