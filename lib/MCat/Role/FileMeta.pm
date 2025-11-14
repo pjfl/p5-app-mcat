@@ -7,7 +7,7 @@ use Type::Utils                 qw( class_type );
 use Text::CSV_XS;
 use Moo::Role;
 
-has 'meta_config_attr' => is => 'ro', isa => Str, default => 'filemanager';
+has 'meta_config_attr' => is => 'lazy', isa => Str, default => 'filemanager';
 
 has '_csv' =>
    is      => 'lazy',

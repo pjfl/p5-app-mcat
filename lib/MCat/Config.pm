@@ -104,7 +104,7 @@ has 'bug_attachments' =>
          directory  => $self->vardir->catdir('bugs'),
          extensions => 'csv|doc|png|txt',
          max_size   => 5_120_000,
-         sharedir   => $self->rootdir->catdir('bugs')
+         sharedir   => $self->root->catdir('bugs')
       };
    };
 

@@ -10,7 +10,7 @@ use Scalar::Util qw( weaken );
 my $class = __PACKAGE__;
 
 $class->load_namespaces;
-#$class->load_components('Schema::Versioned');
+$class->load_components('Schema::Versioned');
 
 my $config;
 

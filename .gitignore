@@ -26,6 +26,7 @@ MCat-*
 share/js
 share/less
 var/backup
+var/bugs
 var/etc/mcat-local.json
 var/etc/mcat-schema.conf
 var/etc/mcat-profile

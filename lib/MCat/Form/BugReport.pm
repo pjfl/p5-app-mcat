@@ -56,7 +56,7 @@ has_field 'description' => type => 'TextArea', required => TRUE, rows => 4;
 
 has_field 'user_id' => type => 'Hidden', disabled => TRUE;
 
-has_field 'owner' => type => 'Display', value => 'owner.user_name';
+has_field 'owner' => type => 'Display', value => 'owner.name';
 
 has_field 'created' => type => 'DateTime', readonly => TRUE;
 
@@ -67,7 +67,7 @@ has_field 'state' =>
    default => 'open',
    options => [BUG_STATE_ENUM];
 
-has_field 'assigned' => type => 'Select', label_column => 'user_name';
+has_field 'assigned' => type => 'Select', label_column => 'name';
 
 sub options_assigned {
    my $self  = shift;
@@ -75,7 +75,7 @@ sub options_assigned {
 
    my $accessor; $accessor = $field->parent->full_accessor if $field->parent;
 
-   return [ NUL, NUL, @{$self->lookup_options($field, $accessor)} ];
+   return [ NUL, NUL, @{$self->lookup_options($field, $accessor) // []} ];
 }
 
 has_field 'submit1' => type => 'Button';
@@ -298,7 +298,7 @@ sub _inflate_attachments {
 
       push @{$values}, {
          id      => $item->id,
-         owner   => $item->owner->user_name,
+         owner   => $item->owner->name,
          path    => $item->path,
          thumb   => $uri->as_string,
          updated => $updated->strftime('%FT%R'),
@@ -322,7 +322,7 @@ sub _inflate_comments {
       push @{$values}, {
          comment => $item->comment,
          id      => $item->id,
-         owner   => $item->owner->user_name,
+         owner   => $item->owner->name,
          updated => $updated->strftime('%FT%R'),
          user_id => $item->user_id,
       };

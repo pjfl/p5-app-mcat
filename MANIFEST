@@ -140,6 +140,7 @@ lib/MCat/Table/User.pm
 lib/MCat/Table/User/View.pm
 lib/MCat/Util.pm
 lib/MCat/View/HTML.pm
+lib/MCat/View/Image.pm
 lib/MCat/View/JSON.pm
 lib/MCat/View/Table.pm
 share/css/mcat.css
@@ -178,16 +179,12 @@ var/root/img/favicon.ico
 var/root/img/icons.svg
 var/root/img/logo.svg
 var/root/img/manager.svg
+var/root/img/thumb.svg
 var/root/img/tracks.svg
 var/root/js/highcharts.js
 var/root/js/mcat.js
-var/sql/MCat-Schema-0.1.57-PostgreSQL.sql
-var/sql/MCat-Schema-0.2.10-PostgreSQL.sql
-var/sql/MCat-Schema-0.2.16-PostgreSQL.sql
-var/sql/MCat-Schema-0.2.2-PostgreSQL.sql
-var/sql/MCat-Schema-0.2.32-PostgreSQL.sql
 var/sql/MCat-Schema-0.2.33-PostgreSQL.sql
-var/sql/MCat-Schema-0.2.9-PostgreSQL.sql
+var/sql/MCat-Schema-0.2.64-PostgreSQL.sql
 var/sql/MCat-Schema-001-Role.json
 var/sql/MCat-Schema-002-User.json
 var/templates/classic/artist/create.tt

@@ -1,7 +1,7 @@
 package MCat::Model::Bug;
 
-use MCat::Constants   qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use MCat::Util        qw( redirect redirect2referer );
+use MCat::Constants       qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use MCat::Util            qw( redirect redirect2referer );
 use Unexpected::Functions qw( UnauthorisedAccess UnknownAttachment UnknownBug );
 use Moo;
 use MCat::Navigation::Attributes; # Will do cleaning

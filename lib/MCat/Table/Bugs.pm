@@ -62,7 +62,7 @@ has_column 'title' =>
 has_column 'user_id' =>
    filterable => TRUE,
    label      => 'Owner',
-   value      => 'owner.user_name';
+   value      => 'owner.name';
 
 has_column 'created' => cell_traits => ['DateTime'];
 

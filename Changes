@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Bugs working
           - Added Bugs
           - Limit log message length
           - Weakened resultset attributes in log view classes

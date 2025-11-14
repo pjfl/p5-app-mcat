@@ -3,10 +3,10 @@ package MCat::Schema::Result::Bug;
 use MCat::Constants qw( BUG_STATE_ENUM FALSE SQL_NOW TRUE );
 use DBIx::Class::Moo::ResultClass;
 
-with 'MCat::Role::FileMeta';
-
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
+
+$class->load_components( qw( InflateColumn::Object::Enum TimeStamp ) );
 
 $class->table('bugs');
 
@@ -42,7 +42,7 @@ $class->add_columns(
       is_nullable => TRUE,
       timezone    => 'UTC',
    },
-   state       => {
+   state => {
       data_type     => 'enum',
       default_value => 'open',
       extra         => { list => BUG_STATE_ENUM },
@@ -67,6 +67,8 @@ $class->belongs_to('assigned' => "${result}::User", 'assigned_id');
 $class->has_many('comments' => "${result}::BugComment", 'bug_id');
 
 $class->has_many('attachments' => "${result}::BugAttachment", 'bug_id');
+
+with 'MCat::Role::FileMeta';
 
 has '+meta_config_attr' => default => 'bug_attachments';
 

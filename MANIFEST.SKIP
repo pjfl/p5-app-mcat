@@ -69,6 +69,7 @@ Thumbs.db
 \bshare/less/hstatetable
 
 \bvar/backup
+\bvar/bugs
 \bvar/etc/mcat-local.json
 \bvar/etc/mcat-profile
 \bvar/etc/mcat-schema.conf

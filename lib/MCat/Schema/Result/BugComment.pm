@@ -6,6 +6,8 @@ use DBIx::Class::Moo::ResultClass;
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
 
+$class->load_components( qw( TimeStamp ) );
+
 $class->table('bug_comments');
 
 $class->add_columns(

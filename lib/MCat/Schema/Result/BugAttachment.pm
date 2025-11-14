@@ -3,10 +3,10 @@ package MCat::Schema::Result::BugAttachment;
 use MCat::Constants qw( FALSE SQL_NOW TRUE );
 use DBIx::Class::Moo::ResultClass;
 
-with 'MCat::Role::FileMeta';
-
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
+
+$class->load_components( qw( TimeStamp ) );
 
 $class->table('bug_attachments');
 
@@ -62,6 +62,8 @@ $class->belongs_to('bug' => "${result}::Bug", 'bug_id');
 $class->belongs_to('owner' => "${result}::User", 'user_id');
 
 $class->belongs_to('comment' => "${result}::BugComment", 'comment_id');
+
+with 'MCat::Role::FileMeta';
 
 has '+meta_config_attr' => default => 'bug_attachments';
 
