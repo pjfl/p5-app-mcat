@@ -45,7 +45,7 @@ after 'before_build_fields' => sub {
 sub validate {
    my $self = shift;
 
-   return if $self->result->has_errors;
+   return unless $self->validated;
 
    my $context = $self->context;
    my $request = $context->request;

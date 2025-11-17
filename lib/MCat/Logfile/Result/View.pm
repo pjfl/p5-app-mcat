@@ -52,6 +52,12 @@ line from a logfile
 
 has 'line' => is => 'ro', isa => Str, required => TRUE;
 
+=item resultset
+
+=cut
+
+has 'resultset' => is => 'ro', required => TRUE, weak_ref => TRUE;
+
 =item fields
 
 Each line from the logfile is split on comma to produce this list of fields
@@ -103,12 +109,6 @@ has 'field_map' =>
       return $field_map;
    };
 
-=item _resultset
-
-=cut
-
-has '_resultset' => is => 'ro', init_arg => 'resultset', weak_ref => TRUE;
-
 =item timestamp
 
 This L<DateTime> object is parsed from the first two fields of the logfile
@@ -133,7 +133,7 @@ has 'timestamp' =>
          $timestamp = NUL;
       }
 
-      my $context = $self->_resultset->table->context;
+      my $context = $self->resultset->table->context;
 
       $timestamp->set_time_zone($context->session->timezone) if $timestamp;
 

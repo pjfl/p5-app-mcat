@@ -158,7 +158,7 @@ sub make_js : method {
 
    my $file  = 'mcat.js';
    my $out   = io([qw( var root js ), $file])->assert_open('a')->truncate(0);
-   my $count =()= map  { $out->append($_->slurp) }
+   my $count =()= map  { $out->appendln($self->_strip_comments($_->slurp)) }
                   sort { $a->name cmp $b->name } @files;
    my $options = { name => 'CLI.make_js' };
 
@@ -373,6 +373,17 @@ sub _send_email {
 }
 
 sub _send_sms { ... }
+
+sub _strip_comments {
+   my ($self, @js) = @_;
+
+   my $js = join NUL, @js;
+
+   $js =~ s{ /\*\* [^*]* \*/ }{}gmsx;
+   $js =~ s{ \n [ ]* \n }{\n}gmsx;
+
+   return split m{ \n }mx, $js, -1;
+}
 
 use namespace::autoclean;
 

@@ -209,7 +209,7 @@ after 'after_build_fields' => sub {
 sub validate {
    my $self = shift;
 
-   return if $self->result->has_errors;
+   return unless $self->validated;
 
    $self->field('user_id')->value($self->context->session->id)
       unless $self->item;

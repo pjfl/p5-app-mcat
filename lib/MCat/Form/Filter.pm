@@ -108,7 +108,7 @@ after 'after_build_fields' => sub {
 sub validate {
    my $self = shift;
 
-   return if $self->result->has_errors;
+   return unless $self->validated;
 
    my $field = $self->field('filter_json');
 
