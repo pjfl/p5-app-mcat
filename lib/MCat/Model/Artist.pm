@@ -122,12 +122,19 @@ sub view : Auth('view') Nav('View Artist') {
       caption => NUL, context => $context, artistid => $artist->artistid
    };
    my $cds     = $self->new_table('Cd', $options);
+   my $buttons = [{
+      action    => $context->uri_for_action('artist/edit', [$artist->artistid]),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Edit',
+   }];
 
    $context->stash(table => $self->new_table('Object::View', {
-      add_columns => [ 'CDs' => $cds ],
-      caption     => 'Artist View',
-      context     => $context,
-      result      => $artist
+      add_columns  => [ 'CDs' => $cds ],
+      caption      => 'Artist View',
+      context      => $context,
+      form_buttons => $buttons,
+      result       => $artist
    }));
    return;
 }

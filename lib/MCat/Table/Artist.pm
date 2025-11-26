@@ -43,7 +43,7 @@ has '+form_buttons' => default => sub {
    return [{
       action    => 'artist/remove',
       selection => 'select_one',
-      value     => 'Remove Artist',
+      value     => 'Remove',
    }];
 };
 

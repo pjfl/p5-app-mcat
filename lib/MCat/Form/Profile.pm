@@ -87,6 +87,11 @@ has_field 'theme' => type => 'Select', default => 'light', options => [
    { label => 'Light', value => 'light' },
 ];
 
+has_field 'base_colour' =>
+   type    => 'Colour',
+   label   => 'Base Colour',
+   options => [];
+
 has_field 'submit' => type => 'Button';
 
 after 'after_build_fields' => sub {
@@ -97,6 +102,12 @@ after 'after_build_fields' => sub {
       $self->field('postcode')->add_wrapper_class('hide');
    }
 
+   my $field  = $self->field('base_colour');
+   my $colour = $self->context->config->default_base_colour;
+
+   $field->default($colour);
+   push @{$field->options}, { value => $colour };
+
    return;
 };
 
@@ -106,6 +117,7 @@ sub validate {
    my $user       = $self->user;
    my $value      = $user->profile_value;
 
+   $value->{base_colour}   = $self->field('base_colour')->value;
    $value->{enable_2fa}    = $enable_2fa ? \1 : \0;
    $value->{link_display}  = $self->field('link_display')->value;
    $value->{menu_location} = $self->field('menu_location')->value;
@@ -126,6 +138,7 @@ sub validate {
    my $session = $self->context->session;
 
    if ($session->id == $user->id) {
+      $session->base_colour($value->{base_colour});
       $session->enable_2fa($enable_2fa);
       $session->link_display($value->{link_display});
       $session->menu_location($value->{menu_location});

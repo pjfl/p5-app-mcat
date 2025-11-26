@@ -11,10 +11,11 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
-has '+name'         => default => 'Login';
-has '+info_message' => default => 'Stop! You have your papers?';
-has '+item_class'   => default => 'User';
-has '+title'        => default => 'Login';
+has '+name'               => default => 'Login';
+has '+form_element_class' => default => sub { ['shiny'] };
+has '+info_message'       => default => 'Stop! You have your papers?';
+has '+item_class'         => default => 'User';
+has '+title'              => default => 'Login';
 
 has_field 'name' =>
    html_name   => 'user_name',

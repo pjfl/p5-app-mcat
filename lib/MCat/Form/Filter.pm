@@ -33,16 +33,16 @@ has 'filter_config' =>
       my $base = $self->context->request->uri_for(NUL);
 
       return {
-         'api-uri'           => 'api/object/*/*',
-         'icons'             => $self->context->icons_uri->as_string,
-         'request-base'      => $base->as_string,
-         'rule-editor-width' => $self->filter_editor_width,
-         'selector-uri'      => 'filter/selector/*',
-         'table-id'          => $self->item->table_id
+         'api-uri'          => 'api/object/*/*',
+         'icons'            => $self->context->icons_uri->as_string,
+         'request-base'     => $base->as_string,
+         'editor-min-width' => $self->editor_min_width,
+         'selector-uri'     => 'filter/selector/*',
+         'table-id'         => $self->item->table_id,
       };
    };
 
-has 'filter_editor_width' => is => 'ro', isa => Int, default => 300;
+has 'editor_min_width' => is => 'ro', isa => Int, default => 250;
 
 has_field 'name' => required => TRUE;
 
@@ -88,9 +88,9 @@ after 'after_build_fields' => sub {
    $self->field('core_table')->disabled(TRUE) if $self->item;
 
    if ($self->has_filter_config) {
-      $self->field('name')->add_wrapper_class('inline');
-      $self->field('description')->add_wrapper_class('inline');
-      $self->field('core_table')->add_wrapper_class('inline');
+      $self->field('name')->add_wrapper_class('inline collapse');
+      $self->field('description')->add_wrapper_class('inline collapse');
+      $self->field('core_table')->add_wrapper_class('inline collapse');
 
       my $config = $self->json_parser->encode($self->filter_config);
       my $html   = $self->renderer->html->div({

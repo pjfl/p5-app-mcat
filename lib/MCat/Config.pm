@@ -179,6 +179,15 @@ exception to the end user
 
 has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
+=item default_base_colour
+
+Defaults to C<bisque>. Used as the base colour for page rendering. Can be
+changed via the user C<Profile> form
+
+=cut
+
+has 'default_base_colour' => is => 'ro', isa => Str, default => 'bisque';
+
 =item default_password
 
 The password used when creating new users
@@ -494,6 +503,7 @@ has 'request' =>
          request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
          serialise_session_attr => [ qw( id ) ],
          session_attr => {
+            base_colour   => [ Str, $self->default_base_colour ],
             email         => [ Str, NUL ],
             enable_2fa    => [ Bool, FALSE ],
             id            => [ PositiveInt, 0 ],

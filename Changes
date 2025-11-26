@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Shiny login form
           - Strips JSDoc when concatenating JS files
           - Bugs working
           - Added Bugs

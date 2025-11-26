@@ -126,10 +126,18 @@ sub list : Auth('view') Nav('Tracks|img/tracks.svg') {
 sub view : Auth('view') Nav('View Track') {
    my ($self, $context, $trackid) = @_;
 
+   my $buttons = [{
+      action    => $context->uri_for_action('track/edit', [$trackid]),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Edit',
+   }];
+
    $context->stash(table => $self->table->new_with_context('Object::View', {
-      caption => 'Track View',
-      context => $context,
-      result  => $context->stash('track')
+      caption      => 'Track View',
+      context      => $context,
+      form_buttons => $buttons,
+      result       => $context->stash('track')
    }));
    return;
 }
