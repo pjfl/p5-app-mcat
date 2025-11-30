@@ -8,11 +8,11 @@ use HTML::StateTable::Moo;
 extends 'HTML::StateTable';
 with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Searchable';
+with    'HTML::StateTable::Role::Active';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
-with    'HTML::StateTable::Role::Active';
 
-has '+active_control_location' => default => 'BottomLeft';
+has '+active_control_location' => default => 'BottomRight';
 
 has '+caption' => default => 'User List';
 
@@ -33,9 +33,11 @@ has '+form_control_location' => default => 'BottomRight';
 
 has '+icons' => default => sub { shift->context->icons_uri->as_string };
 
-has '+page_control_location' => default => 'TopRight';
+has '+page_control_location' => default => 'TopLeft';
 
 has '+page_size_control_location' => default => 'BottomLeft';
+
+has '+searchable_control_location' => default => 'TopRight';
 
 set_table_name 'user';
 
@@ -76,7 +78,7 @@ has_column 'timezone' =>
 
 has_column 'check' =>
    cell_traits => ['Checkbox'],
-   label       => SPC,
+   label       => 'Select',
    value       => 'id';
 
 use namespace::autoclean -except => TABLE_META;

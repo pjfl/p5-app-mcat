@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Added configurable Google and local fonts
           - Shiny login form
           - Strips JSDoc when concatenating JS files
           - Bugs working

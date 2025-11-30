@@ -49,6 +49,10 @@ sub dispatch_request { build_routes
    'GET      + /logfile/*.* + ?*'     => 'logfile/root/base/view',
    'GET      + /logfile + ?*'         => 'logfile/root/base/list',
 
+   'GET      + /doc/select + ?*' => 'doc/root/base/select',
+   'GET      + /doc/*.* + ?*'    => 'doc/root/base/view',
+   'GET      + /doc + ?*'        => 'doc/root/base/list',
+
    'GET      + /access_denied + ?*'          => 'page/root/base/access_denied',
    'GET      + /changes + ?*'                => 'page/root/base/changes',
    'GET      + /configuration + ?*'          => 'page/root/base/configuration',

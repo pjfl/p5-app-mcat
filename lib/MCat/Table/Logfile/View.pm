@@ -51,7 +51,7 @@ setup_resultset sub {
    my $config = $self->context->config;
 
    return HTML::StateTable::ResultSet::File::View->new(
-      directory    => $config->logfile->parent,
+      directory    => $config->logsdir,
       file         => $self->logfile,
       redis        => $self->redis_client,
       result_class => 'MCat::Logfile::Result::View',

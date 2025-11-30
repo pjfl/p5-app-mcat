@@ -4,6 +4,10 @@ use Moo;
 
 extends 'App::Job::Table::Job';
 
+has '+configurable_control_location' => default => 'TopRight';
+
+has '+page_control_location' => default => 'TopLeft';
+
 has '+form_buttons' => default => sub {
    return [{
       action    => 'job/remove',

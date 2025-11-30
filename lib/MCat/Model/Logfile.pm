@@ -4,6 +4,7 @@ use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use Type::Utils                 qw( class_type );
 use MCat::Util                  qw( redirect2referer );
 use Unexpected::Functions       qw( Unspecified NotFound );
+use Format::Human::Bytes;
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -14,6 +15,8 @@ with    'MCat::Role::Redis';
 has '+moniker' => default => 'logfile';
 
 has '+redis_client_name' => is => 'ro', default => 'logfile_cache';
+
+has '_format_number' => is => 'ro', default => sub { Format::Human::Bytes->new};
 
 sub base : Auth('admin') {
    my ($self, $context, $logfile) = @_;
@@ -59,8 +62,14 @@ sub view : Auth('admin') Nav('View Logfile') {
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
+   my $path = $self->config->logsdir->catfile($logfile);
+   my $size = 0;
+
+   $size = $self->_format_number->base2($path->stat->{size})
+      if $path->exists;
+
    my $options = {
-      caption      => "${logfile} File View",
+      caption      => "${logfile} File View (${size})",
       context      => $context,
       logfile      => $logfile,
       redis_client => $self->redis_client,

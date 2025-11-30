@@ -72,7 +72,7 @@ after 'BUILD' => sub {
    return;
 };
 
-set_table_name 'artist';
+set_table_name 'artists';
 
 setup_resultset sub {
    my $self = shift;

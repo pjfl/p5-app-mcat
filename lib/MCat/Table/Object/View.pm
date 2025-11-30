@@ -33,7 +33,7 @@ setup_resultset sub {
    return MCat::Object::View->new(table => $self);
 };
 
-set_table_name 'object_view';
+set_table_name 'object-view';
 
 has_column 'name' =>
    label   => SPC,

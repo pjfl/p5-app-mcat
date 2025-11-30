@@ -6,7 +6,9 @@ use HTML::Forms::Types      qw( Bool );
 use Class::Usul::Cmd::Util  qw( now_dt ns_environment trim );
 use HTML::StateTable::Util  qw( escape_formula );
 use Ref::Util               qw( is_arrayref is_coderef );
+use Scalar::Util            qw( blessed );
 use Type::Utils             qw( class_type );
+use English                 qw( -no_match_vars );
 use Text::CSV_XS;
 use Moo;
 
@@ -109,11 +111,18 @@ sub _get_leader {
       else { $leader = 'Unknown' }
    }
 
+   $leader = "${leader}[${PID}]" unless $leader =~ m{ \[ .+ \] }mx;
+
    return ($leader, trim $message);
 }
 
 sub _log {
    my ($self, $level, $leader, $message, $context) = @_;
+
+   if (blessed $message && $message->isa('MCat::Context')) {
+      $context = $message;
+      $message = 'No message supplied';
+   }
 
    $level   ||= 'ERROR';
    $message ||= 'Unknown';

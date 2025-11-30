@@ -231,6 +231,25 @@ has 'deflate_types' =>
       ];
    };
 
+=item documentation
+
+A hash reference of parameters used to configure the documentation viewer
+
+=cut
+
+has 'documentation' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
+
+      return {
+         directory  => $self->bin->parent->catdir('lib'),
+         extensions => 'pm',
+         sharedir   => $self->root->catdir('file')
+      };
+   };
+
 =item dsn
 
 String used to select a database type and specific database by name
@@ -263,6 +282,29 @@ has 'filemanager' =>
          directory  => $self->vardir->catdir('filemanager'),
          extensions => 'csv|txt',
          sharedir   => $self->root->catdir('file')
+      };
+   };
+
+=item fonts
+
+Fonts used in the application pages. Either fetched from Google's CDN or
+served locally
+
+=cut
+
+has 'fonts' =>
+   is      => 'ro',
+   isa     => HashRef,
+   default => sub {
+      return {
+         google_apis   => 'https://fonts.googleapis.com',
+         google_fonts  => ['Roboto:ital,wght@0,100..900;1,100..900'],
+         google_static => 'https://fonts.gstatic.com',
+         local_fonts   => [{
+            name   => 'DejaVu Serif',
+            file   => 'DejaVuSerif.ttf',
+            format => 'truetype',
+         }],
       };
    };
 
@@ -618,7 +660,7 @@ should be served statically by the middleware
 has 'static' =>
    is      => 'ro',
    isa     => Str,
-   default => 'css | file | font | img | js';
+   default => 'css | file | fonts | img | js';
 
 =item tempdir
 

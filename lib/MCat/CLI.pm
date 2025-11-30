@@ -8,7 +8,6 @@ use File::DataClass::Types      qw( Directory );
 use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
 use English                     qw( -no_match_vars );
 use File::DataClass::IO         qw( io );
-use JSON::MaybeXS               qw( decode_json );
 use Type::Utils                 qw( class_type );
 use Unexpected::Functions       qw( throw UnknownImport Unspecified );
 use MCat::Markdown;
@@ -17,9 +16,10 @@ use Class::Usul::Cmd::Options;
 
 extends 'Class::Usul::Cmd';
 with    'MCat::Role::Config';
-with    'MCat::Role::Redis';
 with    'MCat::Role::Log';
 with    'MCat::Role::Schema';
+with    'MCat::Role::JSONParser';
+with    'MCat::Role::Redis';
 with    'Web::Components::Role::Email';
 
 has '+redis_client_name' => is => 'ro', default => 'job_stash';
@@ -93,7 +93,7 @@ sub install : method {
    my $self   = shift;
    my $config = $self->config;
 
-   for my $dir (qw( backup bugs log tmp )) {
+   for my $dir (qw( backup bugs filemanager log tmp )) {
       my $path = $config->vardir->catdir($dir);
 
       $path->mkpath(oct '0770') unless $path->exists;
@@ -104,13 +104,15 @@ sub install : method {
 
    $path->mkpath(oct '0770') unless $path->exists;
 
+   # Share directory for filemanager
    $path = $config->root->catdir('file');
 
    $path->mkpath(oct '0770') unless $path->exists;
 
    $self->_create_profile;
 
-   my $cmd = $config->bin->catfile('mcat-schema');
+   my $prefix = $config->prefix;
+   my $cmd    = $config->bin->catfile("${prefix}-schema");
 
    $self->_install_schema($cmd) if $cmd->exists;
 
@@ -142,6 +144,22 @@ sub make_css : method {
    return OK;
 }
 
+=item make_fe - Run JS and CSS production methods
+
+A convienience method which calls the other three front end file production
+methods
+
+=cut
+
+sub make_fe : method {
+   my $self = shift;
+
+   $self->make_less;
+   $self->make_css;
+   $self->make_js;
+   return OK;
+}
+
 =item make_js - Make concatenated JS file
 
 Run automatically if L<App::Burp> is running. It concatenates multiple JS files
@@ -168,6 +186,9 @@ sub make_js : method {
 
 =item make_less - Convert LESS files to CSS
 
+Run automatically if L<App::Burp> is running. Compiles LESS files down to CSS
+files
+
 =cut
 
 sub make_less : method {
@@ -189,6 +210,9 @@ sub make_less : method {
 }
 
 =item send_message - Send a message
+
+Send either email or SMS messages to a list of recipients. The SMS client is
+unimplemented
 
 =cut
 
@@ -262,17 +286,19 @@ sub _create_profile {
    $self->yorn('+Is this correct', FALSE, TRUE, 0) or return;
 
    my $localdir = $self->config->home->catdir('local');
+   my $prefix   = $self->config->prefix;
+   my $filename = "${prefix}-profile";
    my $profile;
 
    if ($localdir->exists) {
-      $profile = $localdir->catfile(qw( var etc mcat-profile ));
+      $profile = $localdir->catfile('var', 'etc', $filename);
    }
    elsif ($localdir = io['~', 'local'] and $localdir->exists) {
-      $profile = $self->config->vardir->catfile('etc', 'mcat-profile');
+      $profile = $self->config->vardir->catfile('etc', $filename);
    }
    elsif ($localdir = io($ENV{PERL_LOCAL_LIB_ROOT} // NUL)
           and $localdir->exists) {
-      $profile = $self->config->vardir->catfile('etc', 'mcat-profile');
+      $profile = $self->config->vardir->catfile('etc', $filename);
    }
 
    return if !$profile || $profile->exists;
@@ -303,7 +329,7 @@ sub _load_stash {
    my $token    = $self->options->{token} or throw Unspecified, ['token'];
    my $encoded  = $self->redis_client->get($token)
       or throw 'Token [_1] not found', [$token];
-   my $stash    = decode_json($encoded);
+   my $stash    = $self->json_parser->decode($encoded);
    my $template = delete $stash->{template};
    my $path     = $self->templatedir->catfile($template);
 

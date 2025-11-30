@@ -3,7 +3,6 @@ package MCat::Server;
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_FOUND );
 use Class::Usul::Cmd::Util qw( ns_environment );
-use English                qw( -no_match_vars );
 
 use MCat;
 use Plack::Builder;
@@ -51,7 +50,7 @@ sub BUILD {
    my $port   = ns_environment($class, 'port') // 5_000;
    my $info   = 'v' . $class->VERSION . " started on port ${port}";
 
-   $self->log->info("LISTENER[${PID}]: ${class} ${server} ${info}");
+   $self->log->info("LISTENER: ${class} ${server} ${info}");
    return;
 }
 
