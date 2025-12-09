@@ -16,6 +16,7 @@ has '+name'                => default => 'edit_filter';
 has '+title'               => default => 'Filter';
 has '+default_wrapper_tag' => default => 'fieldset';
 has '+do_form_wrapper'     => default => TRUE;
+has '+form_element_class'  => default => sub { ['wide'] };
 has '+info_message'        => default => 'You know what to do';
 has '+is_html5'            => default => TRUE;
 has '+item_class'          => default => 'Filter';

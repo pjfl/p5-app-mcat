@@ -1,4 +1,4 @@
-package MCat::Table::Logfile::View;
+package MCat::Table::Logfile::CSV;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( Str );
@@ -12,13 +12,6 @@ with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::Searchable';
 with    'HTML::StateTable::Role::Form';
-
-has 'logfile' => is => 'ro', isa => Str, required => TRUE;
-
-has 'redis_client' =>
-   is       => 'ro',
-   isa      => class_type('MCat::Redis'),
-   required => TRUE;
 
 has '+configurable_action' => default => 'api/table_preference';
 
@@ -46,6 +39,13 @@ has '+searchable_control_location' => default => 'TopRight';
 
 has '+title_location' => default => 'inner';
 
+has 'logfile' => is => 'ro', isa => Str, required => TRUE;
+
+has 'redis' =>
+   is       => 'ro',
+   isa      => class_type('MCat::Redis'),
+   required => TRUE;
+
 setup_resultset sub {
    my $self   = shift;
    my $config = $self->context->config;
@@ -53,8 +53,8 @@ setup_resultset sub {
    return HTML::StateTable::ResultSet::File::View->new(
       directory    => $config->logsdir,
       file         => $self->logfile,
-      redis        => $self->redis_client,
-      result_class => 'MCat::Logfile::Result::View',
+      redis        => $self->redis,
+      result_class => 'MCat::File::Result::CSV',
       table        => $self,
    );
 };

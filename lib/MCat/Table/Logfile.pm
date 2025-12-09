@@ -23,7 +23,7 @@ setup_resultset sub {
 
    return HTML::StateTable::ResultSet::File::List->new(
       directory    => $self->context->config->logsdir,
-      result_class => 'MCat::Logfile::Result::List',
+      result_class => 'MCat::File::Result::List',
       table        => $self
    );
 };

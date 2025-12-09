@@ -68,14 +68,24 @@ sub view : Auth('admin') Nav('View Logfile') {
    $size = $self->_format_number->base2($path->stat->{size})
       if $path->exists;
 
-   my $options = {
-      caption      => "${logfile} File View (${size})",
-      context      => $context,
-      logfile      => $logfile,
-      redis_client => $self->redis_client,
+   my $table_class = $self->_extension2table_class($logfile);
+   my $options     = {
+      caption => "${logfile} File View (${size})",
+      context => $context,
+      logfile => $logfile,
+      redis   => $self->redis_client,
    };
-   $context->stash(table => $self->new_table('Logfile::View', $options));
+   $context->stash(table => $self->new_table($table_class, $options));
    return;
+}
+
+# Private methods
+sub _extension2table_class {
+   my ($self, $logfile) = @_;
+
+   return 'Logfile::CSV' if $logfile =~ m{ \. csv \z }mx;
+
+   return 'Logfile::Apache';
 }
 
 1;

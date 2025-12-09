@@ -17,7 +17,7 @@ sub build_results {
 
       next unless $self->_table_wants($info->{data_type});
 
-      push @{$results}, MCat::Object::Result->new(
+      push @{$results}, $self->result_class->new(
          name => $name, value => $colname
       );
    }

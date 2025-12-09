@@ -1,4 +1,4 @@
-package MCat::Logfile::Result::View;
+package MCat::File::Result::CSV;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Date HashRef Int Str );
@@ -15,11 +15,11 @@ with 'HTML::StateTable::Result::Role';
 
 =head1 Name
 
-MCat::Logfile::Result::View - Music Catalog
+MCat::File::Result::CSV - Music Catalog
 
 =head1 Synopsis
 
-   use MCat::Logfile::Result::View;
+   use MCat::File::Result::CSV;
 
 =head1 Description
 
@@ -35,13 +35,13 @@ Defines the following attributes;
 
 =cut
 
-has '_csv' =>
-   is      => 'ro',
-   isa     => class_type('Text::CSV_XS'),
-   default => sub {
-      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
-   };
+=item table
 
+Has to be weak or big memory leak results
+
+=cut
+
+has 'table' => is => 'ro', required => TRUE, weak_ref => TRUE;
 
 =item line
 
@@ -51,12 +51,6 @@ line from a logfile
 =cut
 
 has 'line' => is => 'ro', isa => Str, required => TRUE;
-
-=item resultset
-
-=cut
-
-has 'resultset' => is => 'ro', required => TRUE, weak_ref => TRUE;
 
 =item fields
 
@@ -109,6 +103,14 @@ has 'field_map' =>
       return $field_map;
    };
 
+has '_csv' =>
+   is      => 'ro',
+   isa     => class_type('Text::CSV_XS'),
+   default => sub {
+      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
+   };
+
+
 =item timestamp
 
 This L<DateTime> object is parsed from the first two fields of the logfile
@@ -133,9 +135,9 @@ has 'timestamp' =>
          $timestamp = NUL;
       }
 
-      my $context = $self->resultset->table->context;
+      my $context = $self->table->context;
 
-      $timestamp->set_time_zone($context->session->timezone) if $timestamp;
+      $timestamp->set_time_zone($context->time_zone) if $timestamp;
 
       return $timestamp;
    };

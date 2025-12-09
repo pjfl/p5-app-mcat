@@ -10,7 +10,7 @@ use HTML::StateTable::Moo;
 extends 'HTML::StateTable';
 with    'HTML::StateTable::Role::Form';
 
-has '+form_classes' => default => sub { ['classic', 'fieldset'] };
+has '+form_classes' => default => sub { [qw(classic fieldset wide)] };
 has '+max_width'    => default => '50rem';
 has '+no_count'     => default => TRUE;
 has '+paging'       => default => FALSE;
@@ -26,12 +26,7 @@ has 'result' => is => 'ro', isa => DBIxClass, required => TRUE;
 
 has 'table_class' => is => 'ro', isa => Str, default => 'object-view';
 
-setup_resultset sub {
-   my $self   = shift;
-   my $config = $self->context->config;
-
-   return MCat::Object::View->new(table => $self);
-};
+setup_resultset sub { MCat::Object::View->new(table => shift) };
 
 set_table_name 'object-view';
 

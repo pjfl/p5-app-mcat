@@ -78,6 +78,12 @@ sub options_assigned {
    return [ NUL, NUL, @{$self->lookup_options($field, $accessor) // []} ];
 }
 
+has_field 'view' =>
+   type          => 'Link',
+   label         => 'View',
+   element_class => ['form-button pageload'],
+   wrapper_class => ['input-button', 'inline'];
+
 has_field 'submit1' => type => 'Button';
 
 has_field 'comments' =>
@@ -175,6 +181,11 @@ after 'after_build_fields' => sub {
          'Update the bug report comments',
          'Files attached to the bug report'
       ]);
+
+      my $view = $context->uri_for_action('bug/view', [$self->item->id]);
+
+      $self->field('view')->href($view->as_string);
+      $self->field('submit1')->add_wrapper_class(['inline', 'right']);
    }
    else {
       $self->field('id')->inactive(TRUE);
@@ -185,13 +196,14 @@ after 'after_build_fields' => sub {
       $self->field('updated')->inactive(TRUE);
       $self->field('updated')->inactive(TRUE);
       $self->field('attachments')->inactive(TRUE);
+      $self->field('view')->inactive(TRUE);
       $self->info_message([
          'Enter the bug report details',
          'Enter the bug report comments',
       ]);
    }
 
-   my $tz = $context->session->timezone;
+   my $tz = $context->time_zone;
 
    $self->field('created')->time_zone($tz);
    $self->field('updated')->time_zone($tz);
@@ -294,7 +306,7 @@ sub _inflate_attachments {
       my $uri     = $context->uri_for_action($action, [$item->id], $params);
       my $updated = $item->updated ? $item->updated : $item->created;
 
-      $updated->set_time_zone($context->session->timezone);
+      $updated->set_time_zone($context->time_zone);
 
       push @{$values}, {
          id      => $item->id,
@@ -312,12 +324,13 @@ sub _inflate_attachments {
 sub _inflate_comments {
    my ($self, @comments) = @_;
 
-   my $values = [];
+   my $context = $self->form->context;
+   my $values  = [];
 
    for my $item (@comments) {
       my $updated = $item->updated ? $item->updated : $item->created;
 
-      $updated->set_time_zone($self->form->context->session->timezone);
+      $updated->set_time_zone($context->time_zone);
 
       push @{$values}, {
          comment => $item->comment,

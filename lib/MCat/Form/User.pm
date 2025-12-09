@@ -41,7 +41,28 @@ sub default_password {
 
 has_field 'password_expired' => type => 'Boolean', default => TRUE;
 
+has_field 'view' =>
+   type          => 'Link',
+   label         => 'View',
+   element_class => ['form-button pageload'],
+   wrapper_class => ['input-button', 'inline'];
+
 has_field 'submit' => type => 'Button';
+
+after 'after_build_fields' => sub {
+   my $self    = shift;
+   my $context = $self->context;
+
+   if ($self->item) {
+      my $view = $context->uri_for_action('user/view', [$self->item->id]);
+
+      $self->field('view')->href($view->as_string);
+      $self->field('submit')->add_wrapper_class(['inline', 'right']);
+   }
+   else { $self->field('view')->inactive(TRUE) }
+
+   return;
+};
 
 use namespace::autoclean -except => META;
 

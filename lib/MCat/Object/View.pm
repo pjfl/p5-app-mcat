@@ -1,12 +1,13 @@
 package MCat::Object::View;
 
 use HTML::StateTable::Constants qw( FALSE NUL TRUE );
-use HTML::StateTable::Types     qw( ArrayRef Int ResultRole Table Undef );
+use HTML::StateTable::Types     qw( ArrayRef Int LoadableClass ResultRole
+                                    Str Table Undef );
+use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
 use JSON::MaybeXS               qw( encode_json );
 use List::Util                  qw( pairs );
 use Ref::Util                   qw( is_arrayref is_coderef is_plain_hashref );
 use Data::Page;
-use MCat::Object::Result;
 use Moo;
 use MooX::HandlesVia;
 
@@ -20,6 +21,15 @@ has 'count' => is => 'lazy', isa => Int, default => sub { shift->total_results};
 
 # This is the current index into the results list for the iterator
 has '_index' => is => 'rw', isa => Int, lazy => TRUE, default  => 0;
+
+=item result_class
+
+=cut
+
+has 'result_class' =>
+   is      => 'lazy',
+   isa     => LoadableClass,
+   default => 'MCat::Object::Result';
 
 # The list of results which will be displayed in response to this request
 has '_results' =>
@@ -58,9 +68,11 @@ Returns a reference to an array of L<MCat::Object::Result> objects
 
 sub build_results {
    my $self    = shift;
-   my $results = [];
    my $table   = $self->table;
    my $source  = $table->result->result_source;
+   my $results = [];
+
+   ensure_class_loaded $self->result_class;
 
    for my $colname ($source->columns) {
       my $info = $source->columns_info->{$colname};
@@ -93,7 +105,7 @@ sub build_results {
       my $traits = $info->{cell_traits} // [];
       my $name   = $info->{label} // ucfirst $colname;
 
-      push @{$results}, MCat::Object::Result->new(
+      push @{$results}, $self->result_class->new(
          cell_traits => $traits, name => $name, value => $value
       );
    }
@@ -101,14 +113,23 @@ sub build_results {
    if ($table->has_add_columns) {
       for my $pair (pairs @{$table->add_columns}) {
          my $value = $pair->value;
+         my $traits;
+
+         if (is_plain_hashref $value and exists $value->{cell_traits}) {
+            $traits = $value->{cell_traits};
+            $value  = $value->{value};
+         }
+         else { $value = $pair->value }
 
          if (is_arrayref $value or is_plain_hashref $value) {
             $value = encode_json($value);
          }
 
-         push @{$results}, MCat::Object::Result->new(
-            name => $pair->key, value => $value
-         );
+         my $args = { name => $pair->key, value => $value };
+
+         $args->{cell_traits} = $traits if $traits;
+
+         push @{$results}, $self->result_class->new($args);
       }
    }
 

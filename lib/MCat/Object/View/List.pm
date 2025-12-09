@@ -12,7 +12,7 @@ sub build_results {
    my $rs      = $table->context->model('List');
 
    for my $list ($rs->search({ table_id => $table->table_id })->all) {
-      push @{$results}, MCat::Object::Result->new(
+      push @{$results}, $self->result_class->new(
          name => $list->name, value => $list->id
       );
    }

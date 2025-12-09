@@ -1,5 +1,9 @@
 {
+   "google_fonts": ["Roboto:ital,wght@0,100..900;1,100..900"],
    "local_config_file": "mcat-local.json",
+   "local_fonts": [{
+      "name": "DejaVu Serif", "file": "DejaVuSerif.ttf", "format": "truetype"
+   }],
    "logfile": "mcat.csv",
    "navigation": {
       "logo": "img/logo.svg"

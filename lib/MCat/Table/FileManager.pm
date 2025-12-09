@@ -77,7 +77,7 @@ setup_resultset sub {
       directory         => $self->directory,
       extensions        => $self->extensions,
       recurse           => FALSE,
-      result_class      => 'MCat::Logfile::Result::List', # TODO: Fix name
+      result_class      => 'MCat::File::Result::List',
       table             => $self
    );
 };

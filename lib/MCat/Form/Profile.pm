@@ -1,6 +1,6 @@
 package MCat::Form::Profile;
 
-use HTML::Forms::Constants qw( FALSE META TRUE );
+use HTML::Forms::Constants qw( FALSE META NUL TRUE );
 use HTML::Forms::Types     qw( HashRef Object );
 use Type::Utils            qw( class_type );
 use Moo;
@@ -39,6 +39,7 @@ has_field 'timezone' => type => 'Timezone';
 
 has_field 'enable_2fa' =>
    type   => 'Boolean',
+   info   => 'Additional security questions should be answered if enabled',
    label  => 'Enable 2FA',
    toggle => { -checked => ['mobile_phone', 'postcode'] };
 
@@ -56,7 +57,7 @@ has_field 'skin' =>
    type    => 'Select',
    options => [
       { label => 'Classic', value => 'classic' },
-      { label => 'None', value => 'none' },
+      { label => 'None',    value => 'none' },
    ];
 
 sub default_skin {
@@ -68,7 +69,7 @@ has_field 'menu_location' =>
    default => 'header',
    label   => 'Menu Location',
    options => [
-      { label => 'Header', value => 'header' },
+      { label => 'Header',  value => 'header' },
       { label => 'Sidebar', value => 'sidebar' },
    ];
 
@@ -82,31 +83,49 @@ has_field 'link_display' =>
       { label => 'Text', value => 'text' },
    ];
 
-has_field 'theme' => type => 'Select', default => 'light', options => [
-   { label => 'Dark', value => 'dark' },
-   { label => 'Light', value => 'light' },
-];
+has_field 'theme' =>
+   type    => 'Select',
+   default => 'theme-light',
+   label   => 'Colour Scheme',
+   options => [
+      { label => 'Dark',   value => 'theme-dark' },
+      { label => 'Light',  value => 'theme-light' },
+      { label => 'System', value => 'theme-system' },
+   ];
 
 has_field 'base_colour' =>
    type    => 'Colour',
    label   => 'Base Colour',
    options => [];
 
+has_field 'view' =>
+   type          => 'Link',
+   label         => 'View',
+   element_class => ['form-button pageload'],
+   wrapper_class => ['input-button', 'inline'];
+
 has_field 'submit' => type => 'Button';
 
 after 'after_build_fields' => sub {
-   my $self = shift;
+   my $self    = shift;
+   my $context = $self->context;
 
    unless ($self->user->enable_2fa) {
+      $self->field('enable_2fa')->hide_info(TRUE);
       $self->field('mobile_phone')->add_wrapper_class('hide');
       $self->field('postcode')->add_wrapper_class('hide');
    }
 
    my $field  = $self->field('base_colour');
-   my $colour = $self->context->config->default_base_colour;
+   my $colour = $context->config->default_base_colour;
 
    $field->default($colour);
    push @{$field->options}, { value => $colour };
+
+   my $view = $context->uri_for_action('user/view', [$self->user->id]);
+
+   $self->field('view')->href($view->as_string);
+   $self->field('submit')->add_wrapper_class(['inline', 'right']);
 
    return;
 };

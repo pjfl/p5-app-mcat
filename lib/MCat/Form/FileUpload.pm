@@ -18,7 +18,7 @@ has 'destination' => is => 'rw', isa => Str, default => NUL;
 
 has 'max_copies' => is => 'ro', isa => Int, default => 9;
 
-has_field 'file' => label => NUL, type => 'Upload';
+has_field 'file' => do_label => FALSE, type => 'Upload';
 
 after 'before_build_fields' => sub {
    my $self = shift;

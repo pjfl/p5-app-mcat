@@ -21,7 +21,7 @@ $class->table('public.user');
 $class->add_columns(
    id => {
       data_type => 'integer', is_nullable => FALSE, is_auto_increment => TRUE,
-      label => 'User ID'
+      label => 'User ID', hidden => TRUE,
    },
    name => { data_type => 'text', is_nullable => FALSE, label => 'User Name' },
    email => {
@@ -37,7 +37,8 @@ $class->add_columns(
    },
    password => {
       data_type => 'text', is_nullable => FALSE, label => 'Password',
-      display => sub { truncate shift->result->password, 20 }
+      display => sub { truncate shift->result->password, 20 },
+      hidden => TRUE,
    },
    password_expired => {
       data_type => 'boolean', is_nullable => FALSE, default => FALSE,
