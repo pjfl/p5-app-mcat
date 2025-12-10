@@ -11,10 +11,11 @@ extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::JSONParser';
 
-has '+name'          => default => 'BugReport';
-has '+title'         => default => 'Report Bug';
-has '+item_class'    => default => 'Bug';
-has '+renderer_args' => default => sub {
+has '+form_wrapper_class' => default => sub { ['narrow'] };
+has '+name'               => default => 'BugReport';
+has '+title'              => default => 'Report Bug';
+has '+item_class'         => default => 'Bug';
+has '+renderer_args'      => default => sub {
    return { page_names => [qw(Details Comments Attachments)] };
 };
 
@@ -48,7 +49,7 @@ has '_icons' =>
    isa     => Str,
    default => sub { shift->context->icons_uri->as_string };
 
-has_field 'id' => type => 'Display';
+has_field 'id' => type => 'Display', element_class => 'tile';
 
 has_field 'title' => required => TRUE;
 
@@ -56,11 +57,20 @@ has_field 'description' => type => 'TextArea', required => TRUE, rows => 4;
 
 has_field 'user_id' => type => 'Hidden', disabled => TRUE;
 
-has_field 'owner' => type => 'Display', value => 'owner.name';
+has_field 'owner' =>
+   type          => 'Display',
+   element_class => 'tile',
+   value         => 'owner.name';
 
-has_field 'created' => type => 'DateTime', readonly => TRUE;
+has_field 'created' =>
+   type          => 'DateTime',
+   element_class => 'tile',
+   readonly      => TRUE;
 
-has_field 'updated' => type => 'DateTime', readonly => TRUE;
+has_field 'updated' =>
+   type          => 'DateTime',
+   element_class => 'tile',
+   readonly      => TRUE;
 
 has_field 'state' =>
    type    => 'Select',

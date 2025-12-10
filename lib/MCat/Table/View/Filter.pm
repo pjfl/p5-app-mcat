@@ -1,9 +1,9 @@
-package MCat::Table::Filter::View;
+package MCat::Table::View::Filter;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use Moo;
 
-extends 'MCat::Table::Object::View';
+extends 'MCat::Table::View::Object';
 
 has '+caption' => default => 'Filter View';
 

@@ -1,4 +1,4 @@
-package MCat::Table::Logfile::CSV;
+package MCat::Table::View::CSV;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( Str );

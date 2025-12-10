@@ -133,7 +133,7 @@ sub view : Auth('view') Nav('View Track') {
       value     => 'Edit',
    }];
 
-   $context->stash(table => $self->table->new_with_context('Object::View', {
+   $context->stash(table => $self->table->new_with_context('View::Object', {
       caption      => 'Track View',
       context      => $context,
       form_buttons => $buttons,

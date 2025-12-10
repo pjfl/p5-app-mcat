@@ -129,7 +129,7 @@ sub view : Auth('view') Nav('View Artist') {
       value     => 'Edit',
    }];
 
-   $context->stash(table => $self->new_table('Object::View', {
+   $context->stash(table => $self->new_table('View::Object', {
       add_columns  => [ 'CDs' => $cds ],
       caption      => 'Artist View',
       context      => $context,

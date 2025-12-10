@@ -54,7 +54,7 @@ sub view : Nav('View Import Log') {
 
    my $options = { context => $context, result => $context->stash('log') };
 
-   $context->stash(table => $self->new_table('ImportLog::View', $options));
+   $context->stash(table => $self->new_table('View::ImportLog', $options));
    return;
 }
 

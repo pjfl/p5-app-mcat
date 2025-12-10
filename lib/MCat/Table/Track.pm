@@ -9,6 +9,10 @@ extends 'HTML::StateTable';
 
 has '+caption' => default => 'Track List';
 
+has '+page_control_location' => default => 'TopLeft';
+
+has '+page_size_control_location' => default => 'BottomLeft';
+
 has 'cdid' => is => 'ro', isa => Int, predicate => 'has_cdid';
 
 has 'list_id' => is => 'ro', isa => Int, predicate => 'has_list_id';

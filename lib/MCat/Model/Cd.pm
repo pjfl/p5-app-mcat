@@ -134,7 +134,7 @@ sub view : Auth('view') Nav('View CD') {
       value     => 'Edit',
    }];
 
-   $context->stash(table => $self->table->new_with_context('Object::View', {
+   $context->stash(table => $self->table->new_with_context('View::Object', {
       add_columns  => [ 'Tracks' => $tracks ],
       caption      => 'CD View',
       context      => $context,

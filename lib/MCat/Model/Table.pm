@@ -96,7 +96,7 @@ sub list : Nav('Tables') {
 sub view : Nav('View Table') {
    my ($self, $context, $tableid) = @_;
 
-   $context->stash(table => $self->new_table('Object::View', {
+   $context->stash(table => $self->new_table('View::Object', {
       caption => 'Table View',
       context => $context,
       result  => $context->stash('table')

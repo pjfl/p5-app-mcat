@@ -10,8 +10,6 @@ extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
 has '+title'                  => default => 'User Profile';
-has '+default_wrapper_tag'    => default => 'fieldset';
-has '+do_form_wrapper'        => default => TRUE;
 has '+info_message'           => default => 'Update profile information';
 has '+use_init_obj_over_item' => default => TRUE;
 
@@ -31,15 +29,22 @@ has 'user' =>
    isa      => class_type('MCat::Schema::Result::User'),
    required => TRUE;
 
-has_field 'name' => type => 'Display', label => 'User Name';
+has_field 'name' =>
+   type          => 'Display',
+   element_class => 'tile',
+   label         => 'User Name';
 
-has_field 'email' => type => 'Display', label => 'Email Address';
+has_field 'email' =>
+   type          => 'Display',
+   element_class => 'tile',
+   label         => 'Email Address';
 
 has_field 'timezone' => type => 'Timezone';
 
 has_field 'enable_2fa' =>
    type   => 'Boolean',
-   info   => 'Additional security questions should be answered if enabled',
+   info   =>
+      'Additional security questions should be answered if 2FA is enabled',
    label  => 'Enable 2FA',
    toggle => { -checked => ['mobile_phone', 'postcode'] };
 

@@ -115,7 +115,7 @@ sub remove : Auth('admin') {
 sub view : Auth('admin') Nav('View Tag') {
    my ($self, $context, $tagid) = @_;
 
-   $context->stash(table => $self->table->new_with_context('Object::View', {
+   $context->stash(table => $self->table->new_with_context('View::Object', {
       caption => 'Tag View',
       context => $context,
       result  => $context->stash('tag')

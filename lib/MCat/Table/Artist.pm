@@ -126,6 +126,8 @@ has_column 'upvotes' =>
    sortable    => TRUE,
    title       => 'Sort by upvotes';
 
+has_column 'import_log_id', label => 'Import Id';
+
 sub highlight_row {
    my ($self, $row) = @_;
 

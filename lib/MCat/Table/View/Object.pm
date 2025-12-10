@@ -1,4 +1,4 @@
-package MCat::Table::Object::View;
+package MCat::Table::View::Object;
 
 use HTML::StateTable::Constants qw( FALSE SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( ArrayRef DBIxClass Str );

@@ -29,6 +29,8 @@ has_column 'name' =>
    title    => 'Sort by name',
    width    => '20rem';
 
+has_column 'table_id' => label => 'Table', value => 'core_table.name';
+
 use namespace::autoclean -except => TABLE_META;
 
 1;

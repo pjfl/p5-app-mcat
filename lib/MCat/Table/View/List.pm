@@ -1,9 +1,9 @@
-package MCat::Table::List::View;
+package MCat::Table::View::List;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use Moo;
 
-extends 'MCat::Table::Object::View';
+extends 'MCat::Table::View::Object';
 
 has '+caption' => default => 'List View';
 

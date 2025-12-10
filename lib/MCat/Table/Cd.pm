@@ -9,6 +9,10 @@ extends 'HTML::StateTable';
 
 has '+caption' => default => 'CD List';
 
+has '+page_control_location' => default => 'TopLeft';
+
+has '+page_size_control_location' => default => 'BottomLeft';
+
 has 'artistid' => is => 'ro', isa => Int, predicate => 'has_artistid';
 
 has 'list_id' => is => 'ro', isa => Int, predicate => 'has_list_id';

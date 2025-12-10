@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Renamed away most table View classes
           - Added view links to entity edit forms
           - Added configurable Google and local fonts
           - Shiny login form

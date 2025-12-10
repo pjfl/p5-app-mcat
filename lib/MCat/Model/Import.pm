@@ -120,7 +120,7 @@ sub view : Nav('View Import') {
    my $options = { caption => NUL, context => $context };
    my $logs    = $self->new_table('ImportLog', $options);
 
-   $context->stash(table => $self->new_table('Import::View', {
+   $context->stash(table => $self->new_table('View::Import', {
       add_columns => [ 'Logs' => $logs ],
       context     => $context,
       result      => $context->stash('import')

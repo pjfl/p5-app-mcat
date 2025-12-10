@@ -5,9 +5,6 @@ use utf8; # -*- coding: utf-8; -*-
 use HTML::Forms::Constants qw( FALSE META NUL SPC TRUE );
 use HTML::Forms::Types     qw( ArrayRef Int Str );
 use HTML::Entities         qw( encode_entities );
-use Type::Utils            qw( class_type );
-use JSON::MaybeXS;
-use Text::CSV_XS;
 use HTML::Forms::Field::DataStructure;
 use Moo;
 use HTML::Forms::Moo;
@@ -15,6 +12,7 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::FileMeta';
+with    'MCat::Role::JSONParser';
 
 has '+info_message' => default => 'You know what to do';
 has '+item_class'   => default => 'Import';
@@ -25,13 +23,6 @@ has '_icons' =>
    is      => 'lazy',
    isa     => Str,
    default => sub { shift->context->icons_uri->as_string };
-
-has '_json' =>
-   is      => 'lazy',
-   isa     => class_type(JSON::MaybeXS::JSON),
-   default => sub {
-      return JSON::MaybeXS->new( convert_blessed => TRUE, utf8 => FALSE );
-   };
 
 has '_max_cols' => is => 'rw', isa => Int;
 
@@ -68,7 +59,7 @@ sub default_field_map {
       push @{$fields}, { name => "Col${col_no}" };
    }
 
-   return $self->_json->encode($fields);
+   return $self->json_parser->encode($fields);
 }
 
 has_field 'submit' => type => 'Button';
@@ -88,7 +79,7 @@ after 'before_build_fields' => sub {
       my $field_name    = lc "fields_${table_name}";
       my $field_class   = 'HTML::Forms::Field::DataStructure';
       my $field         = $self->new_field_with_traits($field_class, {
-         default   => $self->_json->encode($col_info),
+         default   => $self->json_parser->encode($col_info),
          fixed     => TRUE,
          form      => $self,
          label     => ' ', # Magic space filling transparent character U+200b
@@ -138,7 +129,7 @@ after 'after_build_fields' => sub {
    my $header   = $context->uri_for_action('file/header', ['%value']);
    my $ds       = $context->config->wcom_resources->{data_structure};
    my $modal    = $context->config->wcom_resources->{modal};
-   my $args     = $self->_json->encode({
+   my $args     = $self->json_parser->encode({
       icons    => $self->_icons,
       onchange => qq{${ds}.reload('field_map', '${header}')},
       target   => 'source',

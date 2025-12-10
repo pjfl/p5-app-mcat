@@ -123,7 +123,7 @@ sub view : Nav('View List') {
 
    my $options = { context => $context, result => $context->stash('list') };
 
-   $context->stash(table => $self->new_table('List::View', $options));
+   $context->stash(table => $self->new_table('View::List', $options));
    return;
 }
 

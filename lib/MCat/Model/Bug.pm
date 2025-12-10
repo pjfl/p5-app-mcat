@@ -200,7 +200,7 @@ sub view : Auth('view') Nav('View Bug') {
       result       => $bug,
    };
 
-   $context->stash(table => $self->new_table('Object::View', $options));
+   $context->stash(table => $self->new_table('View::Object', $options));
    return;
 }
 

@@ -124,7 +124,7 @@ sub view : Nav('View Filter') {
    my $filter = $context->stash('filter');
    my $query  = $filter->filter_json ? $filter->to_sql : [ NUL, NUL ];
 
-   $context->stash(table => $self->new_table('Filter::View', {
+   $context->stash(table => $self->new_table('View::Filter', {
       add_columns => [ 'SQL' => $query->[0], 'Bind Values' => $query->[1] ],
       caption     => 'Filter View',
       context     => $context,

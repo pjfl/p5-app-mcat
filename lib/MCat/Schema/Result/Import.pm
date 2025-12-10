@@ -46,9 +46,6 @@ $class->add_columns(
       is_nullable => TRUE,
       label       => 'Field Mapping',
    },
-   guid => {
-      data_type => 'text', is_nullable => TRUE, label => 'Last Log ID'
-   },
    updated => {
       cell_traits => ['DateTime'],
       data_type   => 'timestamp',
@@ -59,6 +56,9 @@ $class->add_columns(
       data_type   => 'integer',
       is_nullable => TRUE,
       label       => 'Imported Total',
+   },
+   guid => {
+      data_type => 'text', is_nullable => TRUE, label => 'Last Log ID'
    },
 );
 
