@@ -5,7 +5,7 @@ use IO::Socket::SSL             qw( SSL_VERIFY_NONE );
 use File::DataClass::Types      qw( ArrayRef Bool Directory File HashRef
                                     LoadableClass Object OctalNum Path
                                     PositiveInt Str Undef );
-use Class::Usul::Cmd::Util      qw( decrypt );
+use Class::Usul::Cmd::Util      qw( decrypt now_dt );
 use English                     qw( -no_match_vars );
 use File::DataClass::IO         qw( io );
 use MCat::Util                  qw( local_tz );
@@ -138,6 +138,17 @@ has 'connect_info' =>
 
       return [$self->dsn, $self->db_username, $password, $self->db_extra];
    };
+
+=item copyright_year
+
+Year displayed in the copyright string. Defaults to the current year
+
+=cut
+
+has 'copyright_year' =>
+   is      => 'ro',
+   isa     => Str,
+   default => sub { now_dt->strftime('%Y') };
 
 =item db_extra
 
@@ -318,6 +329,16 @@ has '_local_fonts' =>
    isa      => ArrayRef,
    init_arg => 'local_fonts',
    default  => sub { [] };
+
+=item footer_links
+
+An array reference of tuples. Each is comprised of; display text for the link,
+either an action path or a URI, and if a URI is used set the third argument
+to true
+
+=cut
+
+has 'footer_links' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 =item icons
 

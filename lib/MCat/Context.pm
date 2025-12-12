@@ -83,7 +83,7 @@ has '_stash' =>
          skin               => $skin,
          theme              => $self->session->theme,
          verification_token => $self->verification_token,
-         version            => MCat->VERSION
+         version            => MCat->VERSION,
       };
    };
 

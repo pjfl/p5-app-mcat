@@ -1,4 +1,15 @@
 {
+   "footer_links": [
+      [ "Terms", "page/terms" ],
+      [ "Privacy", "page/privacy" ],
+      [ "Security", "page/security" ],
+      [ "Status", "page/status" ],
+      [ "Community", "https://github.com/pjfl/p5-app-mcat", true ],
+      [ "Docs", "doc/list" ],
+      [ "Contact", "page/contact" ],
+      [ "Cookies", "page/cookies" ],
+      [ "Don't Share", "page/unshare" ]
+   ],
    "google_fonts": ["Roboto:ital,wght@0,100..900;1,100..900"],
    "local_config_file": "mcat-local.json",
    "local_fonts": [{

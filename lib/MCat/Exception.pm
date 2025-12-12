@@ -2,7 +2,7 @@ package MCat::Exception;
 
 use HTTP::Status          qw( HTTP_BAD_REQUEST HTTP_NOT_FOUND
                               HTTP_UNAUTHORIZED );
-use Unexpected::Types     qw( Int Object );
+use Unexpected::Types     qw( Int Object Str );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( has_exception );
 use DateTime;
@@ -13,6 +13,18 @@ use Moo;
 extends 'Class::Usul::Cmd::Exception',
    'HTML::Forms::Exception',
    'HTML::StateTable::Exception';
+
+has 'clean_leader' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      my $self   = shift;
+      my $leader = $self->leader;
+
+      $leader =~ s{ : [ ]* \z }{}mx;
+
+      return $leader;
+   };
 
 has 'created' =>
    is      => 'ro',

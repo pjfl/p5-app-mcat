@@ -93,9 +93,9 @@ has_field 'theme' =>
    default => 'theme-light',
    label   => 'Colour Scheme',
    options => [
-      { label => 'Dark',   value => 'theme-dark' },
-      { label => 'Light',  value => 'theme-light' },
-      { label => 'System', value => 'theme-system' },
+      { label => 'Dark',   value => 'dark-theme' },
+      { label => 'Light',  value => 'light-theme' },
+      { label => 'System', value => 'system-theme' },
    ];
 
 has_field 'base_colour' =>

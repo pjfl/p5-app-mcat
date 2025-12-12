@@ -1,9 +1,9 @@
 <div class="exception">
 [% icon = svg_icon('standalone-error', 'error') -%]
-[% header(icon, 'Exception Awarded', '', ' ') -%]
+[% header(flame, 'Exception Awarded', 'exception-header', ' ') -%]
 [% IF config.deployment == 'development' -%]
   <div class="line">
-    <label>Thrown by</label><span>[% exception.leader %]</span>
+    <label>Thrown by</label><span>[% exception.clean_leader %]</span>
   </div>
   <div class="line">
     <label>Message</label><span>[% exception.original | html %]</span>
