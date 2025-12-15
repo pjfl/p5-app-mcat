@@ -1,0 +1,15 @@
+{
+   "exclude": "\\.\\#.+ | \\.git.+",
+   "watchers": {
+      "\\.burp\\.json": [ "burp", "restart" ],
+      "/home/laz/Projects/HTML-Filter/master/share/js/[^#]+\\.js": [ "bin/mcat-cli", "--quiet", "make-js" ],
+      "/home/laz/Projects/HTML-Forms/master/share/js/[^#]+\\.js": [ "bin/mcat-cli", "--quiet", "make-js" ],
+      "/home/laz/Projects/HTML-StateTable/master/share/js/[^#]+\\.js": [ "bin/mcat-cli", "--quiet", "make-js" ],
+      "/home/laz/Projects/Web-Components/master/share/js/[^#]+\\.js": [ "bin/mcat-cli", "--quiet", "make-js" ],
+      "/home/laz/Projects/HTML-Filter/master/share/less/[^#]+\\.less": [ "bin/mcat-cli", "--quiet", "make-less" ],
+      "/home/laz/Projects/HTML-Forms/master/share/less/[^#]+\\.less": [ "bin/mcat-cli", "--quiet", "make-less" ],
+      "/home/laz/Projects/HTML-StateTable/master/share/less/[^#]+\\.less": [ "bin/mcat-cli", "--quiet", "make-less" ],
+      "/home/laz/Projects/Web-Components/master/share/less/[^#]+\\.less": [ "bin/mcat-cli", "--quiet", "make-less" ],
+      "share/css/[^#]+\\.css": [ "bin/mcat-cli", "--quiet", "make-css" ]
+   }
+}

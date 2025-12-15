@@ -5,7 +5,6 @@ cover_db/
 Build
 !Build/
 Build.bat
-.burp.json
 .directory
 .last_cover_stats
 LICENSE

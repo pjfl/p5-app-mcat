@@ -1,6 +1,7 @@
 package MCat::Form::Login;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
+use HTML::Forms::Util      qw( make_handler );
 use MCat::Util             qw( redirect );
 use Scalar::Util           qw( blessed );
 use Unexpected::Functions  qw( catch_class );
@@ -11,11 +12,10 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
-has '+name'               => default => 'Login';
-has '+form_element_class' => default => sub { ['shiny'] };
-has '+info_message'       => default => 'Stop! You have your papers?';
-has '+item_class'         => default => 'User';
-has '+title'              => default => 'Login';
+has '+name'         => default => 'Login';
+has '+info_message' => default => 'Stop! You have your papers?';
+has '+item_class'   => default => 'User';
+has '+title'        => default => 'Login';
 
 has_field 'name' =>
    html_name   => 'user_name',
@@ -68,11 +68,12 @@ has_field 'totp_reset' =>
    wrapper_class => ['input-button expand'];
 
 after 'after_build_fields' => sub {
-   my $self = shift;
+   my $self    = shift;
+   my $context = $self->context;
 
+   $self->add_form_element_class('shiny') if $context->config->shiny;
    $self->set_form_element_attr('novalidate', 'novalidate');
 
-   my $context = $self->context;
    my $session = $context->session;
 
    if (defined $session->enable_2fa && !$session->enable_2fa) {
@@ -80,32 +81,38 @@ after 'after_build_fields' => sub {
       $self->field('totp_reset')->add_wrapper_class('hide');
    }
 
-   my $util          = $context->config->wcom_resources->{form_util};
-   my $change_fields = "['login', 'password_reset', 'totp_reset']";
-   my $change_js     = "${util}.fieldChange('%s', ${change_fields})";
-   my $unrequire_js  = "${util}.unrequire(['auth_code', 'password'])";
-   my $showif        = "${util}.showIfRequired";
+   my $util             = $context->config->wcom_resources->{form_util};
+   my $change_js        = "${util}.fieldChange(%s)";
+   my $change_fields    = [qw(login password_reset totp_reset)];
+   my $showif_js        = "${util}.showIfRequired(%s)";
+   my $showif_fields    = ['auth_code','totp_reset'];
+   my $unrequire_js     = "${util}.unrequire(%s)";
+   my $unrequire_fields = ['auth_code', 'password'];
 
-   my $action  = 'api/object_fetch';
-   my $params  = { class => 'User', property => 'enable_2fa' };
-   my $uri     = $context->uri_for_action($action, ['property'], $params);
-   my $show_js = "${showif}('user_name', ['auth_code','totp_reset'], '${uri}')";
-   my $blur_js = "${show_js}; " . sprintf $change_js, 'user_name';
-   my $attr    = $self->field('name')->element_attr;
+   my $action = 'api/object_fetch';
+   my $params = { class => 'User', property => 'enable_2fa' };
+   my $uri    = $context->uri_for_action($action, ['property'], $params);
 
-   $attr->{javascript} = { onblur => $blur_js };
+   $self->field('name')->element_attr->{javascript} = {
+      onblur  => make_handler($showif_js, $showif_fields, 'user_name', $uri),
+      oninput => make_handler($change_js, $change_fields, 'user_name'),
+   };
 
-   $attr = $self->field('password')->element_attr;
-   $attr->{javascript} = { oninput => sprintf $change_js, 'password' };
+   $self->field('password')->element_attr->{javascript} = {
+      oninput => make_handler($change_js, $change_fields, 'password')
+   };
 
-   $attr = $self->field('auth_code')->element_attr;
-   $attr->{javascript} = { onblur => sprintf $change_js, 'auth_code' };
+   $self->field('auth_code')->element_attr->{javascript} = {
+      onblur  => make_handler($change_js, $change_fields, 'auth_code')
+   };
 
-   $attr = $self->field('password_reset')->element_attr;
-   $attr->{javascript} = { onclick => $unrequire_js };
+   $self->field('password_reset')->element_attr->{javascript} = {
+      onclick => make_handler($unrequire_js, $unrequire_fields)
+   };
 
-   $attr = $self->field('totp_reset')->element_attr;
-   $attr->{javascript} = { onclick => $unrequire_js };
+   $self->field('totp_reset')->element_attr->{javascript} = {
+      onclick => make_handler($unrequire_js, $unrequire_fields)
+   };
    return;
 };
 

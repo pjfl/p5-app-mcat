@@ -1,5 +1,7 @@
 Revision history for MCat
 
+          - Removes use of eval string in JS event handlers
+
 0.3.1     2025-12-12 00:12:25
           - Updated copyright year and releasing
           - Added custom footers

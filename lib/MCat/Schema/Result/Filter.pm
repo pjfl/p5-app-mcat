@@ -41,7 +41,8 @@ $class->add_columns(
       timezone    => 'UTC',
    },
    filter_json   => {
-      data_type => 'text', is_nullable => FALSE, label => 'Editor Data'
+      data_type => 'text', is_nullable => FALSE, label => 'Editor Data',
+      hidden    => TRUE,
    },
    filter_search => {
       data_type => 'text', is_nullable => FALSE, label => 'Abstract'

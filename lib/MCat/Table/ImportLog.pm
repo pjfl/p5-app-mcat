@@ -15,7 +15,7 @@ has '+configurable_action' => default => 'api/table_preference';
 
 has '+icons' => default => sub { shift->context->icons_uri->as_string };
 
-has '+page_size_control_location' => default => 'BottomLeft';
+has '+page_size_control_location' => default => 'BottomRight';
 
 has 'import' => is => 'lazy', default => sub { shift->context->stash->{import}};
 

@@ -129,12 +129,16 @@ after 'after_build_fields' => sub {
    my $header   = $context->uri_for_action('file/header', ['%value']);
    my $ds       = $context->config->wcom_resources->{data_structure};
    my $modal    = $context->config->wcom_resources->{modal};
+   my $reload   = $self->json_parser->encode({
+      target => 'field_map',
+      url    => $header,
+   });
    my $args     = $self->json_parser->encode({
       icons    => $self->_icons,
-      onchange => qq{${ds}.reload('field_map', '${header}')},
+      onchange => qq{${ds}.reload(${reload})},
       target   => 'source',
       title    => 'Select File',
-      url      => $selector
+      url      => $selector,
    });
 
    $self->field('source')->selector("${modal}.createSelector(${args})");

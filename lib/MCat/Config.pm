@@ -638,6 +638,15 @@ has 'script' =>
    isa     => Str,
    default => sub { shift->pathname->basename };
 
+=item shiny
+
+Boolean which defaults to false. If true the FE will animate the page
+transitions and add bling to some pages
+
+=cut
+
+has 'shiny' => is => 'ro', isa => Bool, default => FALSE;
+
 =item skin
 
 The templates used to render the pages of the application can be created in
@@ -802,6 +811,7 @@ has 'wcom_resources' =>
          data_structure => 'WCom.Form.DataStructure.manager',
          downloadable   => 'WCom.Table.Role.Downloadable',
          form_util      => 'WCom.Form.Util',
+         markup         => 'WCom.Util.Markup',
          modal          => 'WCom.Modal',
          navigation     => 'WCom.Navigation.manager',
          table_renderer => 'WCom.Table.Renderer.manager',

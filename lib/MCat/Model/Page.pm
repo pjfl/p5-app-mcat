@@ -26,7 +26,12 @@ sub base : Auth('none') {
    return;
 }
 
-sub access_denied : Auth('none') {}
+sub access_denied : Auth('none') {
+   my ($self, $context) = @_;
+
+   $self->error($context, UnauthorisedAccess);
+   return;
+}
 
 sub changes : Auth('view') Nav('Changes') {
    my ($self, $context) = @_;
@@ -41,6 +46,12 @@ sub configuration : Auth('admin') Nav('Configuration') {
    my $options = { context => $context };
 
    $context->stash(form => $self->new_form('Configuration', $options));
+   return;
+}
+
+sub contact : Auth('none') Nav('Contact') {
+   my ($self, $context) = @_;
+
    return;
 }
 
@@ -124,8 +135,12 @@ sub logout : Auth('view') Nav('Logout') {
    return;
 }
 
-sub not_found : Auth('none') {
+sub not_found : Auth('none') Nav('Not Found') {
    my ($self, $context) = @_;
+
+   $context->stash('nav')->finalise;
+
+   return if $context->stash->{finalised};
 
    return $self->error($context, PageNotFound, [$context->request->path]);
 }

@@ -1,7 +1,6 @@
 <div class="exception">
-[% icon = svg_icon('standalone-error', 'error') -%]
-[% header(flame, 'Exception Awarded', 'exception-header', ' ') -%]
 [% IF config.deployment == 'development' -%]
+[% header(flame, 'Exception Awarded', 'exception-header', ' ') -%]
   <div class="line">
     <label>Thrown by</label><span>[% exception.clean_leader %]</span>
   </div>
@@ -30,9 +29,10 @@
     <span>[% ucfirst(dt_human(dt_from_epoch(session_updated))) %]</span>
   </div>
 [% ELSE -%]
-  <div class="line">
-    <label>Error</label>
-    <span>Something went wrong</span>
+[% icon = svg_icon('standalone-error', 'error') -%]
+[% header(icon, 'Exception Awarded', 'exception-header', ' ') -%]
+  <div class="line enduser">
+[% subheader('Error', 'Something went wrong') -%]
   </div>
 [% END -%]
 </div>

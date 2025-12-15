@@ -143,7 +143,6 @@ has_field 'attachments' =>
    flex_direction         => 'horizontal',
    inflate_default_method => \&_inflate_attachments,
    is_row_readonly        => \&_is_row_readonly,
-   remove_callback        => "document.getElementById('submit1').click()",
    tags                   => { page_break => TRUE },
    wrapper_class          => ['compound'],
    structure              => [{
@@ -219,9 +218,12 @@ after 'after_build_fields' => sub {
    $self->field('updated')->time_zone($tz);
 
    my $attachments = $self->field('attachments');
+   my $markup      = $context->config->wcom_resources->{markup};
+   my $args        = $self->json_parser->encode({ id => 'submit1' });
 
    $attachments->add_handler($self->_attach_handler) if $self->item;
    $attachments->icons($self->_icons);
+   $attachments->remove_callback("${markup}.clickMe(${args})");
    $attachments->structure->[0]->{select} = $self->_select_handler;
 
    $self->field('comments')->icons($self->_icons);
@@ -255,7 +257,7 @@ sub _attach_handler {
       url       => $url->as_string
    });
 
-   return "event.preventDefault(); ${modal}.create(${args})";
+   return "${modal}.create(${args})";
 }
 
 sub _deflate_attachments {
@@ -368,13 +370,14 @@ sub _select_handler {
    my $modal   = $context->config->wcom_resources->{modal};
    my $url     = $context->uri_for_action('bug/attachment', ['%value']);
    my $args    = $self->json_parser->encode({
-      icons     => $self->_icons,
-      noButtons => json_bool TRUE,
-      title     => 'View Attachment',
-      url       => $url->as_string
+      icons      => $self->_icons,
+      noButtons  => json_bool TRUE,
+      setCurrent => json_bool TRUE,
+      title      => 'View Attachment',
+      url        => $url->as_string,
    });
 
-   return "event.preventDefault(); ${modal}.current = ${modal}.create(${args})";
+   return "${modal}.create(${args})";
 }
 
 use namespace::autoclean -except => META;

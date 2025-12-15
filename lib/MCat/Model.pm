@@ -39,10 +39,9 @@ has 'table' =>
       my $appclass = $self->config->appclass;
 
       return HTML::StateTable::Manager->new({
-         log          => $self->log,
-         namespace    => "${appclass}::Table",
-         page_manager => $self->config->wcom_resources->{navigation},
-         view_name    => 'table',
+         log       => $self->log,
+         namespace => "${appclass}::Table",
+         view_name => 'table',
       });
    };
 
@@ -51,7 +50,10 @@ sub root : Auth('none') {
    my ($self, $context) = @_;
 
    my $args = {
-      context => $context, footer_action => 'page/footer', model => $self
+      context       => $context,
+      footer_action => 'page/footer',
+      model         => $self,
+      shiny         => $self->config->shiny,
    };
    my $nav     = Web::Components::Navigation->new($args);
    my $session = $context->session;

@@ -4,7 +4,7 @@ use MCat;
 use MCat::Exception;
 use Class::Usul::Cmd::Constants qw( FAILED FALSE NUL OK TRUE );
 use HTML::Forms::Constants      qw( EXCEPTION_CLASS );
-use File::DataClass::Types      qw( Directory );
+use File::DataClass::Types      qw( ArrayRef Directory );
 use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
 use English                     qw( -no_match_vars );
 use File::DataClass::IO         qw( io );
@@ -33,6 +33,13 @@ has 'formatter' =>
    is      => 'lazy',
    isa     => class_type('MCat::Markdown'),
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
+
+has 'projects' =>
+   is      => 'ro',
+   isa     => ArrayRef,
+   default => sub {
+      return [qw(HTML-Filter HTML-Forms HTML-StateTable Web-Components)];
+   };
 
 has 'templatedir' =>
    is      => 'lazy',
@@ -172,6 +179,7 @@ sub make_js : method {
    my $dir   = io['share', 'js'];
    my @files = ();
 
+   $self->_populate_share_files($dir, 'js');
    $dir->filter(sub { m{ \.js \z }mx })->visit(sub { push @files, shift });
 
    my $file  = 'mcat.js';
@@ -196,6 +204,7 @@ sub make_less : method {
    my $dir   = io['share', 'less'];
    my @files = ();
 
+   $self->_populate_share_files($dir, 'less');
    $dir->filter(sub { m{ \.less \z }mx })->visit(sub { push @files, shift });
    ensure_class_loaded('CSS::LESS');
 
@@ -345,6 +354,47 @@ sub _load_stash {
 
    $stash->{quote} = $quote;
    return $stash;
+}
+
+sub _populate_share_files {
+   my ($self, $dest, $extn) = @_;
+
+   my @files  = ();
+   my $mtimes = {};
+
+   $dest->filter(sub { m{ \.${extn} \z }mx })->visit(sub { push @files, shift});
+   $mtimes->{$_->basename} = $_->stat->{mtime} for (@files);
+
+   for my $source ($self->_qualified_share_files($extn)) {
+      next if exists $mtimes->{$source->basename}
+         && $mtimes->{$source->basename} >= $source->stat->{mtime};
+
+      $source->copy($dest);
+   }
+
+   return;
+}
+
+sub _qualified_share_files {
+   my ($self, $extn) = @_;
+
+   my $proj_parent = $self->config->appldir->parent->parent;
+   my @files       = ();
+
+   for my $project (@{$self->projects}) {
+      my $proj_dir = $proj_parent->catdir($project);
+
+      next unless $proj_dir->exists;
+
+      my $source = $proj_dir->catdir(qw(master share), $extn);
+
+      next unless $source->exists;
+
+      $source->filter(sub { m{ \.${extn} \z }mx })
+         ->visit(sub { push @files, shift});
+   }
+
+   return @files;
 }
 
 sub _qualify_assets {
