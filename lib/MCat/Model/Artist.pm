@@ -1,6 +1,6 @@
 package MCat::Model::Artist;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS NUL );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use MCat::Util             qw( redirect redirect2referer );
 use Unexpected::Functions  qw( UnknownArtist Unspecified );
 use Web::Simple;
@@ -123,7 +123,13 @@ sub view : Auth('view') Nav('View Artist') {
    };
    my $cds     = $self->new_table('Cd', $options);
    my $buttons = [{
+      action    => $context->uri_for_action('artist/list'),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'List',
+   },{
       action    => $context->uri_for_action('artist/edit', [$artist->artistid]),
+      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

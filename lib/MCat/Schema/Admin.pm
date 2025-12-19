@@ -7,10 +7,10 @@ use HTML::Forms::Constants      qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
 use Class::Usul::Cmd::Util      qw( decrypt encrypt ensure_class_loaded
                                     now_dt trim );
 use File::DataClass::IO         qw( io );
+use Web::Components::Util       qw( load_file dump_file );
 use Unexpected::Functions       qw( throw PathNotFound Unspecified );
 use Archive::Tar;
 use Data::Record;
-use File::DataClass::Schema;
 use Format::Human::Bytes;
 use Try::Tiny;
 use Moo;
@@ -69,10 +69,6 @@ has 'user_password' =>
 
       return decrypt SECRET, $password;
    };
-
-has '_file_schema' =>
-   is      => 'lazy',
-   default => sub { File::DataClass::Schema->new(storage_class => 'Any') };
 
 has '_dbname' =>
    is      => 'lazy',
@@ -474,11 +470,11 @@ sub _local_config {
    my $path = $file->exists ? $file : $config->config_home->child("${file}");
 
    if ($data) {
-      $self->_file_schema->dump({ path => $path->assert, data => $data });
+      dump_file($path->assert, $data);
       return $data;
    }
 
-   return $self->_file_schema->load($file) // {} if $path->exists;
+   return load_file($path, TRUE) // {} if $path->exists;
 
    return {};
 }
@@ -494,7 +490,7 @@ sub _populate_class {
 
    $self->output("Populating ${class}");
 
-   my $data   = $self->_file_schema->data_load(paths => [$path]) // {};
+   my $data   = load_file($path) // {};
    my $fields = [split SPC, $data->{fields}];
    my @rows   = map { [ map { _unquote(trim $_) } $split->records($_) ] }
                    @{ $data->{rows} };

@@ -3,7 +3,18 @@ package MCat::Constants;
 use strictures;
 use parent 'Exporter::Tiny';
 
-use Class::Usul::Cmd::Constants qw();
+use MCat::Exception;
+use Class::Usul::Cmd::Constants       qw( );
+use HTML::StateTable::Constants       qw( );
+use HTML::Forms::Constants            qw( );
+use Web::ComposableRequest::Constants qw( );
+
+my $exception_class = 'MCat::Exception';
+
+Class::Usul::Cmd::Constants->Exception_Class($exception_class);
+HTML::StateTable::Constants->Exception_Class($exception_class);
+HTML::Forms::Constants->Exception_Class($exception_class);
+Web::ComposableRequest::Constants->Exception_Class($exception_class);
 
 our @EXPORT = qw( BUG_STATE_ENUM SQL_FALSE SQL_NOW SQL_TRUE );
 

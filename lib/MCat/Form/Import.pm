@@ -62,7 +62,16 @@ sub default_field_map {
    return $self->json_parser->encode($fields);
 }
 
-has_field 'submit' => type => 'Button';
+has_field '_g1' => type => 'Group';
+
+has_field 'view' =>
+   type          => 'Link',
+   field_group   => '_g1',
+   label         => 'View',
+   element_class => ['form-button pageload'],
+   wrapper_class => ['input-button', 'left'];
+
+has_field 'submit' => field_group => '_g1', type => 'Button';
 
 after 'before_build_fields' => sub {
    my $self     = shift;
@@ -143,6 +152,17 @@ after 'after_build_fields' => sub {
 
    $self->field('source')->selector("${modal}.createSelector(${args})");
    $self->field('field_map')->icons($self->_icons);
+
+   if ($self->item) {
+      my $view = $context->uri_for_action('import/view', [$self->item->id]);
+
+      $self->field('view')->href($view->as_string);
+      $self->field('submit')->add_wrapper_class(['right']);
+   }
+   else {
+      $self->field('view')->inactive(TRUE);
+   }
+
    return;
 };
 

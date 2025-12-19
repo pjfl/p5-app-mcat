@@ -13,7 +13,11 @@ A demo web application for [Web::Components](https://metacpan.org/pod/Web%3A%3AC
 
 # Configuration and Environment
 
-Defines no attributes
+Defines the following attributes;
+
+- `schema_version`
+
+    An immutable class attribute that returns the current schema version
 
 # Subroutines/Methods
 
@@ -25,7 +29,7 @@ None
 
 # Dependencies
 
-- [Moo](https://metacpan.org/pod/Moo)
+- [version](https://metacpan.org/pod/version)
 
 # Incompatibilities
 
@@ -47,7 +51,7 @@ Peter Flanigan, `<lazarus@roxsoft.co.uk>`
 
 # License and Copyright
 
-Copyright (c) 2023 Peter Flanigan. All rights reserved
+Copyright (c) 2025 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See [perlartistic](https://metacpan.org/pod/perlartistic)

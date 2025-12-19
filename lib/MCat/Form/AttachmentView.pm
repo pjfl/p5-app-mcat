@@ -9,7 +9,7 @@ extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
 has '+do_form_wrapper'    => default => FALSE;
-has '+form_wrapper_class' => default => sub { ['wide'] };
+has '+form_wrapper_class' => default => sub { ['wide attachment'] };
 has '+info_message'       => default => NUL;
 has '+name'               => default => 'BugAttachment';
 has '+no_update'          => default => TRUE;
@@ -42,9 +42,8 @@ after 'after_build_fields' => sub {
    $self->field('image')->src($src->as_string);
 
    my $resources   = $context->config->wcom_resources;
-   my $modal_close = $resources->{modal} . '.current.close';
-   my $js          = sprintf "%s(); %s('%s', '%s'); %s('%s'); %s()",
-      'event.preventDefault',
+   my $modal_close = $resources->{modal} . '.closeCurrent';
+   my $js          = sprintf '%s("%s", "%s"); %s("%s"); %s()',
       $resources->{downloadable} . '.downloader',
       $context->uri_for_action('bug/attachment', [$id], { download => 'true' }),
       $self->attachment->path,
@@ -54,7 +53,7 @@ after 'after_build_fields' => sub {
 
    $self->field('download')->element_attr->{javascript} = { onclick => $js };
 
-   $js = sprintf "%s(); %s()", 'event.preventDefault', $modal_close;
+   $js = "${modal_close}()";
 
    $self->field('cancel')->element_attr->{javascript} = { onclick => $js };
    return;

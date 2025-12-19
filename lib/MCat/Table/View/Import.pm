@@ -13,14 +13,20 @@ has '+form_buttons' => default => sub {
    my $id      = $self->result->id;
 
    return [{
-      action    => $context->uri_for_action('import/edit', [$id]),
+      action    => $context->uri_for_action('import/list'),
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'Edit',
-   }, {
+      value     => 'List',
+   },{
       action    => $context->uri_for_action('import/update', [$id]),
       selection => 'disable_on_select',
       value     => 'Update',
+   },{
+      action    => $context->uri_for_action('import/edit', [$id]),
+      classes   => 'right',
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Edit',
    }];
 };
 

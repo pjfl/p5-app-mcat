@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Much pretier configuration data introspection
           - Removes use of eval string in JS event handlers
 
 0.3.1     2025-12-12 00:12:25

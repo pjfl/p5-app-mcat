@@ -1,18 +1,14 @@
 package MCat::Config;
 
-use Class::Usul::Cmd::Constants qw( FALSE NUL SECRET TRUE );
-use IO::Socket::SSL             qw( SSL_VERIFY_NONE );
-use File::DataClass::Types      qw( ArrayRef Bool Directory File HashRef
-                                    LoadableClass Object OctalNum Path
-                                    PositiveInt Str Undef );
-use Class::Usul::Cmd::Util      qw( decrypt now_dt );
-use English                     qw( -no_match_vars );
-use File::DataClass::IO         qw( io );
-use MCat::Util                  qw( local_tz );
-use HTML::StateTable::Constants qw( );
-use HTML::Forms::Constants      qw( );
-use Web::ComposableRequest::Constants qw( );
-use MCat::Exception;
+use MCat::Constants        qw( FALSE NUL SECRET TRUE );
+use IO::Socket::SSL        qw( SSL_VERIFY_NONE );
+use File::DataClass::Types qw( ArrayRef Bool Directory File HashRef
+                               LoadableClass Object OctalNum Path
+                               PositiveInt Str Undef );
+use Class::Usul::Cmd::Util qw( decrypt now_dt );
+use English                qw( -no_match_vars );
+use File::DataClass::IO    qw( io );
+use MCat::Util             qw( local_tz );
 use Moo;
 
 with 'Web::Components::ConfigLoader';
@@ -23,10 +19,6 @@ my $except = [
 ];
 
 Class::Usul::Cmd::Constants->Dump_Except($except);
-Class::Usul::Cmd::Constants->Exception_Class('MCat::Exception');
-HTML::StateTable::Constants->Exception_Class('MCat::Exception');
-HTML::Forms::Constants->Exception_Class('MCat::Exception');
-Web::ComposableRequest::Constants->Exception_Class('MCat::Exception');
 
 =encoding utf-8
 
@@ -51,8 +43,8 @@ Defines the following attributes;
 
 =item appclass
 
-The application class name. Required by component loader to find controllers,
-models, and views
+The application class name. Required by the L<component
+loader|Web::Components::Loader> to find controllers, models, and views
 
 =cut
 
@@ -60,7 +52,7 @@ has 'appclass' => is => 'ro', isa => Str, required => TRUE;
 
 =item appldir
 
-A synonym for 'home'
+A synonym for C<home>
 
 =cut
 
@@ -164,7 +156,7 @@ has 'db_extra' =>
 =item db_password
 
 Password used to connect to the database. This has no default. It should be
-set using the command 'bin/mcat-cli --set-db-password' before the application
+set using the command C<bin/mcat-cli --set-db-password> before the application
 is started by the same user as the one which will be running the application
 
 =cut
@@ -181,7 +173,7 @@ has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
 
 =item deployment
 
-Defaults to C<development>. Should be overridden in the local configuration
+Defaults to B<development>. Should be overridden in the local configuration
 file. Used to modify the server output depending on deployment environment.
 For example, any value not C<development> will prevent the rendering of an
 exception to the end user
@@ -192,8 +184,8 @@ has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
 =item default_base_colour
 
-Defaults to C<bisque>. Used as the base colour for page rendering. Can be
-changed via the user C<Profile> form
+Defaults to B<bisque>. Used as the base colour for page rendering. Can be
+changed via the user F<Profile> form
 
 =cut
 
@@ -263,11 +255,20 @@ has 'documentation' =>
 
 =item dsn
 
-String used to select a database type and specific database by name
+String used to select a database driver and a specific database by name
 
 =cut
 
 has 'dsn' => is => 'ro', isa => Str, default => 'dbi:Pg:dbname=mcat';
+
+=item enable_advanced
+
+Boolean which defaults to B<false>. If true the F<Profile> form will show the
+advanced options
+
+=cut
+
+has 'enable_advanced' => is => 'ro', isa => Bool, default => FALSE;
 
 =item encoding
 
@@ -334,7 +335,7 @@ has '_local_fonts' =>
 
 An array reference of tuples. Each is comprised of; display text for the link,
 either an action path or a URI, and if a URI is used set the third argument
-to true
+to C<true>
 
 =cut
 
@@ -375,7 +376,7 @@ has 'local_tz' => is => 'ro', isa => Str, default => 'Europe/London';
 
 =item lock_attributes
 
-Configuration attributes for L<IPC::SRLock>. Currently unused
+Configuration attributes for the L<lock manager|IPC::SRLock>. Currently unused
 
 =cut
 
@@ -515,7 +516,7 @@ has 'redirect' => is => 'ro', isa => Str, default => 'artist/list';
 
 =item redis
 
-Configuration hash reference used to configure the connection to the Redis
+Configuration hash reference used to configure the connection to the L<Redis>
 cache
 
 =cut
@@ -524,7 +525,7 @@ has 'redis' => is => 'ro', isa => HashRef, default => sub { {} };
 
 =item registration
 
-Boolean which defaults false. If true user registration is allowed otherwise
+Boolean which defaults B<false>. If true user registration is allowed otherwise
 it is unavailable
 
 =cut
@@ -534,7 +535,8 @@ has 'registration' => is => 'ro', isa => Bool, coerce => TRUE, default => FALSE;
 =item request
 
 Hash reference passed to the request object factory constructor by the
-component loader. Includes;
+component loader. Includes; C<max_messages>, C<prefix>, C<request_roles>,
+C<serialise_session_attr>, and C<session_attr>
 
 =over 3
 
@@ -585,6 +587,7 @@ has 'request' =>
             menu_location => [ Str, 'header' ],
             realm         => [ Str, NUL ],
             role          => [ Str, NUL ],
+            shiny         => [ Bool, FALSE ],
             skin          => [ Str, $self->skin ],
             theme         => [ Str, 'light' ],
             timezone      => [ Str, local_tz ],
@@ -638,15 +641,6 @@ has 'script' =>
    isa     => Str,
    default => sub { shift->pathname->basename };
 
-=item shiny
-
-Boolean which defaults to false. If true the FE will animate the page
-transitions and add bling to some pages
-
-=cut
-
-has 'shiny' => is => 'ro', isa => Bool, default => FALSE;
-
 =item skin
 
 The templates used to render the pages of the application can be created in
@@ -670,25 +664,25 @@ has 'sqldir' =>
 
 =item state_cookie
 
-Array reference used to instantiate the session state cookie. See
-L<Plack::Session::State::Cookie>
+Array reference used to instantiate the
+L<session state cookie|Plack::Session::State::Cookie>
 
 =cut
 
 has 'state_cookie' =>
    is      => 'lazy',
-   isa     => ArrayRef,
+   isa     => HashRef,
    default => sub {
       my $self = shift;
 
-      return [
+      return {
          expires     => 7_776_000,
          httponly    => TRUE,
          path        => $self->mount_point,
          samesite    => 'None',
          secure      => TRUE,
          session_key => $self->prefix . '_session',
-      ];
+      };
    };
 
 =item static
@@ -716,7 +710,7 @@ has 'tempdir' =>
 
 =item template_wrappers
 
-Defines the names of the C<site/html> and C<site/wrapper> templates used to
+Defines the names of the F<site/html> and F<site/wrapper> templates used to
 produce all the pages
 
 =cut
@@ -767,8 +761,32 @@ has 'umask' => is => 'ro', isa => OctalNum, coerce => TRUE, default => '027';
 
 =item user
 
-Configuration options for the 'User' result class. Includes 'load_factor'
-used in the encrypting of passwords
+Configuration options for the F<User> result class. Includes; C<load_factor>,
+C<default_password>, C<default_role>, C<min_name_len>, and C<min_password_len>
+
+=over 3
+
+=item C<load_factor>
+
+Used in the encrypting of passwords
+
+=item C<default_password>
+
+Used when creating new users
+
+=item C<default_role>
+
+Used when creating new users
+
+=item C<min_name_len>
+
+Minimum user name length
+
+=item C<min_password_len>
+
+Minumum password length
+
+=back
 
 =cut
 
@@ -839,6 +857,8 @@ None
 =over 3
 
 =item L<Moo>
+
+=item L<Web::Components::ConfigLoader>
 
 =back
 

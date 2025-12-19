@@ -50,24 +50,6 @@ setup_resultset sub {
    return $rs->search({ 'me.trackid' => { -in => $join_rs->as_query } });
 };
 
-has_column 'cd_title' =>
-   hidden   => sub {
-      my $table   = shift;
-      my $context = $table->context;
-
-      return $context->stash('cd') ? TRUE : FALSE;
-   },
-   label    => 'CD Title',
-   link => sub {
-      my $self = shift;
-      my $context = $self->table->context;
-
-      return $context->uri_for_action('cd/view', [$self->result->cdid]);
-   },
-   sortable => TRUE,
-   title    => 'Sort by title',
-   value    => 'cd.title';
-
 has_column 'title' =>
    label    => 'Track Title',
    link     => sub {
@@ -77,7 +59,28 @@ has_column 'title' =>
       return  $context->uri_for_action('track/view', [$self->result->trackid]);
    },
    sortable => TRUE,
-   title    => 'Sort by title';
+   title    => 'Sort by track title';
+
+has_column 'cd_title' =>
+   hidden   => sub { shift->context->stash('cd') ? TRUE : FALSE },
+   label    => 'CD Title',
+   link => sub {
+      my $self    = shift;
+      my $context = $self->table->context;
+
+      return $context->uri_for_action('cd/view', [$self->result->cdid]);
+   },
+   sortable => TRUE,
+   title    => 'Sort by CD title',
+   value    => 'cd.title';
+
+has_column 'cd_year' =>
+   cell_traits => ['Date'],
+   hidden      => sub { shift->context->stash('cd') ? TRUE : FALSE },
+   label       => 'Released',
+   sortable    => TRUE,
+   title       => 'Sort by release date',
+   value       => 'cd.year';
 
 use namespace::autoclean -except => TABLE_META;
 

@@ -125,10 +125,17 @@ sub list : Auth('view') Nav('CDs|img/cd.svg') {
 sub view : Auth('view') Nav('View CD') {
    my ($self, $context, $cdid) = @_;
 
+   my $cd      = $context->stash('cd');
    my $options = { caption => NUL, context => $context, cdid => $cdid };
    my $tracks  = $self->table->new_with_context('Track', $options);
    my $buttons = [{
+      action    => $context->uri_for_action('artist/view', [$cd->artistid]),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Artist',
+   },{
       action    => $context->uri_for_action('cd/edit', [$cdid]),
+      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',
@@ -139,7 +146,7 @@ sub view : Auth('view') Nav('View CD') {
       caption      => 'CD View',
       context      => $context,
       form_buttons => $buttons,
-      result       => $context->stash('cd')
+      result       => $cd,
    }));
    return;
 }

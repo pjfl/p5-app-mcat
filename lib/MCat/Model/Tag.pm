@@ -113,13 +113,29 @@ sub remove : Auth('admin') {
 }
 
 sub view : Auth('admin') Nav('View Tag') {
-   my ($self, $context, $tagid) = @_;
+   my ($self, $context) = @_;
 
-   $context->stash(table => $self->table->new_with_context('View::Object', {
-      caption => 'Tag View',
-      context => $context,
-      result  => $context->stash('tag')
-   }));
+   my $tag     = $context->stash('tag');
+   my $buttons = [{
+      action    => $context->uri_for_action('tag/list'),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'List',
+   },{
+      action    => $context->uri_for_action('tag/edit', [$tag->id]),
+      classes   => 'right',
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Update',
+   }];
+   my $options = {
+      caption      => 'Tag View',
+      context      => $context,
+      form_buttons => $buttons,
+      result       => $tag,
+   };
+
+   $context->stash(table => $self->new_table('View::Object', $options));
    return;
 }
 

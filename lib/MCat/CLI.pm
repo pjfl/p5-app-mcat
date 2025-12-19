@@ -22,17 +22,58 @@ with    'MCat::Role::JSONParser';
 with    'MCat::Role::Redis';
 with    'Web::Components::Role::Email';
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+MCat - Music Catalog
+
+=head1 Synopsis
+
+   use MCat;
+
+=head1 Description
+
+A demo web application for L<Web::Components>, L<HTML::Forms>, and
+L<HTML::StateTable>
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item C<redis_client_name>
+
+An immutable string which defaults to B<job_stash>
+
+=cut
+
 has '+redis_client_name' => is => 'ro', default => 'job_stash';
+
+=item C<assetdir>
+
+=cut
 
 has 'assetdir' =>
    is      => 'lazy',
    isa     => Directory,
    default => sub { $_[0]->config->root->catdir('img') };
 
+=item C<formatter>
+
+=cut
+
 has 'formatter' =>
    is      => 'lazy',
    isa     => class_type('MCat::Markdown'),
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
+
+=item C<projects>
+
+=cut
 
 has 'projects' =>
    is      => 'ro',
@@ -40,6 +81,10 @@ has 'projects' =>
    default => sub {
       return [qw(HTML-Filter HTML-Forms HTML-StateTable Web-Components)];
    };
+
+=item C<templatedir>
+
+=cut
 
 has 'templatedir' =>
    is      => 'lazy',
@@ -52,9 +97,13 @@ has 'templatedir' =>
       );
    };
 
+=back
+
 =head1 Subroutines/Methods
 
 =over 3
+
+=item C<BUILD>
 
 =cut
 
@@ -126,10 +175,25 @@ sub install : method {
    return OK;
 }
 
+=item make_all - Run JS and CSS production methods
+
+A convienience method which calls the other three front end file production
+methods
+
+=cut
+
+sub make_all : method {
+   my $self = shift;
+
+   $self->make_css;
+   $self->make_js;
+   return OK;
+}
+
 =item make_css - Make concatenated CSS file
 
-Run automatically if L<App::Burp> is running. It concatenates multiple CSS files
-into a single one
+Run automatically if L<App::Burp> is running. It calls C<make-less> and then
+concatenates multiple CSS files into a single one
 
 =cut
 
@@ -138,6 +202,7 @@ sub make_css : method {
    my $dir   = io['share', 'css'];
    my @files = ();
 
+   $self->make_less;
    $dir->filter(sub { m{ \.css \z }mx })->visit(sub { push @files, shift });
 
    my $skin  = $self->config->skin;
@@ -148,22 +213,6 @@ sub make_css : method {
    my $options = { name => 'CLI.make_css' };
 
    $self->info("Concatenated ${count} files to ${file}", $options);
-   return OK;
-}
-
-=item make_fe - Run JS and CSS production methods
-
-A convienience method which calls the other three front end file production
-methods
-
-=cut
-
-sub make_fe : method {
-   my $self = shift;
-
-   $self->make_less;
-   $self->make_css;
-   $self->make_js;
    return OK;
 }
 
@@ -468,3 +517,52 @@ use namespace::autoclean;
 __END__
 
 =back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<Class::Usul::Cmd>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=MCat.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <lazarus@roxsoft.co.uk> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2025 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

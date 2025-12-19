@@ -1,7 +1,7 @@
 package MCat::Form::Configuration;
 
 use Class::Usul::Cmd::Constants qw( DUMP_EXCEPT EXCEPTION_CLASS );
-use HTML::Forms::Constants      qw( FALSE META TRUE );
+use HTML::Forms::Constants      qw( FALSE META NUL SPC TRUE );
 use HTML::Forms::Types          qw( Str );
 use HTML::Entities              qw( encode_entities );
 use Class::Usul::Cmd::Util      qw( list_attr_of list_methods_of );
@@ -45,7 +45,7 @@ after 'after_build_fields' => sub {
          $v = $self->_encode_ref($v) if is_plain_hashref $v or is_arrayref $v;
          $v = "## <span id=\"${v}\">${v}</span>" if $i == 0;
          $v = $self->_pod2markdown($v) if $i == 2;
-         $v = "\n```code\n${v} \n```"  if $i == 3;
+         $v = "\n```json\n${v} \n```"  if $i == 3;
 
          $s .= "${v}\n";
       }
@@ -60,7 +60,7 @@ after 'after_build_fields' => sub {
 sub _encode_ref {
    my ($self, $v) = @_;
 
-   my $string = $self->json_parser->pretty->relaxed->canonical->encode($v);
+   my $string = $self->json_pretty_print($v);
 
    return $string;
 }

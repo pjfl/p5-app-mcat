@@ -2,13 +2,16 @@ package MCat::Form::Profile;
 
 use HTML::Forms::Constants qw( FALSE META NUL TRUE );
 use HTML::Forms::Types     qw( HashRef Object );
+use HTML::Forms::Util      qw( json_bool );
 use Type::Utils            qw( class_type );
 use Moo;
 use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
+with    'MCat::Role::UpdatingSession';
 
+has '+form_wrapper_class'     => default => sub { ['narrow'] };
 has '+title'                  => default => 'User Profile';
 has '+info_message'           => default => 'Update profile information';
 has '+use_init_obj_over_item' => default => TRUE;
@@ -43,24 +46,28 @@ has_field 'timezone' => type => 'Timezone';
 
 has_field 'enable_2fa' =>
    type   => 'Boolean',
-   info   =>
-      'Additional security questions should be answered if 2FA is enabled',
    label  => 'Enable 2FA',
    toggle => { -checked => ['mobile_phone', 'postcode'] };
 
 has_field 'mobile_phone' =>
-   type  => 'PosInteger',
-   label => 'Mobile #',
-   size  => 12,
-   title => 'Additional security question used by 2FA token reset';
+   type     => 'PosInteger',
+   info     =>
+      'Additional security questions should be answered if 2FA is enabled',
+   info_top => TRUE,
+   label    => 'Mobile #',
+   size     => 12,
+   title    => 'Additional security question used by 2FA token reset';
 
 has_field 'postcode' =>
    size  => 8,
    title => 'Additional security question used by 2FA token reset';
 
+has_field '_g2' => type => 'Group';
+
 has_field 'skin' =>
-   type    => 'Select',
-   options => [
+   type        => 'Select',
+   field_group => '_g2',
+   options     => [
       { label => 'Classic', value => 'classic' },
       { label => 'None',    value => 'none' },
    ];
@@ -69,39 +76,52 @@ sub default_skin {
    return shift->context->config->skin;
 }
 
-has_field 'menu_location' =>
-   type    => 'Select',
-   default => 'header',
-   label   => 'Menu Location',
-   options => [
-      { label => 'Header',  value => 'header' },
-      { label => 'Sidebar', value => 'sidebar' },
-   ];
-
-has_field 'link_display' =>
-   type    => 'Select',
-   default => 'both',
-   label   => 'Link Display',
-   options => [
-      { label => 'Both', value => 'both' },
-      { label => 'Icon', value => 'icon' },
-      { label => 'Text', value => 'text' },
-   ];
-
 has_field 'theme' =>
-   type    => 'Select',
-   default => 'theme-light',
-   label   => 'Colour Scheme',
-   options => [
+   type        => 'Select',
+   default     => 'theme-light',
+   field_group => '_g2',
+   label       => 'Colour Scheme',
+   options     => [
       { label => 'Dark',   value => 'dark-theme' },
       { label => 'Light',  value => 'light-theme' },
       { label => 'System', value => 'system-theme' },
    ];
 
+has_field '_g1' => type => 'Group';
+
+has_field 'menu_location' =>
+   type        => 'Select',
+   default     => 'header',
+   field_group => '_g1',
+   label       => 'Menu Location',
+   options     => [
+      { label => 'Header',  value => 'header' },
+      { label => 'Sidebar', value => 'sidebar' },
+   ];
+
+has_field 'link_display' =>
+   type        => 'Select',
+   default     => 'both',
+   field_group => '_g1',
+   label       => 'Link Display',
+   options     => [
+      { label => 'Both', value => 'both' },
+      { label => 'Icon', value => 'icon' },
+      { label => 'Text', value => 'text' },
+   ];
+
+has_field '_g3' => type => 'Group', info => 'Advanced Options';
+
 has_field 'base_colour' =>
-   type    => 'Colour',
-   label   => 'Base Colour',
-   options => [];
+   type        => 'Colour',
+   field_group => '_g3',
+   label       => 'Base Colour',
+   options     => [];
+
+has_field 'shiny' =>
+   type        => 'Boolean',
+   field_group => '_g3',
+   label       => 'Enable Shiny';
 
 has_field 'view' =>
    type          => 'Link',
@@ -121,6 +141,8 @@ after 'after_build_fields' => sub {
       $self->field('postcode')->add_wrapper_class('hide');
    }
 
+   $self->field('_g3')->inactive(TRUE) unless $context->config->enable_advanced;
+
    my $field  = $self->field('base_colour');
    my $colour = $context->config->default_base_colour;
 
@@ -136,40 +158,29 @@ after 'after_build_fields' => sub {
 };
 
 sub validate {
-   my $self       = shift;
-   my $enable_2fa = $self->field('enable_2fa')->value ? TRUE : FALSE;
-   my $user       = $self->user;
-   my $value      = $user->profile_value;
+   my $self   = shift;
+   my $user   = $self->user;
+   my $value  = $user->profile_value;
+   my @fields = (qw(base_colour enable_2fa link_display menu_location
+                    mobile_phone postcode shiny skin theme timezone));
 
-   $value->{base_colour}   = $self->field('base_colour')->value;
-   $value->{enable_2fa}    = $enable_2fa ? \1 : \0;
-   $value->{link_display}  = $self->field('link_display')->value;
-   $value->{menu_location} = $self->field('menu_location')->value;
-   $value->{mobile_phone}  = $self->field('mobile_phone')->value;
-   $value->{postcode}      = $self->field('postcode')->value;
-   $value->{skin}          = $self->field('skin')->value;
-   $value->{theme}         = $self->field('theme')->value;
-   $value->{timezone}      = $self->field('timezone')->value;
+   for my $field_name (@fields) {
+      $value->{$field_name} = $self->field($field_name)->value;
+   }
+
+   my $session = $self->context->session;
+
+   $self->update_session($session, $value) if $session->id == $user->id;
+
+   $user->set_totp_secret($value->{enable_2fa});
+   $value->{enable_2fa} = json_bool $value->{enable_2fa};
+   $value->{shiny}      = json_bool $value->{shiny};
 
    $self->context->model('Preference')->update_or_create({
       name => 'profile', user_id => $user->id, value => $value
    }, {
       key  => 'preference_user_id_name_uniq'
    });
-
-   $user->set_totp_secret($enable_2fa);
-
-   my $session = $self->context->session;
-
-   if ($session->id == $user->id) {
-      $session->base_colour($value->{base_colour});
-      $session->enable_2fa($enable_2fa);
-      $session->link_display($value->{link_display});
-      $session->menu_location($value->{menu_location});
-      $session->skin($value->{skin});
-      $session->theme($value->{theme});
-      $session->timezone($value->{timezone});
-   }
 
    return;
 }

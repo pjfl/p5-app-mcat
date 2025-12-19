@@ -50,6 +50,11 @@ has 'response' =>
 
 has 'session' => is => 'lazy', default => sub { shift->request->session };
 
+has 'shiny' =>
+   is      => 'lazy',
+   isa     => Bool,
+   default => sub { shift->session->shiny ? TRUE : FALSE };
+
 has 'time_zone' =>
    is      => 'lazy',
    isa     => Str,

@@ -13,20 +13,21 @@ has '+form_buttons' => default => sub {
    my $user_id = $self->result->id;
 
    return [{
-      action    => $context->uri_for_action('user/edit', [$user_id]),
+      action    => $context->uri_for_action('user/list'),
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'Edit',
+      value     => 'List',
    },{
       action    => $context->uri_for_action('user/profile', [$user_id]),
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Profile',
    },{
-      action    => $context->uri_for_action('user/delete', [$user_id]),
+      action    => $context->uri_for_action('user/edit', [$user_id]),
       classes   => 'right',
+      method    => 'get',
       selection => 'disable_on_select',
-      value     => 'Delete',
+      value     => 'Edit',
    }];
 };
 

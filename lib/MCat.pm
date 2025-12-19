@@ -1,7 +1,7 @@
 package MCat;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev: 2 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev: 3 $ =~ /\d+/gmx );
 
 sub schema_version {
    return qv( '0.2.64' );
@@ -32,7 +32,15 @@ L<HTML::StateTable>
 
 =head1 Configuration and Environment
 
-Defines no attributes
+Defines the following attributes;
+
+=over 3
+
+=item C<schema_version>
+
+An immutable class attribute that returns the current schema version
+
+=back
 
 =head1 Subroutines/Methods
 
@@ -46,7 +54,7 @@ None
 
 =over 3
 
-=item L<Moo>
+=item L<version>
 
 =back
 

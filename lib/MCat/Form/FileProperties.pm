@@ -82,10 +82,8 @@ after 'after_build_fields' => sub {
       $self->info_message('No directory properties to update');
    }
 
-   my $resources   = $self->context->config->wcom_resources;
-   my $modal_close = $resources->{table_renderer}
-                   . ".tables['filemanager'].modal.close";
-   my $js          = sprintf "%s(); %s()", 'event.preventDefault', $modal_close;
+   my $renderer = $self->context->config->wcom_resources->{table_renderer};
+   my $js       = "${renderer}.tables.filemanager.modal.close()";
 
    $self->field('cancel')->element_attr->{javascript} = { onclick => $js };
    return;

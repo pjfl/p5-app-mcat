@@ -71,7 +71,7 @@ after 'after_build_fields' => sub {
    my $self    = shift;
    my $context = $self->context;
 
-   $self->add_form_element_class('shiny') if $context->config->shiny;
+   $self->add_form_element_class('shiny') if $context->shiny;
    $self->set_form_element_attr('novalidate', 'novalidate');
 
    my $session = $context->session;
@@ -82,11 +82,11 @@ after 'after_build_fields' => sub {
    }
 
    my $util             = $context->config->wcom_resources->{form_util};
-   my $change_js        = "${util}.fieldChange(%s)";
-   my $change_fields    = [qw(login password_reset totp_reset)];
-   my $showif_js        = "${util}.showIfRequired(%s)";
+   my $change_js        = "${util}.fieldChange";
+   my $change_fields    = ['login', 'password_reset', 'totp_reset'];
+   my $showif_js        = "${util}.showIfRequired";
    my $showif_fields    = ['auth_code','totp_reset'];
-   my $unrequire_js     = "${util}.unrequire(%s)";
+   my $unrequire_js     = "${util}.unrequire";
    my $unrequire_fields = ['auth_code', 'password'];
 
    my $action = 'api/object_fetch';
@@ -178,11 +178,14 @@ sub _handlers {
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;
       },
       'Authentication' => sub { $self->add_form_error($_->original) },
-      'Unspecified'    => sub { $self->add_form_error($_->original) },
+      'Unspecified'    => sub {
+         if ($_->args->[0] eq 'Password') { $passwd->add_error($_->original) }
+         else { $code->add_error($_->original) }
+      },
       '*' => sub {
          $self->add_form_error(blessed $_ ? $_->original : "${_}");
          $self->log->alert($_, $context) if $self->has_log;
-      }
+      },
    ];
 }
 

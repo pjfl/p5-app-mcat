@@ -12,7 +12,13 @@ has '+form_buttons' => default => sub {
    my $context = $self->context;
 
    return [{
+      action    => $context->uri_for_action('filter/list'),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'List',
+   },{
       action    => $context->uri_for_action('filter/edit', [$self->result->id]),
+      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

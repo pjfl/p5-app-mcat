@@ -62,8 +62,11 @@ sub attachment : Auth('view') {
    my $params = $context->request->query_parameters;
 
    if (exists $params->{download} and $params->{download} eq 'true') {
+      my $name = $attachment->path;
+      my $fml  = qq{attachment; filename="${name}"; filename*=UTF-8''${name}};
+
       $context->stash(
-         http_headers => ['Content-Disposition', $attachment->path],
+         http_headers => ['Content-Disposition', $fml],
          content_path => $attachment->content_path,
          view         => 'image'
       );
@@ -183,15 +186,16 @@ sub view : Auth('view') Nav('View Bug') {
 
    my $bug = $context->stash('bug');
    my $buttons = [{
+      action    => $context->uri_for_action('bug/list'),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'List',
+   },{
       action    => $context->uri_for_action('bug/edit', [$bug->id]),
+      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Update',
-   },{
-      action    => $context->uri_for_action('bug/delete', [$bug->id]),
-      classes   => 'right',
-      selection => 'disable_on_select',
-      value     => 'Delete',
    }];
    my $options = {
       caption      => 'View Bug',

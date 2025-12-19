@@ -51,6 +51,17 @@ setup_resultset sub {
    return $rs->search({ 'me.cdid' => { -in => $join_rs->as_query } });
 };
 
+has_column 'title' =>
+   label => 'CD Title',
+   link  => sub {
+      my $self = shift;
+      my $context = $self->table->context;
+
+      return  $context->uri_for_action('cd/view', [$self->result->cdid]);
+   },
+   sortable => TRUE,
+   title    => 'Sort by title';
+
 has_column 'artist_name' =>
    hidden => sub {
       my $table = shift;
@@ -68,17 +79,6 @@ has_column 'artist_name' =>
    sortable => TRUE,
    title => 'Sort by artist',
    value => 'artist.name';
-
-has_column 'title' =>
-   label => 'CD Title',
-   link  => sub {
-      my $self = shift;
-      my $context = $self->table->context;
-
-      return  $context->uri_for_action('cd/view', [$self->result->cdid]);
-   },
-   sortable => TRUE,
-   title    => 'Sort by title';
 
 has_column 'year' =>
    cell_traits => ['Date'],

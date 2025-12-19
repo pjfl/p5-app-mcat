@@ -126,8 +126,15 @@ sub list : Auth('view') Nav('Tracks|img/tracks.svg') {
 sub view : Auth('view') Nav('View Track') {
    my ($self, $context, $trackid) = @_;
 
+   my $track   = $context->stash('track');
    my $buttons = [{
+      action    => $context->uri_for_action('cd/view', [$track->cdid]),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'CD',
+   },{
       action    => $context->uri_for_action('track/edit', [$trackid]),
+      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',
@@ -137,7 +144,7 @@ sub view : Auth('view') Nav('View Track') {
       caption      => 'Track View',
       context      => $context,
       form_buttons => $buttons,
-      result       => $context->stash('track')
+      result       => $track,
    }));
    return;
 }
