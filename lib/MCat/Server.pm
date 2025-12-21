@@ -1,10 +1,8 @@
 package MCat::Server;
 
-use HTML::Forms::Constants qw( FALSE NUL TRUE );
-use HTTP::Status           qw( HTTP_FOUND );
-use Class::Usul::Cmd::Util qw( ns_environment );
-
-use MCat;
+use Class::Usul::Cmd::Constants qw( FALSE NUL TRUE );
+use HTTP::Status                qw( HTTP_FOUND );
+use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
 use Plack::Builder;
 use Web::Simple;
 
@@ -44,10 +42,13 @@ around 'to_psgi_app' => sub {
 };
 
 sub BUILD {
-   my $self   = shift;
-   my $class  = $self->config->appclass;
+   my $self  = shift;
+   my $class = $self->config->appclass;
+
+   ensure_class_loaded $class;
+
    my $server = ucfirst($ENV{PLACK_ENV} // NUL);
-   my $port   = ns_environment($class, 'port') // 5_000;
+   my $port   = $class->env_var('port') // 5_000;
    my $info   = 'v' . $class->VERSION . " started on port ${port}";
 
    $self->log->info("LISTENER: ${class} ${server} ${info}");

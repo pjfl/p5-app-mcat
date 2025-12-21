@@ -718,7 +718,7 @@ produce all the pages
 has 'template_wrappers' =>
    is      => 'ro',
    isa     => HashRef,
-   default => sub { { html => 'base', wrapper => 'standard' } };
+   default => sub { { html => 'standard', wrapper => 'standard' } };
 
 =item token_lifetime
 

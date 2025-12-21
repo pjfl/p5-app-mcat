@@ -2,11 +2,11 @@ package MCat::Form::Configuration;
 
 use Class::Usul::Cmd::Constants qw( DUMP_EXCEPT EXCEPTION_CLASS );
 use HTML::Forms::Constants      qw( FALSE META NUL SPC TRUE );
-use HTML::Forms::Types          qw( Str );
-use HTML::Entities              qw( encode_entities );
 use Class::Usul::Cmd::Util      qw( list_attr_of list_methods_of );
+use HTML::Entities              qw( encode_entities );
 use Ref::Util                   qw( is_arrayref is_plain_hashref );
 use Type::Utils                 qw( class_type );
+use HTML::Forms::Util           qw( data2markup );
 use MCat::Markdown;
 use Pod::Markdown::Github;
 use Moo;
@@ -14,7 +14,6 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
-with    'MCat::Role::JSONParser';
 
 has '+info_message' => default => 'Current runtime configuration parameters';
 has '+title'        => default => 'Configuration';
@@ -33,6 +32,7 @@ after 'after_build_fields' => sub {
    my $config  = $self->context->config;
    my $methods = list_methods_of $config;
    my $attr    = [ list_attr_of $config, $methods, DUMP_EXCEPT ];
+   my $is_ref  = sub { is_plain_hashref($_[0]) || is_arrayref($_[0]) };
    my $content = join "\n", map {
       my $t = $_;
       my $s = "\n";
@@ -42,12 +42,14 @@ after 'after_build_fields' => sub {
 
          my $v = $t->[$i];
 
-         $v = $self->_encode_ref($v) if is_plain_hashref $v or is_arrayref $v;
-         $v = "## <span id=\"${v}\">${v}</span>" if $i == 0;
-         $v = $self->_pod2markdown($v) if $i == 2;
-         $v = "\n```json\n${v} \n```"  if $i == 3;
+         if    ($i == 0) { $v = "## <span id=\"${v}\">${v}</span>\n\n" }
+         elsif ($i == 2) { $v = $self->_pod2markdown($v) }
+         elsif ($i == 3) {
+            if ($is_ref->($v)) { $v = data2markup($v) }
+            else { $v = "```value\n${v} \n```" }
+         }
 
-         $s .= "${v}\n";
+         $s .= $v;
       }
 
       $s;
@@ -57,14 +59,6 @@ after 'after_build_fields' => sub {
    return;
 };
 
-sub _encode_ref {
-   my ($self, $v) = @_;
-
-   my $string = $self->json_pretty_print($v);
-
-   return $string;
-}
-
 sub _pod2markdown {
    my ($self, $pod) = @_;
 
@@ -73,7 +67,7 @@ sub _pod2markdown {
    $parser->output_string(\my $markdown);
    $parser->parse_string_document("=pod\n\n${pod}\n\n=cut\n");
 
-   return $markdown;
+   return "${markdown}\n";
 }
 
 use namespace::autoclean -except => META;

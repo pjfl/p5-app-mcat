@@ -2,12 +2,11 @@ package MCat::File::Result::CSV;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Date HashRef Int Str );
-use Type::Utils                 qw( class_type );
 use DateTime::Format::Strptime;
-use Text::CSV_XS;
 use Moo;
 
 with 'HTML::StateTable::Result::Role';
+with 'MCat::Role::CSVParser';
 
 =pod
 
@@ -65,9 +64,9 @@ has 'fields' =>
       my $self = shift;
       my $line = $self->line or return [];
 
-      $self->_csv->parse($line);
+      $self->csv_parser->parse($line);
 
-      my @fields = ($self->_csv->fields);
+      my @fields = ($self->csv_parser->fields);
 
       return \@fields;
    };
@@ -102,14 +101,6 @@ has 'field_map' =>
 
       return $field_map;
    };
-
-has '_csv' =>
-   is      => 'ro',
-   isa     => class_type('Text::CSV_XS'),
-   default => sub {
-      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
-   };
-
 
 =item timestamp
 

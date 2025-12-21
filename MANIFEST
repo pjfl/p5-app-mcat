@@ -81,6 +81,7 @@ lib/MCat/Redis.pm
 lib/MCat/Response.pm
 lib/MCat/Role/Authentication.pm
 lib/MCat/Role/Authorisation.pm
+lib/MCat/Role/CSVParser.pm
 lib/MCat/Role/Config.pm
 lib/MCat/Role/FileMeta.pm
 lib/MCat/Role/JSONParser.pm
@@ -247,8 +248,8 @@ var/templates/classic/site/email/password_reset.md
 var/templates/classic/site/email/register_user.md
 var/templates/classic/site/email/totp_reset.md
 var/templates/classic/site/footer.tt
-var/templates/classic/site/html/base.tt
 var/templates/classic/site/html/none.tt
+var/templates/classic/site/html/standard.tt
 var/templates/classic/site/preprocess.tt
 var/templates/classic/site/wrapper.tt
 var/templates/classic/site/wrapper/email.tt

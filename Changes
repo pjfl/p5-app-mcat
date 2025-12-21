@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds CSV and JSON parser roles
           - Much pretier configuration data introspection
           - Removes use of eval string in JS event handlers
 

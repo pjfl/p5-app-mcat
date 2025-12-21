@@ -1,35 +1,27 @@
 package MCat::Log;
 
-use HTML::Forms::Constants  qw( DOT FALSE NUL TRUE USERNAME );
-use Class::Usul::Cmd::Types qw( ConfigProvider );
-use HTML::Forms::Types      qw( Bool );
-use Class::Usul::Cmd::Util  qw( now_dt ns_environment trim );
-use HTML::StateTable::Util  qw( escape_formula );
-use Ref::Util               qw( is_arrayref is_coderef );
-use Scalar::Util            qw( blessed );
-use Type::Utils             qw( class_type );
-use English                 qw( -no_match_vars );
-use Text::CSV_XS;
+use Class::Usul::Cmd::Constants qw( DOT FALSE NUL TRUE USERNAME );
+use Class::Usul::Cmd::Types     qw( Bool ConfigProvider );
+use Class::Usul::Cmd::Util      qw( now_dt trim );
+use HTML::StateTable::Util      qw( escape_formula );
+use Ref::Util                   qw( is_arrayref is_coderef );
+use Scalar::Util                qw( blessed );
+use English                     qw( -no_match_vars );
 use Moo;
 
-has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
+with 'MCat::Role::CSVParser';
 
-has '_csv' =>
-   is      => 'ro',
-   isa     => class_type('Text::CSV_XS'),
-   default => sub {
-      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
-   };
+has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
 
 has '_debug' =>
    is       => 'lazy',
    isa      => Bool,
    init_arg => 'debug',
    default  => sub {
-      my $self = shift;
-      my $env  = ns_environment $self->config->appclass, 'debug';
+      my $self  = shift;
+      my $debug = $self->config->appclass->env_var('debug');
 
-      return defined $env ? !!$env : FALSE;
+      return defined $debug ? !!$debug : FALSE;
    };
 
 around 'BUILDARGS' => sub {
@@ -142,12 +134,12 @@ sub _log {
    my $username = $context && $context->can('session')
       ? $context->session->username : USERNAME;
 
-   $self->_csv->combine(
+   $self->csv_parser->combine(
       escape_formula $now, $level, $username, $leader, $message
    );
 
    if (my $file = $self->config->logfile) {
-      $file->appendln($self->_csv->string)->flush;
+      $file->appendln($self->csv_parser->string)->flush;
    }
    else { CORE::warn "${leader}: ${message}\n" }
 

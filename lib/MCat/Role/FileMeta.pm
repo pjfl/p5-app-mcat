@@ -1,20 +1,14 @@
 package MCat::Role::FileMeta;
 
-use HTML::StateTable::Constants qw( FALSE NUL TRUE );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( escape_formula );
-use Type::Utils                 qw( class_type );
-use Text::CSV_XS;
+use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
-has 'meta_config_attr' => is => 'lazy', isa => Str, default => 'filemanager';
+with 'MCat::Role::CSVParser';
 
-has '_csv' =>
-   is      => 'lazy',
-   isa     => class_type('Text::CSV_XS'),
-   default => sub {
-      return Text::CSV_XS->new({ always_quote => TRUE, binary => TRUE });
-   };
+has 'meta_config_attr' => is => 'lazy', isa => Str, default => 'filemanager';
 
 sub meta_add {
    my ($self, $context, $basedir, $filename, $args) = @_;
@@ -22,14 +16,14 @@ sub meta_add {
    $args //= {};
    $args->{owner} //= $context->session->username;
    $args->{shared} //= FALSE;
-   $self->_csv->combine(
+   $self->csv_parser->combine(
       escape_formula $filename, $args->{owner}, $args->{shared}
    );
 
    my $mdir  = $self->meta_directory($context, $basedir);
    my $dfile = $mdir->catfile('.directory');
 
-   $dfile->appendln($self->_csv->string);
+   $dfile->appendln($self->csv_parser->string);
    $dfile->flush;
    return;
 }
@@ -75,9 +69,9 @@ sub meta_get_header {
 
    $line = substr $line, 1 if ord(substr $line, 0, 1) == 65279; # Remove BOM
    $line = substr $line, 1 if substr $line, 0, 1 eq '#';
-   $self->_csv->parse($line);
+   $self->csv_parser->parse($line);
 
-   my @fields = $self->_csv->fields;
+   my @fields = $self->csv_parser->fields;
 
    return [ map { { name => $_ } } @fields ];
 }
@@ -198,9 +192,9 @@ sub meta_unshare {
 sub _meta_fields {
    my ($self, $line) = @_;
 
-   $self->_csv->parse($line);
+   $self->csv_parser->parse($line);
 
-   my @fields = $self->_csv->fields;
+   my @fields = $self->csv_parser->fields;
 
    return {
       name   => $fields[0],
@@ -245,7 +239,9 @@ sub _meta_get_config {
    return $context->config->$config_attr()
       if $context->can('config') && $context->config->can($config_attr);
 
-   return $context->$config_attr();
+   return $context->$config_attr() if $context->can($config_attr);
+
+   throw 'No file meta configuration found';
 }
 
 sub _meta_get_linkpath {

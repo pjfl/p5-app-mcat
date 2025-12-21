@@ -11,3 +11,10 @@
 %]
 <span class="copyright">© [% config.copyright_year %] RoxSoft, Ltd.
 <span class="version-number">v[% version %]</span></span>
+[%#
+# Local Variables:
+# coding: utf-8
+# mode: tt-mode
+# tab-width: 3
+# End:
+%]

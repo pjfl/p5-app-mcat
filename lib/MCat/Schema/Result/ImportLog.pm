@@ -1,6 +1,6 @@
 package MCat::Schema::Result::ImportLog;
 
-use HTML::Forms::Constants qw( FALSE TRUE );
+use Class::Usul::Cmd::Constants qw( FALSE TRUE );
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -110,7 +110,7 @@ Defines the following attributes;
 
 =over 3
 
-=item L<Class::Usul>
+=item L<Class::Usul::Cmd>
 
 =back
 
@@ -130,7 +130,7 @@ Larry Wall - For the Perl programming language
 
 =head1 Author
 
-Peter Flanigan, C<< <pjfl@cpan.org> >>
+Peter Flanigan, C<< <lazarus@roxsoft.co.uk> >>
 
 =head1 License and Copyright
 

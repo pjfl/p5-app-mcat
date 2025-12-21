@@ -1,11 +1,8 @@
 package MCat::File::Docs::View;
 
 use MCat::Markdown;
-use HTML::Tiny;
 use Pod::Markdown::Github;
 use Moo;
-
-has '_html' => is => 'ro', default => sub { HTML::Tiny->new };
 
 sub get {
    my ($self, $path) = @_;
@@ -16,6 +13,10 @@ sub get {
    $parser->parse_file($path->as_string);
 
    my $formatter = MCat::Markdown->new();
+
+   $markdown =~ s{\\}{}gmx;
+
+   $markdown = 'Nothing found' if length $markdown < 2;
 
    return $formatter->markdown($markdown);
 }
