@@ -35,9 +35,11 @@ after 'BUILD' => sub {
 set_table_name 'track';
 
 setup_resultset sub {
-   my $self = shift;
-   my $rs   = $self->context->model('Track');
+   my $self    = shift;
+   my $rs      = $self->context->model('Track');
+   my $options = { prefetch => { 'cd' => 'artist' } };
 
+   $rs = $rs->search({}, $options);
    $rs = $rs->search({ 'me.cdid' => $self->cdid }) if $self->has_cdid;
 
    return $rs unless $self->has_list_id;
@@ -73,6 +75,20 @@ has_column 'cd_title' =>
    sortable => TRUE,
    title    => 'Sort by CD title',
    value    => 'cd.title';
+
+has_column 'cd_artist' =>
+   hidden   => sub { shift->context->stash('cd') ? TRUE : FALSE },
+   label    => 'Artist',
+   link => sub {
+      my $self    = shift;
+      my $context = $self->table->context;
+      my $args    = [$self->result->cd->artistid];
+
+      return $context->uri_for_action('artist/view', $args);
+   },
+   sortable => TRUE,
+   title    => 'Sort by Artist',
+   value    => 'cd.artist.name';
 
 has_column 'cd_year' =>
    cell_traits => ['Date'],

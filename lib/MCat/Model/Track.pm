@@ -14,7 +14,7 @@ has '+moniker' => default => 'track';
 sub base : Auth('view') {
    my ($self, $context, $id) = @_;
 
-   my $method  = (split m{ / }mx, $context->stash('method_chain'))[-1];
+   my $method  = $context->endpoint;
    my $cdid    = $id if $method eq 'create' || $method eq 'list';
    my $trackid = $id if $method eq 'edit'   || $method eq 'view';
    my $nav     = $context->stash('nav')->list('track');
@@ -47,7 +47,7 @@ sub create : Nav('Create Track') {
 
    return $self->error($context, Unspecified, ['cdid']) unless $cdid;
 
-   my $form = $self->form->new_with_context('Track', {
+   my $form = $self->new_form('Track', {
       cdid       => $cdid,
       context    => $context,
       item_class => 'Track',
@@ -90,7 +90,7 @@ sub edit : Nav('Edit Track') {
    my ($self, $context, $trackid) = @_;
 
    my $track = $context->stash('track');
-   my $form  = $self->form->new_with_context('Track', {
+   my $form  = $self->new_form('Track', {
       cdid    => $track->cdid,
       context => $context,
       item    => $track,
@@ -119,7 +119,7 @@ sub list : Auth('view') Nav('Tracks|img/tracks.svg') {
       $options->{list_id} = $list_id;
    }
 
-   $context->stash(table => $self->table->new_with_context('Track', $options));
+   $context->stash(table => $self->new_table('Track', $options));
    return;
 }
 
@@ -140,7 +140,7 @@ sub view : Auth('view') Nav('View Track') {
       value     => 'Edit',
    }];
 
-   $context->stash(table => $self->table->new_with_context('View::Object', {
+   $context->stash(table => $self->new_table('View::Object', {
       caption      => 'Track View',
       context      => $context,
       form_buttons => $buttons,

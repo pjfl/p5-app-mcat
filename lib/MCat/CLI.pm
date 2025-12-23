@@ -118,8 +118,8 @@ file, and the import mapping
 
 sub import_file: method {
    my $self    = shift;
-   my $guid    = $self->options->{guid} or throw Unspecified, ['guid'];
-   my $id      = $self->options->{id} or throw Unspecified, ['id'];
+   my $id      = $self->options->{id}      or throw Unspecified, ['id'];
+   my $guid    = $self->options->{guid}    or throw Unspecified, ['guid'];
    my $user_id = $self->options->{user_id} or throw Unspecified, ['user_id'];
    my $rs      = $self->schema->resultset('Import');
    my $import  = $rs->find($id) or throw UnknownImport, [$id];

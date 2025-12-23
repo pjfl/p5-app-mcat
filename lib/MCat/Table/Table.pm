@@ -16,8 +16,6 @@ setup_resultset sub {
    return shift->context->model('Table');
 };
 
-has_column 'id' => cell_traits => ['Numeric'], width => '2rem';
-
 has_column 'name' =>
    link     => sub {
       my $self    = shift;
@@ -28,6 +26,8 @@ has_column 'name' =>
    sortable => TRUE,
    title    => 'Sort by name',
    width    => '20rem';
+
+has_column 'relation';
 
 use namespace::autoclean -except => TABLE_META;
 

@@ -11,11 +11,12 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
-with    'MCat::Role::FileMeta';
 with    'MCat::Role::JSONParser';
+with    'MCat::Role::FileMeta';
 
-has '+info_message' => default => 'You know what to do';
-has '+item_class'   => default => 'Import';
+has '+form_wrapper_class' => default => sub { ['narrow'] };
+has '+info_message'       => default => 'You know what to do';
+has '+item_class'         => default => 'Import';
 
 has 'extensions' => is => 'ro', isa => Str, default => 'csv';
 
@@ -68,10 +69,10 @@ has_field 'view' =>
    type          => 'Link',
    field_group   => '_g1',
    label         => 'View',
-   element_class => ['form-button pageload'],
-   wrapper_class => ['input-button', 'left'];
+   element_class => [qw(form-button pageload)],
+   wrapper_class => [qw(input-button left)];
 
-has_field 'submit' => field_group => '_g1', type => 'Button';
+has_field 'submit' => type => 'Button', field_group => '_g1';
 
 after 'before_build_fields' => sub {
    my $self     = shift;
@@ -136,7 +137,7 @@ after 'after_build_fields' => sub {
    my $params   = { extensions => $self->extensions };
    my $selector = $context->uri_for_action('file/select', [], $params);
    my $header   = $context->uri_for_action('file/header', ['%value']);
-   my $ds       = $context->config->wcom_resources->{data_structure};
+   my $ds       = $context->config->wcom_resources->{datastructure};
    my $modal    = $context->config->wcom_resources->{modal};
    my $reload   = $self->json_parser->encode({
       target => 'field_map',
@@ -157,10 +158,11 @@ after 'after_build_fields' => sub {
       my $view = $context->uri_for_action('import/view', [$self->item->id]);
 
       $self->field('view')->href($view->as_string);
-      $self->field('submit')->add_wrapper_class(['right']);
+      $self->field('submit')->add_wrapper_class('right');
    }
    else {
       $self->field('view')->inactive(TRUE);
+      $self->field('_g1')->add_wrapper_class('right');
    }
 
    return;

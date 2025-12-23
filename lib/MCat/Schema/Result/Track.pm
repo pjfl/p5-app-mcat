@@ -11,7 +11,7 @@ $class->table('track');
 $class->add_columns(
    trackid => {
       data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE,
-      label => 'Track ID'
+      label => 'Track ID', hidden => TRUE,
    },
    cdid => {
       data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE,
@@ -19,7 +19,8 @@ $class->add_columns(
    },
    title => { data_type => 'text', is_nullable => FALSE, label => 'Title' },
    import_log_id => {
-      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID'
+      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID',
+      display => 'import_log.guid',
    }
 );
 

@@ -21,6 +21,7 @@ $class->table('import');
 $class->add_columns(
    id => {
       data_type         => 'integer',
+      hidden            => TRUE,
       is_nullable       => FALSE,
       is_auto_increment => TRUE,
       label             => 'Import ID',
@@ -126,7 +127,7 @@ sub process {
    $import_log->update($log_attr);
    $self->update({ count => $count, guid => $guid, updated => $now });
 
-   return { count => $count, warnings => $warnings };
+   return { count => $inserted + $updated, warnings => $warnings };
 }
 
 # Private methods
@@ -166,9 +167,9 @@ sub _get_import_map {
 sub _get_import_record {
    my ($self, $import_map, $substitute, $line) = @_;
 
-   $self->_csv->parse($line);
+   $self->csv_parser->parse($line);
 
-   my @fields = $self->_csv->fields;
+   my @fields = $self->csv_parser->fields;
    my $record = {};
 
    for my $col_name (keys %{$import_map}) {

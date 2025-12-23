@@ -1,5 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.1.18
+ * @version 0.1.20
  * Colours */
 /* Dimensions */
 /* Font Sizes and Weights */
@@ -172,6 +172,7 @@
   margin: 0 auto;
   max-width: 20rem;
   position: static;
+  width: fit-content;
 }
 .filter-container .node-rule-wrapper .node-rule-box {
   border: 1px solid gray;
@@ -180,6 +181,7 @@
   cursor: pointer;
   font-size: 0.8rem;
   position: relative;
+  width: fit-content;
 }
 .filter-container .node-rule-wrapper .node-rule-box .node-rule-box-inner {
   min-width: 6rem;
@@ -403,19 +405,19 @@
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
   font-size: 0.8rem;
   line-height: 1rem;
+  min-width: 5rem;
   padding-right: 0.5rem;
   white-space: nowrap;
-}
-.filter-container .type-container label.type-negate {
-  padding-left: 0.25rem;
-  padding-top: 0.25rem;
 }
 .filter-container .type-container select {
   font-family: 'DejaVu Serif', 'Sitka Small', serif;
 }
 .filter-container .type-container select,
 .filter-container .type-container input {
-  max-width: 10rem;
+  max-width: 8rem !important;
+}
+.filter-container .type-container textarea {
+  min-width: unset !important;
 }
 .filter-container .type-container .type-date-relative input {
   text-align: right;
@@ -488,11 +490,6 @@
 .filter-container .type-container.type-date-relative-months,
 .filter-container .type-container.type-date-relative-years {
   margin-bottom: 0;
-}
-.filter-container .type-container.type-date-relative-days label,
-.filter-container .type-container.type-date-relative-months label,
-.filter-container .type-container.type-date-relative-years label {
-  min-width: 3.5rem;
 }
 .filter-container .type-container.type-numeric-value input.type-string {
   text-align: right;
@@ -595,6 +592,9 @@ form.classic .compound-field:has(.alert-info) {
 form.classic .compound-field.hide {
   display: none;
 }
+form.classic .compound-field.right {
+  justify-content: right;
+}
 form.classic .compound-field input:not([type=submit]) {
   max-width: 12rem !important;
 }
@@ -603,7 +603,8 @@ form.classic .compound-field .alert-info {
   border-radius: 5px;
   box-shadow: 3px 3px 3px gray;
   left: calc(var(--label-width) + 0.5rem);
-  padding: 0.25rem;
+  margin-left: -2px;
+  padding: 0.25rem 0.5rem;
   position: absolute;
   top: -2rem;
   white-space: nowrap;
@@ -614,7 +615,6 @@ form.classic .compound-field .input-field:not(.hide) .input-field {
 form.classic .form-wrapper {
   border-radius: 5px;
   min-width: 15rem;
-  max-width: 60rem;
   margin: 0;
   padding: 0 1rem 0.5rem;
   position: relative;
@@ -746,6 +746,7 @@ form.classic .input-field textarea:focus:not(.digit) {
   outline: 1px solid darkorange;
 }
 form.classic .input-field input {
+  border: 2px inset gainsboro;
   height: 1.75rem;
 }
 form.classic .input-field input:focus {
@@ -794,6 +795,7 @@ form.classic .input-field input:not([type=checkbox], [type=submit]):not(.digit) 
 }
 form.classic .input-field select {
   background: var(--button-bg);
+  border: 2px inset gainsboro;
   max-width: 12rem;
   min-width: 4rem;
   padding: 0.25rem;
@@ -811,6 +813,7 @@ form.classic .input-field select.select-multiple option[selected=selected] {
 }
 form.classic .input-field textarea {
   box-sizing: content-box;
+  border: 2px inset gainsboro;
   min-height: 3lh;
   max-width: 40rem;
   min-width: 18rem;
@@ -835,6 +838,7 @@ form.classic .input-field .alert-error {
 form.classic .input-field .alert-info {
   background: var(--bg-dark);
   box-shadow: 3px 3px 3px gray;
+  margin-left: -2px;
   min-width: 12.5rem;
 }
 form.classic .input-field .field-label {
@@ -1544,6 +1548,13 @@ body {
 .state-table.object-view td.boolean {
   text-align: left;
 }
+.state-table.object-view td a {
+  color: seagreen;
+  text-decoration: none;
+}
+.state-table.object-view td a:hover {
+  font-style: italic;
+}
 .state-table.object-view .caption {
   margin-left: 0.5rem;
 }
@@ -1556,6 +1567,7 @@ body {
   margin-right: 0;
 }
 .state-table.object-view .credit-control .table-button.right {
+  margin-right: 0;
   right: 0;
 }
 .state-table.object-view .state-table th:first-child a {
@@ -1867,6 +1879,12 @@ body {
 .state-table .dialog-close:hover {
   box-shadow: inset 0 0 3px gray;
   color: black;
+}
+.state-table .dialog-close.text {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-width: 1rem;
 }
 .state-table .dialog-close img,
 .state-table .dialog-close object {
@@ -2197,6 +2215,8 @@ body {
 }
 .state-table .search-box .search-wrapper .search-button button {
   height: 1.75rem;
+}
+.state-table .search-box .search-wrapper .search-button button:has(.icon-wrapper) {
   padding: 2px 0.5rem 0 0.25rem;
 }
 .state-table .search-box .search-wrapper .search-button button .icon-wrapper {
@@ -2614,6 +2634,17 @@ footer .footer-container .secondary-link {
   isolation: isolate;
   position: relative;
 }
+.navigation li.global:hover[data-title]::after,
+.sidebar li.global:hover[data-title]::after {
+  background: khaki;
+  border: 1px solid gray;
+  border-radius: 5px;
+  content: attr(data-title);
+  font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  position: absolute;
+}
 .navigation li.global:hover .nav-panel,
 .sidebar li.global:hover .nav-panel {
   max-height: 32rem;
@@ -2703,6 +2734,19 @@ footer .footer-container .secondary-link {
 .sidebar .nav-control a {
   display: inline-block;
   padding: 0.375rem 0.375rem 0.625rem;
+}
+.navigation .nav-control a[data-title]:hover::after,
+.sidebar .nav-control a[data-title]:hover::after {
+  background: khaki;
+  border: 1px solid gray;
+  border-radius: 5px;
+  content: attr(data-title);
+  font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  position: absolute;
+  right: 2.25rem;
+  top: 0.375rem;
 }
 .navigation .nav-control img,
 .sidebar .nav-control img {
@@ -3059,6 +3103,10 @@ footer .footer-container .secondary-link {
 .navigation.nav-link-text::before {
   width: 6rem;
 }
+.navigation li.global[data-title]:hover::after {
+  right: 2.75rem;
+  top: 0.375rem;
+}
 .navigation .nav-list.context li.context a,
 .navigation .nav-list.context li.context .drop-menu {
   padding: 0.5rem !important;
@@ -3150,6 +3198,10 @@ footer .footer-container .secondary-link {
 .sidebar.nav-link-text .nav-menu {
   width: 6rem;
 }
+.sidebar li.global[data-title]:hover::after {
+  left: 0;
+  top: -0.4375rem;
+}
 .sidebar .nav-list.context li.context.selected::before {
   background: seagreen;
   border-radius: 2px;
@@ -3181,6 +3233,9 @@ footer .footer-container .secondary-link {
 }
 .sidebar .nav-list.global li.global:first-child {
   padding-top: 0;
+}
+.sidebar .nav-list.global li.global:first-child:hover::after {
+  top: -0.875rem;
 }
 .sidebar .nav-list.global li.global:first-child .nav-panel {
   top: 0.6875rem;
@@ -3267,9 +3322,9 @@ footer .footer-container .secondary-link {
 .documentation pre {
   margin: 0 0 1rem 2rem;
 }
-.documentation pre code.code,
-.documentation pre code.perl {
+.documentation pre code {
   font-family: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
+  font-size: 0.8rem;
 }
 .file-preview p,
 .file-preview pre {

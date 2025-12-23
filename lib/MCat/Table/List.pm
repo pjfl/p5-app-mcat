@@ -14,8 +14,6 @@ setup_resultset sub {
    return shift->context->model('List');
 };
 
-has_column 'id' => cell_traits => ['Numeric'], width => '2rem';
-
 has_column 'name' =>
    link     => sub {
       my $self    = shift;

@@ -15,6 +15,11 @@ has '+form_buttons' => default => sub {
    my $id       = $self->result->id;
 
    return [{
+      action    => $context->uri_for_action('list/list'),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Lists',
+   },{
       action    => $context->uri_for_action('list/update', [$id]),
       method    => 'get',
       selection => 'disable_on_select',
@@ -24,6 +29,12 @@ has '+form_buttons' => default => sub {
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'View Content',
+   },{
+      action    => $context->uri_for_action('list/edit', [$id]),
+      classes   => 'right',
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Edit',
    }];
 };
 

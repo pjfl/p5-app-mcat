@@ -85,7 +85,7 @@ sub options_assigned {
 
    my $accessor; $accessor = $field->parent->full_accessor if $field->parent;
 
-   return [ NUL, NUL, @{$self->lookup_options($field, $accessor) // []} ];
+   return [ NUL, 'Nobody', @{$self->lookup_options($field, $accessor) // []} ];
 }
 
 has_field 'view' =>

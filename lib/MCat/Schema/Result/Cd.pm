@@ -12,7 +12,7 @@ $class->table('cd');
 $class->add_columns(
    cdid => {
       data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE,
-      label => 'CD ID'
+      label => 'CD ID', hidden => TRUE,
    },
    artistid => {
       data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE,
@@ -24,7 +24,8 @@ $class->add_columns(
       label => 'Released', cell_traits => ['Date']
    },
    import_log_id => {
-      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID'
+      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID',
+      display => 'import_log.guid',
    }
 );
 

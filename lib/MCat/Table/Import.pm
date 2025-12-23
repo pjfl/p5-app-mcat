@@ -16,8 +16,6 @@ setup_resultset sub {
    return shift->context->model('Import');
 };
 
-has_column 'id' => cell_traits => ['Numeric'], width => '2rem';
-
 has_column 'name' =>
    link     => sub {
       my $self    = shift;
@@ -30,6 +28,8 @@ has_column 'name' =>
    width    => '20rem';
 
 has_column 'table_id' => label => 'Table', value => 'core_table.name';
+
+has_column 'count' => label => 'Imported Total';
 
 use namespace::autoclean -except => TABLE_META;
 

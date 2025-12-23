@@ -3,7 +3,9 @@ package MCat::Role::FileMeta;
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( escape_formula );
+use Type::Utils                 qw( class_type );
 use Unexpected::Functions       qw( throw );
+use Text::CSV_XS;
 use Moo::Role;
 
 with 'MCat::Role::CSVParser';
@@ -69,6 +71,7 @@ sub meta_get_header {
 
    $line = substr $line, 1 if ord(substr $line, 0, 1) == 65279; # Remove BOM
    $line = substr $line, 1 if substr $line, 0, 1 eq '#';
+
    $self->csv_parser->parse($line);
 
    my @fields = $self->csv_parser->fields;

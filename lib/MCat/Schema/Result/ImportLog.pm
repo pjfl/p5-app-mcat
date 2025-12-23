@@ -12,6 +12,7 @@ $class->table('import_log');
 $class->add_columns(
    import_log_id => {
       data_type         => 'integer',
+      hidden            => TRUE,
       is_auto_increment => TRUE,
       is_nullable       => FALSE,
       label             => 'Import Log ID'

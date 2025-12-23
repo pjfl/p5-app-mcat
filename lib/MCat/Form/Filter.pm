@@ -12,14 +12,11 @@ extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::JSONParser';
 
-has '+name'                => default => 'edit_filter';
-has '+title'               => default => 'Filter';
-has '+default_wrapper_tag' => default => 'fieldset';
-has '+do_form_wrapper'     => default => TRUE;
-has '+form_element_class'  => default => sub { ['wide'] };
-has '+info_message'        => default => 'You know what to do';
-has '+is_html5'            => default => TRUE;
-has '+item_class'          => default => 'Filter';
+has '+name'         => default => 'edit_filter';
+has '+title'        => default => 'Filter';
+has '+info_message' => default => 'You know what to do';
+has '+is_html5'     => default => TRUE;
+has '+item_class'   => default => 'Filter';
 
 has 'filter_config' =>
    is          => 'lazy',
@@ -43,7 +40,7 @@ has 'filter_config' =>
       };
    };
 
-has 'editor_min_width' => is => 'ro', isa => Int, default => 250;
+has 'editor_min_width' => is => 'ro', isa => Int, default => '288';
 
 has_field 'name' => required => TRUE;
 

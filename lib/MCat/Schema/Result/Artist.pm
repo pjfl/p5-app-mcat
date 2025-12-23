@@ -1,6 +1,6 @@
 package MCat::Schema::Result::Artist;
 
-use HTML::Forms::Constants qw( FALSE TRUE );
+use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -13,7 +13,7 @@ $class->table('artist');
 $class->add_columns(
    artistid => {
       data_type => 'integer', is_nullable => FALSE, is_auto_increment => TRUE,
-      label => 'Artist ID'
+      label => 'Artist ID', hidden => TRUE,
    },
    name => { data_type => 'text', is_nullable => FALSE, label => 'Name' },
    active => {
@@ -25,7 +25,8 @@ $class->add_columns(
       label => 'Upvotes'
    },
    import_log_id => {
-      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID'
+      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID',
+      display => \&_import_log_link,
    }
 );
 
@@ -58,5 +59,14 @@ $class->belongs_to(
    'import_log' => "${result}::ImportLog",
    { 'foreign.import_log_id' => 'self.import_log_id' }
 );
+
+# Private functions
+sub _import_log_link {
+   my $table = shift;
+   my $log   = $table->result->import_log or return NUL;
+   my $link  = $table->context->uri_for_action('importlog/view', [$log->id]);
+
+   return MCat::Object::Link->new({ link => $link , value => $log->guid });
+}
 
 1;

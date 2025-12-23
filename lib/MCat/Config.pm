@@ -826,13 +826,13 @@ has 'wcom_resources' =>
    isa     => HashRef[Str],
    default => sub {
       return {
-         data_structure => 'WCom.Form.DataStructure.manager',
+         datastructure  => 'WCom.Form.DataStructure',
          downloadable   => 'WCom.Table.Role.Downloadable',
          form_util      => 'WCom.Form.Util',
          markup         => 'WCom.Util.Markup',
          modal          => 'WCom.Modal',
-         navigation     => 'WCom.Navigation.manager',
-         table_renderer => 'WCom.Table.Renderer.manager',
+         navigation     => 'WCom.Navigation',
+         table_renderer => 'WCom.Table.Renderer',
       };
    };
 

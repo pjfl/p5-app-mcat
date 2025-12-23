@@ -19,6 +19,7 @@ $class->table('filter');
 $class->add_columns(
    id => {
       data_type         => 'integer',
+      hidden            => TRUE,
       is_auto_increment => TRUE,
       is_nullable       => FALSE,
       label             => 'Filter ID',
@@ -45,7 +46,8 @@ $class->add_columns(
       hidden    => TRUE,
    },
    filter_search => {
-      data_type => 'text', is_nullable => FALSE, label => 'Abstract'
+      data_type => 'text', is_nullable => FALSE, label => 'Abstract',
+      hidden    => TRUE,
    },
 );
 
