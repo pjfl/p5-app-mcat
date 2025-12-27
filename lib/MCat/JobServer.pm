@@ -15,7 +15,7 @@ with 'MCat::Role::Log';
 has 'lock' =>
    is      => 'lazy',
    isa     => class_type('IPC::SRLock'),
-   default => sub { $_[0]->_lock_class->new(builder => $_[0]) };
+   default => sub { $_[0]->_lock_class->new($_[0]->config->lock_attributes) };
 
 has '_lock_class' =>
    is      => 'lazy',

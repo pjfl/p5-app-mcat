@@ -1,6 +1,6 @@
 package MCat::Config;
 
-use MCat::Constants        qw( FALSE NUL SECRET TRUE );
+use MCat::Constants        qw( FALSE NUL TRUE );
 use IO::Socket::SSL        qw( SSL_VERIFY_NONE );
 use File::DataClass::Types qw( ArrayRef Bool Directory File HashRef
                                LoadableClass Object OctalNum Path
@@ -126,7 +126,7 @@ has 'connect_info' =>
    isa     => ArrayRef,
    default => sub {
       my $self     = shift;
-      my $password = decrypt SECRET, $self->db_password;
+      my $password = decrypt NUL, $self->db_password;
 
       return [$self->dsn, $self->db_username, $password, $self->db_extra];
    };
@@ -376,7 +376,8 @@ has 'local_tz' => is => 'ro', isa => Str, default => 'Europe/London';
 
 =item lock_attributes
 
-Configuration attributes for the L<lock manager|IPC::SRLock>. Currently unused
+Configuration attributes for the L<lock manager|IPC::SRLock>. Used by
+L<App::Job::Daemon>
 
 =cut
 
@@ -580,14 +581,15 @@ has 'request' =>
          serialise_session_attr => [ qw( id ) ],
          session_attr => {
             base_colour   => [ Str, $self->default_base_colour ],
+            bling         => [ Bool, FALSE ],
             email         => [ Str, NUL ],
             enable_2fa    => [ Bool, FALSE ],
             id            => [ PositiveInt, 0 ],
             link_display  => [ Str, 'both' ],
             menu_location => [ Str, 'header' ],
             realm         => [ Str, NUL ],
+            rel_colour    => [ Bool, FALSE ],
             role          => [ Str, NUL ],
-            shiny         => [ Bool, FALSE ],
             skin          => [ Str, $self->skin ],
             theme         => [ Str, 'light' ],
             timezone      => [ Str, local_tz ],

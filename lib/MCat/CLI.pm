@@ -205,11 +205,12 @@ sub make_css : method {
    $self->make_less;
    $dir->filter(sub { m{ \.css \z }mx })->visit(sub { push @files, shift });
 
-   my $skin  = $self->config->skin;
-   my $file  = "mcat-${skin}.css";
-   my $out   = io([qw( var root css ), $file])->assert_open('a')->truncate(0);
-   my $count =()= map  { $out->append($_->slurp) }
-                  sort { $a->name cmp $b->name } @files;
+   my $skin   = $self->config->skin;
+   my $prefix = $self->config->prefix;
+   my $file   = "${prefix}-${skin}.css";
+   my $out    = io([qw( var root css ), $file])->assert_open('a')->truncate(0);
+   my $count  =()= map  { $out->append($_->slurp) }
+                   sort { $a->name cmp $b->name } @files;
    my $options = { name => 'CLI.make_css' };
 
    $self->info("Concatenated ${count} files to ${file}", $options);
@@ -231,10 +232,11 @@ sub make_js : method {
    $self->_populate_share_files($dir, 'js');
    $dir->filter(sub { m{ \.js \z }mx })->visit(sub { push @files, shift });
 
-   my $file  = 'mcat.js';
-   my $out   = io([qw( var root js ), $file])->assert_open('a')->truncate(0);
-   my $count =()= map  { $out->appendln($self->_strip_comments($_->slurp)) }
-                  sort { $a->name cmp $b->name } @files;
+   my $prefix = $self->config->prefix;
+   my $file   = "${prefix}.js";
+   my $out    = io([qw( var root js ), $file])->assert_open('a')->truncate(0);
+   my $count  =()= map  { $out->appendln($self->_strip_comments($_->slurp)) }
+                   sort { $a->name cmp $b->name } @files;
    my $options = { name => 'CLI.make_js' };
 
    $self->info("Concatenated ${count} files to ${file}", $options);
@@ -257,10 +259,12 @@ sub make_less : method {
    $dir->filter(sub { m{ \.less \z }mx })->visit(sub { push @files, shift });
    ensure_class_loaded('CSS::LESS');
 
-   my $file  = 'mcat.css';
-   my $out   = io([qw( share css ), $file])->assert_open('a')->truncate(0);
-   my $count =()= map  { $out->append(CSS::LESS->new()->compile($_->all)) }
-                  sort { $a->name cmp $b->name } @files;
+   my $prefix = $self->config->prefix;
+   my $file   = "${prefix}.css";
+   my $out    = io([qw( share css ), $file])->assert_open('a')->truncate(0);
+   my $lessc  = CSS::LESS->new(include_paths => ["${dir}"]);
+   my $count  =()= map  { $out->append($lessc->compile($_->all)) }
+                   sort { $a->name cmp $b->name } @files;
    my $options = { name => 'CLI.make_less' };
 
    $self->info("Concatenated ${count} files to ${file}", $options);

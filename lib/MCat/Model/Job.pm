@@ -5,7 +5,7 @@ use MCat::Util             qw( redirect redirect2referer );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
-extends 'MCat::Model';
+extends 'MCat::Model'; # Jobdaemon provided by schema role applied to model
 with    'Web::Components::Role';
 
 has '+moniker' => default => 'job';

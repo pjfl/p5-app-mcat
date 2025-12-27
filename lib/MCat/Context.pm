@@ -3,7 +3,7 @@ package MCat::Context;
 use attributes ();
 
 use Class::Usul::Cmd::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use Unexpected::Types           qw( ArrayRef Bool HashRef Str );
+use Unexpected::Types           qw( ArrayRef Bool HashRef Int Str );
 use HTML::Forms::Util           qw( get_token verify_token );
 use List::Util                  qw( pairs );
 use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
@@ -50,15 +50,15 @@ has 'response' =>
 
 has 'session' => is => 'lazy', default => sub { shift->request->session };
 
-has 'shiny' =>
-   is      => 'lazy',
-   isa     => Bool,
-   default => sub { shift->session->shiny ? TRUE : FALSE };
-
 has 'time_zone' =>
    is      => 'lazy',
    isa     => Str,
    default => sub { shift->session->timezone };
+
+has 'token_lifetime' =>
+   is      => 'lazy',
+   isa     => Int,
+   default => sub { shift->config->token_lifetime };
 
 has 'views' => is => 'ro', isa => HashRef, default => sub { {} };
 
@@ -76,16 +76,19 @@ has '_stash' =>
    isa     => HashRef,
    default => sub {
       my $self   = shift;
-      my $prefix = $self->config->prefix;
-      my $skin   = $self->session->skin || $self->config->skin;
+      my $config = $self->config;
+      my $prefix = $config->prefix;
+      my $skin   = $self->session->skin || $config->skin;
 
       return {
+         bling              => $self->session->bling ? 'bling' : NUL,
          chartlibrary       => 'js/highcharts.js',
          favicon            => 'img/favicon.ico',
          javascript         => "js/${prefix}.js",
+         relative_colour    => $self->session->rel_colour ? 'relative' : NUL,
          session_updated    => $self->session->updated,
-         stylesheet         => "css/${prefix}-${skin}.css",
          skin               => $skin,
+         stylesheet         => "css/${prefix}-${skin}.css",
          theme              => $self->session->theme,
          verification_token => $self->verification_token,
          version            => MCat->VERSION,
