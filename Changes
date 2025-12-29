@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Added state cookie lifetime as a separate configuration attribute
           - Testing links [Issue](bug/1)
           - Removes references to JS manager objects
           - Adds CSV and JSON parser roles

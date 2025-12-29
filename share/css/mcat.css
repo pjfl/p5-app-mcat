@@ -1,13 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.33
- * Breaks */
-/* Colours */
-/* #ffe4c4 hsl(33, 100%, 88%) */
-/* Dimensions */
-/* Font Sizes and Weights */
-/* --------------------------------- */
-/* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.33
+ * @version 0.13.34
  */
 /* Breaks */
 /* Colours */
@@ -18,7 +10,7 @@
  * @version 0.13.32
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.33
+ * @version 0.13.34
  */
 /* Breaks */
 /* Colours */
@@ -1304,10 +1296,10 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.1.98
+ * @version 0.1.100
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.33
+ * @version 0.13.34
  */
 /* Breaks */
 /* Colours */
@@ -1369,6 +1361,7 @@ form.classic .form-wrapper.wide {
 form.classic > .alert-info,
 form.classic .form-wrapper > .alert-info,
 form.classic .form-page > .alert-info {
+  max-width: 40rem;
   padding-bottom: 0.5rem;
   padding-top: 0.5rem;
 }
@@ -1405,6 +1398,9 @@ form.classic .compound-field .alert-info {
   position: absolute;
   top: -2rem;
   white-space: nowrap;
+}
+form.classic .compound-field .input-button.right {
+  right: 0;
 }
 form.classic .compound-field .input-field:not(.hide) .input-field {
   padding-bottom: 0;
@@ -2060,6 +2056,16 @@ form.classic .input-hidden.input-error {
 form.classic .input-hidden.input-error .alert-error {
   max-width: 18rem;
 }
+form.classic .input-immutable.documentation {
+  height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: block mandatory;
+}
+form.classic .input-immutable.documentation h2 {
+  scroll-snap-align: start;
+}
 form.classic .input-immutable.documentation .comma {
   color: sienna;
   font-size: 1rem;
@@ -2109,6 +2115,10 @@ form.classic .input-immutable.documentation .object,
 form.classic .input-immutable.documentation .start-inline-array .level_2 {
   padding-left: 2rem;
 }
+form.classic .input-immutable.documentation .data,
+form.classic .input-immutable.documentation .value {
+  background: var(--bg-lighter);
+}
 form.classic .input-immutable.documentation .start-array {
   padding-right: 0.5rem;
 }
@@ -2140,7 +2150,7 @@ form.classic .input-immutable a {
 form.classic .input-immutable code,
 form.classic .input-immutable p {
   line-height: 1.25rem;
-  max-width: 50rem;
+  max-width: 40rem;
 }
 form.classic .input-immutable code {
   font-family: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
@@ -2150,14 +2160,14 @@ form.classic .input-immutable code {
 form.classic .input-immutable p {
   font-size: 1rem;
 }
+form.classic .input-immutable p:has(.start-object) {
+  margin-bottom: 0;
+}
 form.classic .input-immutable p code {
   font-size: 0.9rem;
 }
 form.classic .input-immutable pre {
   white-space: break-spaces;
-}
-form.classic .input-immutable p:has(.start-object) {
-  margin-bottom: 0;
 }
 form.classic .input-integer .digit {
   border-left: none;
@@ -2236,6 +2246,9 @@ form.classic .page-wrapper .form-page.fade {
 form.classic .page-wrapper .form-page.hide {
   display: none;
 }
+form.classic .page-wrapper .form-page .input-button.right {
+  right: 0;
+}
 .form-error {
   background: lightpink;
   border: 1px solid gray;
@@ -2313,6 +2326,12 @@ form.classic .page-wrapper .form-page.hide {
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.1.21
  * Colours */
+/* @author  pjfl@cpan.org (Peter Flanigan)
+ * @version 0.13.34
+ */
+/* Breaks */
+/* Colours */
+/* #ffe4c4 hsl(33, 100%, 88%) */
 /* Dimensions */
 /* Font Sizes and Weights */
 .filter-container {
@@ -2477,7 +2496,7 @@ form.classic .page-wrapper .form-page.hide {
   top: 50%;
 }
 .filter-container .node-rule-wrapper {
-  background: ivory;
+  background: var(--bg-lighter);
   border-radius: 5px;
   box-shadow: 3px 3px 3px;
   color: gray;
@@ -2530,8 +2549,8 @@ form.classic .page-wrapper .form-page.hide {
 }
 .filter-container .node-rule-wrapper .node-rule-box .node-rule-title-wrapper {
   align-items: center;
-  background: linen;
-  border-bottom: 1px solid orange;
+  background: var(--bg-light);
+  border-bottom: 1px solid darkorange;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   display: flex;
@@ -2602,7 +2621,7 @@ form.classic .page-wrapper .form-page.hide {
   display: none;
 }
 .filter-container .node-rule-wrapper #node-selected {
-  border: 3px solid orange;
+  border: 3px solid darkorange;
 }
 .filter-container .node-rule-wrapper #node-selected .node-rule-add-and {
   margin-bottom: -14px;
@@ -2614,7 +2633,7 @@ form.classic .page-wrapper .form-page.hide {
   max-width: 8rem;
 }
 .filter-container .rule-editor {
-  background: ivory;
+  background: var(--bg-lighter);
   border-radius: 5px;
   box-shadow: 3px 3px 3px;
   color: gray;
@@ -2644,7 +2663,7 @@ form.classic .page-wrapper .form-page.hide {
 .filter-container .rule-editor .node-rule-edit-container button span {
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
   font-size: 0.7rem;
-  font-weight: 415;
+  font-weight: normal;
   letter-spacing: 0.1rem;
   position: relative;
   text-decoration: none;
@@ -2656,7 +2675,7 @@ form.classic .page-wrapper .form-page.hide {
   color: black;
 }
 .filter-container .rule-editor .node-rule-edit-container button::before {
-  background: radial-gradient(limegreen, transparent, transparent);
+  background: var(--button-bg-highlight);
   content: '';
   display: block;
   height: 3rem;
@@ -2682,7 +2701,7 @@ form.classic .page-wrapper .form-page.hide {
 }
 .filter-container .rule-editor .node-rule-edit-container button[disabled=disabled],
 .filter-container .rule-editor .node-rule-edit-container button[disabled=disabled]::after {
-  background: linear-gradient(0deg, gainsboro, whitesmoke);
+  background: var(--button-bg-disabled);
 }
 .filter-container .rule-editor .node-rule-edit-container .node-rule-edit {
   border-collapse: separate;
@@ -2709,7 +2728,7 @@ form.classic .page-wrapper .form-page.hide {
 .filter-container .type-container input[type=text] {
   border-radius: 5px;
   font-family: 'DejaVu Serif', 'Sitka Small', serif;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: normal;
   margin-right: 0.5rem;
 }
@@ -2815,7 +2834,7 @@ form.classic .page-wrapper .form-page.hide {
   vertical-align: top;
 }
 .filter-resizer {
-  background: linen;
+  background: var(--bg-light);
   bottom: 0;
   cursor: row-resize;
   font-size: 1px;
@@ -2828,7 +2847,7 @@ form.classic .page-wrapper .form-page.hide {
  * @version 0.2.28
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.33
+ * @version 0.13.34
  */
 /* Breaks */
 /* Colours */
@@ -2907,36 +2926,36 @@ body {
 .state-table caption {
   display: none;
 }
-.state-table table:not(.object-view):not(.preference-columns) {
+.state-table table:not(.object-view, .preference-columns) {
   border-collapse: collapse;
   margin: 0.25rem auto 0.5rem;
   position: relative;
 }
-.state-table table:not(.object-view):not(.preference-columns) tr {
+.state-table table:not(.object-view, .preference-columns) tr {
   line-height: 1.5rem;
 }
-.state-table table:not(.object-view):not(.preference-columns) tr.even {
+.state-table table:not(.object-view, .preference-columns) tr.even {
   background: var(--bg-lighter);
 }
-.state-table table:not(.object-view):not(.preference-columns) tr.odd {
+.state-table table:not(.object-view, .preference-columns) tr.odd {
   background: var(--bg-light);
 }
-.state-table table:not(.object-view):not(.preference-columns) tr.highlight {
+.state-table table:not(.object-view, .preference-columns) tr.highlight {
   background: lightpink;
 }
-.state-table table:not(.object-view):not(.preference-columns) tr.inactive {
+.state-table table:not(.object-view, .preference-columns) tr.inactive {
   background: gainsboro;
 }
-.state-table table:not(.object-view):not(.preference-columns) th,
-.state-table table:not(.object-view):not(.preference-columns) td {
+.state-table table:not(.object-view, .preference-columns) th,
+.state-table table:not(.object-view, .preference-columns) td {
   color: black;
   padding: 0 0.5rem;
 }
-.state-table table:not(.object-view):not(.preference-columns) th:last-child,
-.state-table table:not(.object-view):not(.preference-columns) td:last-child {
+.state-table table:not(.object-view, .preference-columns) th:last-child,
+.state-table table:not(.object-view, .preference-columns) td:last-child {
   border-right: 0;
 }
-.state-table table:not(.object-view):not(.preference-columns) th {
+.state-table table:not(.object-view, .preference-columns) th {
   background: var(--bg-lighter);
   border-right: 1px solid gray;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
@@ -2946,60 +2965,60 @@ body {
   text-align: left;
   white-space: nowrap;
 }
-.state-table table:not(.object-view):not(.preference-columns) th:has(a.filter-control) .column-header {
+.state-table table:not(.object-view, .preference-columns) th:has(a.filter-control) .column-header {
   padding-right: 20px;
 }
-.state-table table:not(.object-view):not(.preference-columns) th.active-sort-column {
+.state-table table:not(.object-view, .preference-columns) th.active-sort-column {
   background: var(--bg-base);
 }
-.state-table table:not(.object-view):not(.preference-columns) th a {
+.state-table table:not(.object-view, .preference-columns) th a {
   color: black;
   cursor: pointer;
 }
-.state-table table:not(.object-view):not(.preference-columns) th a:hover {
+.state-table table:not(.object-view, .preference-columns) th a:hover {
   font-style: oblique;
 }
-.state-table table:not(.object-view):not(.preference-columns) th a.filter-control {
+.state-table table:not(.object-view, .preference-columns) th a.filter-control {
   color: gray;
   opacity: 50%;
   position: absolute;
   right: 0;
 }
-.state-table table:not(.object-view):not(.preference-columns) th .column-header {
+.state-table table:not(.object-view, .preference-columns) th .column-header {
   display: inline-block;
 }
-.state-table table:not(.object-view):not(.preference-columns) td {
+.state-table table:not(.object-view, .preference-columns) td {
   border-right: 1px solid transparent;
   font-family: 'DejaVu Serif', 'Sitka Small', serif;
   font-size: 0.9rem;
   font-weight: normal;
 }
-.state-table table:not(.object-view):not(.preference-columns) td.boolean,
-.state-table table:not(.object-view):not(.preference-columns) td.checkbox,
-.state-table table:not(.object-view):not(.preference-columns) td:has(svg.icon) {
+.state-table table:not(.object-view, .preference-columns) td.boolean,
+.state-table table:not(.object-view, .preference-columns) td.checkbox,
+.state-table table:not(.object-view, .preference-columns) td:has(svg.icon) {
   text-align: center;
 }
-.state-table table:not(.object-view):not(.preference-columns) td.datetime {
+.state-table table:not(.object-view, .preference-columns) td.datetime {
   text-align: right;
   white-space: nowrap;
 }
-.state-table table:not(.object-view):not(.preference-columns) td.number {
+.state-table table:not(.object-view, .preference-columns) td.number {
   text-align: right;
 }
-.state-table table:not(.object-view):not(.preference-columns) td.remainder {
+.state-table table:not(.object-view, .preference-columns) td.remainder {
   word-wrap: anywhere;
 }
-.state-table table:not(.object-view):not(.preference-columns) td a[href^='http'] {
+.state-table table:not(.object-view, .preference-columns) td a[href^='http'] {
   color: seagreen;
   font-weight: normal;
   text-decoration: none;
 }
-.state-table table:not(.object-view):not(.preference-columns) td a:active,
-.state-table table:not(.object-view):not(.preference-columns) td a:focus,
-.state-table table:not(.object-view):not(.preference-columns) td a:hover {
+.state-table table:not(.object-view, .preference-columns) td a:active,
+.state-table table:not(.object-view, .preference-columns) td a:focus,
+.state-table table:not(.object-view, .preference-columns) td a:hover {
   font-style: oblique;
 }
-.state-table table:not(.object-view):not(.preference-columns) td svg.icon {
+.state-table table:not(.object-view, .preference-columns) td svg.icon {
   height: 20px;
   width: 20px;
   vertical-align: text-bottom;
@@ -3058,6 +3077,7 @@ body {
 .state-table .bottom-control,
 .state-table .top-control {
   display: none;
+  padding-bottom: 0.25rem;
   position: relative;
 }
 .state-table .bottom-control.visible,
@@ -3077,17 +3097,12 @@ body {
   display: flex;
   gap: 0.5rem;
 }
-@media (max-width: 480px) {
-  .state-table .bottom-left-control,
-  .state-table .bottom-right-control {
-    max-width: 235px;
-  }
-}
 .state-table .caption {
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
   font-weight: normal;
   line-height: 1.5rem;
   margin: 0;
+  padding-bottom: 0.25rem;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -3095,6 +3110,8 @@ body {
 .state-table .title-control {
   display: flex;
   flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 .state-table .credit-control:empty,
 .state-table .title-control:empty {
@@ -3165,7 +3182,7 @@ body {
 }
 .state-table .cell-tag .tag-value.breadcrumbs {
   border-radius: 3px 0 0 3px;
-  font-size: medium;
+  font-size: 0.9rem;
   padding: 0.25rem;
   text-decoration: none;
 }
@@ -3576,7 +3593,6 @@ body {
   color: black;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
   font-size: 0.8rem;
-  margin-top: 0.25rem;
   padding: 0.25rem 0.5rem;
   text-align: center;
 }
@@ -3688,13 +3704,6 @@ body {
   display: inline-flex;
   gap: 0.5rem;
   justify-content: flex-start;
-  margin-top: 0.25rem;
-}
-@media (max-width: 480px) {
-  .state-table .top-left-control,
-  .state-table .top-right-control {
-    max-width: 235px;
-  }
 }
 @media (max-width: 680px) {
   .state-table table:not(.object-view, .preference-columns) th,

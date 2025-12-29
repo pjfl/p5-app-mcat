@@ -17,9 +17,12 @@ sub base : Auth('none') {
    my $nav = $context->stash('nav')->list('bugs');
 
    if ($bugid) {
-      my $bug = $context->model('Bug')->find($bugid, {
-         prefetch => { attachments => 'owner', comments => 'owner' }
-      });
+      my $bug = $context->model('Bug')->find($bugid, { prefetch => [
+         'owner',
+         'assigned',
+         { attachments => 'owner' },
+         { comments    => 'owner' },
+      ]});
 
       return $self->error($context, UnknownBug, [$bugid]) unless $bug;
 

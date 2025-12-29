@@ -46,9 +46,10 @@ has 'type' =>
    default => sub { shift->path->is_file ? 'file' : 'directory' };
 
 has_field 'shared' =>
-   type => 'Boolean',
-   info => 'Shared files are accessible to the network via the web servers '
-         . 'document root';
+   type     => 'Boolean',
+   info     => 'Shared files are accessible to the network via the web '
+             . 'servers document root',
+   info_top => TRUE;
 
 sub default_shared {
    my $self    = shift;

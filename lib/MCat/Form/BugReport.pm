@@ -55,6 +55,20 @@ has_field 'title' => required => TRUE;
 
 has_field 'description' => type => 'TextArea', required => TRUE, rows => 4;
 
+# has_field 'reporter' =>
+#    type         => 'Select',
+#    label_column => 'name',
+#    required     => TRUE;
+
+# sub options_reporter {
+#    my $self  = shift;
+#    my $field = $self->field('reporter');
+
+#    my $accessor; $accessor = $field->parent->full_accessor if $field->parent;
+
+#    return [ @{$self->lookup_options($field, $accessor) // []} ];
+# }
+
 has_field 'user_id' => type => 'Hidden', disabled => TRUE;
 
 has_field 'owner' =>
@@ -182,35 +196,8 @@ after 'after_build_fields' => sub {
 
    $self->renderer_args->{current_page} = $self->current_page;
 
-   if ($self->item) {
-      $self->field('updated')->inactive(TRUE) unless $self->item->updated;
-      $self->field('state')->inactive(TRUE) unless $self->is_editor;
-      $self->info_message([
-         'Update the bug report details',
-         'Update the bug report comments',
-         'Files attached to the bug report'
-      ]);
-
-      my $view = $context->uri_for_action('bug/view', [$self->item->id]);
-
-      $self->field('view')->href($view->as_string);
-      $self->field('submit1')->add_wrapper_class(['inline', 'right']);
-   }
-   else {
-      $self->field('id')->inactive(TRUE);
-      $self->field('assigned')->inactive(TRUE);
-      $self->field('created')->inactive(TRUE);
-      $self->field('owner')->inactive(TRUE);
-      $self->field('state')->inactive(TRUE);
-      $self->field('updated')->inactive(TRUE);
-      $self->field('updated')->inactive(TRUE);
-      $self->field('attachments')->inactive(TRUE);
-      $self->field('view')->inactive(TRUE);
-      $self->info_message([
-         'Enter the bug report details',
-         'Enter the bug report comments',
-      ]);
-   }
+   if ($self->item) { $self->_field_state_edit }
+   else { $self->_field_state_create }
 
    my $tz = $context->time_zone;
 
@@ -304,6 +291,44 @@ sub _deflate_comments {
    }
 
    return $comments;
+}
+
+sub _field_state_create {
+   my $self = shift;
+
+   $self->field('id')->inactive(TRUE);
+   $self->field('assigned')->inactive(TRUE);
+   $self->field('created')->inactive(TRUE);
+   $self->field('owner')->inactive(TRUE);
+   $self->field('state')->inactive(TRUE);
+   $self->field('updated')->inactive(TRUE);
+   $self->field('updated')->inactive(TRUE);
+   $self->field('attachments')->inactive(TRUE);
+   $self->field('view')->inactive(TRUE);
+   $self->info_message([
+      'Enter the bug report details',
+      'Enter the bug report comments',
+   ]);
+
+   return;
+}
+
+sub _field_state_edit {
+   my $self = shift;
+
+   $self->field('updated')->inactive(TRUE) unless $self->item->updated;
+   $self->field('state')->inactive(TRUE) unless $self->is_editor;
+   $self->info_message([
+      'Update the bug report details',
+      'Update the bug report comments',
+      'Files attached to the bug report'
+   ]);
+
+   my $view = $self->context->uri_for_action('bug/view', [$self->item->id]);
+
+   $self->field('view')->href($view->as_string);
+   $self->field('submit1')->add_wrapper_class(['inline', 'right']);
+   return;
 }
 
 sub _inflate_attachments {

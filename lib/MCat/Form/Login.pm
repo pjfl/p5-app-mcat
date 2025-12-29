@@ -27,14 +27,14 @@ has_field 'name' =>
    title        => 'Enter your user name or email address';
 
 has_field 'password' =>
-   autocomplete => TRUE,
    type         => 'Password',
+   autocomplete => TRUE,
    label_top    => TRUE,
    required     => TRUE;
 
 has_field 'auth_code' =>
    type          => 'Digits',
-   label         => 'Auth. Code',
+   label         => 'OTP Code',
    label_top     => TRUE,
    size          => 6,
    title         => 'Enter the Authenticator code',
@@ -64,8 +64,8 @@ has_field 'totp_reset' =>
    disabled      => TRUE,
    element_attr  => { 'data-field-depends' => ['user_name'] },
    html_name     => 'submit',
-   label         => 'Reset Auth.',
-   title         => 'Request a TOTP reset',
+   label         => 'Reset OTP',
+   title         => 'Request an OTP reset',
    value         => 'totp_reset',
    wrapper_class => ['input-button expand'];
 

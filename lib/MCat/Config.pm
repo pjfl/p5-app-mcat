@@ -575,11 +575,11 @@ has 'request' =>
       my $self = shift;
 
       return {
-         max_messages => 3,
-         prefix => $self->prefix,
+         max_messages  => 3,
+         prefix        => $self->prefix,
          request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
          serialise_session_attr => [ qw( id ) ],
-         session_attr => {
+         session_attr  => {
             base_colour   => [ Str, $self->default_base_colour ],
             bling         => [ Bool, FALSE ],
             email         => [ Str, NUL ],
@@ -678,7 +678,7 @@ has 'state_cookie' =>
       my $self = shift;
 
       return {
-         expires     => 7_776_000,
+         expires     => $self->state_cookie_lifetime,
          httponly    => TRUE,
          path        => $self->mount_point,
          samesite    => 'None',
@@ -686,6 +686,18 @@ has 'state_cookie' =>
          session_key => $self->prefix . '_session',
       };
    };
+
+=item state_cookie_lifetime
+
+An immutable positive integer. Number of seconds before the session
+cookie will expire. Defaults to ninety days
+
+=cut
+
+has 'state_cookie_lifetime' =>
+   is      => 'ro',
+   isa     => PositiveInt,
+   default => 7_776_000;
 
 =item static
 
@@ -819,7 +831,7 @@ has 'vardir' =>
 
 =item wcom_resources
 
-Names of the JS management objects
+Paths from Window to the JS static objects
 
 =cut
 
