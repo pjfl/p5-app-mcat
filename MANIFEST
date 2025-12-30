@@ -147,7 +147,6 @@ lib/MCat/View/HTML.pm
 lib/MCat/View/Image.pm
 lib/MCat/View/JSON.pm
 lib/MCat/View/Table.pm
-share/css/mcat.css
 share/js/wcom-10-util.js
 share/js/wcom-15-navigation.js
 share/js/wcom-16-modal.js
@@ -164,8 +163,11 @@ share/js/wcom-41-table-role.js
 share/js/wcom-42-table-celltrait.js
 share/js/wcom-43-table-columntrait.js
 share/js/wcom-44-table-rowtrait.js
-share/less/hfilter-minimal.less
-share/less/wcom-minimal.less
+share/less/wcom-05-constants.less
+share/less/wcom-10-minimal.less
+share/less/wcom-20-hforms.less
+share/less/wcom-30-hfilter.less
+share/less/wcom-40-hstatetable.less
 t/02pod.t
 t/03podcoverage.t
 t/05kwalitee.t
@@ -206,6 +208,7 @@ var/templates/classic/cd/create.tt
 var/templates/classic/cd/edit.tt
 var/templates/classic/cd/list.tt
 var/templates/classic/cd/view.tt
+var/templates/classic/doc/configuration.tt
 var/templates/classic/doc/list.tt
 var/templates/classic/doc/view.tt
 var/templates/classic/file/copy.tt
@@ -237,7 +240,6 @@ var/templates/classic/logfile/list.tt
 var/templates/classic/logfile/view.tt
 var/templates/classic/page/access_denied.tt
 var/templates/classic/page/changes.tt
-var/templates/classic/page/configuration.tt
 var/templates/classic/page/contact.tt
 var/templates/classic/page/exception.tt
 var/templates/classic/page/login.tt

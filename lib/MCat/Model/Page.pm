@@ -26,26 +26,10 @@ sub base : Auth('none') {
    return;
 }
 
-sub access_denied : Auth('none') {
-   my ($self, $context) = @_;
-
-   $self->error($context, UnauthorisedAccess);
-   return;
-}
-
 sub changes : Auth('view') Nav('Changes') {
    my ($self, $context) = @_;
 
    $context->stash(form => $self->new_form('Changes', { context => $context }));
-   return;
-}
-
-sub configuration : Auth('admin') Nav('Configuration') {
-   my ($self, $context) = @_;
-
-   my $options = { context => $context };
-
-   $context->stash(form => $self->new_form('Configuration', $options));
    return;
 }
 
@@ -106,18 +90,19 @@ sub login : Auth('none') Nav('Login') {
    my $options = { context => $context, log => $self->log };
    my $form    = $self->new_form('Login', $options);
 
-   if ($form->process( posted => $context->posted )) {
+   if ($form->process(posted => $context->posted)) {
       my $default  = $context->uri_for_action($self->config->redirect);
       my $name     = $context->session->username;
       my $wanted   = $context->session->wanted;
       my $location = new_uri $context->request->scheme, $wanted if $wanted;
       my $message  = 'User [_1] logged in';
 
+      $self->log->info('Address ' . $context->request->address, $context);
       $context->stash(redirect $location || $default, [$message, $name]);
       $context->session->wanted(NUL);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
@@ -269,6 +254,13 @@ sub totp_reset : Auth('none') {
    }
 
    $context->stash(form => $form);
+   return;
+}
+
+sub unauthorised : Auth('none') {
+   my ($self, $context) = @_;
+
+   $self->error($context, UnauthorisedAccess);
    return;
 }
 

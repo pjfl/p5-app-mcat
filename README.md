@@ -4,7 +4,7 @@ MCat - Music Catalog
 
 # Version
 
-Describes version v0.3.$Rev: 4 $ of [MCat](https://metacpan.org/pod/MCat)
+Describes version v0.3.$Rev: 8 $ of [MCat](https://metacpan.org/pod/MCat)
 
 # Synopsis
 
@@ -12,7 +12,7 @@ Describes version v0.3.$Rev: 4 $ of [MCat](https://metacpan.org/pod/MCat)
 
 # Description
 
-A demo web application for [Web::Components](https://metacpan.org/pod/Web%3A%3AComponents), [HTML::Forms](https://metacpan.org/pod/HTML%3A%3AForms), and
+A demonstration web application for [Web::Components](https://metacpan.org/pod/Web%3A%3AComponents), [HTML::Forms](https://metacpan.org/pod/HTML%3A%3AForms), and
 [HTML::StateTable](https://metacpan.org/pod/HTML%3A%3AStateTable)
 
 # Installation

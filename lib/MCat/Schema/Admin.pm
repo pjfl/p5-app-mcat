@@ -1,8 +1,7 @@
 package MCat::Schema::Admin;
 
 use Archive::Tar::Constant      qw( COMPRESS_GZIP );
-use Class::Usul::Cmd::Constants qw( AS_PARA AS_PASSWORD COMMA OK QUOTED_RE
-                                    SECRET );
+use Class::Usul::Cmd::Constants qw( AS_PARA AS_PASSWORD COMMA OK QUOTED_RE );
 use HTML::Forms::Constants      qw( EXCEPTION_CLASS FALSE NUL SPC TRUE );
 use Class::Usul::Cmd::Util      qw( decrypt encrypt ensure_class_loaded
                                     now_dt trim );
@@ -67,7 +66,7 @@ has 'user_password' =>
 
       throw 'No database user password in local config file' unless $password;
 
-      return decrypt SECRET, $password;
+      return decrypt NUL, $password;
    };
 
 has '_dbname' =>
@@ -251,7 +250,7 @@ sub store_password : method {
    my $password = $self->get_line('+Enter DB user password', AS_PASSWORD);
    my $data     = $self->_local_config;
 
-   $data->{db_password} = encrypt SECRET, $password;
+   $data->{db_password} = encrypt NUL, $password;
    $self->_local_config($data);
    $self->info('Updated user password', { name => 'Admin.store_password' });
    return OK;

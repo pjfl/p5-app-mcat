@@ -1,7 +1,8 @@
 package MCat;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev: 7 $ =~ /\d+/gmx );
+use strictures;
+use version; our $VERSION = qv(sprintf '0.3.%d', q$Rev: 8 $ =~ /\d+/gmx);
 
 use Class::Usul::Cmd::Util qw( ns_environment );
 
@@ -12,7 +13,7 @@ sub env_var {
 }
 
 sub schema_version {
-   return qv( '0.2.64' );
+   return qv('0.2.64');
 }
 
 use namespace::autoclean;
@@ -31,7 +32,7 @@ MCat - Music Catalog
 
 =head1 Version
 
-Describes version v0.3.$Rev: 7 $ of L<MCat>
+Describes version v0.3.$Rev: 8 $ of L<MCat>
 
 =head1 Synopsis
 
@@ -39,7 +40,7 @@ Describes version v0.3.$Rev: 7 $ of L<MCat>
 
 =head1 Description
 
-A demo web application for L<Web::Components>, L<HTML::Forms>, and
+A demonstration web application for L<Web::Components>, L<HTML::Forms>, and
 L<HTML::StateTable>
 
 =head1 Installation

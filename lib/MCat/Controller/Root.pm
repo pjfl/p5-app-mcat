@@ -49,18 +49,18 @@ sub dispatch_request { build_routes
    'GET      + /logfile/*.* + ?*'     => 'logfile/root/base/view',
    'GET      + /logfile + ?*'         => 'logfile/root/base/list',
 
-   'GET      + /doc/select + ?*' => 'doc/root/base/select',
-   'GET      + /doc/*.* + ?*'    => 'doc/root/base/view',
-   'GET      + /doc + ?*'        => 'doc/root/base/list',
+   'GET      + /doc/configuration + ?*' => 'doc/root/base/configuration',
+   'GET      + /doc/select + ?*'        => 'doc/root/base/select',
+   'GET      + /doc/*.* + ?*'           => 'doc/root/base/view',
+   'GET      + /doc + ?*'               => 'doc/root/base/list',
 
-   'GET      + /access_denied + ?*'          => 'page/root/base/access_denied',
    'GET      + /changes + ?*'                => 'page/root/base/changes',
-   'GET      + /configuration + ?*'          => 'page/root/base/configuration',
    'GET      + /contact + ?*'                => 'page/root/base/contact',
    'GET      + /footer/** + ?*'              => 'page/footer',
    'GET|POST + /login + ?*'                  => 'page/root/base/login',
    'POST     + /logout + ?*'                 => 'page/root/logout',
    'GET|POST + /register/* | /register + ?*' => 'page/root/base/register',
+   'GET      + /unauthorised + ?*'           => 'page/root/base/unauthorised',
 
    'GET    + /** + ?*' => 'page/root/not_found',
    'GET    + ?*'       => 'page/root/default',

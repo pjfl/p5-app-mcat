@@ -24,7 +24,7 @@ sub is_authorised {
 
    return TRUE if $role eq $user_role or $user_role eq 'admin';
 
-   $context->stash(redirect $context->uri_for_action('page/access_denied'), []);
+   $context->stash(redirect $context->uri_for_action('page/unauthorised'), []);
 
    return FALSE;
 }

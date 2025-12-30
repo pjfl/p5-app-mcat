@@ -8,7 +8,6 @@ use File::DataClass::Types qw( ArrayRef Bool Directory File HashRef
 use Class::Usul::Cmd::Util qw( decrypt now_dt );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
-use MCat::Util             qw( local_tz );
 use Moo;
 
 with 'Web::Components::ConfigLoader';
@@ -131,6 +130,22 @@ has 'connect_info' =>
       return [$self->dsn, $self->db_username, $password, $self->db_extra];
    };
 
+=item context_class
+
+An immutable string which defaults to L<MCat::Context>. The loadable classname
+of the context class
+
+=cut
+
+has 'context_class' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      my $appclass = shift->appclass;
+
+      return "${appclass}::Context";
+   };
+
 =item copyright_year
 
 Year displayed in the copyright string. Defaults to the current year
@@ -156,7 +171,7 @@ has 'db_extra' =>
 =item db_password
 
 Password used to connect to the database. This has no default. It should be
-set using the command C<bin/mcat-cli --set-db-password> before the application
+set using the command C<bin/mcat-schema store-password> before the application
 is started by the same user as the one which will be running the application
 
 =cut
@@ -592,7 +607,7 @@ has 'request' =>
             role          => [ Str, NUL ],
             skin          => [ Str, $self->skin ],
             theme         => [ Str, 'light' ],
-            timezone      => [ Str, local_tz ],
+            timezone      => [ Str, $self->local_tz ],
             wanted        => [ Str, NUL ],
          },
       };

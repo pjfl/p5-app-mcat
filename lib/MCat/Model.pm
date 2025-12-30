@@ -13,8 +13,6 @@ extends 'Web::Components::Model';
 with    'MCat::Role::Authorisation';
 with    'MCat::Role::Schema';
 
-has '+context_class' => default => 'MCat::Context';
-
 has 'form' =>
    is      => 'lazy',
    isa     => class_type('HTML::Forms::Manager'),
