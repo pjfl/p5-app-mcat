@@ -10,17 +10,29 @@ $class->table('track');
 
 $class->add_columns(
    trackid => {
-      data_type => 'integer', is_auto_increment => TRUE, is_nullable => FALSE,
-      label => 'Track ID', hidden => TRUE,
+      data_type         => 'integer',
+      is_auto_increment => TRUE,
+      is_nullable       => FALSE,
+      label             => 'Track ID',
+      hidden            => TRUE,
    },
    cdid => {
-      data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE,
-      label => 'CD', display => 'cd.title'
+      data_type      => 'integer',
+      is_foreign_key => TRUE,
+      is_nullable    => FALSE,
+      label          => 'CD',
+      display        => 'cd.title'
    },
-   title => { data_type => 'text', is_nullable => FALSE, label => 'Title' },
+   title => {
+      data_type   => 'text',
+      is_nullable => FALSE,
+      label       => 'Track',
+   },
    import_log_id => {
-      data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID',
-      display => 'import_log.guid',
+      data_type   => 'integer',
+      is_nullable => TRUE,
+      label       => 'Import Log ID',
+      display     => 'import_log.guid',
    }
 );
 
@@ -28,18 +40,16 @@ $class->set_primary_key('trackid');
 
 $class->add_unique_constraint('track_title_cdid', ['title', 'cdid']);
 
-$class->belongs_to(
-   cd => "${result}::Cd",
+$class->belongs_to('cd' => "${result}::Cd",
    { cdid => 'cdid' },
    { is_deferrable => FALSE, on_delete => 'CASCADE', on_update => 'CASCADE' },
 );
 
-$class->has_many(
-   'lists' => "${result}::ListTrack", { 'foreign.trackid' => 'self.trackid' }
+$class->has_many('lists' => "${result}::ListTrack",
+   { 'foreign.trackid' => 'self.trackid' }
 );
 
-$class->belongs_to(
-   'import_log' => "${result}::ImportLog",
+$class->belongs_to('import_log' => "${result}::ImportLog",
    { 'foreign.import_log_id' => 'self.import_log_id' }
 );
 

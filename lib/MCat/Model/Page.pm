@@ -19,6 +19,13 @@ has '+moniker' => default => 'page';
 has '+redis_client_name' => is => 'ro', default => 'job_stash';
 
 sub base : Auth('none') {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->finalise;
+   return;
+}
+
+sub user : Auth('none') Capture(1) {
    my ($self, $context, $id_or_name) = @_;
 
    $self->_stash_user($context, $id_or_name);
@@ -36,6 +43,29 @@ sub changes : Auth('view') Nav('Changes') {
 sub contact : Auth('none') Nav('Contact') {
    my ($self, $context) = @_;
 
+   return;
+}
+
+sub create_user : Auth('none') {
+   my ($self, $context, $token) = @_;
+
+   my $stash     = $self->redis_client->get($token)
+      or return $self->error($context, UnknownToken, [$token]);
+   my $role_name = $self->config->user->{default_role} // 'view';
+   my $role      = $context->model('Role')->find({ name => $role_name });
+   my $args      = {
+      email            => $stash->{email},
+      name             => $stash->{username},
+      password         => $stash->{password},
+      password_expired => TRUE,
+      role_id          => $role->id,
+   };
+   my $user    = $context->model('User')->create($args);
+   my $changep = $context->uri_for_action('page/password', [$user->id]);
+   my $message = 'User [_1] created';
+
+   $context->stash(redirect $changep, [$message, $user->name]);
+   $self->redis_client->remove($token);
    return;
 }
 
@@ -149,7 +179,7 @@ sub password : Auth('none') Nav('Change Password') {
 }
 
 sub password_reset : Auth('none') {
-   my ($self, $context, $userid, $token) = @_;
+   my ($self, $context, $token) = @_;
 
    my $user    = $context->stash('user') or return;
    my $changep = $context->uri_for_action('page/password', [$user->id]);
@@ -199,13 +229,10 @@ sub password_reset : Auth('none') {
 }
 
 sub register : Auth('none') Nav('Register') {
-   my ($self, $context, $token) = @_;
+   my ($self, $context) = @_;
 
    return $self->error($context, UnauthorisedAccess)
       unless $self->config->registration;
-
-   return $self->_create_user($context, $token)
-      if !$context->posted && $token;
 
    my $options = { context => $context, log => $self->log };
    my $form    = $self->new_form('Register', $options);
@@ -224,7 +251,7 @@ sub register : Auth('none') Nav('Register') {
 }
 
 sub totp_reset : Auth('none') {
-   my ($self, $context, $userid, $token) = @_;
+   my ($self, $context, $token) = @_;
 
    my $user = $context->stash('user') or return;
 
@@ -245,7 +272,7 @@ sub totp_reset : Auth('none') {
       user         => $user,
    });
 
-   if ($form->process( posted => $context->posted )) {
+   if ($form->process(posted => $context->posted)) {
       my $job     = $context->stash->{job};
       my $message = 'User [_1] TOTP reset request [_2] dispatched';
       my $login   = $context->uri_for_action('page/login');
@@ -265,29 +292,6 @@ sub unauthorised : Auth('none') {
 }
 
 # Private methods
-sub _create_user {
-   my ($self, $context, $token) = @_;
-
-   my $stash     = $self->redis_client->get($token)
-      or return $self->error($context, UnknownToken, [$token]);
-   my $role_name = $self->config->user->{default_role} // 'view';
-   my $role      = $context->model('Role')->find({ name => $role_name });
-   my $args      = {
-      email            => $stash->{email},
-      name             => $stash->{username},
-      password         => $stash->{password},
-      password_expired => TRUE,
-      role_id          => $role->id,
-   };
-   my $user    = $context->model('User')->create($args);
-   my $changep = $context->uri_for_action('page/password', [$user->id]);
-   my $message = 'User [_1] created';
-
-   $context->stash(redirect $changep, [$message, $user->name]);
-   $self->redis_client->remove($token);
-   return;
-}
-
 sub _send_email {
    my ($self, $context, $token, $args) = @_;
 

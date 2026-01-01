@@ -12,20 +12,33 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'filter';
 
 sub base {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->list('filter')->item('filter/create')->finalise;
+
+   return;
+}
+
+sub filter : Capture(1) {
    my ($self, $context, $filterid) = @_;
+
+   my $filter = $context->model('Filter')->find($filterid);
+
+   return $self->error($context, UnknownFilter, [$filterid]) unless $filter;
+
+   $context->stash(filter => $filter);
 
    my $nav = $context->stash('nav')->list('filter')->item('filter/create');
 
-   if ($filterid && $filterid =~ m{ \A \d+ \z }mx) {
-      my $filter = $context->model('Filter')->find($filterid);
+   $nav->crud('filter', $filter->id)->finalise;
+   return;
+}
 
-      return $self->error($context, UnknownFilter, [$filterid]) unless $filter;
+sub typename : Capture(1) {
+   my ($self, $context, $type) = @_;
 
-      $context->stash( filter => $filter );
-      $nav->crud('filter', $filterid);
-   }
-
-   $nav->finalise;
+   $context->stash(type => $type);
+   $context->stash('nav')->list('filter')->item('filter/create')->finalise;
    return;
 }
 
@@ -40,23 +53,20 @@ sub create : Nav('Create Filter') {
       my $filter_view = $context->uri_for_action('filter/view', [$filterid]);
       my $message     = ['Filter [_1] created', $form->item->name];
 
-      $context->stash( redirect $filter_view, $message );
+      $context->stash(redirect $filter_view, $message);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
 sub delete : Nav('Delete Filter') {
-   my ($self, $context, $filterid) = @_;
+   my ($self, $context) = @_;
 
    return unless $self->verify_form_post($context);
 
-   my $filter = $context->model('Filter')->find($filterid);
-
-   return $self->error($context, UnknownFilter, [$filterid]) unless $filter;
-
-   my $name = $filter->name;
+   my $filter = $context->stash('filter');
+   my $name   = $filter->name;
 
    $filter->delete;
 
@@ -95,8 +105,9 @@ sub list : Nav('Filters') {
 }
 
 sub selector {
-   my ($self, $context, $type) = @_;
+   my ($self, $context) = @_;
 
+   my $type    = $context->stash('type');
    my $params  = $context->request->query_parameters;
    my $tableid = $params->{table_id}
       or return $self->error($context, 'Table id not found');
@@ -119,7 +130,7 @@ sub selector {
 }
 
 sub view : Nav('View Filter') {
-   my ($self, $context, $filterid) = @_;
+   my ($self, $context) = @_;
 
    my $filter = $context->stash('filter');
    my $query  = $filter->filter_json ? $filter->to_sql : [ NUL, NUL ];

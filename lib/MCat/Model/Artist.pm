@@ -12,20 +12,27 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'artist';
 
 sub base : Auth('view') {
-   my ($self, $context, $artistid) = @_;
+   my ($self, $context) = @_;
 
    my $nav = $context->stash('nav')->list('artist')->item('artist/create');
 
-   if ($artistid) {
-      my $artist = $context->model('Artist')->find($artistid);
-
-      return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
-
-      $context->stash(artist => $artist);
-      $nav->crud('artist', $artistid)->item('cd/create', [$artistid]);
-   }
-
    $nav->finalise;
+   return;
+}
+
+sub artist : Auth('view') Capture(1) {
+   my ($self, $context, $artistid) = @_;
+
+   my $artist = $context->model('Artist')->find($artistid);
+
+   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
+
+   $context->stash(artist => $artist);
+
+   my $nav = $context->stash('nav')->list('artist')->item('artist/create');
+
+   $nav->crud('artist', $artist->artistid);
+   $nav->item('cd/create', [$artist->artistid])->finalise;
    return;
 }
 
@@ -47,15 +54,12 @@ sub create : Nav('Create Artist') {
 }
 
 sub delete : Nav('Delete Artist') {
-   my ($self, $context, $artistid) = @_;
+   my ($self, $context) = @_;
 
    return unless $self->verify_form_post($context);
 
    my $artist = $context->stash('artist');
-
-   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
-
-   my $name = $artist->name;
+   my $name   = $artist->name;
 
    $artist->delete;
 

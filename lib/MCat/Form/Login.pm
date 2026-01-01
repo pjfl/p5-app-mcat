@@ -51,6 +51,7 @@ has_field 'login' =>
 
 has_field 'password_reset' =>
    type          => 'Button',
+   allow_default => TRUE,
    disabled      => TRUE,
    element_attr  => { 'data-field-depends' => ['user_name'] },
    html_name     => 'submit',
@@ -85,35 +86,37 @@ after 'after_build_fields' => sub {
 
    my $util             = $config->wcom_resources->{form_util};
    my $change_js        = "${util}.fieldChange";
-   my $change_fields    = ['login', 'password_reset', 'totp_reset'];
    my $showif_js        = "${util}.showIfRequired";
-   my $showif_fields    = ['auth_code','totp_reset'];
    my $unrequire_js     = "${util}.unrequire";
+   my $change_fields    = ['login', 'password_reset', 'totp_reset'];
+   my $showif_fields    = ['auth_code','totp_reset'];
    my $unrequire_fields = ['auth_code', 'password'];
 
-   my $action = 'api/object_fetch';
-   my $params = { class => 'User', property => 'enable_2fa' };
-   my $uri    = $context->uri_for_action($action, ['property'], $params);
+   my $action  = 'api/object_fetch';
+   my $params  = { class => 'User', property => 'enable_2fa' };
+   my $uri     = $context->uri_for_action($action, ['property'], $params);
+   my $options = { id => 'user_name', url => "${uri}" };
 
    $self->field('name')->element_attr->{javascript} = {
-      onblur  => make_handler($showif_js, $showif_fields, 'user_name', $uri),
-      oninput => make_handler($change_js, $change_fields, 'user_name'),
+      onblur  => make_handler($showif_js, $options, $showif_fields),
+      oninput => make_handler($change_js, { id => 'user_name' }, $change_fields)
    };
 
    $self->field('password')->element_attr->{javascript} = {
-      oninput => make_handler($change_js, $change_fields, 'password')
+      oninput => make_handler($change_js, { id => 'password' }, $change_fields)
    };
 
    $self->field('auth_code')->element_attr->{javascript} = {
-      onblur  => make_handler($change_js, $change_fields, 'auth_code')
+      onblur  => make_handler($change_js, { id => 'auth_code' }, $change_fields)
    };
 
+   $options = { allowDefault => TRUE };
    $self->field('password_reset')->element_attr->{javascript} = {
-      onclick => make_handler($unrequire_js, $unrequire_fields)
+      onclick => make_handler($unrequire_js, $options, $unrequire_fields)
    };
 
    $self->field('totp_reset')->element_attr->{javascript} = {
-      onclick => make_handler($unrequire_js, $unrequire_fields)
+      onclick => make_handler($unrequire_js, $options, $unrequire_fields)
    };
    return;
 };

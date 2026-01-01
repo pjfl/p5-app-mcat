@@ -39,7 +39,7 @@ sub BUILD {
       cell_traits => ['Bool'],
       value       => $self->result->enable_2fa,
    };
-   push @{$self->add_columns}, 'Time Zone' => $context->time_zone;
+   push @{$self->add_columns}, 'Time Zone' => $self->result->timezone;
 
    return;
 }

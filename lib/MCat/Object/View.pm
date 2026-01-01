@@ -110,27 +110,30 @@ sub build_results {
       );
    }
 
-   if ($table->has_add_columns) {
-      for my $pair (pairs @{$table->add_columns}) {
-         my $value = $pair->value;
-         my $traits;
+   return $results unless $table->has_add_columns;
 
-         if (is_plain_hashref $value and exists $value->{cell_traits}) {
-            $traits = $value->{cell_traits};
-            $value  = $value->{value};
-         }
-         else { $value = $pair->value }
+   for my $pair (pairs @{$table->add_columns}) {
+      my $value = $pair->value;
+      my $traits;
 
-         if (is_arrayref $value or is_plain_hashref $value) {
-            $value = encode_json($value);
-         }
-
-         my $args = { name => $pair->key, value => $value };
-
-         $args->{cell_traits} = $traits if $traits;
-
-         push @{$results}, $self->result_class->new($args);
+      if (is_plain_hashref $value and exists $value->{cell_traits}) {
+         $traits = $value->{cell_traits};
+         $value  = $value->{value};
       }
+      else { $value = $pair->value }
+
+      if (is_arrayref $value or is_plain_hashref $value) {
+         $value = encode_json($value);
+      }
+
+      my $args = { name => $pair->key, value => $value };
+
+      $args->{cell_traits} = $traits if $traits;
+
+      my $result = $self->result_class->new($args);
+
+      if ($table->add_columns_first) { unshift @{$results}, $result }
+      else { push @{$results}, $result }
    }
 
    return $results;

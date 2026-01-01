@@ -15,14 +15,14 @@ $class->add_columns(
       data_type => 'integer', is_nullable => FALSE, is_auto_increment => TRUE,
       label => 'Artist ID', hidden => TRUE,
    },
-   name => { data_type => 'text', is_nullable => FALSE, label => 'Name' },
-   active => {
-      data_type => 'boolean', is_nullable => FALSE, default => TRUE,
-      label => 'Still Active', cell_traits => ['Bool']
-   },
+   name => { data_type => 'text', is_nullable => FALSE, label => 'Artist' },
    upvotes => {
       data_type => 'integer', is_nullable => FALSE, default => 0,
       label => 'Upvotes'
+   },
+   active => {
+      data_type => 'boolean', is_nullable => FALSE, default => TRUE,
+      label => 'Still Active', cell_traits => ['Bool']
    },
    import_log_id => {
       data_type => 'integer', is_nullable => TRUE, label => 'Import Log ID',

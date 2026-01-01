@@ -140,11 +140,7 @@ of the context class
 has 'context_class' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub {
-      my $appclass = shift->appclass;
-
-      return "${appclass}::Context";
-   };
+   default => sub { shift->appclass . '::Context' };
 
 =item copyright_year
 
@@ -637,7 +633,8 @@ has 'rundir' =>
 
 =item schema_class
 
-The name of the lazily loaded database schema class
+The name of the lazily loaded database schema class. Defaults to
+L<MCat::Schema>
 
 =cut
 
@@ -645,7 +642,7 @@ has 'schema_class' =>
    is      => 'lazy',
    isa     => LoadableClass,
    coerce  => TRUE,
-   default => 'MCat::Schema';
+   default => sub { shift->appclass . '::Schema' };
 
 =item script
 

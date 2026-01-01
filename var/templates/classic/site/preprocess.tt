@@ -1,10 +1,11 @@
 [%
 MACRO nthheader(level, label, content, classes, separator) BLOCK;
-   UNLESS separator; separator = ': '; END;
+   UNLESS separator; separator = ':'; END;
    IF separator == ' '; separator = ''; END;
+   IF separator == ':'; labelclass = 'separator'; ELSE; labelclass = ''; END;
    IF label && content; label = label _ separator; END;
    '<h' _ level _ ' class="' _ classes.join(' ') _ '">';
-   IF label; '<label>' _ label _ '</label>'; END;
+   IF label; '<label class="' _ labelclass _ '">' _ label _ '</label>'; END;
    '<span class="content">'; content | html; '</span></h' _ level _ '>';
 END;
 MACRO pageheader(label, content, classes, separator) BLOCK;

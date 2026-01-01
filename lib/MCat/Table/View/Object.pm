@@ -1,7 +1,7 @@
 package MCat::Table::View::Object;
 
 use HTML::StateTable::Constants qw( FALSE SPC TABLE_META TRUE );
-use HTML::StateTable::Types     qw( ArrayRef DBIxClass Str );
+use HTML::StateTable::Types     qw( ArrayRef Bool DBIxClass Str );
 use MCat::Object::View;
 use Moo;
 use MooX::HandlesVia;
@@ -21,6 +21,8 @@ has 'add_columns' =>
    default     => sub { [] },
    handles_via => 'Array',
    handles     => { has_add_columns => 'count' };
+
+has 'add_columns_first' => is => 'ro', isa => Bool, default => FALSE;
 
 has 'result' => is => 'ro', isa => DBIxClass, required => TRUE;
 

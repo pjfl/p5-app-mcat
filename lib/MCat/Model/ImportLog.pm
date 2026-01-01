@@ -12,31 +12,40 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'importlog';
 
 sub base {
-   my ($self, $context, $id) = @_;
+   my ($self, $context) = @_;
 
-   my $method   = $context->endpoint;
-   my $importid = $id if $method eq 'list';
-   my $logid    = $id if $method eq 'view';
-   my $nav      = $context->stash('nav')->list('importlog');
+   $context->stash('nav')->list('importlog')->finalise;
 
-   if ($importid) {
-      my $item = $context->model('Import')->find($importid);
+   return;
+}
 
-      return $self->error($context, UnknownImport, [$importid]) unless $item;
+sub importid : Capture(1) {
+   my ($self, $context, $importid) = @_;
 
-      $context->stash(import => $item);
-   }
+   my $item = $context->model('Import')->find($importid);
 
-   if ($logid) {
-      my $item = $context->model('ImportLog')->find($logid);
+   return $self->error($context, UnknownImport, [$importid]) unless $item;
 
-      return $self->error($context, UnknownImportLog, [$logid]) unless $item;
+   $context->stash(import => $item);
 
-      $nav->item('importlog/view', [$logid]);
-      $context->stash(log => $item);
-   }
+   my $nav = $context->stash('nav')->list('importlog')->finalise;
 
-   $nav->finalise;
+   return;
+}
+
+sub importlog : Capture(1) {
+   my ($self, $context, $logid) = @_;
+
+   my $item = $context->model('ImportLog')->find($logid);
+
+   return $self->error($context, UnknownImportLog, [$logid]) unless $item;
+
+   $context->stash(log => $item);
+
+   my $nav = $context->stash('nav')->list('importlog');
+
+   $nav->item('importlog/view', [$logid])->finalise;
+
    return;
 }
 
@@ -44,6 +53,9 @@ sub list : Nav('Import Logs') {
    my ($self, $context) = @_;
 
    my $options = { caption => 'Import Log List', context => $context };
+   my $import  = $context->stash('import');
+
+   $options->{import} = $import if $import;
 
    $context->stash(table => $self->new_table('ImportLog', $options));
    return;

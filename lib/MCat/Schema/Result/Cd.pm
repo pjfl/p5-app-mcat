@@ -18,7 +18,11 @@ $class->add_columns(
       data_type => 'integer', is_foreign_key => TRUE, is_nullable => FALSE,
       label => 'Artist', display => 'artist.name'
    },
-   title => { data_type => 'text', is_nullable => FALSE, label => 'Title' },
+   title => {
+      data_type   => 'text',
+      is_nullable => FALSE,
+      label       => 'CD',
+   },
    year => {
       data_type => 'timestamp', is_nullable => TRUE, timezone => 'UTC',
       label => 'Released', cell_traits => ['Date']

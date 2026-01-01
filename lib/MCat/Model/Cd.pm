@@ -12,68 +12,74 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'cd';
 
 sub base : Auth('view') {
-   my ($self, $context, $id) = @_;
+   my ($self, $context) = @_;
 
-   my $method   = $context->endpoint;
-   my $artistid = $id if $method eq 'create' || $method eq 'list';
-   my $cdid     = $id if $method eq 'edit'   || $method eq 'view';
-   my $nav      = $context->stash('nav')->list('cd');
+   $context->stash('nav')->list('cd')->finalise;
 
-   if ($artistid) {
-      my $artist = $context->model('Artist')->find($artistid);
-
-      return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
-
-      $context->stash( artist => $artist );
-      $nav->item('artist/view', [$artistid])->item('cd/create', [$artistid]);
-   }
-
-   if ($cdid) {
-      my $cd = $context->model('Cd')->find($cdid);
-
-      return $self->error($context, UnknownCd, [$cdid]) unless $cd;
-
-      $context->stash( artist => $cd->artist, cd => $cd );
-      $nav->item('artist/view', [$cd->artistid]);
-      $nav->crud('cd', $cdid, $cd->artistid)->item('track/create', [$cdid]);
-   }
-
-   $nav->finalise;
    return;
 }
 
-sub create : Nav('Create CD') {
+sub artist : Auth('view') Capture(1) {
    my ($self, $context, $artistid) = @_;
 
-   return $self->error($context, Unspecified, ['artistid']) unless $artistid;
+   my $artist = $context->model('Artist')->find($artistid);
 
-   my $form = $self->form->new_with_context('Cd', {
-      artistid   => $artistid,
-      context    => $context,
-      item_class => 'Cd',
-      title      => 'Create CD',
-   });
+   return $self->error($context, UnknownArtist, [$artistid]) unless $artist;
 
-   if ($form->process( posted => $context->posted )) {
-      my $cd_view = $context->uri_for_action('cd/view', [$form->item->cdid]);
-      my $message = ['CD [_1] created', $form->item->title];
+   $context->stash(artist => $artist);
 
-      $context->stash( redirect $cd_view, $message );
-   }
+   my $nav = $context->stash('nav')->list('cd');
 
-   $context->stash( form => $form );
+   $nav->item('artist/view', [$artist->artistid]);
+   $nav->item('cd/create', [$artist->artistid])->finalise;
    return;
 }
 
-sub delete : Nav('Delete CD') {
+sub cd : Auth('view') Capture(1) {
    my ($self, $context, $cdid) = @_;
-
-   return unless $self->verify_form_post($context);
 
    my $cd = $context->model('Cd')->find($cdid);
 
    return $self->error($context, UnknownCd, [$cdid]) unless $cd;
 
+   $context->stash(artist => $cd->artist, cd => $cd);
+
+   my $nav = $context->stash('nav')->list('cd');
+
+   $nav->item('artist/view', [$cd->artistid]);
+   $nav->crud('cd', $cd->cdid, $cd->artistid);
+   $nav->item('track/create', [$cd->cdid])->finalise;
+   return;
+}
+
+sub create : Nav('Create CD') {
+   my ($self, $context) = @_;
+
+   my $artist = $context->stash('artist');
+   my $form   = $self->form->new_with_context('Cd', {
+      artistid   => $artist->artistid,
+      context    => $context,
+      item_class => 'Cd',
+      title      => 'Create CD',
+   });
+
+   if ($form->process(posted => $context->posted)) {
+      my $cd_view = $context->uri_for_action('cd/view', [$form->item->cdid]);
+      my $message = ['CD [_1] created', $form->item->title];
+
+      $context->stash(redirect $cd_view, $message);
+   }
+
+   $context->stash(form => $form);
+   return;
+}
+
+sub delete : Nav('Delete CD') {
+   my ($self, $context) = @_;
+
+   return unless $self->verify_form_post($context);
+
+   my $cd       = $context->stash('cd');
    my $artistid = $cd->artistid;
    my $title    = $cd->title;
 
@@ -81,12 +87,12 @@ sub delete : Nav('Delete CD') {
 
    my $cd_list = $context->uri_for_action('artist/view', [$artistid]);
 
-   $context->stash( redirect $cd_list, ['CD [_1] deleted', $title] );
+   $context->stash(redirect $cd_list, ['CD [_1] deleted', $title]);
    return;
 }
 
 sub edit : Nav('Edit CD') {
-   my ($self, $context, $cdid) = @_;
+   my ($self, $context) = @_;
 
    my $cd   = $context->stash('cd');
    my $form = $self->form->new_with_context('Cd', {
@@ -96,23 +102,24 @@ sub edit : Nav('Edit CD') {
       title    => 'Edit CD'
    });
 
-   if ($form->process( posted => $context->posted )) {
-      my $cd_view = $context->uri_for_action('cd/view', [$cdid]);
+   if ($form->process(posted => $context->posted)) {
+      my $cd_view = $context->uri_for_action('cd/view', [$cd->cdid]);
       my $message = ['CD [_1] updated', $form->item->title];
 
-      $context->stash( redirect $cd_view, $message );
+      $context->stash(redirect $cd_view, $message);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
 sub list : Auth('view') Nav('CDs|img/cd.svg') {
-   my ($self, $context, $artistid) = @_;
+   my ($self, $context) = @_;
 
    my $options = { context => $context };
+   my $artist  = $context->stash('artist');
 
-   $options->{artistid} = $artistid if $artistid;
+   $options->{artistid} = $artist->artistid if $artist;
 
    if (my $list_id = $context->request->query_parameters->{list_id}) {
       $options->{list_id} = $list_id;
@@ -123,10 +130,10 @@ sub list : Auth('view') Nav('CDs|img/cd.svg') {
 }
 
 sub view : Auth('view') Nav('View CD') {
-   my ($self, $context, $cdid) = @_;
+   my ($self, $context) = @_;
 
    my $cd      = $context->stash('cd');
-   my $options = { caption => NUL, context => $context, cdid => $cdid };
+   my $options = { caption => NUL, context => $context, cdid => $cd->cdid };
    my $tracks  = $self->table->new_with_context('Track', $options);
    my $buttons = [{
       action    => $context->uri_for_action('artist/view', [$cd->artistid]),
@@ -134,7 +141,7 @@ sub view : Auth('view') Nav('View CD') {
       selection => 'disable_on_select',
       value     => 'Artist',
    },{
-      action    => $context->uri_for_action('cd/edit', [$cdid]),
+      action    => $context->uri_for_action('cd/edit', [$cd->cdid]),
       classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',

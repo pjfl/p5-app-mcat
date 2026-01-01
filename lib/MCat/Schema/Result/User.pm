@@ -139,7 +139,7 @@ sub authenticate {
 
    return TRUE if !$self->totp_secret || $for_update;
 
-   throw Unspecified, ['Auth. Code'] unless $code;
+   throw Unspecified, ['OTP Code'] unless $code;
 
    throw IncorrectAuthCode, [$self]
       unless $self->totp_authenticator->verify($code);
@@ -223,6 +223,10 @@ sub set_totp_secret {
    return $self->totp_secret(NUL) if $current && !$enabled;
 
    return $self->totp_secret;
+}
+
+sub timezone {
+   my ($self, $value) = @_; return $self->_profile('timezone', $value);
 }
 
 sub totp_secret {

@@ -20,13 +20,35 @@ sub is_authorised {
 
    my $user_role = $session->role or throw NoUserRole, [$session->username];
 
-   return TRUE if $role eq 'edit' and $user_role eq 'manager';
+   return TRUE if $user_role eq 'admin';
 
-   return TRUE if $role eq $user_role or $user_role eq 'admin';
+   return TRUE if $user_role eq 'manager' and $role eq 'edit';
+
+   return TRUE if $user_role eq $role;
 
    $context->stash(redirect $context->uri_for_action('page/unauthorised'), []);
 
    return FALSE;
+}
+
+sub method_args {
+   my ($self, $context, $action, $uri_args) = @_;
+
+   my $captures = _get_captures($context, $action);
+
+   return $uri_args unless $captures;
+
+   my $method_args = [];
+
+   for (1 .. $captures) {
+      my $arg = shift @{$uri_args};
+
+      last unless defined $arg;
+
+      push @{$method_args}, $arg;
+   }
+
+   return $method_args;
 }
 
 # Private methods
@@ -60,6 +82,18 @@ sub _get_action_auth {
    my $attr = eval { $context->get_attributes($action) };
 
    return $attr->{Auth}->[-1] if $attr && defined $attr->{Auth};
+
+   return;
+}
+
+sub _get_captures {
+   my ($context, $action) = @_;
+
+   return unless $action;
+
+   my $attr = eval { $context->get_attributes($action) };
+
+   return $attr->{Capture}->[-1] if $attr && defined $attr->{Capture};
 
    return;
 }

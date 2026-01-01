@@ -19,7 +19,7 @@ has '+page_size' => default => 10;
 
 has '+page_size_control_location' => default => 'BottomRight';
 
-has 'import' => is => 'lazy', default => sub { shift->context->stash->{import}};
+has 'import' => is => 'ro';
 
 before 'BUILD' => sub {
    my $self = shift;

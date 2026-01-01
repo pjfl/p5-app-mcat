@@ -12,25 +12,30 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'user';
 
 sub base : Auth('view') {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->list('user')->item('user/create')->finalise;
+
+   return;
+}
+
+sub user : Auth('view') Capture(1) {
    my ($self, $context, $userid) = @_;
+
+   my $session = $context->session;
+   my $args = { username => $userid, options => { prefetch => 'profile' } };
+   my $user = $context->find_user($args, $session->realm);
+
+   return $self->error($context, UnknownUser, [$userid]) unless $user;
+
+   return $self->error($context, UnauthorisedAccess)
+      unless $user->is_authorised($session, ['admin', 'manager']);
+
+   $context->stash(user => $user);
 
    my $nav = $context->stash('nav')->list('user')->item('user/create');
 
-   if ($userid) {
-      my $session = $context->session;
-      my $args = { username => $userid, options => { prefetch => 'profile' } };
-      my $user = $context->find_user($args, $session->realm);
-
-      return $self->error($context, UnknownUser, [$userid]) unless $user;
-
-      return $self->error($context, UnauthorisedAccess)
-         unless $user->is_authorised($session, ['admin', 'manager']);
-
-      $context->stash(user => $user);
-      $nav->crud('user', $userid);
-   }
-
-   $nav->finalise;
+   $nav->crud('user', $user->id)->finalise;
    return;
 }
 
@@ -40,57 +45,55 @@ sub create : Auth('admin') Nav('Create User') {
    my $options = { context => $context, title => 'Create User' };
    my $form    = $self->new_form('User', $options);
 
-   if ($form->process( posted => $context->posted )) {
+   if ($form->process(posted => $context->posted)) {
       my $userid    = $form->item->id;
       my $user_view = $context->uri_for_action('user/view', [$userid]);
       my $message   = ['User [_1] created', $form->item->name];
 
-      $context->stash( redirect $user_view, $message );
+      $context->stash(redirect $user_view, $message);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
 sub delete : Auth('admin') Nav('Delete User') {
-   my ($self, $context, $userid) = @_;
+   my ($self, $context) = @_;
 
    return unless $self->verify_form_post($context);
 
-   my $user = $context->model('User')->find($userid);
-
-   return $self->error($context, UnknownUser, [$userid]) unless $user;
-
+   my $user = $context->stash('user');
    my $name = $user->name;
 
    $user->delete;
 
    my $user_list = $context->uri_for_action('user/list');
 
-   $context->stash( redirect $user_list, ['User [_1] deleted', $name] );
+   $context->stash(redirect $user_list, ['User [_1] deleted', $name]);
    return;
 }
 
 sub edit : Auth('admin') Nav('Edit User') {
-   my ($self, $context, $userid) = @_;
+   my ($self, $context) = @_;
 
+   my $user = $context->stash('user');
    my $form = $self->new_form('User', {
-      context => $context, item => $context->stash('user'), title => 'Edit User'
+      context => $context, item => $user, title => 'Edit User'
    });
 
-   if ($form->process( posted => $context->posted )) {
-      my $user_view = $context->uri_for_action('user/view', [$userid]);
-      my $message  = ['User [_1] updated', $form->item->name];
+   if ($form->process(posted => $context->posted)) {
+      my $user_view = $context->uri_for_action('user/view', [$user->id]);
+      my $message   = ['User [_1] updated', $form->item->name];
 
-      $context->stash( redirect $user_view, $message );
+      $context->stash(redirect $user_view, $message);
    }
 
-   $context->stash( form => $form );
+   $context->stash(form => $form);
    return;
 }
 
 sub profile : Auth('view') Nav('Profile') {
-   my ($self, $context, $userid) = @_;
+   my ($self, $context) = @_;
 
    my $user = $context->stash('user');
 
@@ -153,7 +156,7 @@ sub totp : Auth('view') Nav('View TOTP') {
 }
 
 sub view : Auth('manager') Nav('View User') {
-   my ($self, $context, $userid) = @_;
+   my ($self, $context) = @_;
 
    my $options = { context => $context, result => $context->stash('user') };
 
