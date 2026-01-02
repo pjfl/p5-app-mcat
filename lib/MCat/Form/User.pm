@@ -33,10 +33,11 @@ has_field 'active' => type => 'Boolean', default => TRUE;
 has_field 'password';
 
 sub default_password {
-   my $self = shift;
-   my $user = $self->context->model($self->item_class)->new_result({});
+   my $self   = shift;
+   my $config = $self->context->config;
+   my $user   = $self->context->model($self->item_class)->new_result({});
 
-   return $user->encrypt_password($self->context->config->default_password);
+   return $user->encrypt_password($config->user->{default_password});
 }
 
 has_field 'password_expired' => type => 'Boolean', default => TRUE;

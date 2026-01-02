@@ -177,7 +177,7 @@ sub _handlers {
       'IncorrectAuthCode' => sub { $code->add_error($_->original) },
       'IncorrectPassword' => sub { $passwd->add_error($_->original) },
       'PasswordExpired'   => sub {
-         my $changep = $context->uri_for_action('page/password', [$user->id]);
+         my $changep = $context->uri_for_action('misc/password', [$user->id]);
 
          $context->stash(redirect $changep, [$_->original]);
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;

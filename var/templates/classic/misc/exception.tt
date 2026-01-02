@@ -2,7 +2,7 @@
 [% IF config.deployment == 'development' -%]
 [% header(flame, 'Exception Awarded', 'exception-header', ' ') -%]
   <div class="line">
-    <label>Thrown by</label><span>[% exception.clean_leader %]</span>
+    <label>Thrown by</label><span>[% exception.clean_leader | html %]</span>
   </div>
   <div class="line">
     <label>Message</label><span>[% exception.original | html %]</span>

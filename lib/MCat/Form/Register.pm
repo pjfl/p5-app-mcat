@@ -63,7 +63,7 @@ sub _create_email {
 
    my $token   = create_token;
    my $context = $self->context;
-   my $link    = $context->uri_for_action('page/register', [$token]);
+   my $link    = $context->uri_for_action('misc/register', [$token]);
    my $passwd  = substr create_token, 0, 12;
    my $options = {
       application => $context->config->name,

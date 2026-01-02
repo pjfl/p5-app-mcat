@@ -193,6 +193,14 @@ exception to the end user
 
 has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
+=item default_action
+
+The default action path to redirect to after logging in, changing password etc.
+
+=cut
+
+has 'default_action' => is => 'ro', isa => Str, default => 'artist/list';
+
 =item default_base_colour
 
 Defaults to B<bisque>. Used as the base colour for page rendering. Can be
@@ -201,14 +209,6 @@ changed via the user F<Profile> form
 =cut
 
 has 'default_base_colour' => is => 'ro', isa => Str, default => 'bisque';
-
-=item default_password
-
-The password used when creating new users
-
-=cut
-
-has 'default_password' => is => 'ro', isa => Str, default => 'welcome';
 
 =item default_route
 
@@ -517,14 +517,6 @@ Used as a prefix when creating identifiers
 =cut
 
 has 'prefix' => is => 'ro', isa => Str, default => 'mcat';
-
-=item redirect
-
-The default action path to redirect to after logging in, changing password etc.
-
-=cut
-
-has 'redirect' => is => 'ro', isa => Str, default => 'artist/list';
 
 =item redis
 

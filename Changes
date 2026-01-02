@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Reworked controllers to use captures
           - Started  using captures in models
           - Breakpoint
           - Added state cookie lifetime as a separate configuration attribute

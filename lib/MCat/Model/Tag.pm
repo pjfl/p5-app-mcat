@@ -99,7 +99,7 @@ sub remove : Auth('admin') {
 
    return unless $self->verify_form_post($context);
 
-   my $value = $context->request->body_parameters->{data} or return;
+   my $value = $context->get_body_parameters->{data} or return;
    my $rs    = $context->model('Tag');
    my $count = 0;
 

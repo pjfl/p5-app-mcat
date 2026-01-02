@@ -4,12 +4,13 @@ use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Int LoadableClass ResultRole
                                     Str Table Undef );
 use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
-use JSON::MaybeXS               qw( encode_json );
 use List::Util                  qw( pairs );
 use Ref::Util                   qw( is_arrayref is_coderef is_plain_hashref );
 use Data::Page;
 use Moo;
 use MooX::HandlesVia;
+
+with 'MCat::Role::JSONParser';
 
 =item count
 
@@ -99,7 +100,7 @@ sub build_results {
       else { $value = $table->result->$colname }
 
       if (is_arrayref $value or is_plain_hashref $value) {
-         $value = encode_json($value);
+         $value = $self->json_parser->encode($value);
       }
 
       my $traits = $info->{cell_traits} // [];
@@ -123,7 +124,7 @@ sub build_results {
       else { $value = $pair->value }
 
       if (is_arrayref $value or is_plain_hashref $value) {
-         $value = encode_json($value);
+         $value = $self->json_parser->encode($value);
       }
 
       my $args = { name => $pair->key, value => $value };
