@@ -63,17 +63,10 @@ $class->belongs_to('owner' => "${result}::User", 'user_id');
 
 $class->belongs_to('comment' => "${result}::BugComment", 'comment_id');
 
-with 'MCat::Role::FileMeta';
-
-has '+meta_config_attr' => default => 'bug_attachments';
-
 sub content_path {
-   my ($self, $options) = @_;
+   my ($self, $file) = @_;
 
-   my $config = $self->result_source->schema->config;
-   my $base   = $self->meta_directory($config, $self->bug_id);
-
-   return $base->catfile($self->path);
+   return $file->directory($self->bug_id)->catfile($self->path);
 }
 
 sub insert {

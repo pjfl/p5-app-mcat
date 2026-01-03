@@ -79,26 +79,6 @@ has 'bin' =>
    isa     => Directory,
    default => sub { shift->pathname->parent };
 
-=item bug_attachments
-
-A hash reference of parameters used to configure the bug attachment uploads
-
-=cut
-
-has 'bug_attachments' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub {
-      my $self = shift;
-
-      return {
-         directory  => $self->vardir->catdir('bugs'),
-         extensions => 'csv|doc|png|txt',
-         max_size   => 5_120_000,
-         sharedir   => $self->root->catdir('bugs')
-      };
-   };
-
 =item component_loader
 
 Configuration parameters used by the L<component loader|Web::Components::Loader>
@@ -245,25 +225,6 @@ has 'deflate_types' =>
       ];
    };
 
-=item documentation
-
-A hash reference of parameters used to configure the documentation viewer
-
-=cut
-
-has 'documentation' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub {
-      my $self = shift;
-
-      return {
-         directory  => $self->bin->parent->catdir('lib'),
-         extensions => 'pm',
-         sharedir   => $self->root->catdir('file')
-      };
-   };
-
 =item dsn
 
 String used to select a database driver and a specific database by name
@@ -288,25 +249,6 @@ The output encoding used by the application
 =cut
 
 has 'encoding' => is => 'ro', isa => Str, default => 'utf-8';
-
-=item filemanager
-
-A hash reference of parameters used to configure the file manager
-
-=cut
-
-has 'filemanager' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub {
-      my $self = shift;
-
-      return {
-         directory  => $self->vardir->catdir('filemanager'),
-         extensions => 'csv|txt',
-         sharedir   => $self->root->catdir('file')
-      };
-   };
 
 =item fonts
 
@@ -851,6 +793,39 @@ has 'wcom_resources' =>
          modal          => 'WCom.Modal',
          navigation     => 'WCom.Navigation',
          table_renderer => 'WCom.Table.Renderer',
+      };
+   };
+
+=item web_components
+
+Configuration hash reference for the L<MVC framework|Web::Components> loaded
+from the F<Contoller>, F<Model>, and F<View> subdirectories of the application
+namespace
+
+=cut
+
+has 'web_components' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
+
+      return {
+         'Model::Bug' => {
+            file_extensions => 'csv|doc|png|txt',
+            file_home       => $self->vardir->catdir('bugs'),
+            file_max_size   => 5_120_000,
+            file_share      => $self->root->catdir('bugs'),
+         },
+         'Model::Documentation' => {
+            file_home  => $self->bin->parent->catdir('lib'),
+            file_share => $self->root->catdir('file'),
+         },
+         'Model::FileManager' => {
+            file_extensions => 'csv|doc|png|txt',
+            file_home       => $self->vardir->catdir('filemanager'),
+            file_share      => $self->root->catdir('file'),
+         },
       };
    };
 

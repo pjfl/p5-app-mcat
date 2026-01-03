@@ -53,7 +53,7 @@ sub header {
 
    return $self->error($context, Unspecified, ['file']) unless $selected;
 
-   my $header = $self->meta_get_header($context, $selected);
+   my $header = $self->file->get_csv_header($selected);
 
    $context->stash(json => $header, code => HTTP_OK, view => 'json');
    return;
@@ -62,7 +62,11 @@ sub header {
 sub list : Nav('File Manager') {
    my ($self, $context) = @_;
 
-   my $options   = { context => $context };
+   my $options   = {
+      context    => $context,
+      file_home  => $self->file_home,
+      file_share => $self->file_share,
+   };
    my $params    = $context->request->query_parameters;
    my $directory = $params->{directory};
    my $selected  = $params->{selected};
@@ -82,7 +86,7 @@ sub paste {
    my ($directory, $message, $selected);
 
    if (my $data = $context->get_body_parameters->{data}) {
-      $directory = $self->meta_to_path($data->{directory});
+      $directory = $self->file->to_path($data->{directory});
       $selected  = $data->{selected};
       $message   = $self->_move_selected($context, $directory, $selected);
    }
@@ -123,7 +127,7 @@ sub remove {
    my ($count, $directory, $message);
 
    if (my $data = $context->get_body_parameters->{data}) {
-      $directory = $self->meta_to_path($data->{directory});
+      $directory = $self->file->to_path($data->{directory});
       ($count, $message) = $self->_remove_selected($context, $data->{selector});
    }
 
@@ -175,7 +179,12 @@ sub select {
 sub upload {
    my ($self, $context) = @_;
 
-   my $options = { action => NUL, max_copies => 9, name => 'FileUpload' };
+   my $options = {
+      action     => NUL,
+      extensions => $self->file_extensions,
+      max_copies => 9,
+      name       => 'FileUpload',
+   };
    my $owner   = $context->session->username;
    my $message = sub {
       my $form = shift;
@@ -196,7 +205,7 @@ sub view {
    my $params = $context->request->query_parameters;
 
    if ($params->{download}) {
-      my $directory = $self->meta_directory($context, $params->{directory});
+      my $directory = $self->file->directory($params->{directory});
       my $object    = $directory->catfile($filename)->slurp;
       my $key       = ITERATOR_DOWNLOAD_KEY();
 
@@ -218,10 +227,12 @@ sub _filemanager_form {
    my ($self, $context, $options, $message) = @_;
 
    my $params    = $context->request->query_parameters;
-   my $directory = $self->meta_to_path($params->{directory});
+   my $directory = $self->file->to_path($params->{directory});
 
-   $options->{context}   = $context;
-   $options->{directory} = $directory if $directory;
+   $options->{context}    = $context;
+   $options->{directory}  = $directory if $directory;
+   $options->{file_home}  = $self->file_home;
+   $options->{file_share} = $self->file_share;
 
    my $form = $self->new_form($options->{name}, $options);
 
@@ -242,21 +253,22 @@ sub _filemanager_form {
 sub _move_selected {
    my ($self, $context, $directory, $selected) = @_;
 
-   $selected = $self->meta_to_path($selected);
+   $selected = $self->file->to_path($selected);
 
-   my $from = $self->meta_directory($context)->child($selected);
+   my $from = $self->file->directory->child($selected);
    my $message;
 
    if ($from->exists) {
+      my $owner    = $context->session->username;
       my $pathname = $from->basename;
-      my $basedir  = $self->meta_directory($context, $directory);
+      my $basedir  = $self->file->directory($directory);
       my $to       = $basedir->catfile($pathname);
 
-      $self->meta_unshare($context, $from);
+      $self->file->unshare_file($from);
       $from->move($to);
-      $self->meta_move($context, $directory, $from, $pathname);
-      $self->meta_share($context, $to)
-         if $self->meta_get_shared($context, $directory, $pathname);
+      $self->file->move($owner, $directory, $from, $pathname);
+      $self->file->share_file($to)
+         if $self->file->get_shared($directory, $pathname);
 
       $message = $to->is_file ? 'File [_1] pasted' : 'Folder [_1] pasted';
       $message = [$message, $pathname];
@@ -272,18 +284,18 @@ sub _remove_selected {
    my $count = 0;
    my $message;
 
-   for my $selected (map { $self->meta_to_path($_) } @{$selector}) {
-      my $path = $self->meta_directory($context)->child($selected);
+   for my $selected (map { $self->file->to_path($_) } @{$selector}) {
+      my $path = $self->file->directory->child($selected);
 
       next unless $path->exists;
 
       try {
-         $self->meta_unshare($context, $path);
+         $self->file->unshare_file($path);
 
          if ($path->is_file) { $path->unlink }
          else { $path->rmdir }
 
-         $self->meta_remove($path);
+         $self->file->remove_meta($path);
          $count++;
       }
       catch { $message = ["${_}"] };

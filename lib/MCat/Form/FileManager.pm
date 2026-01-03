@@ -36,7 +36,7 @@ sub selected_path {
    my $self  = shift;
    my $value = $self->field('selected')->value or return;
 
-   return $self->meta_to_path($value);
+   return $self->file->to_path($value);
 }
 
 sub validate {
@@ -46,36 +46,37 @@ sub validate {
 
    my $context    = $self->context;
    my $name       = $self->field('name');
-   my ($pathname) = reverse split m{ / }mx, $self->meta_scrub($name->value);
-   my $directory  = $self->meta_directory($context, $self->directory);
+   my ($pathname) = reverse split m{ / }mx, $self->file->scrub($name->value);
+   my $directory  = $self->file->directory($self->directory);
    my $operation  = $self->operation;
 
    try {
-      my $to = $directory->child($pathname);
+      my $to    = $directory->child($pathname);
+      my $owner = $context->session->username;
 
       throw 'Already exists' if $to->exists;
 
       if ($operation eq 'mkpath') {
          $to->mkpath;
-         $self->meta_add($context, $self->directory, $pathname);
+         $self->file->add_meta($owner, $self->directory, $pathname);
       }
       elsif ($operation eq 'copy' or $operation eq 'move') {
          my $selected = $self->selected_path;
 
          throw 'Nothing selected' unless $selected;
 
-         my $from = $self->meta_directory($context)->catfile($selected);
+         my $from = $self->file->directory->catfile($selected);
 
          if ($operation eq 'copy') {
             $from->copy($to);
-            $self->meta_add($context, $self->directory, $pathname);
+            $self->file->add_meta($owner, $self->directory, $pathname);
          }
          else {
-            $self->meta_unshare($context, $from);
+            $self->file->unshare_file($$from);
             $from->move($to);
-            $self->meta_move($context, $self->directory, $from, $pathname);
-            $self->meta_share($context, $to)
-               if $self->meta_get_shared($context, $self->directory, $pathname);
+            $self->file->move($owner, $self->directory, $from, $pathname);
+            $self->file->share_file($to)
+               if $self->file->get_shared($self->directory, $pathname);
          }
       }
       else { throw "Operation '${operation}' unknown" }

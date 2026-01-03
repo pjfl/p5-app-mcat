@@ -12,7 +12,6 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::JSONParser';
-with    'MCat::Role::FileMeta';
 
 has '+form_wrapper_class' => default => sub { ['narrow'] };
 has '+info_message'       => default => 'You know what to do';

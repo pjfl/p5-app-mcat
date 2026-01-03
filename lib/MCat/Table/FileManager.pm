@@ -22,10 +22,10 @@ has 'directory' =>
    default  => sub {
       my $self = shift;
 
-      return $self->meta_directory($self->context, $self->_directory);
+      return $self->file->directory($self->_directory);
    };
 
-has 'extensions' => is => 'ro', isa => Str, default => NUL;
+has 'extensions' => is => 'ro', isa => Str, default => 'csv|txt';
 
 has 'moniker' => is => 'ro', isa => Str, default => 'file';
 
@@ -99,9 +99,7 @@ has_column 'owner' =>
       my $cell  = shift;
       my $table = $cell->table;
 
-      return $table->meta_get_owner(
-         $table->context, $table->_directory, $cell->result->name
-      );
+      return $table->file->get_owner($table->_directory, $cell->result->name);
    };
 
 has_column 'shared' =>
@@ -109,8 +107,8 @@ has_column 'shared' =>
    value       => sub {
       my $cell   = shift;
       my $table  = $cell->table;
-      my $shared = $table->meta_get_shared(
-         $table->context, $table->_directory, $cell->result->name
+      my $shared = $table->file->get_shared(
+         $table->_directory, $cell->result->name
       );
 
       return $cell->result->type eq 'file' ? ($shared ? TRUE : FALSE) : NUL;
@@ -266,7 +264,7 @@ sub _build_tag_names {
    my $self  = shift;
    my $names = ['Home'];
 
-   push @{$names}, split m{ / }mx, $self->meta_to_path($self->_directory)
+   push @{$names}, split m{ / }mx, $self->file->to_path($self->_directory)
       if $self->_directory;
 
    my $tuples = [];
@@ -276,7 +274,7 @@ sub _build_tag_names {
       my $params = {};
 
       unless ($name eq 'Home') {
-         $directory = $self->meta_to_uri($directory, $name);
+         $directory = $self->file->to_uri($directory, $name);
          $params = { directory => $directory };
       }
 
@@ -294,9 +292,9 @@ sub _build_tag_names {
 sub _qualified_directory {
    my ($self, $result) = @_;
 
-   return $self->meta_to_uri($self->_directory) unless $result;
+   return $self->file->to_uri($self->_directory) unless $result;
 
-   return $self->meta_to_uri($self->_directory, $result->uri_arg);
+   return $self->file->to_uri($self->_directory, $result->uri_arg);
 }
 
 use namespace::autoclean -except => TABLE_META;

@@ -20,7 +20,7 @@ has 'directory' =>
    default  => sub {
       my $self = shift;
 
-      return $self->meta_directory($self->context, $self->_directory);
+      return $self->file->directory($self->_directory);
    };
 
 has 'extensions' => is => 'ro', isa => Str, default => 'pm';
@@ -39,8 +39,6 @@ has '+form_control_location' =>
    default => sub { [qw(TopLeft BottomLeft BottomRight)] };
 
 has '+icons' => default => sub { shift->context->icons_uri->as_string };
-
-has '+meta_config_attr' => default => 'documentation';
 
 has '+paging' => default => FALSE;
 
@@ -176,7 +174,7 @@ sub _build_tag_names {
    my $self  = shift;
    my $names = ['Home'];
 
-   push @{$names}, split m{ / }mx, $self->meta_to_path($self->_directory)
+   push @{$names}, split m{ / }mx, $self->file->to_path($self->_directory)
       if $self->_directory;
 
    my $tuples = [];
@@ -186,7 +184,7 @@ sub _build_tag_names {
       my $params = {};
 
       unless ($name eq 'Home') {
-         $directory = $self->meta_to_uri($directory, $name);
+         $directory = $self->file->to_uri($directory, $name);
          $params = { directory => $directory };
       }
 
@@ -204,9 +202,9 @@ sub _build_tag_names {
 sub _qualified_directory {
    my ($self, $result) = @_;
 
-   return $self->meta_to_uri($self->_directory) unless $result;
+   return $self->file->to_uri($self->_directory) unless $result;
 
-   return $self->meta_to_uri($self->_directory, $result->uri_arg);
+   return $self->file->to_uri($self->_directory, $result->uri_arg);
 }
 
 use namespace::autoclean -except => TABLE_META;

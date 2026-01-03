@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Better object model form FileMeta
           - Reworked controllers to use captures
           - Started  using captures in models
           - Breakpoint

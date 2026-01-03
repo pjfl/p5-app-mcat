@@ -16,6 +16,8 @@ has '+no_update'       => default => TRUE;
 
 has 'destination' => is => 'rw', isa => Str, default => NUL;
 
+has 'extensions' => is => 'ro', isa => Str, default => 'csv|txt';
+
 has 'max_copies' => is => 'ro', isa => Int, default => 9;
 
 has_field 'file' => do_label => FALSE, type => 'Upload';
@@ -45,16 +47,15 @@ sub validate {
 
    my $filename = $request->query_parameters->{name} || $upload->filename;
 
-   $filename = $self->meta_scrub($filename);
+   $filename = $self->file->scrub($filename);
 
    my ($extn) = $filename =~ m{ \. (.+) \z }mx;
-   my $config = $context->config->filemanager;
-   my $extns  = $config->{extensions} || 'csv|txt';
+   my $extns  = $self->extensions;
 
    return $self->add_form_error('File type [_1] not allowed', ".${extn}")
       unless $extn =~ m{ \A (?: $extns ) \z }mx;
 
-   my $base = $self->meta_directory($context, $directory);
+   my $base = $self->file->directory($directory);
    my $dest = $base->catfile($filename)->assert_filepath;
 
    if ($dest->exists) {
@@ -64,8 +65,8 @@ sub validate {
 
    if ($dest) {
       io($upload->path)->copy($dest);
-      $self->meta_add($context, $directory, $filename);
-      $self->destination($dest->abs2rel($self->meta_directory($context)));
+      $self->file->add_meta($context->session->username, $directory, $filename);
+      $self->destination($dest->abs2rel($self->file->directory));
    }
 
    return;

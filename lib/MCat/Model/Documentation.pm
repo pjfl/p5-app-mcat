@@ -12,8 +12,6 @@ with    'MCat::Role::FileMeta';
 
 has '+moniker' => default => 'doc';
 
-has '+meta_config_attr' => default => 'documentation';
-
 has '_doc_viewer' =>
    is      => 'ro',
    default => sub { MCat::File::Docs::View->new() };
@@ -39,7 +37,11 @@ sub configuration : Auth('admin') Nav('Configuration') {
 sub list : Nav('Docs') {
    my ($self, $context) = @_;
 
-   my $options   = { context => $context };
+   my $options   = {
+      context    => $context,
+      file_home  => $self->file_home,
+      file_share => $self->file_share,
+   };
    my $params    = $context->request->query_parameters;
    my $directory = $params->{directory};
    my $selected  = $params->{selected};
@@ -55,7 +57,7 @@ sub view : Nav('View Docs') {
    my ($self, $context, $file) = @_;
 
    my $params    = $context->request->query_parameters;
-   my $directory = $self->meta_directory($context, $params->{directory});
+   my $directory = $self->file->directory($context, $params->{directory});
    my $markup    = $self->_doc_viewer->get($directory->catfile($file));
 
    $context->stash(documentation => $markup);

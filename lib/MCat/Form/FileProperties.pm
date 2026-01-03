@@ -21,7 +21,7 @@ has 'path' =>
    isa     => Path,
    default => sub {
       my $self = shift;
-      my $dir  = $self->meta_directory($self->context, $self->directory);
+      my $dir  = $self->file->directory($self->directory);
 
       return $dir->child($self->selected);
    };
@@ -34,7 +34,7 @@ has 'selected' =>
    init_arg => undef,
    default  => sub {
       my $self       = shift;
-      my $path       = $self->meta_to_path($self->_selected);
+      my $path       = $self->file->to_path($self->_selected);
       my ($selected) = reverse split m{ / }mx, $path;
 
       return $selected;
@@ -52,11 +52,10 @@ has_field 'shared' =>
    info_top => TRUE;
 
 sub default_shared {
-   my $self    = shift;
-   my $form    = $self->form;
-   my $context = $form->context;
+   my $self = shift;
+   my $form = $self->form;
 
-   return $form->meta_get_shared($context, $form->directory, $form->selected);
+   return $form->file->get_shared($form->directory, $form->selected);
 }
 
 has_field 'cancel' =>
@@ -101,10 +100,10 @@ sub validate {
    my $context = $self->context;
    my $shared  = $self->field('shared')->value;
 
-   $self->meta_set_shared($context, $self->directory, $self->selected, $shared);
+   $self->file->set_shared($self->directory, $self->selected, $shared);
 
-   if ($shared) { $self->meta_share($context, $self->path) }
-   else { $self->meta_unshare($context, $self->path) }
+   if ($shared) { $self->file->share_file($self->path) }
+   else { $self->file->unshare_file($self->path) }
 
    return;
 }

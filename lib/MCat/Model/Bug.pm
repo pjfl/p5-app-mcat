@@ -1,6 +1,7 @@
 package MCat::Model::Bug;
 
 use MCat::Constants       qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use Unexpected::Types     qw( Int Str );
 use MCat::Util            qw( redirect redirect2referer );
 use Unexpected::Functions qw( UnauthorisedAccess UnknownAttachment UnknownBug );
 use Moo;
@@ -8,8 +9,11 @@ use MCat::Navigation::Attributes; # Will do cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
+with    'MCat::Role::FileMeta';
 
 has '+moniker' => default => 'bug';
+
+has 'max_size' => is => 'ro', isa => Int, default => 0;
 
 sub base : Auth('none') {
    my ($self, $context, $bugid) = @_;
@@ -38,7 +42,13 @@ sub attach {
    my ($self, $context) = @_;
 
    my $bug     = $context->stash('bug');
-   my $options = { bug => $bug, context => $context };
+   my $options = {
+      bug        => $bug,
+      context    => $context,
+      extensions => $self->file_extensions,
+      file       => $self->file,
+      max_size   => $self->file_max_size,
+   };
    my $form    = $self->new_form('BugAttachment', $options);
 
    if ($form->process(posted => $context->posted)) {
@@ -70,13 +80,13 @@ sub attachment : Auth('view') {
 
       $context->stash(
          http_headers => ['Content-Disposition', $fml],
-         content_path => $attachment->content_path,
+         content_path => $attachment->content_path($self->file),
          view         => 'image'
       );
    }
    elsif (exists $params->{thumbnail} and $params->{thumbnail} eq 'true') {
       $context->stash(
-         content_path => $attachment->content_path,
+         content_path => $attachment->content_path($self->file),
          thumbnail    => TRUE,
          view         => 'image'
       );

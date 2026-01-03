@@ -1,6 +1,7 @@
 package MCat::Schema::Result::Bug;
 
 use MCat::Constants qw( BUG_STATE_ENUM FALSE SQL_NOW TRUE );
+use MCat::File;
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -68,9 +69,18 @@ $class->has_many('comments' => "${result}::BugComment", 'bug_id');
 
 $class->has_many('attachments' => "${result}::BugAttachment", 'bug_id');
 
-with 'MCat::Role::FileMeta';
+has 'file' =>
+   is      => 'lazy',
+   default => sub {
+      my $self   = shift;
+      my $schema = $self->result_source->schema;
+      my $config = $schema->config->web_components->{'Model::Bug'};
 
-has '+meta_config_attr' => default => 'bug_attachments';
+      return MCat::File->new({
+         home  => $config->{file_home},
+         share => $config->{file_share},
+      });
+   };
 
 sub delete {
    my $self = shift;
@@ -105,7 +115,7 @@ sub purge_attachments {
       }
    }
 
-   my $attachment_dir = $self->meta_directory($config, $self->id);
+   my $attachment_dir = $self->file->directory($self->id);
 
    return FALSE unless $attachment_dir->exists;
 

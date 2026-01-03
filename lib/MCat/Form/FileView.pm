@@ -47,7 +47,7 @@ has_field 'download' =>
 after 'after_build_fields' => sub {
    my $self      = shift;
    my $context   = $self->context;
-   my $directory = $self->meta_directory($context, $self->directory);
+   my $directory = $self->file->directory($self->directory);
    my $file      = $directory->catfile($self->filename);
    my $content   = join "\n", map { "    ${_}" } $file->head(10);
 

@@ -9,11 +9,9 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
-with    'MCat::Role::FileMeta';
 
 has '+do_form_wrapper'  => default => FALSE;
 has '+info_message'     => default => 'Select file name';
-has '+meta_config_attr' => default => 'bug_attachments';
 has '+name'             => default => 'BugAttachment';
 has '+no_update'        => default => TRUE;
 has '+title'            => default => 'Attach File';
@@ -22,9 +20,15 @@ has 'bug' => is => 'ro', isa => Object, required => TRUE;
 
 has 'destination' => is => 'rw', isa => Str, default => NUL;
 
+has 'extensions' => is => 'ro', isa => Str, default => 'csv|txt';
+
+has 'file' => is => 'ro', isa => Object, required => TRUE;
+
 has 'is_editor' => is => 'ro', isa => Bool, default => FALSE;
 
 has 'max_copies' => is => 'ro', isa => Int, default => 9;
+
+has 'max_size' => is => 'ro', isa => Int, default => 0;
 
 has '_icons' =>
    is      => 'lazy',
@@ -59,17 +63,15 @@ sub validate {
 
    my $filename = $request->query_parameters->{name} || $upload->filename;
 
-   $filename = $self->meta_scrub($filename);
+   $filename = $self->file->scrub($filename);
 
-   my ($extn)   = $filename =~ m{ \. ([^\.]+) \z }mx;
-   my $config   = $context->config->bug_attachments;
-   my $max_size = $config->{max_size} // 0;
+   my ($extn) = $filename =~ m{ \. ([^\.]+) \z }mx;
 
    return $self->add_form_error(
-      'Size [_1] greater than maximum [_2]', $upload->size, $max_size
-   ) if $max_size and $upload->size > $max_size;
+      'Size [_1] greater than maximum [_2]', $upload->size, $self->max_size
+   ) if $self->max_size and $upload->size > $self->max_size;
 
-   my $extns = $config->{extensions} || 'csv|txt';
+   my $extns = $self->extensions;
 
    return $self->add_form_error('File type [_1] not allowed', ".${extn}")
       unless $extn =~ m{ \A (?: $extns ) \z }mx;
@@ -79,7 +81,7 @@ sub validate {
 
    $directory = "${bug_id}!${directory}";
 
-   my $base = $self->meta_directory($context, $directory);
+   my $base = $self->file->directory($directory);
    my $dest = $base->catfile($filename)->assert_filepath;
 
    if ($dest->exists) {
@@ -94,7 +96,7 @@ sub validate {
 
    return if $self->result->has_form_errors;
 
-   $self->meta_add($context, $directory, $filename);
+   $self->file->add_meta($context->session->username, $directory, $filename);
    $self->destination($dest->basename);
 
    $context->model('BugAttachment')->create({

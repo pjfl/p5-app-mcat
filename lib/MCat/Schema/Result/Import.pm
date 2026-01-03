@@ -10,8 +10,6 @@ use Unexpected::Functions  qw( throw PathNotFound );
 use Try::Tiny;
 use DBIx::Class::Moo::ResultClass;
 
-with 'MCat::Role::FileMeta';
-
 my $class  = __PACKAGE__;
 my $result = 'MCat::Schema::Result';
 
@@ -71,14 +69,27 @@ $class->belongs_to('core_table', "${result}::Table", {
    'foreign.id' => 'self.table_id'
 });
 
+has 'file' =>
+   is      => 'lazy',
+   default => sub {
+      my $self   = shift;
+      my $schema = $self->result_source->schema;
+      my $config = $schema->config->web_components->{'Model::FileManager'};
+
+      return MCat::File->new({
+         home  => $config->{file_home},
+         share => $config->{file_share},
+      });
+   };
+
 # Public methods
 sub process {
    my ($self, $import_id, $guid, $user_id) = @_;
 
    my $schema   = $self->result_source->schema;
    my $config   = $schema->config;
-   my $selected = $self->meta_to_path($self->source);
-   my $file     = $self->meta_directory($config)->child($selected);
+   my $selected = $self->file->to_path($self->source);
+   my $file     = $self->file->directory->child($selected);
 
    throw PathNotFound, ["${file}"] unless $file->exists;
 
@@ -145,7 +156,7 @@ sub _get_import_map {
    my $index    = {};
    my $field_no = 0;
 
-   for my $field (@{$self->meta_get_header($config, $self->source)}) {
+   for my $field (@{$self->file->get_csv_header($self->source)}) {
       $index->{$field->{name}} = $field_no++;
    }
 
