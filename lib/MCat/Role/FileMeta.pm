@@ -1,7 +1,7 @@
 package MCat::Role::FileMeta;
 
 use MCat::Constants        qw( EXCEPTION_CLASS FALSE TRUE );
-use File::DataClass::Types qw( Directory Path Str );
+use File::DataClass::Types qw( Directory Path Str Int );
 use Type::Utils            qw( class_type );
 use MCat::File;
 use Moo::Role;
@@ -19,6 +19,8 @@ has 'file' =>
 has 'file_extensions' => is => 'ro', isa => Str, default => 'csv|txt';
 
 has 'file_home' => is => 'ro', isa => Directory, required => TRUE;
+
+has 'file_max_size' => is => 'ro', isa => Int, default => 0;
 
 has 'file_share' => is => 'ro', isa => Path, required => TRUE;
 

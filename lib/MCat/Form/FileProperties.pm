@@ -58,16 +58,16 @@ sub default_shared {
    return $form->file->get_shared($form->directory, $form->selected);
 }
 
+has_field 'submit' =>
+   type          => 'Button',
+   wrapper_class => ['inline input-button right'];
+
 has_field 'cancel' =>
    html_name     => 'submit',
    label         => 'Cancel',
    type          => 'Button',
    value         => 'cancel',
    wrapper_class => ['inline input-button left'];
-
-has_field 'submit' =>
-   type          => 'Button',
-   wrapper_class => ['inline input-button right'];
 
 after 'before_build_fields' => sub {
    my $self = shift;
@@ -97,10 +97,13 @@ sub validate {
 
    return unless $self->validated;
 
-   my $context = $self->context;
-   my $shared  = $self->field('shared')->value;
+   my $shared = $self->field('shared')->value;
+   my $meta   = {
+      owner  => $self->context->session->username,
+      shared => $shared,
+   };
 
-   $self->file->set_shared($self->directory, $self->selected, $shared);
+   $self->file->set_shared($self->directory, $self->selected, $meta);
 
    if ($shared) { $self->file->share_file($self->path) }
    else { $self->file->unshare_file($self->path) }

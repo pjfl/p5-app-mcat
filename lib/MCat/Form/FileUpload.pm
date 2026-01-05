@@ -20,6 +20,8 @@ has 'extensions' => is => 'ro', isa => Str, default => 'csv|txt';
 
 has 'max_copies' => is => 'ro', isa => Int, default => 9;
 
+has 'max_size' => is => 'ro', isa => Int, default => 0;
+
 has_field 'file' => do_label => FALSE, type => 'Upload';
 
 after 'before_build_fields' => sub {
@@ -45,7 +47,11 @@ sub validate {
 
    return $self->add_form_error($upload->reason) unless $upload->is_upload;
 
-   my $filename = $request->query_parameters->{name} || $upload->filename;
+   return $self->add_form_error(
+      'Size [_1] greater than maximum [_2]', $upload->size, $self->max_size
+   ) if $self->max_size and $upload->size > $self->max_size;
+
+  my $filename = $request->query_parameters->{name} || $upload->filename;
 
    $filename = $self->file->scrub($filename);
 
@@ -65,7 +71,10 @@ sub validate {
 
    if ($dest) {
       io($upload->path)->copy($dest);
-      $self->file->add_meta($context->session->username, $directory, $filename);
+
+      my $meta = { owner => $context->session->username };
+
+      $self->file->add_meta($directory, $filename, $meta);
       $self->destination($dest->abs2rel($self->file->directory));
    }
 

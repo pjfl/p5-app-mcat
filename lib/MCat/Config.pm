@@ -250,6 +250,14 @@ The output encoding used by the application
 
 has 'encoding' => is => 'ro', isa => Str, default => 'utf-8';
 
+=item extensions
+
+Pipe separated list of file extensions that are allowed for uploading
+
+=cut
+
+has 'extensions' => is => 'ro', isa => Str, default => 'csv|doc|png|txt';
+
 =item fonts
 
 Fonts used in the application pages. Either fetched from Google's CDN or
@@ -387,6 +395,14 @@ has 'logfile' =>
    };
 
 has '_logfile' => is => 'ro', isa => Str, init_arg => 'logfile';
+
+=item max_upload_size
+
+Maximum file upload size in bytes
+
+=cut
+
+has 'max_upload_size' => is => 'ro', isa => PositiveInt, default => 5_120_000;
 
 =item mount_point
 
@@ -812,18 +828,19 @@ has 'web_components' =>
 
       return {
          'Model::Bug' => {
-            file_extensions => 'csv|doc|png|txt',
+            file_extensions => $self->extensions,
             file_home       => $self->vardir->catdir('bugs'),
-            file_max_size   => 5_120_000,
+            file_max_size   => $self->max_upload_size,
             file_share      => $self->root->catdir('bugs'),
          },
          'Model::Documentation' => {
-            file_home  => $self->bin->parent->catdir('lib'),
+            file_home  => io(MCat->env_var('LIB')),
             file_share => $self->root->catdir('file'),
          },
          'Model::FileManager' => {
-            file_extensions => 'csv|doc|png|txt',
+            file_extensions => $self->extensions,,
             file_home       => $self->vardir->catdir('filemanager'),
+            file_max_size   => $self->max_upload_size,
             file_share      => $self->root->catdir('file'),
          },
       };

@@ -13,8 +13,6 @@ with    'MCat::Role::FileMeta';
 
 has '+moniker' => default => 'bug';
 
-has 'max_size' => is => 'ro', isa => Int, default => 0;
-
 sub base : Auth('none') {
    my ($self, $context, $bugid) = @_;
 

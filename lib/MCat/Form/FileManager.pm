@@ -51,14 +51,14 @@ sub validate {
    my $operation  = $self->operation;
 
    try {
-      my $to    = $directory->child($pathname);
-      my $owner = $context->session->username;
+      my $to   = $directory->child($pathname);
+      my $meta = { owner => $context->session->username };
 
       throw 'Already exists' if $to->exists;
 
       if ($operation eq 'mkpath') {
          $to->mkpath;
-         $self->file->add_meta($owner, $self->directory, $pathname);
+         $self->file->add_meta($self->directory, $pathname, $meta);
       }
       elsif ($operation eq 'copy' or $operation eq 'move') {
          my $selected = $self->selected_path;
@@ -69,12 +69,12 @@ sub validate {
 
          if ($operation eq 'copy') {
             $from->copy($to);
-            $self->file->add_meta($owner, $self->directory, $pathname);
+            $self->file->add_meta($self->directory, $pathname, $meta);
          }
          else {
-            $self->file->unshare_file($$from);
+            $self->file->unshare_file($from);
             $from->move($to);
-            $self->file->move($owner, $self->directory, $from, $pathname);
+            $self->file->move_meta($from, $self->directory, $pathname, $meta);
             $self->file->share_file($to)
                if $self->file->get_shared($self->directory, $pathname);
          }

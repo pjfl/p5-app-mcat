@@ -62,6 +62,7 @@ if (-d $local_lib) {
 extend( 'PATH', $bindir ) if -d $bindir;
 
 if (-d $libdir) {
+   extend( 'MCAT_LIB', $libdir );
    extend( 'PERL5LIB', $libdir );
    lib->import( $libdir );
 }

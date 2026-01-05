@@ -61,17 +61,16 @@ sub validate {
 
    return $self->add_form_error($upload->reason) unless $upload->is_upload;
 
+   return $self->add_form_error(
+      'Size [_1] greater than maximum [_2]', $upload->size, $self->max_size
+   ) if $self->max_size and $upload->size > $self->max_size;
+
    my $filename = $request->query_parameters->{name} || $upload->filename;
 
    $filename = $self->file->scrub($filename);
 
    my ($extn) = $filename =~ m{ \. ([^\.]+) \z }mx;
-
-   return $self->add_form_error(
-      'Size [_1] greater than maximum [_2]', $upload->size, $self->max_size
-   ) if $self->max_size and $upload->size > $self->max_size;
-
-   my $extns = $self->extensions;
+   my $extns  = $self->extensions;
 
    return $self->add_form_error('File type [_1] not allowed', ".${extn}")
       unless $extn =~ m{ \A (?: $extns ) \z }mx;
@@ -96,7 +95,9 @@ sub validate {
 
    return if $self->result->has_form_errors;
 
-   $self->file->add_meta($context->session->username, $directory, $filename);
+   my $meta = { owner => $context->session->username };
+
+   $self->file->add_meta($directory, $filename, $meta);
    $self->destination($dest->basename);
 
    $context->model('BugAttachment')->create({

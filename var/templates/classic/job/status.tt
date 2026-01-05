@@ -1,5 +1,5 @@
-[% form.render %]
 <div class="block-container">
+[% form.render %]
 [% lock_table.render %]
-[% job_table.render %]
 </div>
+[% job_table.render %]

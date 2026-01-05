@@ -64,6 +64,7 @@ sub list : Nav('File Manager') {
 
    my $options   = {
       context    => $context,
+      extensions => $self->file_extensions,
       file_home  => $self->file_home,
       file_share => $self->file_share,
    };
@@ -183,6 +184,7 @@ sub upload {
       action     => NUL,
       extensions => $self->file_extensions,
       max_copies => 9,
+      max_size   => $self->file_max_size,
       name       => 'FileUpload',
    };
    my $owner   = $context->session->username;
@@ -259,14 +261,14 @@ sub _move_selected {
    my $message;
 
    if ($from->exists) {
-      my $owner    = $context->session->username;
       my $pathname = $from->basename;
       my $basedir  = $self->file->directory($directory);
       my $to       = $basedir->catfile($pathname);
+      my $meta     = { owner => $context->session->username };
 
       $self->file->unshare_file($from);
       $from->move($to);
-      $self->file->move($owner, $directory, $from, $pathname);
+      $self->file->move_meta($from, $directory, $pathname, $meta);
       $self->file->share_file($to)
          if $self->file->get_shared($directory, $pathname);
 
