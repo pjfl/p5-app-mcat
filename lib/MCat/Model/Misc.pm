@@ -64,7 +64,7 @@ sub create_user : Auth('none') {
    my $changep = $context->uri_for_action('misc/password', [$user->id]);
    my $message = 'User [_1] created';
 
-   $context->stash(redirect $changep, [$message, $user->name]);
+   $context->stash(redirect $changep, [$message, "${user}"]);
    $self->redis_client->remove($token);
    return;
 }
@@ -135,7 +135,7 @@ sub login_dispatch : Auth('none') {
    if ($params->{_submit} && $params->{_submit} eq 'totp_reset') {
       $context->stash(redirect $context->uri_for_action(
          'misc/totp_reset', [$params->{user_name}]
-      ), []);
+      ), ['Redirecting to OTP request form']);
       return;
    }
 
@@ -174,11 +174,11 @@ sub password : Auth('none') Nav('Change Password') {
    my $options = { context => $context, item => $user, log => $self->log };
    my $form    = $self->new_form('ChangePassword', $options);
 
-   if ($form->process( posted => $context->posted )) {
+   if ($form->process(posted => $context->posted)) {
       my $default = $context->uri_for_action($self->config->default_action);
       my $message = 'User [_1] changed password';
 
-      $context->stash(redirect $default, [$message, $form->item->name]);
+      $context->stash(redirect $default, [$message, "${user}"]);
    }
 
    $context->stash(form => $form);
@@ -316,8 +316,6 @@ sub _create_reset_email {
 
 sub _stash_user {
    my ($self, $context, $id_or_name) = @_;
-
-   return unless $id_or_name;
 
    my $realm = $context->session->realm;
    my $user  = $context->find_user({ username => $id_or_name }, $realm)

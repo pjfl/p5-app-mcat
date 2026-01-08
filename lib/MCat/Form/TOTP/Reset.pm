@@ -24,10 +24,13 @@ with 'MCat::Role::JSONParser';
 has '+name'              => default => 'TOTP_Reset';
 has '+title'             => default => 'TOTP Reset Request';
 has '+info_message'      => default => 'Answer the security questions';
-has '+no_update'         => default => TRUE;
 has '+redis_client_name' => default => 'job_stash';
 
 has_field 'name' => type => 'Display', label => 'User Name';
+
+sub default_name {
+   my $user = shift->user; return "${user}";
+}
 
 has_field 'password' => type => 'Password', required => TRUE;
 
@@ -37,13 +40,31 @@ has_field 'mobile_phone' =>
    required => TRUE,
    size     => 12;
 
+sub validate_mobile_phone {
+   my $self  = shift;
+   my $field = $self->field('mobile_phone');
+   my $value = $field->value;
+
+   $field->add_error($value ? 'Invalid response' : 'Required')
+      unless $value && $value == $self->user->mobile_phone;
+
+   return;
+}
+
 has_field 'postcode' => required => TRUE, size => 8;
 
-has_field 'submit' => type => 'Button';
+sub validate_postcode {
+   my $self  = shift;
+   my $field = $self->field('postcode');
+   my $value = $field->value;
 
-sub default_name {
-   my $self = shift; return $self->user->name;
+   $field->add_error($value ? 'Invalid response' : 'Required')
+      unless $value && $value eq $self->user->postcode;
+
+   return;
 }
+
+has_field 'submit' => type => 'Button';
 
 sub validate {
    my $self   = shift;
@@ -52,23 +73,7 @@ sub validate {
 
    try {
       $user->authenticate($passwd->value, NUL, TRUE);
-
-      my $field = $self->field('mobile_phone');
-      my $value = $field->value;
-
-      $field->add_error($value ? 'Invalid response' : 'Required')
-         unless $value && $value == $user->mobile_phone;
-
-      $field = $self->field('postcode');
-      $value = $field->value;
-
-      $field->add_error($value ? 'Invalid response' : 'Required')
-         unless $value && $value eq $user->postcode;
-
-      unless ($self->result->has_errors) {
-         $user->assert_can_email;
-         $self->context->stash(job => $self->_create_email($user));
-      }
+      $user->assert_can_email;
    }
    catch_class [
       'Authentication' => sub { $passwd->add_error($_->original) },
@@ -81,9 +86,9 @@ sub validate {
    return;
 }
 
-sub _create_email {
-   my ($self, $user) = @_;
-
+sub update_model {
+   my $self    = shift;
+   my $user    = $self->user;
    my $token   = create_token;
    my $context = $self->context;
    my $actionp = 'misc/totp_reset';
@@ -102,7 +107,8 @@ sub _create_email {
    my $command = "${program} -o token=${token} send_message email";
    my $options = { command => $command, name => 'send_message' };
 
-   return $context->model('Job')->create($options);
+   $context->stash(job => $context->model('Job')->create($options));
+   return;
 }
 
 use namespace::autoclean -except => META;

@@ -6,7 +6,7 @@ use HTTP::Status                qw( HTTP_OK );
 use MCat::Util                  qw( redirect );
 use Unexpected::Functions       qw( Unspecified );
 use Try::Tiny;
-use Web::Simple;
+use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';

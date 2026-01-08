@@ -55,7 +55,7 @@ has_field 'password_reset' =>
    disabled      => TRUE,
    element_attr  => { 'data-field-depends' => ['user_name'] },
    html_name     => 'submit',
-   label         => 'Forgot Password?',
+   label         => 'Reset Password',
    title         => 'Send password reset email',
    value         => 'password_reset',
    wrapper_class => ['input-button expand'];

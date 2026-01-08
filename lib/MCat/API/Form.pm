@@ -17,7 +17,7 @@ sub field : Auth('none') {
       my $value   = $context->request->query_parameters->{value};
       my $options = { context => $context };
       my $name    = $self->name; $name =~ s{ _ }{::}gmx;
-      my $form    = $context->models->{page}->new_form($name, $options);
+      my $form    = $context->models->{'misc'}->new_form($name, $options);
       my $field   = $form->field($field_name);
 
       $form->setup_form({ $field_name => $value });

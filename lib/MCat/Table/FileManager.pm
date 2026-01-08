@@ -25,6 +25,8 @@ has 'directory' =>
       return $self->file->directory($self->_directory);
    };
 
+has '_directory' => is => 'ro', isa => Str, init_arg => 'directory';
+
 has 'extensions' => is => 'ro', isa => Str, default => 'csv|txt';
 
 has 'moniker' => is => 'ro', isa => Str, default => 'file';
@@ -62,8 +64,6 @@ has '_action' => is => 'lazy', isa => Str, default => sub {
 
    return $self->selectonly ? "${moniker}/select" : "${moniker}/list";
 };
-
-has '_directory' => is => 'ro', isa => Str, init_arg => 'directory';
 
 has '_format_number' => is => 'ro', default => sub {
    return Format::Human::Bytes->new;
@@ -146,7 +146,10 @@ sub highlight_row {
 
    return FALSE unless $self->selected;
 
-   return $self->selected eq $row->result->name ? TRUE : FALSE;
+   my $selected = $self->file->to_path($self->selected);
+   my $relative = $row->result->path->relative($self->file->directory);
+
+   return $selected eq $relative ? TRUE : FALSE;
 }
 
 # Private methods
