@@ -11,7 +11,7 @@ with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Filterable';
 
-has '+configurable_action' => default => 'api/table_preference';
+has '+configurable_action' => default => 'api/preference';
 
 has '+icons' => default => sub { shift->context->icons_uri->as_string };
 

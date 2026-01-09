@@ -9,7 +9,11 @@ with 'Web::Components::ReverseMap';
 has '+moniker' => default => 'z_root'; # Must sort to last place
 
 sub dispatch_request { build_routes
-   'GET|POST + /api/** + ?*' => 'api/root/dispatch',
+   'GET      + /api/form/*/field/*/validate + ?*' => 'api/form/field/validate',
+   'GET      + /api/messages/collect + ?*'        => 'api/collect_messages',
+   'GET      + /api/object/*/fetch + ?*'          => 'api/object/fetch',
+   'POST     + /api/table/*/action + ?*'          => 'api/table/action',
+   'GET|POST + /api/table/*/preference + ?*'      => 'api/table/preference',
 
    'GET      + /bug/attachment/* + ?*'      => 'bug/root/attachment',
    'GET|POST + /bug/create + ?*'            => 'bug/root/base/create',

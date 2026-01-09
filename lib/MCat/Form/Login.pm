@@ -92,7 +92,7 @@ after 'after_build_fields' => sub {
    my $showif_fields    = ['auth_code','totp_reset'];
    my $unrequire_fields = ['auth_code', 'password'];
 
-   my $action  = 'api/object_fetch';
+   my $action  = 'api/fetch';
    my $params  = { class => 'User', property => 'enable_2fa' };
    my $uri     = $context->uri_for_action($action, ['property'], $params);
    my $options = { id => 'user_name', url => "${uri}" };

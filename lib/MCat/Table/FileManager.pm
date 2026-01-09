@@ -37,7 +37,7 @@ has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
 
 has '+caption' => default => 'File Manager';
 
-has '+configurable_action' => default => 'api/table_preference';
+has '+configurable_action' => default => 'api/preference';
 
 has '+form_buttons' => default => sub { shift->_build_form_buttons };
 

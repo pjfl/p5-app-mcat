@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - API rewrite
           - Forms do more field validation and now call update_model
           - Finished FileMeta signature improvements
           - Better object model form FileMeta

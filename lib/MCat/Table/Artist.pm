@@ -33,7 +33,7 @@ has '+chartable_subtitle_link' => default => sub {
 
 has '+chartable_type' => default => 'pie';
 
-has '+configurable_action' => default => 'api/table_preference';
+has '+configurable_action' => default => 'api/preference';
 
 has '+download_display' => default => FALSE;
 

@@ -11,7 +11,7 @@ with    'HTML::StateTable::Role::Filterable';
 
 has '+caption' => default => 'Bugs List';
 
-has '+configurable_action' => default => 'api/table_preference';
+has '+configurable_action' => default => 'api/preference';
 
 has '+configurable_control_location' => default => 'TopRight';
 
