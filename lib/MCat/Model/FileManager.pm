@@ -161,7 +161,11 @@ sub rename {
 sub select {
    my ($self, $context) = @_;
 
-   my $options    = { context => $context };
+   my $options = {
+      context    => $context,
+      file_home  => $self->file_home,
+      file_share => $self->file_share,
+   };
    my $params     = $context->request->query_parameters;
    my $directory  = $params->{directory};
    my $extensions = $params->{extensions};

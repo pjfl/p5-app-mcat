@@ -10,6 +10,7 @@ has '+moniker' => default => 'z_root'; # Must sort to last place
 
 sub dispatch_request { build_routes
    'GET      + /api/form/*/field/*/validate + ?*' => 'api/form/field/validate',
+   'POST     + /api/level/*/log + ?*'             => 'api/loglevel/logger',
    'GET      + /api/messages/collect + ?*'        => 'api/collect_messages',
    'GET      + /api/object/*/fetch + ?*'          => 'api/object/fetch',
    'POST     + /api/table/*/action + ?*'          => 'api/table/action',

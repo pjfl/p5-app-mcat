@@ -13,32 +13,39 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'api';
 
 sub form : Auth('none') Capture(1) {
-   my ($self, $context, $name) = @_;
+   my ($self, $context, $arg) = @_;
 
-   $name =~ s{ _ }{::}gmx;
+   $arg =~ s{ _ }{::}gmx;
 
-   $context->stash(form => $self->new_form($name, { context => $context }));
+   $context->stash(form => $self->new_form($arg, { context => $context }));
    return;
 }
 
 sub field : Auth('none') Capture(1) {
-   my ($self, $context, $name) = @_;
+   my ($self, $context, $arg) = @_;
 
-   $context->stash(field => $context->stash('form')->field($name));
+   $context->stash(field => $context->stash('form')->field($arg));
+   return;
+}
+
+sub loglevel : Auth('none') Capture(1) {
+   my ($self, $context, $arg) = @_;
+
+   $context->stash(log_level => $arg);
    return;
 }
 
 sub object : Auth('none') Capture(1) {
-   my ($self, $context, $name) = @_;
+   my ($self, $context, $arg) = @_;
 
-   $context->stash(object_name => $name);
+   $context->stash(object_name => $arg);
    return;
 }
 
 sub table : Auth('none') Capture(1) {
-   my ($self, $context, $name) = @_;
+   my ($self, $context, $arg) = @_;
 
-   $context->stash(table_name => $name);
+   $context->stash(table_name => $arg);
    return;
 }
 
@@ -54,7 +61,7 @@ sub action : Auth('view') {
    }
    else { $self->log->error("Model ${moniker} unknown", $context) }
 
-   $self->_stash_result($context);
+   $self->_stash_response($context);
    return;
 }
 
@@ -64,7 +71,7 @@ sub collect_messages : Auth('none') {
    my $session  = $context->session;
    my $messages = $session->collect_status_messages($context->request);
 
-   $self->_stash_result($context, [ reverse @{$messages} ]);
+   $self->_stash_response($context, [ reverse @{$messages} ]);
    return;
 }
 
@@ -81,7 +88,21 @@ sub fetch : Auth('none') {
    }
    else { $self->log->error("Object ${name} unknown", $context) }
 
-   $self->_stash_result($context, $result);
+   $self->_stash_response($context, $result);
+   return;
+}
+
+sub logger : Auth('none') {
+   my ($self, $context) = @_;
+
+   if ($context->session->username) {
+      my $level   = $context->stash('log_level');
+      my $message = $context->get_body_parameters->{data};
+
+      $self->log->$level($message, $context);
+   }
+
+   $self->_stash_response($context);
    return;
 }
 
@@ -92,7 +113,7 @@ sub preference : Auth('view') {
    my $value = $context->get_body_parameters->{data} if $context->posted;
    my $pref  = $self->_preference($context, $name, $value);
 
-   $self->_stash_result($context, $pref ? $pref->value : {});
+   $self->_stash_response($context, $pref ? $pref->value : {});
    return;
 }
 
@@ -105,7 +126,7 @@ sub validate : Auth('none') {
 
    $form->setup_form({ $field->name => $value });
    $field->validate_field;
-   $self->_stash_result($context, { reason => [$field->result->all_errors] });
+   $self->_stash_response($context, { reason => [$field->result->all_errors] });
    return;
 }
 
@@ -166,7 +187,7 @@ sub _preference_name {
    return 'table' . DOT . $context->stash('table_name') . DOT . 'preference';
 }
 
-sub _stash_result {
+sub _stash_response {
    my ($self, $context, $result) = @_;
 
    $result //= {};
