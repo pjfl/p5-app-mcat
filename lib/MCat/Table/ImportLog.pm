@@ -17,7 +17,11 @@ has '+icons' => default => sub { shift->context->icons_uri->as_string };
 
 has '+page_size' => default => 10;
 
-has '+page_size_control_location' => default => 'BottomRight';
+has '+page_control_location' => default => 'TopLeft';
+
+has '+page_size_control_location' => default => 'BottomLeft';
+
+has '+searchable_control_location' => default => 'TopRight';
 
 has 'import' => is => 'ro';
 

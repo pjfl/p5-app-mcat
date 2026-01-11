@@ -5,7 +5,7 @@ use MCat::Util                   qw( redirect );
 use Web::ComposableRequest::Util qw( bson64id );
 use Unexpected::Functions        qw( UnknownImport Unspecified );
 use Try::Tiny;
-use Web::Simple;
+use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
@@ -14,20 +14,26 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'import';
 
 sub base {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->list('import')->item('import/create')->finalise;
+
+   return;
+}
+
+sub importid : Capture(1) {
    my ($self, $context, $importid) = @_;
+
+   my $import = $context->model('Import')->find($importid);
+
+   return $self->error($context, UnknownImport, [$importid]) unless $import;
+
+   $context->stash(import => $import);
 
    my $nav = $context->stash('nav')->list('import')->item('import/create');
 
-   if ($importid) {
-      my $item = $context->model('Import')->find($importid);
+   $nav->crud('import', $import->id)->finalise;
 
-      return $self->error($context, UnknownImport, [$importid]) unless $item;
-
-      $context->stash(import => $item);
-      $nav->crud('import', $importid);
-   }
-
-   $nav->finalise;
    return;
 }
 
@@ -38,11 +44,10 @@ sub create : Nav('Create Import') {
    my $form    = $self->new_form('Import', $options);
 
    if ($form->process(posted => $context->posted)) {
-      my $importid = $form->item->id;
-      my $view     = $context->uri_for_action('import/view', [$importid]);
-      my $message  = ['Import [_1] created', $form->item->name];
+      my $view    = $context->uri_for_action('import/view', [$form->item->id]);
+      my $message = 'Import [_1] created';
 
-      $context->stash(redirect $view, $message);
+      $context->stash(redirect $view, [$message, $form->item->name]);
    }
 
    $context->stash(form => $form);
@@ -54,10 +59,10 @@ sub delete : Nav('Delete Import') {
 
    return unless $self->verify_form_post($context);
 
-   my $item = $context->stash('import');
-   my $name = $item->name;
+   my $import = $context->stash('import');
+   my $name   = $import->name;
 
-   $item->delete;
+   $import->delete;
 
    my $list = $context->uri_for_action('import/list');
 
@@ -68,18 +73,14 @@ sub delete : Nav('Delete Import') {
 sub edit : Nav('Edit Import') {
    my ($self, $context) = @_;
 
-   my $item = $context->stash('import');
-   my $form = $self->new_form('Import', {
-      context => $context,
-      item    => $item,
-      title   => 'Edit Import'
-   });
+   my $options = { context => $context, item => $context->stash('import') };
+   my $form    = $self->new_form('Import', $options);
 
    if ($form->process(posted => $context->posted)) {
-      my $view    = $context->uri_for_action('import/view', [$item->id]);
-      my $message = ['Import [_1] updated', $form->item->name];
+      my $view    = $context->uri_for_action('import/view', [$form->item->id]);
+      my $message = 'Import [_1] updated';
 
-      $context->stash(redirect $view, $message);
+      $context->stash(redirect $view, [$message, $form->item->name]);
    }
 
    $context->stash(form => $form);
@@ -107,23 +108,25 @@ sub update {
    try   { $job = $self->_import_file($context, $import->id, $guid) }
    catch { $self->error($context, $_) };
 
-   my $view    = $context->uri_for_action('import/view', [$import->id]);
-   my $message = ['Job [_1] created. Import guid [_2]', $job->label, $guid];
+   return unless $job;
 
-   $context->stash(redirect $view, $message);
+   my $view    = $context->uri_for_action('import/view', [$import->id]);
+   my $message = 'Job [_1] created. Import guid [_2]';
+
+   $context->stash(redirect $view, [$message, $job->label, $guid]);
    return;
 }
 
 sub view : Nav('View Import') {
    my ($self, $context) = @_;
 
-   my $options = { caption => NUL, context => $context };
-   my $logs    = $self->new_table('ImportLog', $options);
+   my $import  = $context->stash('import');
+   my $options = { caption => NUL, context => $context, import => $import };
 
    $context->stash(table => $self->new_table('View::Import', {
-      add_columns => [ 'Logs' => $logs ],
+      add_columns => [ 'Logs' => $self->new_table('ImportLog', $options) ],
       context     => $context,
-      result      => $context->stash('import')
+      result      => $import,
    }));
    return;
 }
@@ -133,7 +136,8 @@ sub _import_file {
    my ($self, $context, $id, $guid) = @_;
 
    my $user_id = $context->session->id;
-   my $program = $self->config->bin->catfile('mcat-cli');
+   my $prefix  = $self->config->prefix;
+   my $program = $self->config->bin->catfile("${prefix}-cli");
    my $args    = "-o guid=${guid} -o id=${id} -o user_id=${user_id}";
    my $command = "${program} ${args} import_file";
    my $options = { command => $command, name => 'import_file' };

@@ -5,7 +5,7 @@ use Type::Utils                 qw( class_type );
 use MCat::Util                  qw( redirect2referer );
 use Unexpected::Functions       qw( Unspecified NotFound );
 use Format::Human::Bytes;
-use Web::Simple;
+use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
@@ -30,7 +30,7 @@ sub base : Auth('admin') {
 }
 
 sub clear_cache : Auth('admin') {
-   my ($self, $context, $api_ns, $logfile) = @_;
+   my ($self, $context, $logfile) = @_;
 
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 

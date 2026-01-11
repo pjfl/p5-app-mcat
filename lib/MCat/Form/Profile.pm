@@ -179,7 +179,7 @@ sub update_model {
 
    $self->update_session($session, $value) if $session->id == $user->id;
 
-   $user->set_totp_secret($value->{enable_2fa});
+   $user->totp_secret($value->{enable_2fa});
    $value->{bling}      = json_bool $value->{bling};
    $value->{enable_2fa} = json_bool $value->{enable_2fa};
    $value->{rel_colour} = json_bool $value->{rel_colour};

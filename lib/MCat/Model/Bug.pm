@@ -14,25 +14,30 @@ with    'MCat::Role::FileMeta';
 has '+moniker' => default => 'bug';
 
 sub base : Auth('none') {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->list('bugs')->finalise;
+
+   return;
+}
+
+sub bugid : Auth('none') Capture(1) {
    my ($self, $context, $bugid) = @_;
+
+   my $bug = $context->model('Bug')->find($bugid, { prefetch => [
+      'owner',
+      'assigned',
+      { attachments => 'owner' },
+      { comments    => 'owner' },
+   ]});
+
+   return $self->error($context, UnknownBug, [$bugid]) unless $bug;
+
+   $context->stash(bug => $bug);
 
    my $nav = $context->stash('nav')->list('bugs');
 
-   if ($bugid) {
-      my $bug = $context->model('Bug')->find($bugid, { prefetch => [
-         'owner',
-         'assigned',
-         { attachments => 'owner' },
-         { comments    => 'owner' },
-      ]});
-
-      return $self->error($context, UnknownBug, [$bugid]) unless $bug;
-
-      $context->stash(bug => $bug);
-      $nav->crud('bug', $bugid);
-   }
-
-   $nav->finalise;
+   $nav->crud('bug', $bugid)->finalise;
    return;
 }
 

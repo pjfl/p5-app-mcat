@@ -6,7 +6,7 @@ use overload '""' => sub { $_[0]->_as_string },
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( Bool HashRef );
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
-use MCat::Util                 qw( create_token digest truncate urandom );
+use MCat::Util                 qw( create_token create_totp_token truncate );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
                                    IncorrectPassword PasswordDisabled
                                    PasswordExpired Unspecified );
@@ -133,11 +133,11 @@ sub authenticate {
 
    throw Unspecified, ['Password'] unless $password;
 
-   my $encrypted = bcrypt($password, _get_salt $self->password);
+   my $supplied = $self->encrypt_password($password, $self->password);
 
-   throw IncorrectPassword, [$self] unless $self->password eq $encrypted;
+   throw IncorrectPassword, [$self] unless $self->password eq $supplied;
 
-   return TRUE if !$self->totp_secret || $for_update;
+   return TRUE if !$self->enable_2fa || $for_update;
 
    throw Unspecified, ['OTP Code'] unless $code;
 
@@ -160,11 +160,12 @@ sub enable_2fa {
 }
 
 sub encrypt_password {
-   my ($self, $password) = @_;
+   my ($self, $password, $stored) = @_;
 
-   my $lf = $self->result_source->schema->config->user->{load_factor};
+   my $lf   = $self->result_source->schema->config->user->{load_factor};
+   my $salt = $stored ? _get_salt $stored : _new_salt '2a', $lf;
 
-   return bcrypt($password, _new_salt '2a', $lf);
+   return bcrypt($password, $salt);
 }
 
 sub execute {
@@ -212,25 +213,25 @@ sub set_password {
    return $self->update;
 }
 
-sub set_totp_secret {
-   my ($self, $enabled) = @_;
-
-   my $current = $self->totp_secret ? TRUE : FALSE;
-
-   return $self->totp_secret(substr digest(urandom())->b64digest, 0, 16)
-      if $enabled && !$current;
-
-   return $self->totp_secret(NUL) if $current && !$enabled;
-
-   return $self->totp_secret;
-}
-
 sub timezone {
    my ($self, $value) = @_; return $self->_profile('timezone', $value);
 }
 
 sub totp_secret {
-   my ($self, $value) = @_; return $self->_profile('totp_secret', $value);
+   my ($self, $enabled) = @_;
+
+   my $secret = $self->_profile('totp_secret');
+
+   return $secret unless defined $enabled;
+
+   my $current = $secret ? TRUE : FALSE;
+
+   return $self->_profile('totp_secret', create_totp_token)
+      if $enabled && !$current;
+
+   return $self->_profile('totp_secret', NUL) if $current && !$enabled;
+
+   return $secret;
 }
 
 sub update {
@@ -246,11 +247,11 @@ sub update {
 
 # Private methods
 sub _as_number {
-   return $_[0]->id;
+   return shift->id;
 }
 
 sub _as_string {
-   return $_[0]->name;
+   return shift->name;
 }
 
 sub _encrypt_password_column {

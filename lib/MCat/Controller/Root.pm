@@ -18,11 +18,11 @@ sub dispatch_request { build_routes
 
    'GET      + /bug/attachment/* + ?*'      => 'bug/root/attachment',
    'GET|POST + /bug/create + ?*'            => 'bug/root/base/create',
-   'GET      + /bug/*/attach + ?*'          => 'bug/root/base/attach',
-   'POST     + /bug/*/attach + *file~ + ?*' => 'bug/root/base/attach',
-   'POST     + /bug/*/delete + ?*'          => 'bug/root/base/delete',
-   'GET|POST + /bug/*/edit + ?*'            => 'bug/root/base/edit',
-   'GET|POST + /bug/* + ?*'                 => 'bug/root/base/view',
+   'GET      + /bug/*/attach + ?*'          => 'bug/root/bugid/attach',
+   'POST     + /bug/*/attach + *file~ + ?*' => 'bug/root/bugid/attach',
+   'POST     + /bug/*/delete + ?*'          => 'bug/root/bugid/delete',
+   'GET|POST + /bug/*/edit + ?*'            => 'bug/root/bugid/edit',
+   'GET|POST + /bug/* + ?*'                 => 'bug/root/bugid/view',
    'GET      + /bug + ?*'                   => 'bug/root/base/list',
 
    'GET|POST + /filemanager/copy + ?*'        => 'file/root/base/copy',

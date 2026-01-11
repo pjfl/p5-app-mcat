@@ -16,6 +16,7 @@ with    'MCat::Role::JSONParser';
 has '+form_wrapper_class' => default => sub { ['narrow'] };
 has '+info_message'       => default => 'You know what to do';
 has '+item_class'         => default => 'Import';
+has '+title'              => default => 'Edit Import';
 
 has 'extensions' => is => 'ro', isa => Str, default => 'csv';
 

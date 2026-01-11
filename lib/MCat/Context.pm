@@ -15,7 +15,7 @@ use Moo;
 
 with 'MCat::Role::Schema';
 
-has 'action' => is => 'ro', isa => Str, predicate => 'has_action';
+has 'action' => is => 'rw', isa => Str, predicate => 'has_action';
 
 has 'config' => is => 'ro', isa => class_type('MCat::Config'), required => TRUE;
 

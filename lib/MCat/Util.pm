@@ -17,9 +17,10 @@ use URI::https;
 use DateTime;
 use DateTime::Format::Human;
 
-our @EXPORT = qw( base64_decode base64_encode create_token digest dt_from_epoch
-                  dt_human encode_for_html formpost local_tz new_uri redirect
-                  redirect2referer truncate urandom uri_escape );
+our @EXPORT = qw( base64_decode base64_encode create_token create_totp_token
+                  digest dt_from_epoch dt_human encode_for_html formpost
+                  local_tz new_uri redirect redirect2referer truncate urandom
+                  uri_escape );
 
 my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);
@@ -131,6 +132,10 @@ sub base64_encode (;$) {
 
 sub create_token () {
    return substr digest(urandom())->hexdigest, 0, 32;
+}
+
+sub create_totp_token () {
+   return substr digest(urandom())->b64digest, 0, 16;
 }
 
 sub digest ($) {

@@ -28,7 +28,7 @@ sub importid : Capture(1) {
 
    $context->stash(import => $item);
 
-   my $nav = $context->stash('nav')->list('importlog')->finalise;
+   $context->stash('nav')->list('importlog')->finalise;
 
    return;
 }

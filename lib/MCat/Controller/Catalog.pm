@@ -30,10 +30,10 @@ sub dispatch_request { build_routes
    'GET      + /track + ?*'             => 'track/root/base/list',
 
    'GET|POST + /import/create + ?*'   => 'import/root/base/create',
-   'GET|POST + /import/*/edit + ?*'   => 'import/root/base/edit',
-   'POST     + /import/*/delete + ?*' => 'import/root/base/delete',
-   'POST     + /import/*/update + ?*' => 'import/root/base/update',
-   'GET      + /import/* + ?*'        => 'import/root/base/view',
+   'GET|POST + /import/*/edit + ?*'   => 'import/root/importid/edit',
+   'POST     + /import/*/delete + ?*' => 'import/root/importid/delete',
+   'POST     + /import/*/update + ?*' => 'import/root/importid/update',
+   'GET      + /import/* + ?*'        => 'import/root/importid/view',
    'GET      + /import + ?*'          => 'import/root/base/list',
 
    'GET      + /import/*/log + ?*' => 'importlog/root/importid/list',
