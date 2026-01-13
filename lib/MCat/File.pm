@@ -66,13 +66,11 @@ sub get_csv_header {
 
    throw Unspecified, ['selected'] unless $selected;
 
-   $selected = $self->to_path($selected);
+   my $path = $self->directory->child($self->to_path($selected));
 
-   my $file = $self->directory->child($selected);
+   return [] unless $path->exists;
 
-   return [] unless $file->exists;
-
-   my $line = $file->utf8->head(1);
+   my $line = $path->utf8->head(1);
 
    $line = substr $line, 1 if ord(substr $line, 0, 1) == 65279; # Remove BOM
    $line = substr $line, 1 if substr $line, 0, 1 eq '#';

@@ -24,14 +24,15 @@ has 'resultset' =>
 has_field 'name', required => TRUE;
 
 sub validate_name {
-   my $self = shift;
-   my $name = $self->field('name');
+   my $self  = shift;
+   my $name  = $self->field('name');
+   my $value = $name->value;
 
-   $name->add_error("User name '[_1]' too short", $name->value)
-      if length $name->value < $self->config->user->{min_name_len};
+   $name->add_error("User name '[_1]' too short", $value || '<empty>')
+      if length $value < $self->config->user->{min_name_len};
 
-   $name->add_error("User name '[_1]' not unique", $name->value)
-      if $self->resultset->find({ user_name => $name->value });
+   $name->add_error("User name '[_1]' not unique", $value || '<empty>')
+      if $self->resultset->find({ user_name => $value });
 
    return;
 }

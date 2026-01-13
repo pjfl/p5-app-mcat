@@ -250,7 +250,7 @@ sub _build_name_link {
       return $self->context->uri_for_action($self->_action, [], $params);
    }
    elsif ($result->type eq 'file') {
-      my $action = $self->moniker . '/view';
+      my $action = $self->moniker . '/preview';
       my $args   = [$result->uri_arg];
       my $dir    = $self->_qualified_directory;
 

@@ -112,10 +112,18 @@ has_field 'link_display' =>
 
 has_field '_g3' => type => 'Group', info => 'Advanced Options';
 
-has_field 'rel_colour' =>
-   type        => 'Boolean',
+has_field 'features' =>
+   type        => 'Select',
    field_group => '_g3',
-   label       => 'Relative Colours';
+   multiple    => TRUE,
+   size        => 4,
+   options     => [
+      { label => 'Animation',        value => 'animation' },
+      { label => 'Bling',            value => 'bling' },
+      { label => 'Droplets',         value => 'droplets' },
+      { label => 'Radar',            value => 'radar' },
+      { label => 'Relative Colours', value => 'relative' },
+   ];
 
 has_field 'base_colour' =>
    type        => 'Colour',
@@ -123,17 +131,13 @@ has_field 'base_colour' =>
    label       => 'Base Colour',
    options     => [];
 
-has_field 'bling' =>
-   type  => 'Boolean',
-   label => 'Enable Bling';
+has_field 'submit' => type => 'Button';
 
 has_field 'view' =>
    type          => 'Link',
    label         => 'View',
    element_class => ['form-button pageload'],
    wrapper_class => ['input-button', 'inline'];
-
-has_field 'submit' => type => 'Button';
 
 after 'after_build_fields' => sub {
    my $self    = shift;
@@ -145,10 +149,7 @@ after 'after_build_fields' => sub {
       $self->field('postcode')->add_wrapper_class('hide');
    }
 
-   unless ($context->config->enable_advanced) {
-      $self->field('_g3')->inactive(TRUE);
-      $self->field('bling')->inactive(TRUE);
-   }
+   $self->field('_g3')->inactive(TRUE) unless $context->config->enable_advanced;
 
    my $field  = $self->field('base_colour');
    my $colour = $context->config->default_base_colour;
@@ -168,8 +169,8 @@ sub update_model {
    my $self   = shift;
    my $user   = $self->user;
    my $value  = $user->profile_value;
-   my @fields = (qw(base_colour bling enable_2fa link_display menu_location
-                    mobile_phone postcode rel_colour skin theme timezone));
+   my @fields = (qw(base_colour enable_2fa features link_display menu_location
+                    mobile_phone postcode skin theme timezone));
 
    for my $field_name (@fields) {
       $value->{$field_name} = $self->field($field_name)->value;
@@ -180,9 +181,7 @@ sub update_model {
    $self->update_session($session, $value) if $session->id == $user->id;
 
    $user->totp_secret($value->{enable_2fa});
-   $value->{bling}      = json_bool $value->{bling};
    $value->{enable_2fa} = json_bool $value->{enable_2fa};
-   $value->{rel_colour} = json_bool $value->{rel_colour};
 
    $self->context->model('Preference')->update_or_create({
       name => 'profile', user_id => $user->id, value => $value

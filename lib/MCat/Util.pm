@@ -9,6 +9,7 @@ use English               qw( -no_match_vars );
 use File::DataClass::IO   qw( io );
 use HTML::Entities        qw( encode_entities );
 use JSON::MaybeXS         qw( encode_json );
+use List::Util            qw( any );
 use Ref::Util             qw( is_hashref );
 use Unexpected::Functions qw( throw );
 use URI::Escape           qw( );
@@ -19,8 +20,8 @@ use DateTime::Format::Human;
 
 our @EXPORT = qw( base64_decode base64_encode create_token create_totp_token
                   digest dt_from_epoch dt_human encode_for_html formpost
-                  local_tz new_uri redirect redirect2referer truncate urandom
-                  uri_escape );
+                  includes local_tz new_uri redirect redirect2referer truncate
+                  urandom uri_escape );
 
 my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);
@@ -181,6 +182,12 @@ sub encode_for_html ($) {
 
 sub formpost () {
    return { method => 'post' };
+}
+
+sub includes ($$) {
+   my ($wanted, $list) = @_;
+
+   return (any { $_ eq $wanted } @{$list}) ? $wanted : q();
 }
 
 sub local_tz () {

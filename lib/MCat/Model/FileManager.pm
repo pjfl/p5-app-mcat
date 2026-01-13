@@ -51,26 +51,24 @@ sub create {
 sub header {
    my ($self, $context, $selected) = @_;
 
-   return $self->error($context, Unspecified, ['file']) unless $selected;
-
    my $header = $self->file->get_csv_header($selected);
 
-   $context->stash(json => $header, code => HTTP_OK, view => 'json');
+   $context->stash(code => HTTP_OK, json => $header, view => 'json');
    return;
 }
 
 sub list : Nav('File Manager') {
    my ($self, $context) = @_;
 
+   my $params    = $context->request->query_parameters;
+   my $directory = $params->{directory};
+   my $selected  = $params->{selected};
    my $options   = {
       context    => $context,
       extensions => $self->file_extensions,
       file_home  => $self->file_home,
       file_share => $self->file_share,
    };
-   my $params    = $context->request->query_parameters;
-   my $directory = $params->{directory};
-   my $selected  = $params->{selected};
 
    $options->{directory} = $directory if $directory;
    $options->{selected}  = $selected  if $selected;
@@ -97,13 +95,34 @@ sub paste {
    return;
 }
 
+sub preview {
+   my ($self, $context, $filename) = @_;
+
+   my $params = $context->request->query_parameters;
+
+   if ($params->{download}) {
+      my $key       = ITERATOR_DOWNLOAD_KEY;
+      my $directory = $self->file->directory($params->{directory});
+      my $object    = $directory->catfile($filename)->slurp;
+      my $options   = { filename => $filename, object => $object };
+
+      $context->stash($key => $options, view => 'table');
+      return;
+   }
+
+   my $options = { filename => $filename, name => 'FileView' };
+
+   $self->_filemanager_form($context, $options, sub {});
+   return;
+}
+
 sub properties {
    my ($self, $context) = @_;
 
-   my $options   = { name => 'FileProperties' };
    my $params    = $context->request->query_parameters;
    my $directory = $params->{directory};
    my $selected  = $params->{selected};
+   my $options   = { name => 'FileProperties' };
 
    $options->{directory} = $directory if $directory;
    $options->{selected}  = $selected  if $selected;
@@ -161,24 +180,25 @@ sub rename {
 sub select {
    my ($self, $context) = @_;
 
-   my $options = {
-      context    => $context,
-      file_home  => $self->file_home,
-      file_share => $self->file_share,
-   };
    my $params     = $context->request->query_parameters;
    my $directory  = $params->{directory};
    my $extensions = $params->{extensions};
    my $selected   = $params->{selected};
+   my $options    = {
+      caption      => NUL,
+      configurable => FALSE,
+      context      => $context,
+      file_home    => $self->file_home,
+      file_share   => $self->file_share,
+      selectonly   => TRUE,
+   };
 
-   $options->{configurable} = FALSE;
-   $options->{caption}      = NUL;
-   $options->{directory}    = $directory  if $directory;
-   $options->{extensions}   = $extensions if $extensions;
-   $options->{selected}     = $selected   if $selected;
-   $options->{selectonly}   = TRUE;
+   $options->{directory}  = $directory  if $directory;
+   $options->{extensions} = $extensions if $extensions;
+   $options->{selected}   = $selected   if $selected;
 
    $context->stash(table => $self->new_table('FileManager', $options));
+   return;
 }
 
 sub upload {
@@ -202,29 +222,6 @@ sub upload {
    };
 
    $self->_filemanager_form($context, $options, $message);
-   return;
-}
-
-sub view {
-   my ($self, $context, $filename) = @_;
-
-   my $params = $context->request->query_parameters;
-
-   if ($params->{download}) {
-      my $directory = $self->file->directory($params->{directory});
-      my $object    = $directory->catfile($filename)->slurp;
-      my $key       = ITERATOR_DOWNLOAD_KEY();
-
-      $context->stash(
-         $key => { filename => $filename, object => $object },
-         view => 'table',
-      );
-      return;
-   }
-
-   my $options = { filename => $filename, name => 'FileView' };
-
-   $self->_filemanager_form($context, $options, sub {});
    return;
 }
 
@@ -259,22 +256,19 @@ sub _filemanager_form {
 sub _move_selected {
    my ($self, $context, $directory, $selected) = @_;
 
-   $selected = $self->file->to_path($selected);
-
-   my $from = $self->file->directory->child($selected);
+   my $file = $self->file;
+   my $from = $file->directory->child($file->to_path($selected));
    my $message;
 
    if ($from->exists) {
       my $pathname = $from->basename;
-      my $basedir  = $self->file->directory($directory);
-      my $to       = $basedir->catfile($pathname);
+      my $to       = $file->directory($directory)->catfile($pathname);
       my $meta     = { owner => $context->session->username };
 
-      $self->file->unshare_file($from);
+      $file->unshare_file($from);
       $from->move($to);
-      $self->file->move_meta($from, $directory, $pathname, $meta);
-      $self->file->share_file($to)
-         if $self->file->get_shared($directory, $pathname);
+      $file->move_meta($from, $directory, $pathname, $meta);
+      $file->share_file($to) if $file->get_shared($directory, $pathname);
 
       $message = $to->is_file ? 'File [_1] pasted' : 'Folder [_1] pasted';
       $message = [$message, $pathname];
@@ -302,6 +296,7 @@ sub _remove_selected {
          else { $path->rmdir }
 
          $self->file->remove_meta($path);
+         $self->log->info("Path ${path} deleted", $context);
          $count++;
       }
       catch { $message = ["${_}"] };

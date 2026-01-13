@@ -40,7 +40,7 @@ has 'filter_config' =>
       };
    };
 
-has 'editor_min_width' => is => 'ro', isa => Int, default => '288';
+has 'editor_min_width' => is => 'ro', isa => Int, default => '312';
 
 has_field 'name' => required => TRUE;
 

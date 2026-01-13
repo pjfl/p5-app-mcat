@@ -23,7 +23,10 @@ sub user : Auth('view') Capture(1) {
    my ($self, $context, $userid) = @_;
 
    my $session = $context->session;
-   my $args = { username => $userid, options => { prefetch => 'profile' } };
+   my $args = {
+      username => $userid,
+      options  => { prefetch => ['profile', 'role'] },
+   };
    my $user = $context->find_user($args, $session->realm);
 
    return $self->error($context, UnknownUser, [$userid]) unless $user;

@@ -1,7 +1,8 @@
 package MCat::Model::API;
 
-use MCat::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
-use HTTP::Status    qw( HTTP_OK );
+use MCat::Constants   qw( DOT EXCEPTION_CLASS FALSE TRUE );
+use HTTP::Status      qw( HTTP_OK );
+use HTML::Forms::Util qw( json_bool );
 use DateTime::TimeZone;
 use Try::Tiny;
 use Moo;
@@ -146,13 +147,13 @@ sub _fetch_property {
    my $class   = $request->query_params->('class');
    my $prop    = $request->query_params->('property');
    my $value   = $request->query_params->('value', { raw => TRUE });
-   my $result  = { found => \0 };
+   my $result  = { found => json_bool FALSE };
 
    return $result unless defined $value;
 
-   my $r = $context->model($class)->find_by_key($value);
+   my $entity = $context->model($class)->find_by_key($value);
 
-   $result->{found} = \1 if $r && $r->execute($prop);
+   $result->{found} = json_bool TRUE if $entity && $entity->execute($prop);
 
    return $result;
 }
@@ -174,11 +175,11 @@ sub _preference { # Accessor/mutator with builtin clearer. Store "" to delete
 
    my $pref = $rs->find({
       name => $name, user_id => $context->session->id
-   }, { key => 'preference_user_id_name_uniq' });
+   }, { key => 'preference_user_id_name_uniq' }); # Accessor
 
    return $pref->delete if defined $pref && defined $value; # Clearer
 
-   return $pref; # Accessor
+   return $pref;
 }
 
 sub _preference_name {

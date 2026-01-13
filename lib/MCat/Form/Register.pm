@@ -11,10 +11,10 @@ extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
 has '+form_wrapper_class' => default => sub { ['narrow'] };
-has '+name'               => default => 'Register';
-has '+title'              => default => 'Registration Request';
 has '+info_message'       => default => 'Answer the registration questions';
 has '+item_class'         => default => 'User';
+has '+name'               => default => 'Register';
+has '+title'              => default => 'Registration Request';
 
 has 'config' => is => 'lazy', default => sub { shift->context->config };
 
@@ -30,29 +30,28 @@ with 'MCat::Role::JSONParser';
 with 'MCat::Role::Redis';
 
 has_field 'name' =>
-   label               => 'User Name',
-   required            => TRUE,
-   validate_inline     => TRUE,
-   validate_when_empty => TRUE;
+   label           => 'User Name',
+   required        => TRUE,
+   validate_inline => TRUE;
 
 sub validate_name {
-   my $self = shift;
-   my $name = $self->field('name');
+   my $self  = shift;
+   my $name  = $self->field('name');
+   my $value = $name->value;
 
-   $name->add_error("User name '[_1]' too short", $name->value)
-      if length $name->value < $self->config->user->{min_name_len};
+   $name->add_error("User name '[_1]' too short", $value || '<empty>')
+      if length $value < $self->config->user->{min_name_len};
 
-   $name->add_error("User name '[_1]' not unique", $name->value)
-      if $self->resultset->find({ name => $name->value });
+   $name->add_error("User name '[_1]' not unique", $value || '<empty>')
+      if $self->resultset->find({ name => $value });
 
    return;
 }
 
 has_field 'email' =>
-   type                => 'Email',
-   required            => TRUE,
-   validate_inline     => TRUE,
-   validate_when_empty => TRUE;
+   type            => 'Email',
+   required        => TRUE,
+   validate_inline => TRUE;
 
 sub validate_email {
    my $self  = shift;

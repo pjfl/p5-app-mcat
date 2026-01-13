@@ -42,9 +42,7 @@ sub clear_cache : Auth('admin') {
 
    $self->redis_client->del($_) for ($self->redis_client->keys("${path}!*"));
 
-   my $message = ['Cache cleared [_1]', "${path}"];
-
-   $context->stash(redirect2referer $context, $message);
+   $context->stash(redirect2referer $context, ['Cache cleared [_1]', $logfile]);
    return;
 }
 
@@ -65,8 +63,7 @@ sub view : Auth('admin') Nav('View Logfile') {
    my $path = $self->config->logsdir->catfile($logfile);
    my $size = 0;
 
-   $size = $self->_format_number->base2($path->stat->{size})
-      if $path->exists;
+   $size = $self->_format_number->base2($path->stat->{size}) if $path->exists;
 
    my $table_class = $self->_extension2table_class($logfile);
    my $options     = {
@@ -75,6 +72,7 @@ sub view : Auth('admin') Nav('View Logfile') {
       logfile => $logfile,
       redis   => $self->redis_client,
    };
+
    $context->stash(table => $self->new_table($table_class, $options));
    return;
 }
