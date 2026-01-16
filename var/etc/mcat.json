@@ -3,8 +3,8 @@
       [ "Terms", "https://dev.perl.org/licenses/artistic.html", true ],
       [ "Privacy", "https://www.openrightsgroup.org", true ],
       [ "Security", "https://github.com/pjfl/p5-app-mcat/security", true ],
-      [ "Issues", "https://github.com/pjfl/p5-app-mcat/issues", true ],
       [ "Community", "https://github.com/pjfl/p5-app-mcat/wiki", true ],
+      [ "Issues", "bug/list" ],
       [ "Docs", "doc/list" ],
       [ "Contact", "misc/contact" ],
       [ "Not Found", "after_an_extensive_search" ]

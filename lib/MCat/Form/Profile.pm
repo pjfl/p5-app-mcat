@@ -12,8 +12,8 @@ with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::UpdatingSession';
 
 has '+form_wrapper_class'     => default => sub { ['narrow'] };
-has '+title'                  => default => 'User Profile';
 has '+info_message'           => default => 'Update profile information';
+has '+title'                  => default => 'User Profile';
 has '+use_init_obj_over_item' => default => TRUE;
 
 has '+init_object' => default => sub {
@@ -62,11 +62,11 @@ has_field 'postcode' =>
    size  => 8,
    title => 'Additional security question used by 2FA token reset';
 
-has_field '_g2' => type => 'Group';
+has_field 'display_options' => type => 'Group';
 
 has_field 'skin' =>
    type        => 'Select',
-   field_group => '_g2',
+   field_group => 'display_options',
    options     => [
       { label => 'Classic', value => 'classic' },
       { label => 'None',    value => 'none' },
@@ -78,8 +78,8 @@ sub default_skin {
 
 has_field 'theme' =>
    type        => 'Select',
-   default     => 'theme-light',
-   field_group => '_g2',
+   default     => 'system-theme',
+   field_group => 'display_options',
    label       => 'Colour Scheme',
    options     => [
       { label => 'Dark',   value => 'dark-theme' },
@@ -87,12 +87,12 @@ has_field 'theme' =>
       { label => 'System', value => 'system-theme' },
    ];
 
-has_field '_g1' => type => 'Group';
+has_field 'menu_options' => type => 'Group';
 
 has_field 'menu_location' =>
    type        => 'Select',
    default     => 'header',
-   field_group => '_g1',
+   field_group => 'menu_options',
    label       => 'Menu Location',
    options     => [
       { label => 'Header',  value => 'header' },
@@ -102,7 +102,7 @@ has_field 'menu_location' =>
 has_field 'link_display' =>
    type        => 'Select',
    default     => 'both',
-   field_group => '_g1',
+   field_group => 'menu_options',
    label       => 'Link Display',
    options     => [
       { label => 'Both', value => 'both' },
@@ -110,16 +110,15 @@ has_field 'link_display' =>
       { label => 'Text', value => 'text' },
    ];
 
-has_field '_g3' => type => 'Group', info => 'Advanced Options';
+has_field 'advanced_options' => type => 'Group', info => 'Advanced Options';
 
 has_field 'features' =>
-   type        => 'Select',
-   field_group => '_g3',
-   multiple    => TRUE,
-   size        => 4,
-   options     => [
+   type             => 'Select',
+   auto_widget_size => 5,
+   field_group      => 'advanced_options',
+   multiple         => TRUE,
+   options          => [
       { label => 'Animation',        value => 'animation' },
-      { label => 'Bling',            value => 'bling' },
       { label => 'Droplets',         value => 'droplets' },
       { label => 'Radar',            value => 'radar' },
       { label => 'Relative Colours', value => 'relative' },
@@ -127,7 +126,7 @@ has_field 'features' =>
 
 has_field 'base_colour' =>
    type        => 'Colour',
-   field_group => '_g3',
+   field_group => 'advanced_options',
    label       => 'Base Colour',
    options     => [];
 
@@ -149,7 +148,8 @@ after 'after_build_fields' => sub {
       $self->field('postcode')->add_wrapper_class('hide');
    }
 
-   $self->field('_g3')->inactive(TRUE) unless $context->config->enable_advanced;
+   $self->field('advanced_options')->inactive(TRUE)
+      unless $context->config->enable_advanced;
 
    my $field  = $self->field('base_colour');
    my $colour = $context->config->default_base_colour;

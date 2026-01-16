@@ -11,10 +11,10 @@ extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 
 has '+form_wrapper_class' => default => sub { ['narrow'] };
-has '+info_message'       => default => 'Answer the registration questions';
+has '+info_message'       => default => 'Answer the sign up questions';
 has '+item_class'         => default => 'User';
 has '+name'               => default => 'Register';
-has '+title'              => default => 'Registration Request';
+has '+title'              => default => 'Sign Up Request';
 
 has 'config' => is => 'lazy', default => sub { shift->context->config };
 
@@ -93,15 +93,20 @@ sub update_model {
 sub _create_email {
    my ($self, $name, $email) = @_;
 
-   my $token   = create_token;
-   my $link    = $self->context->uri_for_action('misc/register', [$token]);
-   my $passwd  = substr create_token, 0, 12;
-   my $options = {
-      application => $self->config->name,
+   my $token     = create_token;
+   my $config    = $self->config;
+   my $context   = $self->context;
+   my $passwd    = substr create_token, 0, 12;
+   my $link      = $context->uri_for_action('misc/register', [$token]);
+   my $role_name = $config->user->{default_role} // 'view';
+   my $role      = $context->model('Role')->find({ name => $role_name });
+   my $options   = {
+      application => $config->name,
       email       => $email->value,
       link        => "${link}",
       password    => $passwd,
       recipients  => [$email->value],
+      role_id     => $role->id,
       subject     => 'User Registration',
       template    => 'register_user.md',
       username    => $name->value,
@@ -109,13 +114,13 @@ sub _create_email {
 
    $self->redis_client->set($token, $self->json_parser->encode($options));
 
-   my $prefix  = $self->config->prefix;
-   my $program = $self->config->bin->catfile("${prefix}-cli");
+   my $prefix  = $config->prefix;
+   my $program = $config->bin->catfile("${prefix}-cli");
    my $command = "${program} -o token=${token} send_message email";
 
    $options = { command => $command, name => 'send_message' };
 
-   return $self->context->model('Job')->create($options);
+   return $context->model('Job')->create($options);
 }
 
 use namespace::autoclean -except => META;

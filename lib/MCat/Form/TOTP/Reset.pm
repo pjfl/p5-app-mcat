@@ -21,10 +21,10 @@ has 'user' =>
 with 'MCat::Role::Redis';
 with 'MCat::Role::JSONParser';
 
-has '+name'              => default => 'TOTP_Reset';
-has '+title'             => default => 'TOTP Reset Request';
 has '+info_message'      => default => 'Answer the security questions';
+has '+name'              => default => 'TOTP_Reset';
 has '+redis_client_name' => default => 'job_stash';
+has '+title'             => default => 'OTP Reset Request';
 
 has_field 'name' => type => 'Display', label => 'User Name';
 
