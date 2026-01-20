@@ -1,12 +1,14 @@
 package MCat::Role::Authorisation;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use MCat::Util             qw( redirect );
+use MCat::Util             qw( includes redirect );
 use Unexpected::Functions  qw( throw NoUserRole );
 use Moo::Role;
 
 sub is_authorised {
    my ($self, $context, $action) = @_;
+
+   throw 'No action: ' . caller unless $action;
 
    my $role = _get_action_auth($context, $action) // 'edit';
 
@@ -26,9 +28,7 @@ sub is_authorised {
 
    return TRUE if $user_role eq $role;
 
-   $context->stash(redirect $context->uri_for_action('misc/unauthorised'), []);
-
-   return FALSE;
+   return $self->_redirect2unauthorised($context);
 }
 
 sub method_args {
@@ -55,20 +55,28 @@ sub method_args {
 sub _redirect2login {
    my ($self, $context) = @_;
 
-   my $login   = $context->uri_for_action('misc/login');
+   my $action  = $self->config->default_actions->{login};
+   my $login   = $context->uri_for_action($action);
    my $wanted  = $context->request->uri;
    my $session = $context->session;
-   my $method  = $context->endpoint;
-   my $action  = $self->can($method // NUL);
 
    # Redirect to wanted on successful login. Only set wanted to "legit" uris
    $session->wanted("${wanted}") if !$session->wanted
       && !$wanted->query_form('navigation')
-      && ($method ne 'login')
-      && ($method ne 'logout')
-      && _get_nav_label($context, $action);
+      && _get_nav_label($context, $self->can($context->endpoint // NUL))
+      && !includes $context->endpoint, [qw(login logout register)];
 
    $context->stash(redirect $login, ['Authentication required']);
+
+   return FALSE;
+}
+
+sub _redirect2unauthorised {
+   my ($self, $context) = @_;
+
+   my $action = $self->config->default_actions->{unauthorised};
+
+   $context->stash(redirect $context->uri_for_action($action),['Unauthorised']);
 
    return FALSE;
 }

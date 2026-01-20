@@ -97,7 +97,8 @@ sub _create_email {
    my $config    = $self->config;
    my $context   = $self->context;
    my $passwd    = substr create_token, 0, 12;
-   my $link      = $context->uri_for_action('misc/register', [$token]);
+   my $action    = $config->default_actions->{register};
+   my $link      = $context->uri_for_action($action, [$token]);
    my $role_name = $config->user->{default_role} // 'view';
    my $role      = $context->model('Role')->find({ name => $role_name });
    my $options   = {

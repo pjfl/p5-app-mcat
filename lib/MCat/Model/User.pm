@@ -106,7 +106,8 @@ sub profile : Auth('view') Nav('Profile') {
    my $form = $self->new_form('Profile', { context => $context, user => $user});
 
    if ($form->process(posted => $context->posted)) {
-      my $location = $context->uri_for_action('user/profile', [$user->id]);
+      my $action   = $self->config->default_actions->{profile};
+      my $location = $context->uri_for_action($action, [$user->id]);
       my $message  = ['User [_1] profile updated', $user->name];
       my $options  = { http_headers => { 'X-Force-Reload' => 'true' }};
 

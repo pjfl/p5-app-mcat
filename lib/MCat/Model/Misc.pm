@@ -62,7 +62,8 @@ sub create_user : Auth('none') {
       password_expired => TRUE,
       role_id          => $stash->{role_id},
    });
-   my $changep = $context->uri_for_action('misc/password', [$user->id]);
+   my $action  = $self->config->default_actions->{password};
+   my $changep = $context->uri_for_action($action, [$user->id]);
 
    $context->stash(redirect $changep, ['User [_1] created', "${user}"]);
    return;
@@ -71,7 +72,8 @@ sub create_user : Auth('none') {
 sub default : Auth('none') {
    my ($self, $context) = @_;
 
-   my $default = $context->uri_for_action($self->config->default_action);
+   my $action  = $self->config->default_actions->{get};
+   my $default = $context->uri_for_action($action);
 
    $context->stash(redirect $default, ['Redirecting to [_1]', $default]);
    return;
@@ -106,12 +108,15 @@ sub login : Auth('none') Nav('Sign In') {
    my $form    = $self->new_form('Login', $options);
 
    if ($form->process(posted => $context->posted)) {
-      my $default  = $context->uri_for_action($self->config->default_action);
+      my $action   = $self->config->default_actions->{get};
+      my $default  = $context->uri_for_action($action);
       my $name     = $context->session->username;
       my $wanted   = $context->session->wanted;
       my $location = new_uri $context->request->scheme, $wanted if $wanted;
       my $message  = 'User [_1] logged in';
 
+      # TODO: If address is a proxy check X-Forwarded-For instead
+      # TODO: Put the IP address in session and verify against reqs
       $self->log->info('Address ' . $context->request->address, $context);
       $context->stash(redirect $location || $default, [$message, $name]);
       $context->session->wanted(NUL);
@@ -148,12 +153,13 @@ sub logout : Auth('view') Nav('Logout') {
 
    return unless $self->verify_form_post($context);
 
-   my $default = $context->uri_for_action('misc/login');
+   my $action  = $self->config->default_actions->{login};
+   my $login   = $context->uri_for_action($action);
    my $args    = ['User [_1] logged out', $context->session->username];
    my $options = { http_headers => { 'X-Force-Reload' => 'true' }};
 
    $context->logout;
-   $context->stash(redirect $default, $args, $options);
+   $context->stash(redirect $login, $args, $options);
    return;
 }
 
@@ -175,7 +181,8 @@ sub password : Auth('none') Nav('Change Password') {
    my $form    = $self->new_form('ChangePassword', $options);
 
    if ($form->process(posted => $context->posted)) {
-      my $default = $context->uri_for_action($self->config->default_action);
+      my $action  = $self->config->default_actions->{get};
+      my $default = $context->uri_for_action($action);
       my $message = 'User [_1] changed password';
 
       $context->stash(redirect $default, [$message, "${user}"]);
@@ -195,7 +202,8 @@ sub password_reset : Auth('none') {
    my $user = $context->stash('user');
 
    unless ($user->can_email) {
-      my $login   = $context->uri_for_action('misc/login');
+      my $action  = $self->config->default_actions->{login};
+      my $login   = $context->uri_for_action($action);
       my $message = 'User [_1] no email address';
 
       $context->stash(redirect $login, [$message, "${user}"]);
@@ -203,7 +211,8 @@ sub password_reset : Auth('none') {
    }
 
    my $job     = $self->_create_reset_email($context, $user);
-   my $changep = $context->uri_for_action('misc/password', [$user->id]);
+   my $action  = $self->config->default_actions->{password};
+   my $changep = $context->uri_for_action($action, [$user->id]);
    my $message = 'User [_1] password reset request [_2] created';
 
    $context->stash(redirect $changep, [$message, "${user}", $job->label]);
@@ -223,7 +232,8 @@ sub password_update : Auth('none') {
 
    $user->update({ password => $stash->{password}, password_expired => TRUE });
 
-   my $changep = $context->uri_for_action('misc/password', [$user->id]);
+   my $action  = $self->config->default_actions->{password};
+   my $changep = $context->uri_for_action($action, [$user->id]);
    my $message = 'User [_1] password reset and expired';
 
    $context->stash(redirect $changep, [$message, "${user}"]);
@@ -241,7 +251,8 @@ sub register : Auth('none') Nav('Sign Up') {
 
    if ($form->process(posted => $context->posted)) {
       my $job     = $context->stash->{job};
-      my $login   = $context->uri_for_action('misc/login');
+      my $action  = $self->config->default_actions->{login};
+      my $login   = $context->uri_for_action($action);
       my $message = 'Registration request [_1] created';
 
       $context->stash(redirect $login, [$message, $job->label]);
@@ -275,7 +286,8 @@ sub totp_reset : Auth('none') {
 
    if ($form->process(posted => $context->posted)) {
       my $job     = $context->stash->{job};
-      my $login   = $context->uri_for_action('misc/login');
+      my $action  = $self->config->default_actions->{login};
+      my $login   = $context->uri_for_action($action);
       my $message = 'User [_1] OTP reset request [_2] created';
 
       $context->stash(redirect $login, [$message, "${user}", $job->label]);

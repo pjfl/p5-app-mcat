@@ -20,8 +20,8 @@ use DateTime::Format::Human;
 
 our @EXPORT = qw( base64_decode base64_encode create_token create_totp_token
                   digest dt_from_epoch dt_human encode_for_html formpost
-                  includes local_tz new_uri redirect redirect2referer truncate
-                  urandom uri_escape );
+                  includes local_tz new_uri redirect redirect2referer
+                  truncate urandom uri_escape );
 
 my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);
@@ -181,7 +181,7 @@ sub encode_for_html ($) {
 }
 
 sub formpost () {
-   return { method => 'post' };
+   return { 'method' => 'post' };
 }
 
 sub includes ($$) {
@@ -199,7 +199,7 @@ sub new_uri ($$) {
 }
 
 sub redirect ($$;$) {
-   return redirect => { %{$_[2] // {}}, location => $_[0], message => $_[1] };
+   return redirect => {%{$_[2] // {}}, 'location' => $_[0], 'message' => $_[1]};
 }
 
 sub redirect2referer ($;$) {

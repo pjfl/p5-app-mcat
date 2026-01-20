@@ -37,7 +37,17 @@ has '_icons' =>
 
 has_field 'file' => type => 'Upload';
 
-has_field 'submit' => type => 'Button', label => 'Attach';
+has_field 'submit' =>
+   type          => 'Button',
+   label         => 'Attach';
+
+# TODO: Add click handler to close the modal
+# has_field 'cancel' =>
+#    type          => 'Button',
+#    html_name     => 'submit',
+#    label         => 'Cancel',
+#    value         => 'cancel',
+#    wrapper_class => ['inline input-button left'];
 
 after 'before_build_fields' => sub {
    my $self = shift;

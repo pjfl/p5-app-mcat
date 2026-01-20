@@ -11,6 +11,7 @@ has '+form_buttons' => default => sub {
    my $self    = shift;
    my $context = $self->context;
    my $user_id = $self->result->id;
+   my $actions = $context->config->default_actions;
 
    return [{
       action    => $context->uri_for_action('user/list'),
@@ -18,7 +19,7 @@ has '+form_buttons' => default => sub {
       selection => 'disable_on_select',
       value     => 'List',
    },{
-      action    => $context->uri_for_action('user/profile', [$user_id]),
+      action    => $context->uri_for_action($actions->{profile}, [$user_id]),
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Profile',

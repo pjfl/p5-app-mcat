@@ -102,13 +102,13 @@ sub options_assigned {
    return [ NUL, 'Nobody', @{$self->lookup_options($field, $accessor) // []} ];
 }
 
+has_field 'submit1' => type => 'Button';
+
 has_field 'view' =>
    type          => 'Link',
    label         => 'View',
    element_class => ['form-button pageload'],
    wrapper_class => ['input-button', 'inline'];
-
-has_field 'submit1' => type => 'Button';
 
 has_field 'comments' =>
    type                   => 'DataStructure',

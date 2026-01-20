@@ -48,10 +48,11 @@ sub root : Auth('none') {
    my ($self, $context) = @_;
 
    my $session = $context->session;
+   my $actions = $self->config->default_actions;
    my $nav     = Web::Components::Navigation->new({
       context       => $context,
-      footer_action => 'misc/footer',
-      logger_action => 'api/logger',
+      footer_action => $actions->{footer},
+      logger_action => $actions->{logger},
       model         => $self,
    });
 
@@ -60,16 +61,16 @@ sub root : Auth('none') {
 
    if ($session->authenticated) {
       $nav->menu('bugs')->item('bug/list');
-      $nav->item('misc/changes');
-      $nav->item('misc/password', [$session->id]);
-      $nav->item('user/profile', [$session->id]);
-      $nav->item('user/totp', [$session->id]) if $session->enable_2fa;
-      $nav->item(formpost, 'misc/logout');
+      $nav->item($actions->{changes}) if $actions->{changes};
+      $nav->item($actions->{password}, [$session->id]);
+      $nav->item($actions->{profile}, [$session->id]);
+      $nav->item($actions->{totp}, [$session->id]) if $session->enable_2fa;
+      $nav->item(formpost, $actions->{logout});
    }
    else {
-      $nav->item('misc/password', [$session->id]);
-      $nav->item('misc/login');
-      $nav->item('misc/register', []) if $self->config->registration;
+      $nav->item($actions->{password}, [$session->id]);
+      $nav->item($actions->{login});
+      $nav->item($actions->{register}, []) if $self->config->registration;
    }
 
    $context->stash($self->navigation_key => $nav);

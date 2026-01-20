@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Artist form uses SelectMany field type
           - Uses auto_widget_size on profile feature field
           - Adds user features
           - Model updates using Capture

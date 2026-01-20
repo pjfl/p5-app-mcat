@@ -73,7 +73,7 @@ sub edit : Nav('Edit Artist') {
    my ($self, $context) = @_;
 
    my $artist  = $context->stash('artist');
-   my $options = {context => $context, item => $artist, title => 'Edit artist'};
+   my $options = { context => $context, item => $artist };
    my $form    = $self->new_form('Artist', $options);
 
    if ($form->process(posted => $context->posted)) {

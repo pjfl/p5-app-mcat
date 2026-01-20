@@ -35,10 +35,10 @@ has '_tables' =>
 has_field 'name' => order => 6, required => TRUE;
 
 has_field 'source' =>
-   type       => 'Selector',
-   title      => 'Select File',
+   type       => 'SelectOne',
    display_as => '...',
-   order      => 7;
+   order      => 7,
+   title      => 'Select File';
 
 has_field 'field_map' =>
    type        => 'DataStructure',
@@ -132,26 +132,23 @@ after 'before_build_fields' => sub {
 };
 
 after 'after_build_fields' => sub {
-   my $self     = shift;
-   my $context  = $self->context;
-   my $params   = { extensions => $self->extensions };
-   my $selector = $context->uri_for_action('file/select', [], $params);
-   my $header   = $context->uri_for_action('file/header', ['%value']);
-   my $ds       = $context->config->wcom_resources->{datastructure};
-   my $modal    = $context->config->wcom_resources->{modal};
-   my $reload   = $self->json_parser->encode({
-      target => 'field_map',
-      url    => $header,
-   });
-   my $args     = $self->json_parser->encode({
-      icons    => $self->_icons,
-      onchange => qq{${ds}.reload(${reload})},
-      target   => 'source',
-      title    => 'Select File',
-      url      => $selector,
-   });
+   my $self      = shift;
+   my $context   = $self->context;
+   my $params    = { extensions => $self->extensions };
+   my $selector  = $context->uri_for_action('file/select', [], $params);
+   my $url       = $context->uri_for_action('file/header', ['%value']);
+   my $options   = { target => 'field_map', url => $url };
+   my $reload    = $self->json_parser->encode($options);
+   my $resources = $context->config->wcom_resources;
+   my $ds        = $resources->{datastructure};
+   my $source    = $self->field('source');
 
-   $self->field('source')->selector("${modal}.createSelector(${args})");
+   $source->add_action({ transform => \&_to_path });
+   $source->callback("${ds}.reload(${reload})");
+   $source->icons($self->_icons);
+   $source->modal($resources->{modal});
+   $source->selector_url("${selector}");
+
    $self->field('field_map')->icons($self->_icons);
 
    if ($self->item) {
@@ -181,6 +178,11 @@ sub _get_column_info {
    }
 
    return $fields;
+}
+
+# Private functions
+sub _to_path {
+   my $value = shift; $value =~ s{ ! }{/}gmx; return $value;
 }
 
 use namespace::autoclean -except => META;

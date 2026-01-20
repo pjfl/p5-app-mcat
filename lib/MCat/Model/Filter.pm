@@ -1,7 +1,7 @@
 package MCat::Model::Filter;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use MCat::Util             qw( formpost redirect );
+use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownFilter UnknownSelector UnknownTable );
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning

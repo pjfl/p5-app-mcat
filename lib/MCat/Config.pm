@@ -173,13 +173,33 @@ exception to the end user
 
 has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
-=item default_action
+=item default_actions
 
-The default action path to redirect to after logging in, changing password etc.
+A hash reference of actions. Keys include; C<get> the action path to
+redirect to after logging in, changing password etc. and C<login> the
+action path to the login form
 
 =cut
 
-has 'default_action' => is => 'ro', isa => Str, default => 'artist/list';
+has 'default_actions' =>
+   is      => 'ro',
+   isa     => HashRef[Str],
+   default => sub {
+      return {
+         changes      => 'misc/changes',
+         fetch        => 'api/fetch',
+         footer       => 'misc/footer',
+         get          => 'artist/list',
+         logger       => 'api/logger',
+         login        => 'misc/login',
+         logout       => 'misc/logout',
+         totp         => 'user/totp',
+         password     => 'misc/password',
+         profile      => 'user/profile',
+         register     => 'misc/register',
+         unauthorised => 'misc/unauthorised',
+      };
+   };
 
 =item default_base_colour
 

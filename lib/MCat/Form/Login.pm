@@ -97,8 +97,9 @@ after 'after_build_fields' => sub {
    my $showif_flds = ['auth_code','totp_reset'];
    my $unreq_flds  = ['auth_code', 'password'];
 
+   my $action  = $config->default_actions->{fetch};
    my $params  = { class => 'User', property => 'enable_2fa' };
-   my $uri     = $context->uri_for_action('api/fetch', ['property'], $params);
+   my $uri     = $context->uri_for_action($action, ['property'], $params);
    my $options = { id => 'user_name', url => "${uri}" };
 
    $self->field('name')->element_attr->{javascript} = {
@@ -118,7 +119,8 @@ after 'after_build_fields' => sub {
       onclick => make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds)
    };
 
-   $uri = $context->uri_for_action('misc/register');
+   $action = $config->default_actions->{register};
+   $uri    = $context->uri_for_action($action);
    $self->field('register')->href($uri->as_string);
 
    if (includes 'droplets', $session->features) {
@@ -175,6 +177,7 @@ sub validate {
    my $passwd  = $self->field('password');
    my $code    = $self->field('auth_code');
 
+   # TODO: Authenticate/restrict IP address
    $args = { user => $user, password => $passwd->value, code => $code->value };
 
    try {
@@ -197,7 +200,8 @@ sub _handlers {
       'IncorrectAuthCode' => sub { $code->add_error($_->original) },
       'IncorrectPassword' => sub { $passwd->add_error($_->original) },
       'PasswordExpired'   => sub {
-         my $changep = $context->uri_for_action('misc/password', [$user->id]);
+         my $action  = $self->config->default_actions->{password};
+         my $changep = $context->uri_for_action($action, [$user->id]);
 
          $context->stash(redirect $changep, [$_->original]);
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;
