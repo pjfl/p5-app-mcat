@@ -43,7 +43,7 @@ after 'after_build_fields' => sub {
 
    my $resources   = $context->config->wcom_resources;
    my $modal_close = $resources->{modal} . '.closeCurrent';
-   my $js          = sprintf '%s("%s", "%s"); %s("%s"); %s()',
+   my $download    = sprintf '%s("%s", "%s"); %s("%s"); %s()',
       $resources->{downloadable} . '.downloader',
       $context->uri_for_action('bug/attachment', [$id], { download => 'true' }),
       $self->attachment->path,
@@ -51,11 +51,8 @@ after 'after_build_fields' => sub {
       $context->uri_for_action('bug/edit', [$self->attachment->bug_id]),
       $modal_close;
 
-   $self->field('download')->element_attr->{javascript} = { onclick => $js };
-
-   $js = "${modal_close}()";
-
-   $self->field('cancel')->element_attr->{javascript} = { onclick => $js };
+   $self->field('download')->add_handler('click', $download);
+   $self->field('cancel')->add_handler('click', "${modal_close}()");
    return;
 };
 

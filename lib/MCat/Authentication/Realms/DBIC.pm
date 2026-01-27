@@ -22,14 +22,25 @@ has 'schema' =>
    isa      => class_type('DBIx::Class::Schema'),
    required => TRUE;
 
+has 'validate_ip_method' =>
+   is      => 'ro',
+   isa     => Str,
+   default => 'validate_address';
+
 sub authenticate {
    my ($self, $args) = @_;
 
    throw Unspecified, ['user'] unless $args->{user};
 
-   my $method = $self->authenticate_method;
+   my $user   = $args->{user};
+   my $method = $self->validate_ip_method;
 
-   return $args->{user}->$method($args->{password}, $args->{code});
+   $user->$method($args->{address})
+      if $args->{address} && $user->can($method);
+
+   $method = $self->authenticate_method;
+   $user->$method($args->{password}, $args->{code});
+   return TRUE;
 }
 
 sub find_user {
@@ -57,10 +68,14 @@ sub to_session {
 
    $self->update_session($session, $user->profile_value);
 
+   $session->address($args->{address})
+      if $session->can('address') && $args->{address};
+
    $session->email($user->email)     if $session->can('email');
    $session->id($user->id)           if $session->can('id');
    $session->role($user->role->name) if $session->can('role');
    $session->username($user->name)   if $session->can('username');
+
    return;
 }
 

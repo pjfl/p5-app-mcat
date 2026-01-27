@@ -70,8 +70,7 @@ sub _status_button_handler {
    my ($self, $context) = @_;
 
    my $status = $context->uri_for_action('job/status');
-   my $params = $context->get_body_parameters;
-   my $action = $params->{_submit} or return;
+   my $action = $context->button_pressed or return;
 
    if ($action eq 'clear') {
       $self->jobdaemon->clear;

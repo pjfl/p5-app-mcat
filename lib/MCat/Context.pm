@@ -87,6 +87,10 @@ has '_stash' =>
 
 with 'MCat::Role::Authentication';
 
+sub button_pressed {
+   return shift->request->body_parameters->{_submit} // FALSE;
+}
+
 sub clear_redirect {
    return delete shift->stash->{redirect};
 }

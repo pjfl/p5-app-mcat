@@ -86,9 +86,9 @@ after 'after_build_fields' => sub {
    }
 
    my $renderer = $self->context->config->wcom_resources->{table_renderer};
-   my $js       = "${renderer}.tables.filemanager.modal.close()";
+   my $close    = "${renderer}.tables.filemanager.modal.close()";
 
-   $self->field('cancel')->element_attr->{javascript} = { onclick => $js };
+   $self->field('cancel')->add_handler('click', $close);
    return;
 };
 

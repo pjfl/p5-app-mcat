@@ -153,10 +153,10 @@ sub edit : Nav('Update Bug') {
       if $context->posted && !$form->is_editor;
 
    if ($form->process(posted => $context->posted)) {
-      my $purged  = $bug->purge_attachments;
-      my $params  = $purged ? { 'current-page' => 2 } : {};
+      my $params  = { 'current-page' => $form->current_page };
       my $edit    = $context->uri_for_action('bug/edit', [$bug->id], $params);
       my $message = ['Bug report [_1] updated', $bug->id];
+      my $purged  = $bug->purge_attachments;
 
       $message = ['Attactment [_1] deleted', join ', ', @{$purged}]
          if $purged;

@@ -1,17 +1,29 @@
 package MCat::Form::User;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
+use HTML::Forms::Types     qw( Int Str );
+use Data::Validate::IP     qw( is_ip );
 use Moo;
 use HTML::Forms::Moo;
 
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
+with    'MCat::Role::JSONParser';
 
-has '+info_message' => default => 'With great power comes great responsibilty';
-has '+item_class'   => default => 'User';
-has '+title'        => default => 'User';
+has '+item_class' => default => 'User';
+has '+title'      => default => 'Edit User';
 
 has 'config' => is => 'lazy', default => sub { shift->context->config };
+
+has 'current_page' =>
+   is      => 'rw',
+   isa     => Int,
+   lazy    => TRUE,
+   default => sub {
+      my $self = shift;
+
+      return $self->context->request->query_parameters->{'current-page'} // 0;
+   };
 
 has 'resultset' =>
    is      => 'lazy',
@@ -20,6 +32,11 @@ has 'resultset' =>
 
       return $self->context->model($self->item_class);
    };
+
+has '_icons' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { shift->context->icons_uri->as_string };
 
 has_field 'name', required => TRUE;
 
@@ -32,7 +49,7 @@ sub validate_name {
       if length $value < $self->config->user->{min_name_len};
 
    $name->add_error("User name '[_1]' not unique", $value || '<empty>')
-      if $self->resultset->find({ user_name => $value });
+      if !$self->item && $self->resultset->find({ name => $value });
 
    return;
 }
@@ -44,7 +61,7 @@ sub validate_email {
    my $email = $self->field('email');
 
    $email->add_error("Email address '[_1]' not unique", $email->value)
-      if $self->resultset->find({ email => $email->value });
+      if !$self->item && $self->resultset->find({ email => $email->value });
 
    return;
 }
@@ -76,7 +93,7 @@ sub default_password {
 
 has_field 'password_expired' => type => 'Boolean', default => TRUE;
 
-has_field 'submit' => type => 'Button';
+has_field 'submit1' => type => 'Button', value => '1';
 
 has_field 'view' =>
    type          => 'Link',
@@ -84,20 +101,77 @@ has_field 'view' =>
    element_class => ['form-button pageload'],
    wrapper_class => ['input-button', 'inline'];
 
+has_field 'valid_ips' =>
+   type                   => 'DataStructure',
+   do_label               => FALSE,
+   deflate_value_method   => \&_deflate_addresses,
+   inflate_default_method => \&_inflate_addresses,
+   tags                   => { page_break => TRUE },
+   structure              => [
+      { classes => 'ipaddress', name => 'range-start', type => 'text' },
+      { classes => 'ipaddress', name => 'range-end',   type => 'text' },
+   ];
+
+sub validate_valid_ips {
+   my $self  = shift;
+   my $field = $self->field('valid_ips');
+
+   for my $range (@{$self->_deflate_addresses($field->value)}) {
+      for my $key (grep { $range->{$_} } keys %{$range}) {
+         $field->add_error('Bad IP address') unless is_ip($range->{$key});
+      }
+   }
+
+   return;
+}
+
+has_field 'submit2' => type => 'Button', value => '2';
+
+before 'before_build_fields' => sub {
+   my $self = shift;
+
+   if (my $page = $self->context->button_pressed) {
+      $self->current_page($page - 1);
+   }
+
+   return;
+};
+
 after 'after_build_fields' => sub {
    my $self    = shift;
    my $context = $self->context;
+
+   $self->renderer_args->{current_page} = $self->current_page;
+   $self->renderer_args->{page_names}   = ['Details', 'IP Addresses'];
+   $self->info_message([
+      'With great power comes great responsibilty',
+      'Enter an IP address or address range to restrict access',
+   ]);
 
    if ($self->item) {
       my $view = $context->uri_for_action('user/view', [$self->item->id]);
 
       $self->field('view')->href($view->as_string);
-      $self->field('submit')->add_wrapper_class(['inline', 'right']);
+      $self->field('submit1')->add_wrapper_class(['inline', 'right']);
    }
    else { $self->field('view')->inactive(TRUE) }
 
+   $self->field('valid_ips')->icons($self->_icons);
    return;
 };
+
+# Private methods
+sub _deflate_addresses {
+   my ($self, $value) = @_;
+
+   return $value ? $self->form->json_parser->decode($value) : [];
+}
+
+sub _inflate_addresses {
+   my ($self, $addresses) = @_;
+
+   return $self->form->json_parser->encode($addresses || []);
+}
 
 use namespace::autoclean -except => META;
 

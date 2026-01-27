@@ -80,15 +80,14 @@ sub edit : Auth('admin') Nav('Edit User') {
    my ($self, $context) = @_;
 
    my $user = $context->stash('user');
-   my $form = $self->new_form('User', {
-      context => $context, item => $user, title => 'Edit User'
-   });
+   my $form = $self->new_form('User', { context => $context, item => $user });
 
    if ($form->process(posted => $context->posted)) {
-      my $user_view = $context->uri_for_action('user/view', [$user->id]);
-      my $message   = ['User [_1] updated', $form->item->name];
+      my $params  = { 'current-page' => $form->current_page };
+      my $edit    = $context->uri_for_action('user/edit', [$user->id], $params);
+      my $message = 'User [_1] updated';
 
-      $context->stash(redirect $user_view, $message);
+      $context->stash(redirect $edit, [$message, $form->item->name]);
    }
 
    $context->stash(form => $form);

@@ -7,9 +7,11 @@ use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( Bool HashRef );
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use MCat::Util                 qw( create_token create_totp_token truncate );
+use Net::IP::Match::Regexp     qw( create_iprange_regexp match_ip );
 use Unexpected::Functions      qw( throw AccountInactive IncorrectAuthCode
-                                   IncorrectPassword PasswordDisabled
-                                   PasswordExpired Unspecified );
+                                   IncorrectPassword InvalidIPAddress
+                                   PasswordDisabled PasswordExpired
+                                   Unspecified );
 use Auth::GoogleAuth;
 use DBIx::Class::Moo::ResultClass;
 
@@ -71,22 +73,30 @@ $class->might_have('profile' => "${result}::Preference", sub {
    };
 });
 
-has 'profile_value' => is => 'lazy', isa => HashRef, default => sub {
-   my $self    = shift;
-   my $profile = $self->profile;
+has '_config' =>
+   is      => 'lazy',
+   default => sub { shift->result_source->schema->config };
 
-   return $profile ? $profile->value : {};
-};
+has 'profile_value' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
 
-has 'totp_authenticator' => is => 'lazy', default => sub {
-   my $self = shift;
+      return $self->profile ? $self->profile->value : {};
+   };
 
-   return Auth::GoogleAuth->new({
-      issuer => $self->result_source->schema->config->prefix,
-      key_id => $self->name,
-      secret => $self->totp_secret,
-   });
-};
+has 'authenticator' =>
+   is      => 'lazy',
+   default => sub {
+      my $self = shift;
+
+      return Auth::GoogleAuth->new({
+         issuer => $self->_config->prefix,
+         key_id => $self->name,
+         secret => $self->totp_secret,
+      });
+   };
 
 # Private functions
 sub _get_salt ($) {
@@ -141,8 +151,7 @@ sub authenticate {
 
    throw Unspecified, ['OTP Code'] unless $code;
 
-   throw IncorrectAuthCode, [$self]
-      unless $self->totp_authenticator->verify($code);
+   throw IncorrectAuthCode, [$self] unless $self->authenticator->verify($code);
 
    return TRUE;
 }
@@ -162,7 +171,7 @@ sub enable_2fa {
 sub encrypt_password {
    my ($self, $password, $stored) = @_;
 
-   my $lf   = $self->result_source->schema->config->user->{load_factor};
+   my $lf   = $self->_config->user->{load_factor};
    my $salt = $stored ? _get_salt $stored : _new_salt '2a', $lf;
 
    return bcrypt($password, $salt);
@@ -245,6 +254,25 @@ sub update {
    return $self->next::method;
 }
 
+sub valid_ips {
+   my ($self, $value) = @_; return $self->_profile('valid_ips', $value);
+}
+
+sub validate_address {
+   my ($self, $address) = @_;
+
+   throw Unspecified, ['address'] unless $address;
+
+   if ($self->valid_ips && $self->valid_ips->[0]) {
+      return if $self->_validate_address($address, $self->valid_ips);
+   }
+   elsif ($self->_config->valid_ips && $self->_config->valid_ips->[0]) {
+      return if $self->_validate_address($address, $self->_config->valid_ips);
+   }
+
+   throw InvalidIPAddress, [$self];
+}
+
 # Private methods
 sub _as_number {
    return shift->id;
@@ -282,6 +310,20 @@ sub _profile {
    }
 
    return $profile->{$key};
+}
+
+sub _validate_address {
+   my ($self, $address, $valid_ips) = @_;
+
+   for my $ip (@{$valid_ips}) {
+      my $end = $ip->{'range-end'};
+      my $re  = $end ? create_iprange_regexp($ip->{'range-start'}, $end)
+                     : create_iprange_regexp($ip->{'range-start'});
+
+      return TRUE if match_ip($address, $re);
+   }
+
+   return FALSE;
 }
 
 use namespace::autoclean;

@@ -1,7 +1,8 @@
 package MCat::View::HTML;
 
 use HTML::Forms::Constants qw( TRUE );
-use MCat::Util             qw( dt_from_epoch dt_human encode_for_html includes);
+use Class::Usul::Cmd::Util qw( includes );
+use MCat::Util             qw( dt_from_epoch dt_human encode_for_html );
 use Encode                 qw( encode );
 use HTML::Entities         qw( encode_entities );
 use HTML::Forms::Util      qw( process_attrs );

@@ -113,11 +113,10 @@ sub login : Auth('none') Nav('Sign In') {
       my $name     = $context->session->username;
       my $wanted   = $context->session->wanted;
       my $location = new_uri $context->request->scheme, $wanted if $wanted;
+      my $address  = $context->request->remote_address;
       my $message  = 'User [_1] logged in';
 
-      # TODO: If address is a proxy check X-Forwarded-For instead
-      # TODO: Put the IP address in session and verify against reqs
-      $self->log->info('Address ' . $context->request->address, $context);
+      $self->log->info("Address ${address}", $context);
       $context->stash(redirect $location || $default, [$message, $name]);
       $context->session->wanted(NUL);
    }
@@ -129,22 +128,18 @@ sub login : Auth('none') Nav('Sign In') {
 sub login_dispatch : Auth('none') {
    my ($self, $context) = @_;
 
-   my $params = $context->get_body_parameters;
+   my $user = $context->get_body_parameters->{user_name};
 
-   if ($params->{_submit} && $params->{_submit} eq 'password_reset') {
-      $self->password_reset($context)
-         if $self->_stash_user($context, $params->{user_name});
-      return;
+   if ($context->button_pressed eq 'password_reset') {
+      $self->password_reset($context) if $self->_stash_user($context, $user);
    }
+   elsif ($context->button_pressed eq 'totp_reset') {
+      my $reset = $context->uri_for_action('misc/totp_reset', [$user]);
 
-   if ($params->{_submit} && $params->{_submit} eq 'totp_reset') {
-      $context->stash(redirect $context->uri_for_action(
-         'misc/totp_reset', [$params->{user_name}]
-      ), ['Redirecting to OTP request form']);
-      return;
+      $context->stash(redirect $reset, ['Redirecting to OTP reset']);
    }
+   else { $self->login($context) }
 
-   $self->login($context);
    return;
 }
 

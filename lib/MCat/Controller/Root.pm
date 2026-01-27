@@ -51,10 +51,11 @@ sub dispatch_request { build_routes
    'GET      + /user/* + ?*'                => 'user/root/user/view',
    'GET      + /user + ?*'                  => 'user/root/base/list',
 
-   'GET      + /doc/configuration + ?*' => 'doc/root/base/configuration',
-   'GET      + /doc/select + ?*'        => 'doc/root/base/select',
-   'GET      + /doc/*.* + ?*'           => 'doc/root/base/view',
-   'GET      + /doc + ?*'               => 'doc/root/base/list',
+   'GET|POST + /doc/configuration/edit + ?*' => 'doc/root/base/config_edit',
+   'GET      + /doc/configuration + ?*'      => 'doc/root/base/configuration',
+   'GET      + /doc/select + ?*'             => 'doc/root/base/select',
+   'GET      + /doc/*.* + ?*'                => 'doc/root/base/view',
+   'GET      + /doc + ?*'                    => 'doc/root/base/list',
 
    'GET      + /logfile/*.* + ?*' => 'logfile/root/base/view',
    'GET      + /logfile + ?*'     => 'logfile/root/base/list',

@@ -25,6 +25,23 @@ sub base {
    return;
 }
 
+sub config_edit : Auth('admin') Nav('Edit Config') {
+   my ($self, $context) = @_;
+
+   my $options = { context => $context };
+   my $form    = $self->new_form('Configuration::Edit', $options);
+
+   if ($form->process(posted => $context->posted)) {
+      my $edit = $context->uri_for_action('doc/config_edit');
+      my $args = ['File [_1] updated', $self->config->local_config_file];
+
+      $context->stash(redirect $edit, $args);
+   }
+
+   $context->stash(form => $form);
+   return;
+}
+
 sub configuration : Auth('admin') Nav('Configuration') {
    my ($self, $context) = @_;
 

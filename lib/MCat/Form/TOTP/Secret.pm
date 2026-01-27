@@ -28,7 +28,7 @@ around 'after_build_fields' => sub {
 
    $orig->($self);
 
-   my $auth = $self->user->totp_authenticator;
+   my $auth = $self->user->authenticator;
 
    $self->field('name')->default($self->user->name);
    $self->field('totp_qr_code')->src($auth->qr_code);

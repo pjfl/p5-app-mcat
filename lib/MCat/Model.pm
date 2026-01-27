@@ -24,7 +24,7 @@ has 'form' =>
       return HTML::Forms::Manager->new({
          namespace      => "${appclass}::Form",
          renderer_class => 'HTML::Forms::Render::EmptyDiv',
-         schema         => $self->schema
+         schema         => $self->schema,
       });
    };
 

@@ -59,7 +59,7 @@ after 'after_build_fields' => sub {
    my $resources   = $context->config->wcom_resources;
    my $renderer    = $resources->{table_renderer};
    my $close       = "${renderer}.tables.filemanager.modal.close()";
-   my $js          = sprintf '%s("%s", "%s"); %s("%s"); %s',
+   my $download    = sprintf '%s("%s", "%s"); %s("%s"); %s',
       $resources->{downloadable} . '.downloader',
       $context->uri_for_action('file/view', $args, $down_params),
       $self->filename,
@@ -67,8 +67,8 @@ after 'after_build_fields' => sub {
       $context->uri_for_action('file/list', [], $params),
       $close;
 
-   $self->field('download')->element_attr->{javascript} = { onclick => $js };
-   $self->field('cancel')->element_attr->{javascript} = { onclick => $close };
+   $self->field('download')->add_handler('click', $download);
+   $self->field('cancel')->add_handler('click', $close);
    return;
 };
 

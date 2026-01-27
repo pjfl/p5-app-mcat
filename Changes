@@ -1,5 +1,8 @@
 Revision history for MCat
 
+          - Add button_pressed to Context object
+          - Marks up Config object for HTML FormBuilder role
+          - Adds IP address validation
           - Artist form uses SelectMany field type
           - Uses auto_widget_size on profile feature field
           - Adds user features

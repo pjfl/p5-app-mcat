@@ -11,17 +11,14 @@ extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::JSONParser';
 
-has '+form_wrapper_class' => default => sub { ['narrow'] };
-has '+name'               => default => 'BugReport';
-has '+title'              => default => 'Report Bug';
-has '+item_class'         => default => 'Bug';
-has '+renderer_args'      => default => sub {
-   return { page_names => [qw(Details Comments Attachments)] };
-};
+has '+item_class' => default => 'Bug';
+has '+name'       => default => 'BugReport';
+has '+title'      => default => 'Report Bug';
 
 has 'current_page' =>
-   is      => 'lazy',
+   is      => 'rw',
    isa     => Int,
+   lazy    => TRUE,
    default => sub {
       my $self = shift;
 
@@ -55,6 +52,7 @@ has_field 'title' => required => TRUE;
 
 has_field 'description' => type => 'TextArea', required => TRUE, rows => 4;
 
+# TODO: Implement this
 # has_field 'reporter' =>
 #    type         => 'Select',
 #    label_column => 'name',
@@ -102,7 +100,7 @@ sub options_assigned {
    return [ NUL, 'Nobody', @{$self->lookup_options($field, $accessor) // []} ];
 }
 
-has_field 'submit1' => type => 'Button';
+has_field 'submit1' => type => 'Button', value => '1';
 
 has_field 'view' =>
    type          => 'Link',
@@ -143,7 +141,7 @@ has_field 'comments' =>
       classes => 'hide',
    }];
 
-has_field 'submit2' => type => 'Button';
+has_field 'submit2' => type => 'Button', value => '2';
 
 has_field 'attachments' =>
    type                   => 'DataStructure',
@@ -151,6 +149,7 @@ has_field 'attachments' =>
    add_icon_height        => '20px',
    add_icon_width         => '20px',
    add_title              => 'Add attachment',
+   button_value           => '3',
    do_label               => FALSE,
    deflate_value_method   => \&_deflate_attachments,
    field_group_direction  => 'vertical',
@@ -190,11 +189,23 @@ has_field 'attachments' =>
       classes => 'hide'
    }];
 
+before 'before_build_fields' => sub {
+   my $self = shift;
+
+   if (my $page = $self->context->button_pressed) {
+      $self->current_page($page - 1);
+   }
+
+   return;
+};
+
 after 'after_build_fields' => sub {
    my $self    = shift;
    my $context = $self->context;
 
+   $self->add_form_wrapper_class('narrow');
    $self->renderer_args->{current_page} = $self->current_page;
+   $self->renderer_args->{page_names}   = [qw(Details Comments Attachments)];
 
    if ($self->item) { $self->_field_state_edit }
    else { $self->_field_state_create }
@@ -208,7 +219,7 @@ after 'after_build_fields' => sub {
    my $markup      = $context->config->wcom_resources->{markup};
    my $args        = $self->json_parser->encode({ id => 'submit1' });
 
-   $attachments->add_handler($self->_attach_handler) if $self->item;
+   $attachments->add_button_handler($self->_attach_handler) if $self->item;
    $attachments->icons($self->_icons);
    $attachments->remove_callback("${markup}.clickMe(${args})");
    $attachments->structure->[0]->{select} = $self->_select_handler;

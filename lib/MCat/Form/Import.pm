@@ -13,10 +13,9 @@ extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::JSONParser';
 
-has '+form_wrapper_class' => default => sub { ['narrow'] };
-has '+info_message'       => default => 'You know what to do';
-has '+item_class'         => default => 'Import';
-has '+title'              => default => 'Edit Import';
+has '+info_message' => default => 'You know what to do';
+has '+item_class'   => default => 'Import';
+has '+title'        => default => 'Edit Import';
 
 has 'extensions' => is => 'ro', isa => Str, default => 'csv';
 
@@ -111,8 +110,8 @@ after 'before_build_fields' => sub {
       $count += 1;
    }
 
-   my $class     = 'HTML::Forms::Field::Select';
-   my $field     = $self->new_field_with_traits($class, {
+   my $class = 'HTML::Forms::Field::Select';
+   my $field = $self->new_field_with_traits($class, {
       default          => $table_id - 1,
       form             => $self,
       label            => 'Table',
@@ -132,7 +131,10 @@ after 'before_build_fields' => sub {
 };
 
 after 'after_build_fields' => sub {
-   my $self      = shift;
+   my $self = shift;
+
+   $self->add_form_wrapper_class('narrow');
+
    my $context   = $self->context;
    my $params    = { extensions => $self->extensions };
    my $selector  = $context->uri_for_action('file/select', [], $params);

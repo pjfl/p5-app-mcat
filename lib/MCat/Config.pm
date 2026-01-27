@@ -12,13 +12,6 @@ use Moo;
 
 with 'Web::Components::ConfigLoader';
 
-my $except = [
-   qw( BUILDARGS BUILD DOES connect_info has_config_file has_config_home
-       has_local_config_file new SSL_VERIFY_NONE )
-];
-
-Class::Usul::Cmd::Constants->Dump_Except($except);
-
 =encoding utf-8
 
 =head1 Name
@@ -47,7 +40,11 @@ loader|Web::Components::Loader> to find controllers, models, and views
 
 =cut
 
-has 'appclass' => is => 'ro', isa => Str, required => TRUE;
+has 'appclass' =>
+   is            => 'ro',
+   isa           => Str,
+   documentation => 'NoUpdate',
+   required      => TRUE;
 
 =item appldir
 
@@ -55,7 +52,11 @@ A synonym for C<home>
 
 =cut
 
-has 'appldir' => is => 'lazy', isa => Directory, default => sub { shift->home };
+has 'appldir' =>
+   is            => 'lazy',
+   isa           => Directory,
+   documentation => 'NoUpdate',
+   default       => sub { shift->home };
 
 =item authentication
 
@@ -75,9 +76,10 @@ A directory object which locates the applications executable files
 =cut
 
 has 'bin' =>
-   is      => 'lazy',
-   isa     => Directory,
-   default => sub { shift->pathname->parent };
+   is            => 'lazy',
+   isa           => Directory,
+   documentation => 'NoUpdate',
+   default       => sub { shift->pathname->parent };
 
 =item component_loader
 
@@ -86,9 +88,10 @@ Configuration parameters used by the L<component loader|Web::Components::Loader>
 =cut
 
 has 'component_loader' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub {
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'should_log_errors=boolean should_log_messages=boolean',
+   default       => sub {
       return { should_log_errors => FALSE, should_log_messages => TRUE };
    };
 
@@ -118,9 +121,10 @@ of the context class
 =cut
 
 has 'context_class' =>
-   is      => 'lazy',
-   isa     => Str,
-   default => sub { shift->appclass . '::Context' };
+   is            => 'lazy',
+   isa           => Str,
+   documentation => 'NoUpdate',
+   default       => sub { shift->appclass . '::Context' };
 
 =item copyright_year
 
@@ -130,7 +134,7 @@ Year displayed in the copyright string. Defaults to the current year
 
 has 'copyright_year' =>
    is      => 'ro',
-   isa     => Str,
+   isa     => PositiveInt,
    default => sub { now_dt->strftime('%Y') };
 
 =item db_extra
@@ -140,9 +144,10 @@ Additional attributes passed to the database connection method
 =cut
 
 has 'db_extra' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub { { AutoCommit => TRUE } };
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'AutoCommit=boolean',
+   default       => sub { { AutoCommit => TRUE } };
 
 =item db_password
 
@@ -152,7 +157,7 @@ is started by the same user as the one which will be running the application
 
 =cut
 
-has 'db_password' => is => 'ro', isa => Str;
+has 'db_password' => is => 'ro', isa => Str, documentation => 'NoUpdate';
 
 =item db_username
 
@@ -286,10 +291,11 @@ served locally
 =cut
 
 has 'fonts' =>
-   is       => 'lazy',
-   isa      => HashRef,
-   init_arg => undef,
-   default  => sub {
+   is            => 'lazy',
+   isa           => HashRef,
+   init_arg      => undef,
+   documentation => 'NoUpdate',
+   default       => sub {
       my $self = shift;
 
       return {
@@ -302,15 +308,16 @@ has 'fonts' =>
 
 has '_google_fonts' =>
    is       => 'ro',
-   isa      => ArrayRef,
+   isa      => ArrayRef[Str],
    init_arg => 'google_fonts',
    default  => sub { [] };
 
 has '_local_fonts' =>
-   is       => 'ro',
-   isa      => ArrayRef,
-   init_arg => 'local_fonts',
-   default  => sub { [] };
+   is            => 'ro',
+   isa           => ArrayRef[HashRef],
+   documentation => 'File Name Format',
+   init_arg      => 'local_fonts',
+   default       => sub { [] };
 
 =item footer_links
 
@@ -320,7 +327,11 @@ to C<true>
 
 =cut
 
-has 'footer_links' => is => 'ro', isa => ArrayRef, default => sub { [] };
+has 'footer_links' =>
+   is            => 'ro',
+   isa           => ArrayRef[ArrayRef],
+   documentation => 'Label Link Remote=boolean',
+   default       => sub { [] };
 
 =item icons
 
@@ -363,9 +374,10 @@ L<App::Job::Daemon>
 =cut
 
 has 'lock_attributes' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub {
+   is            => 'lazy',
+   isa           => HashRef,
+   documentation => 'redis=noupdate',
+   default       => sub {
       my $self = shift;
 
       return {
@@ -448,10 +460,11 @@ L<navigation|Web::Components::Navigation> object
 =cut
 
 has 'navigation' =>
-   is       => 'lazy',
-   isa      => HashRef,
-   init_arg => undef,
-   default  => sub {
+   is            => 'lazy',
+   isa           => HashRef,
+   init_arg      => undef,
+   documentation => 'NoUpdate',
+   default       => sub {
       my $self = shift;
 
       return {
@@ -477,10 +490,12 @@ File object for absolute pathname to the running program
 
 =cut
 
+
 has 'pathname' =>
-   is      => 'ro',
-   isa     => File,
-   default => sub {
+   is            => 'ro',
+   isa           => File,
+   documentation => 'NoUpdate',
+   default       => sub {
       my $name = $PROGRAM_NAME;
 
       $name = '-' eq substr($name, 0, 1) ? $EXECUTABLE_NAME : $name;
@@ -494,7 +509,11 @@ Used as a prefix when creating identifiers
 
 =cut
 
-has 'prefix' => is => 'ro', isa => Str, default => 'mcat';
+has 'prefix' =>
+   is            => 'ro',
+   isa           => Str,
+   documentation => 'NoUpdate',
+   default       => 'mcat';
 
 =item redis
 
@@ -503,7 +522,11 @@ cache
 
 =cut
 
-has 'redis' => is => 'ro', isa => HashRef, default => sub { {} };
+has 'redis' =>
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'every=integer reconnect=integer',
+   default       => sub { {} };
 
 =item registration
 
@@ -518,7 +541,7 @@ has 'registration' => is => 'ro', isa => Bool, coerce => TRUE, default => FALSE;
 
 Hash reference passed to the request object factory constructor by the
 component loader. Includes; C<max_messages>, C<prefix>, C<request_roles>,
-C<serialise_session_attr>, and C<session_attr>
+C<serialise_attr>, C<session_attr>, and C<tempdir>
 
 =over 3
 
@@ -529,13 +552,13 @@ object where they are stored and the JS object where they are displayed
 
 =item prefix
 
-See 'prefix'
+See L</prefix>
 
 =item request_roles
 
 List of roles to be applied to the request class base
 
-=item serialise_session_attr
+=item serialise_attr
 
 List of session attributes that are included for serialisation to the CSRF
 token
@@ -550,17 +573,20 @@ session object
 =cut
 
 has 'request' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub {
+   is            => 'lazy',
+   isa           => HashRef,
+   documentation => 'NoUpdate',
+   default       => sub {
       my $self = shift;
 
       return {
-         max_messages  => 3,
-         prefix        => $self->prefix,
-         request_roles => [ qw( L10N Session JSON Cookie Headers Compat ) ],
-         serialise_session_attr => [ qw( id ) ],
-         session_attr  => {
+         max_messages   => 3,
+         prefix         => $self->prefix,
+         request_roles  => [ qw( L10N Session JSON Cookie Headers Compat ) ],
+         serialise_attr => [ qw( address id realm role ) ],
+         tempdir        => $self->tempdir,
+         session_attr   => {
+            address       => [ Str, NUL ],
             base_colour   => [ Str, $self->default_base_colour ],
             email         => [ Str, NUL ],
             enable_2fa    => [ Bool, FALSE ],
@@ -608,10 +634,11 @@ L<MCat::Schema>
 =cut
 
 has 'schema_class' =>
-   is      => 'lazy',
-   isa     => LoadableClass,
-   coerce  => TRUE,
-   default => sub { shift->appclass . '::Schema' };
+   is            => 'lazy',
+   isa           => LoadableClass,
+   coerce        => TRUE,
+   documentation => 'NoUpdate',
+   default       => sub { shift->appclass . '::Schema' };
 
 =item script
 
@@ -620,9 +647,10 @@ Name of the program being executed. Appears on the manual page output
 =cut
 
 has 'script' =>
-   is      => 'lazy',
-   isa     => Str,
-   default => sub { shift->pathname->basename };
+   is            => 'lazy',
+   isa           => Str,
+   documentation => 'NoUpdate',
+   default       => sub { shift->pathname->basename };
 
 =item skin
 
@@ -653,9 +681,10 @@ L<session state cookie|Plack::Session::State::Cookie>
 =cut
 
 has 'state_cookie' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub {
+   is            => 'lazy',
+   isa           => HashRef,
+   documentation => 'NoUpdate',
+   default       => sub {
       my $self = shift;
 
       return {
@@ -730,10 +759,11 @@ Configuration for sending emails
 =cut
 
 has 'transport_attr' =>
-   is       => 'lazy',
-   isa      => HashRef,
-   init_arg => undef,
-   default  => sub {
+   is            => 'lazy',
+   isa           => HashRef,
+   init_arg      => undef,
+   documentation => 'NoUpdate',
+   default       => sub {
       return {
          ssl_options => { SSL_verify_mode => SSL_VERIFY_NONE },
          %{shift->_transport_attr}
@@ -741,10 +771,11 @@ has 'transport_attr' =>
    };
 
 has '_transport_attr' =>
-   is       => 'ro',
-   isa      => HashRef,
-   init_arg => 'transport_attr',
-   default  => sub { {} };
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'port=integer sasl_password=password',
+   init_arg      => 'transport_attr',
+   default       => sub { {} };
 
 =item umask
 
@@ -786,9 +817,11 @@ Minumum password length
 =cut
 
 has 'user' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub {
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'load_factor=integer min_name_len=integer '
+                  . 'min_password_len=integer',
+   default       => sub {
       return {
          default_password => 'welcome',
          default_role     => 'view',
@@ -798,6 +831,20 @@ has 'user' =>
       };
    };
 
+=item valid_ips
+
+Defaults to an empty array reference. If populated with hash references will
+be used to limit access by IP address. Each hash reference contains the keys;
+C<range-start>, and (optionally) C<range-end>
+
+=cut
+
+has 'valid_ips' =>
+   is            => 'ro',
+   isa           => ArrayRef[HashRef],
+   documentation => 'Range-start=ipaddress Range-end=ipaddress',
+   default       => sub { [] };
+
 =item vardir
 
 Directory where all non program files and directories are expected to be found
@@ -805,10 +852,11 @@ Directory where all non program files and directories are expected to be found
 =cut
 
 has 'vardir' =>
-   is      => 'ro',
-   isa     => Directory,
-   coerce  => TRUE,
-   default => sub { io[qw( var )] };
+   is            => 'ro',
+   isa           => Directory,
+   coerce        => TRUE,
+   documentation => 'NoUpdate',
+   default       => sub { io[qw( var )] };
 
 =item wcom_resources
 
@@ -841,7 +889,7 @@ namespace
 
 has 'web_components' =>
    is      => 'lazy',
-   isa     => HashRef,
+   isa     => HashRef[HashRef],
    default => sub {
       my $self = shift;
 
@@ -857,13 +905,34 @@ has 'web_components' =>
             file_share => $self->root->catdir('file'),
          },
          'Model::FileManager' => {
-            file_extensions => $self->extensions,,
+            file_extensions => $self->extensions,
             file_home       => $self->vardir->catdir('filemanager'),
             file_max_size   => $self->max_upload_size,
             file_share      => $self->root->catdir('file'),
          },
       };
    };
+
+=back
+
+=head1 Subroutines/Methods
+
+=over 3
+
+=item DumpExcept
+
+An immutable class attribute. Returns an array reference of symbols that
+should be skipped when introspecting this class
+
+=cut
+
+sub DumpExcept {
+   return [
+      qw( DumpExcept SSL_VERIFY_NONE connect_info has_config_file
+          has_config_home has_local_config_file _config_file_list
+          _dist_indicator_files _find_config _find_home _home_indicator_dirs )
+   ];
+}
 
 use namespace::autoclean;
 
@@ -872,10 +941,6 @@ use namespace::autoclean;
 __END__
 
 =back
-
-=head1 Subroutines/Methods
-
-None
 
 =head1 Diagnostics
 
