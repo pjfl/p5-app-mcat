@@ -1,28 +1,31 @@
 package MCat::Plack::Loader;
 
+use strictures;
+use parent 'Plack::Loader';
+
 use English             qw( -no_match_vars );
 use File::DataClass::IO qw( io );
-use MCat;
-use Moo;
 
-extends 'Plack::Loader';
+sub preload_app {
+   my ($self, $builder) = @_;
+
+   $self->{builder} = $builder;
+   return;
+}
 
 sub run {
-   my($self, $server) = @_;
+   my ($self, $server) = @_;
 
-   my $pidfile = MCat->env_var('web_server');
+   my $pidfile = $ENV{PLACK_PIDFILE} ? io($ENV{PLACK_PIDFILE}) : q();
 
-   if ($pidfile) {
-      $pidfile = io $pidfile;
-      $pidfile->print($PID)->flush->close;
-   }
+   $pidfile->print($PID)->flush->close if $pidfile;
 
    $self->_fork_and_start($server);
 
    return unless $self->{pid};
 
    local $SIG{HUP}  = sub { $self->_restart($server) };
-   local $SIG{TERM} = sub { $self->_kill_child; exit(0) };
+   local $SIG{TERM} = sub { $self->_kill_child };
 
    wait;
 
@@ -33,15 +36,15 @@ sub run {
 
 # Private methods
 sub _fork_and_start {
-   my($self, $server) = @_;
+   my ($self, $server) = @_;
 
    delete $self->{pid}; # re-init in case it's a restart
 
    my $pid = fork;
 
-   die "Can't fork: ${ERRNO}" unless defined $pid;
+   die "Cannot fork: ${ERRNO}" unless defined $pid;
 
-   if ($pid == 0) { $server->run($self->{app}) }
+   if ($pid == 0) { $server->run($self->{builder}->()) }
    else { $self->{pid} = $pid }
 
    return;

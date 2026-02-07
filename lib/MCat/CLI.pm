@@ -288,7 +288,7 @@ sub server_restart : method {
       kill 'HUP', $pid;
       $self->info('Restarted server', $options);
    }
-   else { $self->warn('No server PID file', $options) }
+   else { $self->warning("File ${pidfile} not found", $options) }
 
    return OK;
 }
@@ -299,12 +299,33 @@ sub server_restart : method {
 
 sub server_start : method {
    my $self    = shift;
-   my $runner  = Plack::Runner->new;
    my $pidfile = $self->config->rundir->catfile('web_server.pid');
+   my $runner  = Plack::Runner->new;
 
-   MCat->env_var('web_server', "${pidfile}");
+   $ENV{PLACK_PIDFILE} = "${pidfile}";
    $runner->parse_options(qw(-I lib -L +MCat::Plack::Loader bin/mcat-server));
    $runner->run;
+   return OK;
+}
+
+=item server_stop - Stop the web application server
+
+=cut
+
+sub server_stop : method {
+   my $self    = shift;
+   my $pidfile = $self->config->rundir->catfile('web_server.pid');
+   my $options = { name => 'CLI.server_stop' };
+   my $pid;
+
+   $pid = $pidfile->getline if $pidfile->exists;
+
+   if ($pid) {
+      kill 'TERM', $pid;
+      $self->info('Stopped server', $options);
+   }
+   else { $self->warning("File ${pidfile} not found", $options) }
+
    return OK;
 }
 

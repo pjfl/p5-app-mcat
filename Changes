@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds server stop
           - Adds server restart
           - Context now inherits from Web::Components::Context
           - Add button_pressed to Context object
