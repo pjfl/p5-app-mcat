@@ -68,9 +68,9 @@ sub root : Auth('none') {
       $nav->item(formpost, $actions->{logout});
    }
    else {
-      $nav->item($actions->{password}, [$session->id]);
       $nav->item($actions->{login});
       $nav->item($actions->{register}, []) if $self->config->registration;
+      $nav->item($actions->{password}, [$session->id]);
    }
 
    $context->stash($self->navigation_key => $nav);

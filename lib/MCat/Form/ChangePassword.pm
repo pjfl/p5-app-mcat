@@ -1,6 +1,7 @@
 package MCat::Form::ChangePassword;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
+use HTML::Forms::Util      qw( make_handler );
 use Try::Tiny;
 use Moo;
 use HTML::Forms::Moo;
@@ -23,11 +24,11 @@ has_field 'old_password' =>
    required => TRUE;
 
 has_field 'password' =>
-   type     => 'Password',
-   label    => 'New Password',
-   required => TRUE,
-   tags     => { reveal => TRUE },
-   title    => 'Password must be at least 8 characters';
+   type        => 'Password',
+   label       => 'New Password',
+   ne_username => 'name',
+   required    => TRUE,
+   tags        => { reveal => TRUE };
 
 has_field '_password' =>
    type           => 'PasswordConf',
@@ -38,10 +39,17 @@ has_field '_password' =>
 has_field 'submit' => type => 'Button';
 
 after 'after_build_fields' => sub {
-   my $self = shift;
-   my $attr = $self->field('password')->element_attr;
+   my $self      = shift;
+   my $config    = $self->context->config;
+   my $field     = $self->field('password');
+   my $util      = $config->wcom_resources->{form_util};
+   my $change_js = "${util}.passwordStrength";
+   my $options   = { allow_default => TRUE, id => 'password' };
+   my $min       = $config->user->{min_password_len};
 
-   $attr->{minlength} = $self->context->config->user->{min_password_len};
+   $field->add_handler('input', make_handler($change_js, $options));
+   $field->element_attr->{minlength} = $min;
+   $field->element_attr->{title} = "Must be at least ${min} characters long";
    return;
 };
 

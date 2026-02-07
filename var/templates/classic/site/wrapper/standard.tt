@@ -1,6 +1,6 @@
 <header id="header">[% nav.render %]</header>
 <aside id="sidebar" class="sidebar [% nav.link_display_class %]"></aside>
-<main id="main" class="main">
+<main id="main" class="main [% feature('grid') %]">
   <div class="[% nav.container_name %]-container">
     <div id="[% nav.container_name %]" class="[% nav.container_class %]">
       <div id="[% nav.content_name %]" class="[% nav.content_class %]">

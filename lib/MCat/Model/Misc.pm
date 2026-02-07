@@ -102,8 +102,6 @@ sub footer : Auth('none') {
 sub login : Auth('none') Nav('Sign In') {
    my ($self, $context) = @_;
 
-   $context->action('misc/login');
-
    my $options = { context => $context, log => $self->log };
    my $form    = $self->new_form('Login', $options);
 
@@ -121,14 +119,14 @@ sub login : Auth('none') Nav('Sign In') {
       $context->session->wanted(NUL);
    }
 
-   $context->stash(form => $form, page => { layout => 'misc/login' });
+   $context->stash(form => $form);
    return;
 }
 
 sub login_dispatch : Auth('none') {
    my ($self, $context) = @_;
 
-   my $user = $context->get_body_parameters->{user_name};
+   my $user = $context->body_parameters->{__user_name};
 
    if ($context->button_pressed eq 'password_reset') {
       $self->password_reset($context) if $self->_stash_user($context, $user);
@@ -138,7 +136,8 @@ sub login_dispatch : Auth('none') {
 
       $context->stash(redirect $reset, ['Redirecting to OTP reset']);
    }
-   else { $self->login($context) }
+   elsif ($user) { $context->stash(forward => 'misc/login') }
+   else { $context->stash(forward => 'misc/not_found') }
 
    return;
 }

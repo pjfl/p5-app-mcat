@@ -24,6 +24,7 @@ sub extend {
 
    $sep //= $Config::Config{path_sep};
 
+   return $ENV{ $k } if $ENV{ $k } && $ENV{ $k } =~ m{ $v }mx;
    return $ENV{ $k } = $v.($ENV{ $k } ? $sep.$ENV{ $k } : q());
 }
 

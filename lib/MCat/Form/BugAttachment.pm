@@ -86,7 +86,7 @@ sub validate {
       unless $extn =~ m{ \A (?: $extns ) \z }mx;
 
    my $bug_id    = $self->bug->id;
-   my $directory = $context->get_body_parameters->{directory} // NUL;
+   my $directory = $context->body_parameters->{directory} // NUL;
 
    $directory = "${bug_id}!${directory}";
 

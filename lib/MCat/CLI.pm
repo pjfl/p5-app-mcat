@@ -11,6 +11,7 @@ use File::DataClass::IO         qw( io );
 use Type::Utils                 qw( class_type );
 use Unexpected::Functions       qw( throw UnknownImport Unspecified );
 use MCat::Markdown;
+use Plack::Runner;
 use Moo;
 use Class::Usul::Cmd::Options;
 
@@ -268,6 +269,42 @@ sub make_less : method {
    my $options = { name => 'CLI.make_less' };
 
    $self->info("Concatenated ${count} files to ${file}", $options);
+   return OK;
+}
+
+=item server_restart - Restart the web application server
+
+=cut
+
+sub server_restart : method {
+   my $self    = shift;
+   my $pidfile = $self->config->rundir->catfile('web_server.pid');
+   my $options = { name => 'CLI.server_restart' };
+   my $pid;
+
+   $pid = $pidfile->getline if $pidfile->exists;
+
+   if ($pid) {
+      kill 'HUP', $pid;
+      $self->info('Restarted server', $options);
+   }
+   else { $self->warn('No server PID file', $options) }
+
+   return OK;
+}
+
+=item server_start - Start the web application server
+
+=cut
+
+sub server_start : method {
+   my $self    = shift;
+   my $runner  = Plack::Runner->new;
+   my $pidfile = $self->config->rundir->catfile('web_server.pid');
+
+   MCat->env_var('web_server', "${pidfile}");
+   $runner->parse_options(qw(-I lib -L +MCat::Plack::Loader bin/mcat-server));
+   $runner->run;
    return OK;
 }
 

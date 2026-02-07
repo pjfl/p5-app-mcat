@@ -65,9 +65,14 @@ Configuration parameters for the plugin authentication system
 =cut
 
 has 'authentication' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub { { default_realm => 'DBIC' } };
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'default_realm=text',
+   default       => sub {
+      return {
+         default_realm => 'DBIC',
+      };
+   };
 
 =item bin
 
@@ -92,7 +97,10 @@ has 'component_loader' =>
    isa           => HashRef,
    documentation => 'should_log_errors=boolean should_log_messages=boolean',
    default       => sub {
-      return { should_log_errors => FALSE, should_log_messages => TRUE };
+      return {
+         should_log_errors   => FALSE,
+         should_log_messages => TRUE,
+      };
    };
 
 =item connect_info
@@ -147,7 +155,11 @@ has 'db_extra' =>
    is            => 'ro',
    isa           => HashRef,
    documentation => 'AutoCommit=boolean',
-   default       => sub { { AutoCommit => TRUE } };
+   default       => sub {
+      return {
+         AutoCommit => TRUE,
+      };
+   };
 
 =item db_password
 
@@ -166,17 +178,6 @@ The username used to connect to the database
 =cut
 
 has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
-
-=item deployment
-
-Defaults to B<development>. Should be overridden in the local configuration
-file. Used to modify the server output depending on deployment environment.
-For example, any value not C<development> will prevent the rendering of an
-exception to the end user
-
-=cut
-
-has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
 =item default_actions
 
@@ -218,7 +219,7 @@ has 'default_base_colour' => is => 'ro', isa => Str, default => 'bisque';
 =item default_route
 
 The applications default route used as a target for redirects when the
-request does get as far as the mount point
+request does not get as far as the mount point
 
 =cut
 
@@ -249,6 +250,17 @@ has 'deflate_types' =>
              text/javascript )
       ];
    };
+
+=item deployment
+
+Defaults to B<development>. Should be overridden in the local configuration
+file. Used to modify the server output depending on deployment environment.
+For example, any value not C<development> will replace the detailed rendering
+of an exception to the end user with a more suitable one
+
+=cut
+
+has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
 =item dsn
 
@@ -306,31 +318,42 @@ has 'fonts' =>
       };
    };
 
+=item _google_fonts
+
+List of fonts loaded from Google
+
+=cut
+
 has '_google_fonts' =>
    is       => 'ro',
    isa      => ArrayRef[Str],
    init_arg => 'google_fonts',
    default  => sub { [] };
 
+=item _local_fonts
+
+List of fonts served locally
+
+=cut
+
 has '_local_fonts' =>
    is            => 'ro',
    isa           => ArrayRef[HashRef],
-   documentation => 'File Name Format',
+   documentation => 'name file format',
    init_arg      => 'local_fonts',
    default       => sub { [] };
 
 =item footer_links
 
-An array reference of tuples. Each is comprised of; display text for the link,
-either an action path or a URI, and if a URI is used set the third argument
-to C<true>
+A list of links displayed in the footer. Local links are an action path. Links
+offsite should set remote to true
 
 =cut
 
 has 'footer_links' =>
    is            => 'ro',
    isa           => ArrayRef[ArrayRef],
-   documentation => 'Label Link Remote=boolean',
+   documentation => 'label link remote=boolean',
    default       => sub { [] };
 
 =item icons
@@ -396,17 +419,6 @@ limit is applied
 
 has 'log_message_maxlen' => is => 'ro', isa => PositiveInt, default => 0;
 
-=item logsdir
-
-Directory containing logfiles
-
-=cut
-
-has 'logsdir' =>
-   is      => 'lazy',
-   isa     => Directory,
-   default => sub { shift->vardir->catdir('log') };
-
 =item logfile
 
 Set in the configuration file, the name of the logfile used by the logging
@@ -427,6 +439,17 @@ has 'logfile' =>
    };
 
 has '_logfile' => is => 'ro', isa => Str, init_arg => 'logfile';
+
+=item logsdir
+
+Directory containing logfiles
+
+=cut
+
+has 'logsdir' =>
+   is      => 'lazy',
+   isa     => Directory,
+   default => sub { shift->vardir->catdir('log') };
 
 =item max_upload_size
 
@@ -699,8 +722,8 @@ has 'state_cookie' =>
 
 =item state_cookie_lifetime
 
-An immutable positive integer. Number of seconds before the session
-cookie will expire. Defaults to ninety days
+A positive integer. Number of seconds before the session cookie will
+expire. Defaults to ninety days
 
 =cut
 
@@ -742,7 +765,12 @@ produce all the pages
 has 'template_wrappers' =>
    is      => 'ro',
    isa     => HashRef,
-   default => sub { { html => 'standard', wrapper => 'standard' } };
+   default => sub {
+      return {
+         html    => 'standard',
+         wrapper => 'standard',
+      };
+   };
 
 =item token_lifetime
 
@@ -842,7 +870,7 @@ C<range-start>, and (optionally) C<range-end>
 has 'valid_ips' =>
    is            => 'ro',
    isa           => ArrayRef[HashRef],
-   documentation => 'Range-start=ipaddress Range-end=ipaddress',
+   documentation => 'range-start=ipaddress range-end=ipaddress',
    default       => sub { [] };
 
 =item vardir

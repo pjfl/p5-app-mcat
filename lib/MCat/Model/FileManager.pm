@@ -84,7 +84,7 @@ sub paste {
 
    my ($directory, $message, $selected);
 
-   if (my $data = $context->get_body_parameters->{data}) {
+   if (my $data = $context->body_parameters->{data}) {
       $directory = $self->file->to_path($data->{directory});
       $selected  = $data->{selected};
       $message   = $self->_move_selected($context, $directory, $selected);
@@ -146,7 +146,7 @@ sub remove {
 
    my ($count, $directory, $message);
 
-   if (my $data = $context->get_body_parameters->{data}) {
+   if (my $data = $context->body_parameters->{data}) {
       $directory = $self->file->to_path($data->{directory});
       ($count, $message) = $self->_remove_selected($context, $data->{selector});
    }

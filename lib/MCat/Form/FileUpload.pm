@@ -37,7 +37,7 @@ sub validate {
    return unless $self->validated;
 
    my $context   = $self->context;
-   my $directory = $context->get_body_parameters->{directory};
+   my $directory = $context->body_parameters->{directory};
    my $request   = $context->request;
 
    return $self->add_form_error('Attribute [_1] not found', 'upload object')

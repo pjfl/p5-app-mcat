@@ -1,5 +1,7 @@
 Revision history for MCat
 
+          - Adds server restart
+          - Context now inherits from Web::Components::Context
           - Add button_pressed to Context object
           - Marks up Config object for HTML FormBuilder role
           - Adds IP address validation

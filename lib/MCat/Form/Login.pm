@@ -20,8 +20,8 @@ has '+title'        => default => 'Sign In';
 
 has_field 'name' =>
    autocomplete => TRUE,
-   html_name    => 'user_name',
-   input_param  => 'user_name',
+   html_name    => '__user_name',
+   input_param  => '__user_name',
    label        => 'User Name',
    label_top    => TRUE,
    required     => TRUE,
@@ -30,12 +30,16 @@ has_field 'name' =>
 has_field 'password' =>
    type         => 'Password',
    autocomplete => TRUE,
+   html_name    => '__password',
+   input_param  => '__password',
    label_top    => TRUE,
    required     => TRUE,
    title        => 'Enter your password';
 
 has_field 'auth_code' =>
    type          => 'Digits',
+   html_name     => '__auth_code',
+   input_param   => '__auth_code',
    label         => 'OTP Code',
    label_top     => TRUE,
    size          => 6,
@@ -45,14 +49,14 @@ has_field 'auth_code' =>
 has_field 'login' =>
    type          => 'Button',
    disabled      => TRUE,
-   element_attr  => { 'data-field-depends' => [qw(user_name password)] },
+   element_attr  => { 'data-field-depends' => [qw(__user_name __password)] },
    html_name     => 'submit',
    label         => 'Submit',
    value         => 'login';
 
 has_field 'register' =>
    type          => 'Link',
-   element_attr  => { 'data-field-depends' => ['!user_name'] },
+   element_attr  => { 'data-field-depends' => ['!__user_name'] },
    element_class => ['form-button'],
    label         => 'Sign Up',
    title         => 'Register for a login account',
@@ -62,7 +66,7 @@ has_field 'password_reset' =>
    type          => 'Button',
    allow_default => TRUE,
    disabled      => TRUE,
-   element_attr  => { 'data-field-depends' => ['user_name'] },
+   element_attr  => { 'data-field-depends' => ['__user_name'] },
    html_name     => 'submit',
    label         => 'Password Reset',
    title         => 'Send password reset email',
@@ -71,11 +75,15 @@ has_field 'password_reset' =>
 has_field 'totp_reset' =>
    type          => 'Button',
    disabled      => TRUE,
-   element_attr  => { 'data-field-depends' => ['user_name'] },
+   element_attr  => { 'data-field-depends' => ['__user_name'] },
    html_name     => 'submit',
    label         => 'OTP Reset',
    title         => 'Request an OTP reset',
    value         => 'totp_reset';
+
+my $change_flds = [qw(login register password_reset totp_reset)];
+my $showif_flds = ['__auth_code','totp_reset'];
+my $unreq_flds  = ['__auth_code', '__password'];
 
 after 'after_build_fields' => sub {
    my $self    = shift;
@@ -85,44 +93,13 @@ after 'after_build_fields' => sub {
 
    $self->set_form_element_attr('novalidate', 'novalidate');
 
+   $self->add_form_element_class('radar')
+      if includes 'radar', $session->features;
+
    if (defined $session->enable_2fa && !$session->enable_2fa) {
       $self->field('auth_code')->add_wrapper_class('hide');
       $self->field('totp_reset')->add_wrapper_class('hide');
    }
-
-   my $util        = $config->wcom_resources->{form_util};
-   my $change_js   = "${util}.fieldChange";
-   my $showif_js   = "${util}.showIfRequired";
-   my $unreq_js    = "${util}.unrequire";
-   my $change_flds = [qw(login register password_reset totp_reset)];
-   my $showif_flds = ['auth_code','totp_reset'];
-   my $unreq_flds  = ['auth_code', 'password'];
-
-   my $action  = $config->default_actions->{fetch};
-   my $params  = { class => 'User', property => 'enable_2fa' };
-   my $uri     = $context->uri_for_action($action, ['property'], $params);
-   my $options = { id => 'user_name', url => "${uri}" };
-   my $handler = make_handler($showif_js, $options, $showif_flds);
-
-   $self->field('name')->add_handler('blur', $handler);
-   $handler = make_handler($change_js, { id => 'user_name' }, $change_flds);
-   $self->field('name')->add_handler('input', $handler);
-
-   $handler = make_handler($change_js, { id => 'password' }, $change_flds);
-   $self->field('password')->add_handler('input', $handler);
-
-   $handler = make_handler($change_js, { id => 'auth_code' }, $change_flds);
-   $self->field('auth_code')->add_handler('blur', $handler);
-
-   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
-   $self->field('password_reset')->add_handler('click', $handler);
-
-   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
-   $self->field('totp_reset')->add_handler('click', $handler);
-
-   $action = $config->default_actions->{register};
-   $uri    = $context->uri_for_action($action);
-   $self->field('register')->href($uri->as_string);
 
    if (includes 'droplets', $session->features) {
       $self->add_form_element_class('droplets');
@@ -138,9 +115,14 @@ after 'after_build_fields' => sub {
       }
    }
 
-   $self->add_form_element_class('radar')
-      if includes 'radar', $session->features;
+   $self->field('register')->inactive(TRUE) unless $config->registration;
 
+   my $action = $config->default_actions->{register};
+   my $uri    = $context->uri_for_action($action);
+
+   $self->field('register')->href($uri->as_string);
+
+   $self->_add_field_handlers;
    return;
 };
 
@@ -164,7 +146,7 @@ around 'validate_form' => sub {
 sub validate {
    my $self = shift;
 
-   return if !$self->validated;
+   return unless $self->validated;
 
    my $context = $self->context;
    my $name    = $self->field('name');
@@ -196,14 +178,47 @@ sub validate {
 }
 
 # Private methods
+sub _add_field_handlers {
+   my $self      = shift;
+   my $context   = $self->context;
+   my $config    = $context->config;
+   my $util      = $config->wcom_resources->{form_util};
+   my $change_js = "${util}.fieldChange";
+   my $showif_js = "${util}.showIfRequired";
+   my $unreq_js  = "${util}.unrequire";
+
+   my $action  = $config->default_actions->{fetch};
+   my $params  = { class => 'User', property => 'enable_2fa' };
+   my $uri     = $context->uri_for_action($action, ['property'], $params);
+   my $options = { id => '__user_name', url => "${uri}" };
+   my $handler = make_handler($showif_js, $options, $showif_flds);
+
+   $self->field('name')->add_handler('blur', $handler);
+   $handler = make_handler($change_js, { id => '__user_name' }, $change_flds);
+   $self->field('name')->add_handler('input', $handler);
+
+   $handler = make_handler($change_js, { id => '__password' }, $change_flds);
+   $self->field('password')->add_handler('input', $handler);
+
+   $handler = make_handler($change_js, { id => '__auth_code' }, $change_flds);
+   $self->field('auth_code')->add_handler('blur', $handler);
+
+   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
+   $self->field('password_reset')->add_handler('click', $handler);
+
+   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
+   $self->field('totp_reset')->add_handler('click', $handler);
+   return;
+}
+
 sub _exception_handlers {
    my ($self, $user, $passwd, $code) = @_;
 
    my $context = $self->context;
 
    return [
-      'IncorrectAuthCode' => sub { $code->add_error($_->original) },
-      'IncorrectPassword' => sub { $passwd->add_error($_->original) },
+      'IncorrectAuthCode' => sub { $self->add_form_error($_->original) },
+      'IncorrectPassword' => sub { $self->add_form_error($_->original) },
       'InvalidIPAddress'  => sub {
          $self->add_form_error($_->original);
          $self->log->alert($_->original, $context) if $self->has_log;
