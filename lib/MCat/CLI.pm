@@ -286,7 +286,7 @@ sub server_restart : method {
 
    if ($pid) {
       kill 'HUP', $pid;
-      $self->info('Restarted server', $options);
+      $self->info("Restarted server ${pid}", $options);
    }
    else { $self->warning("File ${pidfile} not found", $options) }
 

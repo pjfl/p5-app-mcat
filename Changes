@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - More config object meta data and loader signal handling
           - Adds server stop
           - Adds server restart
           - Context now inherits from Web::Components::Context

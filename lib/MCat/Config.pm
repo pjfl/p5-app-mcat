@@ -451,6 +451,15 @@ has 'logsdir' =>
    isa     => Directory,
    default => sub { shift->vardir->catdir('log') };
 
+=item max_messages
+
+The maximum number of response to post messages to buffer both in the session
+object where they are stored and the JS object where they are displayed
+
+=cut
+
+has 'max_messages' => is => 'ro', isa => PositiveInt, default => 3;
+
 =item max_upload_size
 
 Maximum file upload size in bytes
@@ -491,7 +500,7 @@ has 'navigation' =>
       my $self = shift;
 
       return {
-         messages     => { 'buffer-limit' => $self->request->{max_messages} },
+         messages     => { 'buffer-limit' => $self->max_messages },
          title        => $self->name,
          title_abbrev => $self->appclass,
          %{$self->_navigation},
@@ -548,7 +557,7 @@ cache
 has 'redis' =>
    is            => 'ro',
    isa           => HashRef,
-   documentation => 'every=integer reconnect=integer',
+   documentation => 'every=integer reconnect=integer server=text',
    default       => sub { {} };
 
 =item registration
@@ -570,8 +579,7 @@ C<serialise_attr>, C<session_attr>, and C<tempdir>
 
 =item max_messages
 
-The maximum number of response to post messages to buffer both in the session
-object where they are stored and the JS object where they are displayed
+Maximum number of messages to display. See L</max_messages>
 
 =item prefix
 
@@ -603,7 +611,7 @@ has 'request' =>
       my $self = shift;
 
       return {
-         max_messages   => 3,
+         max_messages   => $self->max_messages,
          prefix         => $self->prefix,
          request_roles  => [ qw( L10N Session JSON Cookie Headers Compat ) ],
          serialise_attr => [ qw( address id realm role ) ],
@@ -801,7 +809,8 @@ has 'transport_attr' =>
 has '_transport_attr' =>
    is            => 'ro',
    isa           => HashRef,
-   documentation => 'port=integer sasl_password=password',
+   documentation => 'host=text port=integer sasl_password=password ' .
+                    'sasl_username=text ssl=text',
    init_arg      => 'transport_attr',
    default       => sub { {} };
 
@@ -847,8 +856,9 @@ Minumum password length
 has 'user' =>
    is            => 'ro',
    isa           => HashRef,
-   documentation => 'load_factor=integer min_name_len=integer '
-                  . 'min_password_len=integer',
+   documentation => 'default_password=text default_role=text ' .
+                    'load_factor=integer min_name_len=integer ' .
+                    'min_password_len=integer',
    default       => sub {
       return {
          default_password => 'welcome',

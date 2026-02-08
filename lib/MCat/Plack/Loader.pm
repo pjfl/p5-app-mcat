@@ -22,7 +22,7 @@ sub run {
 
    $self->_fork_and_start($server);
 
-   return unless $self->{pid};
+   return unless $self->{childpid};
 
    local $SIG{HUP}  = sub { $self->_restart($server) };
    local $SIG{TERM} = sub { $self->_kill_child };
@@ -38,21 +38,24 @@ sub run {
 sub _fork_and_start {
    my ($self, $server) = @_;
 
-   delete $self->{pid}; # re-init in case it's a restart
+   delete $self->{childpid}; # re-init in case it's a restart
 
    my $pid = fork;
 
    die "Cannot fork: ${ERRNO}" unless defined $pid;
 
-   if ($pid == 0) { $server->run($self->{builder}->()) }
-   else { $self->{pid} = $pid }
+   if ($pid == 0) {
+      local $SIG{TERM} = sub { exit 0 };
+      $server->run($self->{builder}->());
+   }
+   else { $self->{childpid} = $pid }
 
    return;
 }
 
 sub _kill_child {
    my $self = shift;
-   my $pid  = $self->{pid} or return;
+   my $pid  = $self->{childpid} or return;
 
    warn "Killing the existing server ${pid}\n";
    kill 'TERM', $pid;
@@ -66,6 +69,7 @@ sub _restart {
    $self->_kill_child;
    warn "Successfully killed! Restarting the new server process.\n";
    $self->_fork_and_start($server);
+   $SIG{HUP} = sub { $self->_restart($server) };
    return;
 }
 

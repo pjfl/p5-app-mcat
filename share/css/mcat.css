@@ -761,7 +761,7 @@ footer .footer-container .session-time {
 }
 .navigation .nav-title {
   align-items: center;
-  background: linear-gradient(180deg, var(--bg-base) 0.4375rem, gray, transparent 0.53125rem);
+  background: linear-gradient(180deg, var(--bg-base) 0.4375rem, hsl(from gray h s l / 0.5), transparent 0.53125rem);
   column-gap: 0.25rem;
   display: flex;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
@@ -772,7 +772,7 @@ footer .footer-container .session-time {
 .navigation .nav-title::before {
   border-top-left-radius: 10px;
   border-left: 1px solid hsl(from gray h s l / 0.25);
-  border-top: 1px solid hsl(from gray h s l / 0.25);
+  border-top: 1px solid hsl(from gray h s l / 0.5);
   box-shadow: -3px -3px 0px 3px var(--bg-base);
   box-sizing: content-box;
   content: '';
@@ -781,7 +781,7 @@ footer .footer-container .session-time {
   transform: translate(-0.0635rem, 0.2rem);
 }
 .navigation .nav-title::after {
-  background: linear-gradient(70deg, transparent 48%, gray, var(--bg-base) 52%);
+  background: linear-gradient(70deg, transparent 48%, hsl(from gray h s l / 0.5), var(--bg-base) 52%);
   content: '';
   display: inline-block;
   height: 2.5rem;
@@ -1303,7 +1303,7 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.12
+ * @version 0.2.13
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.45
@@ -1368,7 +1368,7 @@ form.classic.droplets {
   border-radius: 62% 38% 24% 76% / 59% 60% 40% 41%;
   box-shadow: inset 20px 20px 20px var(--shadow-darkest-semitrans), 25px 35px 20px var(--shadow-darkest-semitrans), 25px 30px 30px var(--shadow-darkest-semitrans), inset -20px -20px 25px var(--shadow-lightest-semitrans);
   padding-top: 0.5rem;
-  transform: translate(-10rem, 3rem);
+  transform: translate(-6rem, 8rem);
   transition: 0.25s;
 }
 form.classic.droplets::before,
@@ -1404,20 +1404,18 @@ form.classic.droplets .droplet:hover {
   border-radius: 50%;
 }
 form.classic.droplets .droplet:nth-child(1 of .droplet) {
-  right: -7rem;
-  top: 0.5rem;
-  transform: rotate(5deg);
+  offset: center 8rem circle(12rem) calc(100% * 5 / 6);
+  transform: rotate(-20deg) translateX(6rem);
   z-index: 6;
 }
 form.classic.droplets .droplet:nth-child(2 of .droplet) {
-  right: -13rem;
-  top: 6rem;
+  offset: center 8rem circle(12rem) calc(100% * 6 / 6);
+  transform: rotate(-90deg) translateX(6rem);
   z-index: 7;
 }
 form.classic.droplets .droplet:nth-child(3 of .droplet) {
-  bottom: 0;
-  right: -9rem;
-  transform: rotate(-5deg);
+  offset: center 8rem circle(12rem) calc(100% * 1 / 6);
+  transform: rotate(195deg) translate(8rem, 2rem);
   z-index: 8;
 }
 form.classic.droplets .droplet .tooltip {
@@ -1443,16 +1441,15 @@ form.classic.droplets .form-wrapper .form-title {
   box-shadow: inset 10px 10px 10px var(--shadow-darkest-semitrans), 15px 25px 10px var(--shadow-darkest-semitrans), 15px 20px 20px var(--shadow-darkest-semitrans), inset -10px -10px 15px var(--shadow-lightest-semitrans);
   font-size: 1.75rem;
   height: 4rem;
-  left: -3rem;
+  offset: center 8rem circle(12rem) calc(100% * 4 / 6);
   padding: 1.25rem 1rem;
   position: absolute;
   text-shadow: 3px 3px 3px var(--bg-darker);
-  top: -3rem;
-  transform: rotate(-5deg);
+  transform: rotate(15deg);
   white-space: nowrap;
 }
 form.classic.droplets .form-wrapper .form-title:hover {
-  transform: rotate(-5deg) scale(0.96);
+  transform: rotate(10deg) scale(0.96);
 }
 form.classic.droplets .input-field:not(.droplet) {
   text-align: left;
@@ -2398,6 +2395,12 @@ form.classic .input-integer .digit:last-child {
 form.classic .input-password .reveal {
   cursor: pointer;
   grid-area: selector;
+}
+form.classic .input-password .star.on {
+  color: gold;
+}
+form.classic .input-password .star.off {
+  color: gray;
 }
 form.classic .input-select:has(.select-multiple) {
   align-items: flex-start !important;

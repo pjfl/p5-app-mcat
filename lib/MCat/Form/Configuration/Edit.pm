@@ -49,7 +49,7 @@ sub update_model {
    my $prefix  = $self->config->prefix;
    my $program = $self->config->bin->catfile("${prefix}-cli");
    my $command = "${program} server-restart";
-   my $options = { command => $command, name => 'send_message' };
+   my $options = { command => $command, name => 'server_restart' };
 
    $self->context->model('Job')->create($options);
    return;

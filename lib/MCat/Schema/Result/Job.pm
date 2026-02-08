@@ -3,9 +3,8 @@ package MCat::Schema::Result::Job;
 use overload '""' => sub { $_[0]->_as_string },
              '+'  => sub { $_[0]->_as_number }, fallback => 1;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use Class::Usul::Cmd::Util qw( now_dt );
-use MCat::Util             qw( dt_human );
+use MCat::Constants qw( EXCEPTION_CLASS FALSE NUL SQL_NOW TRUE );
+use MCat::Util      qw( dt_human );
 use DBIx::Class::Moo::ResultClass;
 
 my $class  = __PACKAGE__;
@@ -16,30 +15,45 @@ $class->table('job');
 
 $class->add_columns(
    id => {
-      data_type => 'integer', is_nullable => FALSE, is_auto_increment => TRUE,
-      label => 'Job ID'
+      data_type         => 'integer',
+      is_nullable       => FALSE,
+      is_auto_increment => TRUE,
+      label             => 'Job ID',
    },
    name => { data_type => 'text', is_nullable => FALSE, label => 'Job Name' },
    created => {
-      data_type => 'timestamp', is_nullable => TRUE, timezone => 'UTC',
-      cell_traits => ['DateTime'], set_on_create => TRUE
+      data_type     => 'timestamp',
+      cell_traits   => ['DateTime'],
+      is_nullable   => TRUE,
+      set_on_create => TRUE,
+      timezone      => 'UTC',
    },
    updated => {
-      data_type => 'timestamp', is_nullable => TRUE, timezone => 'UTC',
-      cell_traits => ['DateTime']
+      data_type   => 'timestamp',
+      cell_traits => ['DateTime'],
+      is_nullable => TRUE,
+      timezone    => 'UTC',
    },
    run => {
-      data_type => 'smallint', default_value => 0, is_nullable => FALSE,
-      cell_traits => ['Numeric'], label => 'Run #'
+      data_type     => 'smallint',
+      cell_traits   => ['Numeric'],
+      default_value => 0,
+      is_nullable   => FALSE,
+      label         => 'Run #',
    },
    max_runs => {
-      data_type => 'smallint', default_value => 3, is_nullable => FALSE,
-      cell_traits => ['Numeric'], label => 'Max. Runs'
+      data_type     => 'smallint',
+      cell_traits   => ['Numeric'],
+      default_value => 3,
+      is_nullable   => FALSE,
+      label         => 'Max. Runs',
    },
    period => {
-      data_type => 'smallint', default_value => 300,
-      display => sub { dt_human shift->result->period },
-      is_nullable => FALSE, cell_traits => ['Numeric']
+      data_type     => 'smallint',
+      cell_traits   => ['Numeric'],
+      default_value => 300,
+      display       => sub { dt_human shift->result->period },
+      is_nullable   => FALSE,
    },
    command => { data_type => 'text', is_nullable => FALSE, label => 'Command' },
 );
@@ -51,7 +65,7 @@ sub insert {
    my $self    = shift;
    my $columns = { $self->get_inflated_columns };
 
-   $columns->{created} = now_dt;
+   $columns->{created} = SQL_NOW;
    $self->set_inflated_columns($columns);
 
    my $job       = $self->next::method;
@@ -63,7 +77,7 @@ sub insert {
 }
 
 sub label {
-   return $_[0]->_as_string . '#' . ($_[0]->run + 1);
+   my $self = shift; return $self->_as_string . '#' . ($self->run + 1);
 }
 
 sub update {
@@ -72,18 +86,19 @@ sub update {
    $self->set_inflated_columns($columns) if $columns;
 
    $columns = { $self->get_inflated_columns };
-   $columns->{updated} = now_dt;
+   $columns->{updated} = SQL_NOW;
    $self->set_inflated_columns($columns);
+
    return $self->next::method;
 }
 
 # Private methods
 sub _as_number {
-   return $_[0]->id;
+   return shift->id;
 }
 
 sub _as_string {
-   return $_[0]->name . '-' . $_[0]->id;
+   my $self = shift; return $self->name . '-' . $self->id;
 }
 
 1;
