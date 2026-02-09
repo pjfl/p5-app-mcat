@@ -5,7 +5,7 @@ use Moo;
 
 extends 'MCat::Table::View::Object';
 
-has '+caption' => default => 'Import Log View';
+has '+caption' => default => 'View Import Log';
 
 use namespace::autoclean;
 

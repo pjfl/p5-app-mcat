@@ -94,7 +94,7 @@ sub edit : Auth('admin') Nav('Edit User') {
    return;
 }
 
-sub profile : Auth('view') Nav('Profile') {
+sub profile : Auth('view') Nav('Settings') {
    my ($self, $context) = @_;
 
    my $user = $context->stash('user');

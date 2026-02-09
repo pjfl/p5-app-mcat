@@ -6,7 +6,7 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
-has '+caption' => default => 'Lists List';
+has '+caption' => default => 'List Lists';
 
 set_table_name 'lists';
 

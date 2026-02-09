@@ -11,7 +11,7 @@ with    'HTML::StateTable::Role::Filterable';
 with    'HTML::StateTable::Role::CheckAll';
 with    'HTML::StateTable::Role::Form';
 
-has '+caption' => default => 'Tag List';
+has '+caption' => default => 'List Tags';
 
 has '+configurable_action' => default => 'api/preference';
 

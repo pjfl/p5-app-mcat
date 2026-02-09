@@ -5,7 +5,7 @@ use Moo;
 
 extends 'MCat::Table::View::Object';
 
-has '+caption' => default => 'List View';
+has '+caption' => default => 'View List';
 
 has '+form_buttons' => default => sub {
    my $self     = shift;
@@ -16,22 +16,23 @@ has '+form_buttons' => default => sub {
 
    return [{
       action    => $context->uri_for_action('list/list'),
+      classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Lists',
+   },{
+      action    => $context->uri_for_action($obj_list, [], { list_id => $id }),
+      classes   => 'left',
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'View Content',
    },{
       action    => $context->uri_for_action('list/update', [$id]),
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Update List',
    },{
-      action    => $context->uri_for_action($obj_list, [], { list_id => $id }),
-      method    => 'get',
-      selection => 'disable_on_select',
-      value     => 'View Content',
-   },{
       action    => $context->uri_for_action('list/edit', [$id]),
-      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

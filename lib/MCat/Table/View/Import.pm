@@ -5,7 +5,7 @@ use Moo;
 
 extends 'MCat::Table::View::Object';
 
-has '+caption' => default => 'Import View';
+has '+caption' => default => 'View Import';
 
 has '+form_buttons' => default => sub {
    my $self    = shift;
@@ -14,6 +14,7 @@ has '+form_buttons' => default => sub {
 
    return [{
       action    => $context->uri_for_action('import/list'),
+      classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'List',
@@ -23,7 +24,6 @@ has '+form_buttons' => default => sub {
       value     => 'Update',
    },{
       action    => $context->uri_for_action('import/edit', [$id]),
-      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

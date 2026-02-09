@@ -5,7 +5,7 @@ use Moo;
 
 extends 'MCat::Table::View::Object';
 
-has '+caption' => default => 'User View';
+has '+caption' => default => 'View User';
 
 has '+form_buttons' => default => sub {
    my $self    = shift;
@@ -15,6 +15,7 @@ has '+form_buttons' => default => sub {
 
    return [{
       action    => $context->uri_for_action('user/list'),
+      classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'List',
@@ -22,10 +23,9 @@ has '+form_buttons' => default => sub {
       action    => $context->uri_for_action($actions->{profile}, [$user_id]),
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'Profile',
+      value     => 'Settings',
    },{
       action    => $context->uri_for_action('user/edit', [$user_id]),
-      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

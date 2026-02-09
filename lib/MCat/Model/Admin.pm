@@ -11,9 +11,12 @@ has '+moniker' => default => 'admin';
 sub menu : Auth('admin') Nav('Admin|img/admin.svg') {
    my ($self, $context) = @_;
 
-   my $nav = $context->stash('nav')->list('admin');
+   my $nav = $context->stash('nav');
 
-   $nav->menu('page')->item('doc/configuration')->item('doc/config_edit');
+   $nav->list('configuration')->item('doc/config_edit');
+
+   $nav->list('admin');
+   $nav->menu('configuration')->item('doc/configuration');
    $nav->menu('doc')->item('doc/list');
    $nav->menu('job')->item('job/status');
    $nav->menu('logfile')->item('logfile/list');

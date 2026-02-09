@@ -1303,7 +1303,7 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.13
+ * @version 0.2.14
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.45
@@ -1368,7 +1368,7 @@ form.classic.droplets {
   border-radius: 62% 38% 24% 76% / 59% 60% 40% 41%;
   box-shadow: inset 20px 20px 20px var(--shadow-darkest-semitrans), 25px 35px 20px var(--shadow-darkest-semitrans), 25px 30px 30px var(--shadow-darkest-semitrans), inset -20px -20px 25px var(--shadow-lightest-semitrans);
   padding-top: 0.5rem;
-  transform: translate(-6rem, 8rem);
+  transform: translate(-6rem, 7rem);
   transition: 0.25s;
 }
 form.classic.droplets::before,
@@ -1404,18 +1404,20 @@ form.classic.droplets .droplet:hover {
   border-radius: 50%;
 }
 form.classic.droplets .droplet:nth-child(1 of .droplet) {
-  offset: center 8rem circle(12rem) calc(100% * 5 / 6);
-  transform: rotate(-20deg) translateX(6rem);
+  left: 18rem;
+  top: -4rem;
+  transform: rotate(15deg);
   z-index: 6;
 }
 form.classic.droplets .droplet:nth-child(2 of .droplet) {
-  offset: center 8rem circle(12rem) calc(100% * 6 / 6);
-  transform: rotate(-90deg) translateX(6rem);
+  left: 20rem;
+  top: 5rem;
   z-index: 7;
 }
 form.classic.droplets .droplet:nth-child(3 of .droplet) {
-  offset: center 8rem circle(12rem) calc(100% * 1 / 6);
-  transform: rotate(195deg) translate(8rem, 2rem);
+  left: 19rem;
+  top: 14rem;
+  transform: rotate(-15deg);
   z-index: 8;
 }
 form.classic.droplets .droplet .tooltip {
@@ -1441,15 +1443,17 @@ form.classic.droplets .form-wrapper .form-title {
   box-shadow: inset 10px 10px 10px var(--shadow-darkest-semitrans), 15px 25px 10px var(--shadow-darkest-semitrans), 15px 20px 20px var(--shadow-darkest-semitrans), inset -10px -10px 15px var(--shadow-lightest-semitrans);
   font-size: 1.75rem;
   height: 4rem;
-  offset: center 8rem circle(12rem) calc(100% * 4 / 6);
   padding: 1.25rem 1rem;
   position: absolute;
   text-shadow: 3px 3px 3px var(--bg-darker);
-  transform: rotate(15deg);
   white-space: nowrap;
+  left: -4rem;
+  top: -4rem;
+  transform: rotate(-15deg);
 }
 form.classic.droplets .form-wrapper .form-title:hover {
-  transform: rotate(10deg) scale(0.96);
+  border-radius: 50%;
+  transform: rotate(-10deg) scale(0.96);
 }
 form.classic.droplets .input-field:not(.droplet) {
   text-align: left;
@@ -3299,14 +3303,10 @@ body {
 .state-table.object-view .credit-control {
   flex-direction: row;
   gap: 0.5rem;
-  justify-content: flex-start;
+  justify-content: flex-end;
   position: relative;
 }
-.state-table.object-view .credit-control .table-button:last-child {
-  margin-right: 0;
-}
-.state-table.object-view .credit-control .table-button.right {
-  margin-right: 0;
+.state-table.object-view .credit-control .table-button .right {
   right: 0;
 }
 .state-table.object-view .state-table th:first-child a {
@@ -4087,12 +4087,18 @@ body {
 .state-table .table-form a.table-button {
   padding: 0.0625rem 0.75rem 0.25rem;
 }
+.state-table .table-form .table-button.left {
+  position: absolute;
+}
+.state-table .table-form .table-button.left:nth-child(1) {
+  left: 0;
+}
+.state-table .table-form .table-button.left:nth-child(2) {
+  left: 5rem;
+}
 .state-table .table-form .table-button.right {
   position: absolute;
   right: 0.5rem;
-}
-.state-table .table-form .table-button:last-child {
-  margin-right: 0;
 }
 .state-table .table-form .table-button[disabled=disabled],
 .state-table .table-form .table-button[disabled=disabled]::after,

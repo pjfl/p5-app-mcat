@@ -96,10 +96,24 @@ sub list : Nav('Tables') {
 sub view : Nav('View Table') {
    my ($self, $context, $tableid) = @_;
 
+   my $buttons = [{
+      action    => $context->uri_for_action('table/list'),
+      classes   => 'left',
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'List',
+   },{
+      action    => $context->uri_for_action('table/edit', [$tableid]),
+      method    => 'get',
+      selection => 'disable_on_select',
+      value     => 'Edit',
+   }];
+
    $context->stash(table => $self->new_table('View::Object', {
-      caption => 'Table View',
-      context => $context,
-      result  => $context->stash('table')
+      caption      => 'View Table',
+      context      => $context,
+      form_buttons => $buttons,
+      result       => $context->stash('table')
    }));
    return;
 }

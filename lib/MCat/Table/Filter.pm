@@ -6,7 +6,7 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
-has '+caption' => default => 'Filters List';
+has '+caption' => default => 'List Filters';
 
 has '+page_size_control_location' => default => 'BottomLeft';
 

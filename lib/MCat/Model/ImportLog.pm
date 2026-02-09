@@ -52,7 +52,7 @@ sub importlog : Capture(1) {
 sub list : Nav('Import Logs') {
    my ($self, $context) = @_;
 
-   my $options = { caption => 'Import Log List', context => $context };
+   my $options = { caption => 'List Import Logs', context => $context };
    my $import  = $context->stash('import');
 
    $options->{import} = $import if $import;

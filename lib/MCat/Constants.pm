@@ -9,8 +9,6 @@ use HTML::StateTable::Constants       qw( );
 use HTML::Forms::Constants            qw( );
 use Web::ComposableRequest::Constants qw( );
 
-Class::Usul::Cmd::Constants->Dump_Except([qw( BUILDARGS BUILD DOES new )]);
-
 my $exception_class = 'MCat::Exception';
 
 Class::Usul::Cmd::Constants->Exception_Class($exception_class);

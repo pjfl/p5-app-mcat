@@ -9,7 +9,7 @@ with    'HTML::StateTable::Role::Form';
 with    'HTML::StateTable::Role::Configurable';
 with    'HTML::StateTable::Role::Filterable';
 
-has '+caption' => default => 'Bugs List';
+has '+caption' => default => 'List Bugs';
 
 has '+configurable_action' => default => 'api/preference';
 

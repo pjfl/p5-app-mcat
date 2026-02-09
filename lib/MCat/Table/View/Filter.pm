@@ -5,7 +5,7 @@ use Moo;
 
 extends 'MCat::Table::View::Object';
 
-has '+caption' => default => 'Filter View';
+has '+caption' => default => 'View Filter';
 
 has '+form_buttons' => default => sub {
    my $self    = shift;
@@ -13,12 +13,12 @@ has '+form_buttons' => default => sub {
 
    return [{
       action    => $context->uri_for_action('filter/list'),
+      classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'List',
    },{
       action    => $context->uri_for_action('filter/edit', [$self->result->id]),
-      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

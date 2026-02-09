@@ -6,7 +6,7 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
-has '+caption' => default => 'Import List';
+has '+caption' => default => 'List Imports';
 
 has '+page_size_control_location' => default => 'BottomLeft';
 

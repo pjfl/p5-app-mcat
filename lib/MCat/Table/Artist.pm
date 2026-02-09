@@ -19,7 +19,7 @@ with    'HTML::StateTable::Role::Reorderable';
 with    'HTML::StateTable::Role::Chartable';
 #with    'HTML::StateTable::Role::Animation';
 
-has '+caption' => default => 'Artist List';
+has '+caption' => default => 'List Artists';
 
 has '+active_control_location' => default => 'BottomLeft';
 

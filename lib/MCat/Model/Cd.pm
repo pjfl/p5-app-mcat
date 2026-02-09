@@ -137,12 +137,12 @@ sub view : Auth('view') Nav('View CD') {
    my $tracks  = $self->table->new_with_context('Track', $options);
    my $buttons = [{
       action    => $context->uri_for_action('artist/view', [$cd->artistid]),
+      classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Artist',
    },{
       action    => $context->uri_for_action('cd/edit', [$cd->cdid]),
-      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',
@@ -150,7 +150,7 @@ sub view : Auth('view') Nav('View CD') {
 
    $context->stash(table => $self->table->new_with_context('View::Object', {
       add_columns  => [ 'Tracks' => $tracks ],
-      caption      => 'CD View',
+      caption      => 'View CD',
       context      => $context,
       form_buttons => $buttons,
       result       => $cd,

@@ -399,7 +399,7 @@ L<App::Job::Daemon>
 has 'lock_attributes' =>
    is            => 'lazy',
    isa           => HashRef,
-   documentation => 'redis=noupdate',
+   documentation => 'name=text redis=noupdate type=text',
    default       => sub {
       my $self = shift;
 
@@ -966,9 +966,9 @@ should be skipped when introspecting this class
 
 sub DumpExcept {
    return [
-      qw( DumpExcept SSL_VERIFY_NONE connect_info has_config_file
-          has_config_home has_local_config_file _config_file_list
-          _dist_indicator_files _find_config _find_home _home_indicator_dirs )
+      qw( SSL_VERIFY_NONE connect_info has_config_file has_config_home
+          has_local_config_file _config_file_list _dist_indicator_files
+          _find_config _find_home _home_indicator_dirs )
    ];
 }
 

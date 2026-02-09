@@ -51,7 +51,7 @@ sub configuration : Auth('admin') Nav('Configuration') {
    return;
 }
 
-sub list : Nav('Docs') {
+sub list : Nav('Documentation') {
    my ($self, $context) = @_;
 
    my $options   = {

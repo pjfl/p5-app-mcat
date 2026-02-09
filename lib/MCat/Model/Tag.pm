@@ -118,18 +118,18 @@ sub view : Auth('admin') Nav('View Tag') {
    my $tag     = $context->stash('tag');
    my $buttons = [{
       action    => $context->uri_for_action('tag/list'),
+      classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'List',
    },{
       action    => $context->uri_for_action('tag/edit', [$tag->id]),
-      classes   => 'right',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'Update',
+      value     => 'Edit',
    }];
    my $options = {
-      caption      => 'Tag View',
+      caption      => 'View Tag',
       context      => $context,
       form_buttons => $buttons,
       result       => $tag,

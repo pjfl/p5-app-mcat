@@ -67,7 +67,7 @@ sub view : Auth('admin') Nav('View Logfile') {
 
    my $table_class = $self->_extension2table_class($logfile);
    my $options     = {
-      caption => "${logfile} File View (${size})",
+      caption => "View ${logfile} (${size})",
       context => $context,
       logfile => $logfile,
       redis   => $self->redis_client,

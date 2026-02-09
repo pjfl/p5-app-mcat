@@ -7,7 +7,7 @@ use HTML::StateTable::Moo;
 
 extends 'HTML::StateTable';
 
-has '+caption' => default => 'CD List';
+has '+caption' => default => 'List CDs';
 
 has '+page_control_location' => default => 'TopLeft';
 
