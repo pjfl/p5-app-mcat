@@ -8,7 +8,7 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
-has '+title'              => default => 'List';
+has '+title'              => default => 'Edit List';
 has '+form_wrapper_class' => default => sub { ['narrow'] };
 has '+info_message'       => default => 'You know what to do';
 has '+item_class'         => default => 'List';
@@ -55,6 +55,8 @@ after 'after_build_fields' => sub {
 
       $self->field('view')->href($view->as_string);
       $self->field('submit')->add_wrapper_class(['inline', 'right']);
+      $self->field('core_table')->disabled(TRUE);
+      $self->field('core_table')->required(FALSE);
    }
    else { $self->field('view')->inactive(TRUE) }
 

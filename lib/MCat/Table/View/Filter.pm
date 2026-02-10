@@ -16,7 +16,7 @@ has '+form_buttons' => default => sub {
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'List',
+      value     => 'Filters',
    },{
       action    => $context->uri_for_action('filter/edit', [$self->result->id]),
       method    => 'get',

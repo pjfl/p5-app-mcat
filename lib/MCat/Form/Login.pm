@@ -64,7 +64,6 @@ has_field 'register' =>
 
 has_field 'password_reset' =>
    type          => 'Button',
-   allow_default => TRUE,
    disabled      => TRUE,
    element_attr  => { 'data-field-depends' => ['__user_name'] },
    html_name     => 'submit',
@@ -106,21 +105,21 @@ after 'after_build_fields' => sub {
       $self->field('register')->add_wrapper_class('droplet');
       $self->field('password_reset')->add_wrapper_class('droplet');
       $self->field('totp_reset')->add_wrapper_class('droplet');
+
+      my $action = $config->default_actions->{register};
+      my $uri    = $context->uri_for_action($action);
+
+      $self->field('register')->href($uri->as_string);
    }
    else {
-      $self->field('register')->inactive(TRUE);
-
       for my $field_name (@{$change_flds}) {
          $self->field($field_name)->add_wrapper_class('expand');
       }
+
+      $self->field('register')->inactive(TRUE);
    }
 
    $self->field('register')->inactive(TRUE) unless $config->registration;
-
-   my $action = $config->default_actions->{register};
-   my $uri    = $context->uri_for_action($action);
-
-   $self->field('register')->href($uri->as_string);
 
    $self->_add_field_handlers;
    return;

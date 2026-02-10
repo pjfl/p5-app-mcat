@@ -18,7 +18,7 @@ has '+form_buttons' => default => sub {
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'List',
+      value     => 'Users',
    },{
       action    => $context->uri_for_action($actions->{profile}, [$user_id]),
       method    => 'get',

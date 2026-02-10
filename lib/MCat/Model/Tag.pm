@@ -121,7 +121,7 @@ sub view : Auth('admin') Nav('View Tag') {
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'List',
+      value     => 'Tags',
    },{
       action    => $context->uri_for_action('tag/edit', [$tag->id]),
       method    => 'get',

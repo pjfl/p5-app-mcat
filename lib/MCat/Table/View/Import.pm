@@ -17,7 +17,7 @@ has '+form_buttons' => default => sub {
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'List',
+      value     => 'Imports',
    },{
       action    => $context->uri_for_action('import/update', [$id]),
       selection => 'disable_on_select',

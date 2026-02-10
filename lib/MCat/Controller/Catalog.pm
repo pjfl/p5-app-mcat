@@ -41,10 +41,10 @@ sub dispatch_request { build_routes
    'GET      + /importlog + ?*'    => 'importlog/root/base/list',
 
    'GET|POST + /list/create + ?*'   => 'list/root/base/create',
-   'GET|POST + /list/*/edit + ?*'   => 'list/root/base/edit',
-   'POST     + /list/*/delete + ?*' => 'list/root/base/delete',
-   'GET|POST + /list/*/update + ?*' => 'list/root/base/update',
-   'GET      + /list/* + ?*'        => 'list/root/base/view',
+   'GET|POST + /list/*/edit + ?*'   => 'list/root/listname/edit',
+   'POST     + /list/*/delete + ?*' => 'list/root/listname/delete',
+   'GET|POST + /list/*/update + ?*' => 'list/root/listname/update',
+   'GET      + /list/* + ?*'        => 'list/root/listname/view',
    'GET      + /list + ?*'          => 'list/root/base/list',
 
    'GET      + /filter/selector/* + ?*' => 'filter/root/typename/selector',

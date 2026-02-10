@@ -101,7 +101,7 @@ sub view : Nav('View Table') {
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'List',
+      value     => 'Tables',
    },{
       action    => $context->uri_for_action('table/edit', [$tableid]),
       method    => 'get',

@@ -74,7 +74,7 @@ sub view : Nav('View Docs') {
    my ($self, $context, $file) = @_;
 
    my $params    = $context->request->query_parameters;
-   my $directory = $self->file->directory($context, $params->{directory});
+   my $directory = $self->file->directory($params->{directory});
    my $markup    = $self->_doc_viewer->get($directory->catfile($file));
 
    $context->stash(documentation => $markup);

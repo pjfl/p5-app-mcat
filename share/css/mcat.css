@@ -2547,6 +2547,7 @@ form.classic .tooltip {
   left: 8.5rem;
   min-width: 10rem;
   padding: 0.5rem;
+  pointer-events: none;
   position: absolute;
   top: 0;
   transform: translateY(calc(-0.25rem - 100%));

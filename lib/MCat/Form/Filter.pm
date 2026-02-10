@@ -47,9 +47,9 @@ has_field 'name' => required => TRUE;
 has_field 'description';
 
 has_field 'core_table' =>
-   type          => 'Select',
-   label         => 'Table',
-   default       => 1;
+   type    => 'Select',
+   label   => 'Table',
+   default => 1;
 
 sub options_table {
    my $self     = shift;

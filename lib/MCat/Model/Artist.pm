@@ -131,7 +131,7 @@ sub view : Auth('view') Nav('View Artist') {
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
-      value     => 'List',
+      value     => 'Artists',
    },{
       action    => $context->uri_for_action('artist/edit', [$artist->artistid]),
       method    => 'get',

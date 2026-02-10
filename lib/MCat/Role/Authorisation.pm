@@ -1,15 +1,15 @@
 package MCat::Role::Authorisation;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( includes );
 use MCat::Util             qw( redirect );
-use Unexpected::Functions  qw( throw NoUserRole );
 use Moo::Role;
 
 sub is_authorised {
    my ($self, $context, $action) = @_;
 
-   throw 'No action: ' . caller unless $action;
+   return $self->_redirect2unauthorised($context, 'No action ' . caller)
+      unless $action;
 
    my $auth = _get_action_auth($context, $action) // 'edit';
 
@@ -24,7 +24,10 @@ sub is_authorised {
 
    return TRUE if $auth eq 'view';
 
-   my $user_role = $session->role or throw NoUserRole, [$session->username];
+   my $user_role = $session->role;
+
+   return $self->_redirect2unauthorised($context, 'No user role')
+      unless $user_role;
 
    return TRUE if $user_role eq 'admin';
    return TRUE if $user_role eq 'manager' and $auth eq 'edit';

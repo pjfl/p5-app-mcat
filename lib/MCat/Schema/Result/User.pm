@@ -22,29 +22,45 @@ $class->table('public.user');
 
 $class->add_columns(
    id => {
-      data_type => 'integer', is_nullable => FALSE, is_auto_increment => TRUE,
-      label => 'User ID', hidden => TRUE,
+      data_type         => 'integer',
+      hidden            => TRUE,
+      is_auto_increment => TRUE,
+      is_nullable       => FALSE,
+      label             => 'User ID',
    },
    name => { data_type => 'text', is_nullable => FALSE, label => 'User Name' },
    email => {
-      data_type => 'text', is_nullable => FALSE, label => 'Email Address'
+      data_type   => 'text',
+      is_nullable => FALSE,
+      label       => 'Email Address',
    },
    role_id => {
-      data_type => 'integer', is_nullable => FALSE,
-      label => 'Role', cell_traits => ['Capitalise'], display => 'role.name'
+      data_type   => 'integer',
+      cell_traits => ['Capitalise'],
+      display     => 'role.name',
+      is_nullable => FALSE,
+      label       => 'Role',
    },
    active => {
-      data_type => 'boolean', is_nullable => FALSE, default => TRUE,
-      label => 'Still Active', cell_traits => ['Bool']
+      data_type   => 'boolean',
+      cell_traits => ['Bool'],
+      default     => TRUE,
+      is_nullable => FALSE,
+      label       => 'Still Active',
    },
    password => {
-      data_type => 'text', is_nullable => FALSE, label => 'Password',
-      display => sub { truncate shift->result->password, 20 },
-      hidden => TRUE,
+      data_type   => 'text',
+      display     => sub { truncate shift->result->password, 20 },
+      hidden      => TRUE,
+      is_nullable => FALSE,
+      label       => 'Password',
    },
    password_expired => {
-      data_type => 'boolean', is_nullable => FALSE, default => FALSE,
-      label => 'Password Expired', cell_traits => ['Bool']
+      data_type   => 'boolean',
+      cell_traits => ['Bool'],
+      default     => FALSE,
+      is_nullable => FALSE,
+      label       => 'Password Expired',
    },
 );
 
