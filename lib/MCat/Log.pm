@@ -1,7 +1,8 @@
 package MCat::Log;
 
 use Class::Usul::Cmd::Constants qw( DOT FALSE NUL TRUE USERNAME );
-use Class::Usul::Cmd::Types     qw( Bool ConfigProvider );
+use Class::Usul::Cmd::Types     qw( Bool ConfigProvider Undef );
+use File::DataClass::Types      qw( File );
 use Class::Usul::Cmd::Util      qw( now_dt trim );
 use HTML::StateTable::Util      qw( escape_formula );
 use Ref::Util                   qw( is_arrayref is_coderef );
@@ -12,6 +13,17 @@ use Moo;
 with 'MCat::Role::CSVParser';
 
 has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
+
+has 'logfile' =>
+   is      => 'lazy',
+   isa     => File|Undef,
+   default => sub {
+      my $config = shift->config;
+
+      return $config->logfile if $config->can('logfile') && $config->logfile;
+
+      return;
+   };
 
 has '_debug' =>
    is       => 'lazy',
@@ -127,23 +139,19 @@ sub _log {
    ($leader, $message) = $self->_get_leader($message, $context) unless $leader;
 
    if ($config->can('log_message_maxlen') && $config->log_message_maxlen) {
-      my $maxlen = $config->log_message_maxlen;
+      my $max = $config->log_message_maxlen;
 
-      if (length $message > $maxlen) {
-         $message = (substr $message, 0, $maxlen) . '...';
-      }
+      $message = (substr $message, 0, $max) . '...' if length $message > $max;
    }
 
-   my $now      = now_dt->strftime('%Y/%m/%d %T');
-   my $username = $context && $context->can('session')
-      ? $context->session->username : USERNAME;
+   if ($self->logfile) {
+      my $now      = now_dt->strftime('%Y/%m/%d %T');
+      my $username = $context && $context->can('session')
+         ? $context->session->username : USERNAME;
+      my @fields   = ($now, $level, $username, $leader, $message);
 
-   $self->csv_parser->combine(
-      escape_formula $now, $level, $username, $leader, $message
-   );
-
-   if ($config->can('logfile') && $config->logfile) {
-      $config->logfile->appendln($self->csv_parser->string)->flush;
+      $self->csv_parser->combine(escape_formula @fields);
+      $self->logfile->appendln($self->csv_parser->string)->flush;
    }
    else { CORE::warn "${leader}: ${message}\n" }
 

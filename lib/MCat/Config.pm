@@ -948,6 +948,12 @@ has 'web_components' =>
             file_max_size   => $self->max_upload_size,
             file_share      => $self->root->catdir('file'),
          },
+         'Model::Logfile' => {
+            file_extensions => {
+               csv => 'View::CSV',
+               log => 'View::Apache',
+            },
+         },
       };
    };
 

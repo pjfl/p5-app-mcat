@@ -16,7 +16,7 @@ with    'MCat::Role::JSONParser';
 
 has '+moniker' => default => 'misc';
 
-has '+redis_client_name' => is => 'ro', default => 'job_stash';
+has '+redis_client_name' => is => 'ro', default => 'notification';
 
 sub base : Auth('none') {
    my ($self, $context) = @_;

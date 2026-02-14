@@ -1,6 +1,7 @@
 package MCat::Form::ListUpdate;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
+use HTML::Forms::Util      qw( make_handler );
 use Try::Tiny;
 use Moo;
 use HTML::Forms::Moo;
@@ -43,6 +44,13 @@ after 'after_build_fields' => sub {
 
       $self->field('view')->href($view->as_string);
       $self->field('submit')->add_wrapper_class(['inline', 'right']);
+
+      my $resources = $context->config->wcom_resources;
+      my $worker_js = $resources->{navigation} . '.registerServiceWorker';
+      my $options   = { allow_default => TRUE };
+      my $handler   = make_handler($worker_js, $options);
+
+      $self->field('submit')->add_handler('click', $handler);
    }
    else { $self->field('view')->inactive(TRUE) }
 
@@ -52,8 +60,9 @@ after 'after_build_fields' => sub {
 sub validate {
    my $self      = shift;
    my $filter_id = $self->field('filter')->value;
+   my $username  = $self->context->session->username;
 
-   try   { $self->item->queue_update($filter_id) }
+   try   { $self->item->queue_update($filter_id, $username) }
    catch { $self->add_form_error("${_}") };
 
    return;

@@ -139,12 +139,13 @@ sub empty_list {
 }
 
 sub queue_update {
-   my ($self, $filter_id) = @_;
+   my ($self, $filter_id, $username) = @_;
 
    my $list_id = $self->id;
    my $schema  = $self->result_source->schema;
    my $program = $schema->config->bin->catfile('mcat-cli');
-   my $options = "-o list_id=${list_id} -o filter_id=${filter_id}";
+   my $options = "-o list_id=${list_id} -o filter_id=${filter_id} " .
+                 "-o recipient=${username}";
    my $command = "${program} ${options} update_list";
    my $args    = { command => $command, name => 'update_list' };
 

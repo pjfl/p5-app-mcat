@@ -1,9 +1,10 @@
 package MCat::Model::Logfile;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
-use Type::Utils                 qw( class_type );
-use MCat::Util                  qw( redirect2referer );
-use Unexpected::Functions       qw( Unspecified NotFound );
+use MCat::Constants       qw( EXCEPTION_CLASS FALSE TRUE );
+use Unexpected::Types     qw( HashRef );
+use Type::Utils           qw( class_type );
+use MCat::Util            qw( redirect2referer );
+use Unexpected::Functions qw( Unspecified NotFound );
 use Format::Human::Bytes;
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -17,6 +18,8 @@ has '+moniker' => default => 'logfile';
 has '+redis_client_name' => is => 'ro', default => 'logfile_cache';
 
 has '_format_number' => is => 'ro', default => sub { Format::Human::Bytes->new};
+
+has 'file_extensions' => is => 'ro', isa => HashRef, default => sub { {} };
 
 sub base : Auth('admin') {
    my ($self, $context, $logfile) = @_;
@@ -32,11 +35,11 @@ sub base : Auth('admin') {
 sub clear_cache : Auth('admin') {
    my ($self, $context, $logfile) = @_;
 
-   return $self->error($context, Unspecified, ['logfile']) unless $logfile;
-
    return unless $self->verify_form_post($context);
 
-   my $path = $context->config->logfile->parent->catfile($logfile);
+   return $self->error($context, Unspecified, ['logfile']) unless $logfile;
+
+   my $path = $self->config->logsdir->catfile($logfile);
 
    return $self->error($context, NotFound, ["${path}"]) unless $path->exists;
 
@@ -61,29 +64,24 @@ sub view : Auth('admin') Nav('View Logfile') {
    return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
    my $path = $self->config->logsdir->catfile($logfile);
-   my $size = 0;
 
-   $size = $self->_format_number->base2($path->stat->{size}) if $path->exists;
+   return $self->error($context, NotFound, ["${path}"]) unless $path->exists;
 
-   my $table_class = $self->_extension2table_class($logfile);
-   my $options     = {
+   my $table_class = $self->file_extensions->{$path->extension};
+
+   return $self->error($context, 'Extension [_1] unknown', [$path->extension])
+      unless $table_class;
+
+   my $size    = $self->_format_number->base2($path->stat->{size});
+   my $options = {
       caption => "View ${logfile} (${size})",
       context => $context,
-      logfile => $logfile,
+      path    => $path,
       redis   => $self->redis_client,
    };
 
    $context->stash(table => $self->new_table($table_class, $options));
    return;
-}
-
-# Private methods
-sub _extension2table_class {
-   my ($self, $logfile) = @_;
-
-   return 'View::CSV' if $logfile =~ m{ \. csv \z }mx;
-
-   return 'View::Apache';
 }
 
 1;

@@ -24,7 +24,7 @@ with 'MCat::Role::JSONParser';
 
 has '+info_message'      => default => 'Answer the security questions';
 has '+name'              => default => 'TOTP_Reset';
-has '+redis_client_name' => default => 'job_stash';
+has '+redis_client_name' => default => 'notification';
 has '+title'             => default => 'OTP Reset';
 
 has_field 'name' => type => 'Display', label => 'User Name';
