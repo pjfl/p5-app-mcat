@@ -81,6 +81,9 @@ has_exception 'NoMethod' => parents => [$class],
 has_exception 'PageNotFound' => parents => [$class],
    error   => 'Page [_1] not found', rv => HTTP_NOT_FOUND;
 
+has_exception 'RedirectToAuth' => parents => [$class],
+   error   => 'Redirect to 3rd party authenticator';
+
 has_exception 'UnauthorisedAPICall' => parents => [$class],
    error   => 'Class [_1] method [_2] unauthorised call attempt',
    rv      => HTTP_UNAUTHORIZED;

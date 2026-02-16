@@ -65,14 +65,67 @@ Configuration parameters for the plugin authentication system
 =cut
 
 has 'authentication' =>
-   is            => 'ro',
+   is            => 'lazy',
    isa           => HashRef,
-   documentation => 'default_realm=text',
+   init_arg      => undef,
    default       => sub {
+      my $self = shift;
+
       return {
-         default_realm => 'DBIC',
+         default_realm => $self->_default_realm,
+         realms => {
+            OAuth => {
+               providers => {
+                  'gmail.com' => {
+                     client_id     => $self->_google_client_id,
+                     client_secret => $self->_google_client_secret,
+                     request_url   => 'https://accounts.google.com/o/oauth2/v2/auth',
+                     access_url    => 'https://oauth2.googleapis.com/token',
+                  },
+               },
+            },
+         },
       };
    };
+
+=item _default_realm
+
+Defaults to C<DBIC>. Selects default authentication via the users table in
+the database
+
+=cut
+
+has '_default_realm' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'default_realm',
+   default  => 'DBIC';
+
+=item _google_client_id
+
+Provided by the Google Cloud Console. The registered identity for this
+application
+
+=cut
+
+has '_google_client_id' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'gmail_client_id',
+   default  => 'overide_in_local_config';
+
+=item _google_client_secret
+
+Provided by the Google Cloud Console. Secret used to obtain an access token
+from the identity provider
+
+=cut
+
+has '_google_client_secret' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'gmail_client_secret',
+   default  => 'overide_in_local_config';
 
 =item bin
 

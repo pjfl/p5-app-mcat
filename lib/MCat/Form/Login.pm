@@ -147,12 +147,13 @@ sub validate {
 
    return unless $self->validated;
 
+   my ($username, $realm) = $self->_get_realm;
+
    my $context = $self->context;
-   my $name    = $self->field('name');
-   my ($username, $realm) = reverse split m{ : }mx, $name->value;
    my $options = { prefetch => ['profile', 'role'] };
    my $args    = { username => $username, options => $options };
    my $user    = $context->find_user($args, $realm);
+   my $name    = $self->field('name');
 
    return $name->add_error('User [_1] unknown', $username) unless $user;
 
@@ -226,10 +227,17 @@ sub _exception_handlers {
          my $action  = $self->config->default_actions->{password};
          my $changep = $context->uri_for_action($action, [$user->id]);
 
+         $passwd->add_error($_->original);
          $context->stash(redirect $changep, [$_->original]);
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;
       },
       'Authentication' => sub { $self->add_form_error($_->original) },
+      'RedirectToAuth' => sub {
+         my $params = { http_headers => { 'X-Force-Reload' => 'true' }};
+
+         $self->add_form_error($_->original);
+         $context->stash(redirect $_->args->[0], [$_->original], $params);
+      },
       'Unspecified'    => sub {
          if ($_->args->[0] eq 'Password') { $passwd->add_error($_->original) }
          else { $code->add_error($_->original) }
@@ -239,6 +247,17 @@ sub _exception_handlers {
          $self->log->alert($_, $context) if $self->has_log;
       },
    ];
+}
+
+sub _get_realm {
+   my $self = shift;
+
+   my ($username, $realm) = reverse split m{ : }mx, $self->field('name')->value;
+
+   $realm = 'OAuth' if $realm eq 'oauth';
+   $realm = 'OAuth' if $self->field('password')->value eq 'oauth';
+
+   return ($username, $realm);
 }
 
 use namespace::autoclean -except => META;

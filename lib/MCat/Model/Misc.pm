@@ -6,6 +6,7 @@ use MCat::Util             qw( create_token new_uri redirect );
 use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( PageNotFound UnauthorisedAccess
                                UnknownToken UnknownUser );
+use Try::Tiny;
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -53,7 +54,7 @@ sub create_user : Auth('none') {
 
    return $self->error($context, UnknownToken, [$token]) unless $stash;
 
-   $self->redis_client->remove($token);
+   $self->redis_client->del($token);
 
    my $user = $context->model('User')->create({
       email            => $stash->{email},
@@ -105,19 +106,8 @@ sub login : Auth('none') Nav('Sign In') {
    my $options = { context => $context, log => $self->log };
    my $form    = $self->new_form('Login', $options);
 
-   if ($form->process(posted => $context->posted)) {
-      my $action   = $self->config->default_actions->{get};
-      my $default  = $context->uri_for_action($action);
-      my $name     = $context->session->username;
-      my $wanted   = $context->session->wanted;
-      my $location = new_uri $context->request->scheme, $wanted if $wanted;
-      my $address  = $context->request->remote_address;
-      my $message  = 'User [_1] logged in';
-
-      $self->log->info("Address ${address}", $context);
-      $context->stash(redirect $location || $default, [$message, $name]);
-      $context->session->wanted(NUL);
-   }
+   return $self->_stash_login_redirect($context)
+      if $form->process(posted => $context->posted);
 
    $context->stash(form => $form);
    return;
@@ -149,11 +139,11 @@ sub logout : Auth('view') Nav('Logout') {
 
    my $action  = $self->config->default_actions->{login};
    my $login   = $context->uri_for_action($action);
-   my $args    = ['User [_1] logged out', $context->session->username];
-   my $options = { http_headers => { 'X-Force-Reload' => 'true' }};
+   my $message = ['User [_1] logged out', $context->session->username];
+   my $params  = { http_headers => { 'X-Force-Reload' => 'true' }};
 
    $context->logout;
-   $context->stash(redirect $login, $args, $options);
+   $context->stash(redirect $login, $message, $params);
    return;
 }
 
@@ -165,6 +155,33 @@ sub not_found : Auth('none') Nav('Not Found') {
    return if $context->stash->{finalised};
 
    return $self->error($context, PageNotFound, [$context->request->path]);
+}
+
+sub oauth : Auth('none') {
+   my ($self, $context) = @_;
+
+   my $params = $context->request->query_parameters;
+   my $args   = {
+      address => $context->request->remote_address,
+      code    => $params->{code},
+      state   => $params->{state},
+   };
+
+   try {
+      $context->logout;
+      $args->{user} = $context->find_user($args, 'OAuth');
+      $context->authenticate($args, 'OAuth');
+      $context->set_authenticated($args, 'OAuth');
+      $self->_stash_login_redirect($context);
+   }
+   catch {
+      my $action = $self->config->default_actions->{login};
+      my $login  = $context->uri_for_action($action);
+
+      $context->stash(redirect $login, [$_->original]);
+   };
+
+   return;
 }
 
 sub password : Auth('none') Nav('Change Password') {
@@ -220,7 +237,7 @@ sub password_update : Auth('none') {
 
    return $self->error($context, UnknownToken, [$token]) unless $stash;
 
-   $self->redis_client->remove($token);
+   $self->redis_client->del($token);
 
    my $user = $context->stash('user');
 
@@ -263,7 +280,7 @@ sub totp : Auth('none') {
    return $self->error($context, UnknownToken, [$token])
       unless $self->redis_client->get($token);
 
-   $self->redis_client->remove($token);
+   $self->redis_client->del($token);
 
    my $options = { context => $context, user => $context->stash('user') };
 
@@ -323,6 +340,25 @@ sub _create_reset_email {
    my $options = { command => $command, name => 'send_message' };
 
    return $context->model('Job')->create($options);
+}
+
+sub _stash_login_redirect {
+   my ($self, $context) = @_;
+
+   my $action   = $self->config->default_actions->{get};
+   my $default  = $context->uri_for_action($action);
+   my $name     = $context->session->username;
+   my $wanted   = $context->session->wanted;
+   my $location = new_uri $context->request->scheme, $wanted if $wanted;
+   my $message  = 'User [_1] logged in';
+
+   $context->stash(redirect $location || $default, [$message, $name]);
+   $context->session->wanted(NUL);
+
+   my $address = $context->request->remote_address;
+
+   $self->log->info("Address ${address}", $context);
+   return;
 }
 
 sub _stash_user {

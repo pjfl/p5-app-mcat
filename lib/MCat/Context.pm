@@ -159,7 +159,7 @@ sub _action_path2methods {
       return $map->{$action}->{methods} if exists $map->{$action};
    }
 
-   return 'misc/root/not_found';
+   return $action;
 }
 
 sub _action_path2uri {

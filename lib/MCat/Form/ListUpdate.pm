@@ -43,14 +43,13 @@ after 'after_build_fields' => sub {
       my $view = $context->uri_for_action('list/view', [$self->item->id]);
 
       $self->field('view')->href($view->as_string);
-      $self->field('submit')->add_wrapper_class(['inline', 'right']);
 
       my $resources = $context->config->wcom_resources;
       my $worker_js = $resources->{navigation} . '.registerServiceWorker';
-      my $options   = { allow_default => TRUE };
-      my $handler   = make_handler($worker_js, $options);
+      my $handler   = make_handler($worker_js, { allow_default => TRUE });
 
       $self->field('submit')->add_handler('click', $handler);
+      $self->field('submit')->add_wrapper_class(['inline', 'right']);
    }
    else { $self->field('view')->inactive(TRUE) }
 

@@ -68,6 +68,7 @@ sub dispatch_request { build_routes
    'POST     + /login + ?*'        => 'misc/root/base/login_dispatch',
    'GET      + /login + ?*'        => 'misc/root/base/login',
    'POST     + /logout + ?*'       => 'misc/root/logout',
+   'GET      + /oauth + ?*'        => 'misc/root/base/oauth',
    'GET      + /register/* + ?*'   => 'misc/root/base/create_user',
    'GET|POST + /register + ?*'     => 'misc/root/base/register',
    'GET      + /unauthorised + ?*' => 'misc/root/base/unauthorised',

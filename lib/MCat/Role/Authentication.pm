@@ -3,6 +3,7 @@ package MCat::Role::Authentication;
 use Class::Usul::Cmd::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Unexpected::Types           qw( HashRef Object );
 use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
+use Scalar::Util                qw( weaken );
 use Unexpected::Functions       qw( throw Unspecified );
 use Moo::Role;
 
@@ -66,9 +67,14 @@ sub _find_realm {
    $class = ('+' eq substr $realm, 0, 1) ? substr $realm, 1 : "${ns}::${class}";
 
    ensure_class_loaded $class;
+   weaken $self;
 
    my $attr = {
-      %{$config->{$realm} // {}}, realm => $realm, schema => $self->schema
+      %{$config->{realms}->{$realm} // {}},
+      config         => $self->config,
+      realm          => $realm,
+      schema         => $self->schema,
+      uri_for_action => sub { $self->uri_for_action(@_) },
    };
 
    return $self->_realms->{$realm} = $class->new($attr);

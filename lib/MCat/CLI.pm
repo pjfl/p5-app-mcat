@@ -7,7 +7,8 @@ use Class::Usul::Cmd::Util qw( ensure_class_loaded );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
 use Type::Utils            qw( class_type );
-use Unexpected::Functions  qw( throw UnknownImport Unspecified );
+use Unexpected::Functions  qw( throw UnknownImport UnknownToken UnknownUser
+                               Unspecified );
 use HTTP::Request::Webpush;
 use HTTP::Tiny;
 use MCat::Markdown;
@@ -29,16 +30,17 @@ with    'Web::Components::Role::Email';
 
 =head1 Name
 
-MCat - Music Catalog
+MCat::CLI - Music Catalog Command Line Interface
 
 =head1 Synopsis
 
-   use MCat;
+   use MCat::CLI;
+
+   exit MCat::CLI->new_with_options->run;
 
 =head1 Description
 
-A demo web application for L<Web::Components>, L<HTML::Forms>, and
-L<HTML::StateTable>
+Utility methods that can be executed from the command line
 
 =head1 Configuration and Environment
 
@@ -92,11 +94,11 @@ has 'templatedir' =>
    is      => 'lazy',
    isa     => Directory,
    default => sub {
-      my $self = shift;
+      my $self   = shift;
+      my $config = $self->config;
+      my $vardir = $config->vardir;
 
-      return $self->config->vardir->catdir(
-         'templates', $self->config->skin, 'site', 'email'
-      );
+      return $vardir->catdir('templates', $config->skin, 'site', 'email');
    };
 
 has '_pusher' =>
@@ -149,14 +151,13 @@ sub import_file : method {
    my $rs      = $self->schema->resultset('Import');
    my $import  = $rs->find($id) or throw UnknownImport, [$id];
    my $result  = $import->process($id, $guid, $user_id);
-   my $options = { name => 'CLI.import_file' };
    my $count   = $result->{count};
 
-   $self->info("Imported ${count} records. Import guid ${guid}", $options);
+   $self->info("Imported ${count} records. Import guid ${guid}");
 
    if ($count = scalar @{$result->{warnings}}) {
-      $self->warning("Failed ${count} records", $options);
-      $self->warning('First error - ' . $result->{warnings}->[0], $options);
+      $self->warning("Failed ${count} records");
+      $self->warning('First error - ' . $result->{warnings}->[0]);
    }
 
    return OK;
@@ -236,9 +237,8 @@ sub make_css : method {
    my $out    = io([qw( var root css ), $file])->assert_open('a')->truncate(0);
    my $count  =()= map  { $out->append($_->slurp) }
                    sort { $a->name cmp $b->name } @files;
-   my $options = { name => 'CLI.make_css' };
 
-   $self->info("Concatenated ${count} files to ${file}", $options);
+   $self->info("Concatenated ${count} files to ${file}");
    return OK;
 }
 
@@ -262,9 +262,8 @@ sub make_js : method {
    my $out    = io([qw( var root js ), $file])->assert_open('a')->truncate(0);
    my $count  =()= map  { $out->appendln($self->_strip_comments($_->slurp)) }
                    sort { $a->name cmp $b->name } @files;
-   my $options = { name => 'CLI.make_js' };
 
-   $self->info("Concatenated ${count} files to ${file}", $options);
+   $self->info("Concatenated ${count} files to ${file}");
    return OK;
 }
 
@@ -290,9 +289,8 @@ sub make_less : method {
    my $lessc  = CSS::LESS->new(include_paths => ["${dir}"]);
    my $count  =()= map  { $out->append($lessc->compile($_->all)) }
                    sort { $a->name cmp $b->name } @files;
-   my $options = { name => 'CLI.make_less' };
 
-   $self->info("Concatenated ${count} files to ${file}", $options);
+   $self->info("Concatenated ${count} files to ${file}");
    return OK;
 }
 
@@ -303,16 +301,15 @@ sub make_less : method {
 sub server_restart : method {
    my $self    = shift;
    my $pidfile = $self->config->rundir->catfile('web_server.pid');
-   my $options = { name => 'CLI.server_restart' };
    my $pid;
 
    $pid = $pidfile->getline if $pidfile->exists;
 
    if ($pid) {
       kill 'HUP', $pid;
-      $self->info("Restarted server ${pid}", $options);
+      $self->info("Restarted server ${pid}");
    }
-   else { $self->warning("File ${pidfile} not found", $options) }
+   else { $self->warning("File ${pidfile} not found") }
 
    return OK;
 }
@@ -339,16 +336,15 @@ sub server_start : method {
 sub server_stop : method {
    my $self    = shift;
    my $pidfile = $self->config->rundir->catfile('web_server.pid');
-   my $options = { name => 'CLI.server_stop' };
    my $pid;
 
    $pid = $pidfile->getline if $pidfile->exists;
 
    if ($pid) {
       kill 'TERM', $pid;
-      $self->info('Stopped server', $options);
+      $self->info('Stopped server');
    }
-   else { $self->warning("File ${pidfile} not found", $options) }
+   else { $self->warning("File ${pidfile} not found") }
 
    return OK;
 }
@@ -361,48 +357,36 @@ recipients/users. The SMS client is unimplemented
 =cut
 
 sub send_message : method {
-   my $self    = shift;
-   my $options = $self->options;
-   my $sink    = $self->next_argv or throw Unspecified, ['message sink'];
-   my $quote   = $self->next_argv ? TRUE : $options->{quote} ? TRUE : FALSE;
+   my $self = shift;
+   my $sink = $self->next_argv or throw Unspecified, ['message sink'];
    my $success;
 
-   if ($sink eq 'email') {
-      my $stash = $self->_load_stash($quote);
-
-      $success = $self->_send_emails($stash);
-   }
+   if ($sink eq 'email') { $success = $self->_send_emails($self->_load_stash) }
    elsif ($sink eq 'notification') { $success = $self->_send_notification }
-   elsif ($sink eq 'sms') {
-      my $stash = $self->_load_stash($quote);
-
-      $success = $self->_send_smses($stash);
-   }
+   elsif ($sink eq 'sms') { $success = $self->_send_smses($self->_load_stash) }
    else { throw 'Message sink [_1] unknown', [$sink] }
 
    return $success ? OK : FAILED;
 }
 
-=item update_list - Updates list using a filter
+=item update_list - Updates a list by applying a filter
 
 =cut
 
 sub update_list : method {
-   my $self      = shift;
-   my $list_id   = $self->options->{list_id};
-   my $filter_id = $self->options->{filter_id};
-   my $list      = $self->schema->resultset('List')->find($list_id);
-   my $filter    = $self->schema->resultset('Filter')->find($filter_id);
-   my $count     = $list->apply_filter($filter);
-   my $name      = $list->name;
-   my $message   = "Added ${count} entries to ${name} list";
+   my $self    = shift;
+   my $schema  = $self->schema;
+   my $options = $self->options;
+   my $list    = $schema->resultset('List')->find($options->{list_id});
+   my $filter  = $schema->resultset('Filter')->find($options->{filter_id});
+   my $count   = $list->apply_filter($filter);
+   my $name    = $list->name;
 
-   $self->output($message, { name => 'CLI.update_list' });
+   $options->{content} = "Added ${count} entries to ${name} list";
+   $options->{subject} = "list ${name} update completion";
+   $self->output($options->{content});
 
-   if ($self->options->{recipient}) {
-      $self->options->{content} = $message;
-      $self->_send_notification;
-   }
+   $self->_send_notification if $options->{recipient};
 
    return OK;
 }
@@ -455,11 +439,12 @@ sub _install_schema {
 }
 
 sub _load_stash {
-   my ($self, $quote) = @_;
-
-   my $token    = $self->options->{token} or throw Unspecified, ['token'];
+   my $self     = shift;
+   my $options  = $self->options;
+   my $quote    = $self->next_argv ? TRUE : $options->{quote} ? TRUE : FALSE;
+   my $token    = $options->{token} or throw Unspecified, ['token'];
    my $encoded  = $self->redis_client->get($token)
-      or throw 'Token [_1] not found', [$token];
+      or throw UnknownToken, [$token];
    my $stash    = $self->json_parser->decode($encoded);
    my $template = delete $stash->{template};
    my $path     = $self->templatedir->catfile($template);
@@ -470,7 +455,7 @@ sub _load_stash {
    $stash->{content} = $self->formatter->markdown($stash->{content})
       if $template =~ m{ \.md \z }mx;
 
-   my $tempdir  = $self->config->tempdir;
+   my $tempdir = $self->config->tempdir;
 
    unlink $template if $tempdir eq substr $template, 0, length $tempdir;
 
@@ -563,7 +548,7 @@ sub _send_email {
 
    return FALSE unless $id;
 
-   my $options = { args => [$stash->{email}, $id], name => 'CLI.send_email' };
+   my $options = { args => [$stash->{email}, $id], leader => 'CLI.send_email' };
 
    $self->info('Emailed [_1] message id. [_2]', $options);
 
@@ -573,30 +558,30 @@ sub _send_email {
 sub _send_emails {
    my ($self, $stash) = @_;
 
-   my $log_opts   = { name => 'CLI.send_emails' };
    my $attaches   = $self->_qualify_assets(delete $stash->{attachments});
+   my $user_rs    = $self->schema->resultset('User');
    my $recipients = delete $stash->{recipients};
-   my $rs         = $self->schema->resultset('User');
+   my $options    = { leader => 'CLI.send_emails' };
    my $success    = TRUE;
 
-   for my $id_or_email (@{$recipients // []}) {
-      if ($id_or_email =~ m{ \A \d+ \z }mx) {
-         my $user = $rs->find($id_or_email);
+   for my $recipient (@{$recipients // []}) {
+      if ($recipient =~ m{ \A \d+ \z }mx) {
+         my $user = $user_rs->find($recipient);
 
          unless ($user) {
-            $self->error("User ${id_or_email} unknown", $log_opts);
+            $self->error("User ${recipient} unknown", $options);
             next;
          }
 
          unless ($user->can_email) {
-            $self->error("User ${user} bad email address", $log_opts);
+            $self->error("User ${user} bad email address", $options);
             next;
          }
 
          $stash->{email} = $user->email;
          $stash->{username} = "${user}";
       }
-      else { $stash->{email} = $id_or_email }
+      else { $stash->{email} = $recipient }
 
       $success = FALSE unless $self->_send_email($stash, $attaches);
    }
@@ -609,28 +594,27 @@ sub _send_notification {
    my $req       = $self->_pusher;
    my $options   = $self->options;
    my $recipient = $options->{recipient} or throw Unspecified, ['recipient'];
+   my $user      = $self->schema->resultset('User')->find_by_key($recipient);
 
-   if ($recipient !~ m{ \A \d+ \z }mx) {
-      my $user = $self->schema->resultset('User')->find_by_key($recipient)
-         or throw 'User [_1] unkown', [$recipient];
+   throw UnknownUser, [$recipient] unless $user;
 
-      $recipient = $user->id;
-   }
-
-   my $subscription = $self->redis_client->get("service-worker-${recipient}")
-      or throw 'Recipient [_1] no subscription', [$recipient];
+   my $worker_key   = 'service-worker-' . $user->id;
+   my $subscription = $self->redis_client->get($worker_key)
+      or throw 'Recipient [_1] no service worker subscription', ["${user}"];
 
    $req->subscription($self->json_parser->decode($subscription));
-   $req->subject($options->{subject} // 'mailto:mcat@example.com');
+   $req->subject($options->{subject} // 'something happening');
    $req->content($options->{content} // 'Something happened');
    $req->header('TTL' => '90');
    $req->encode();
-   $req->remove_header('::std_case');
+   $req->remove_header('::std_case'); # Strange artifact
 
-   my $params = { content => $req->content, headers => $req->headers };
-   my $res    = $self->_ua->request('POST', $req->uri, $params);
+   my $params  = { content => $req->content, headers => $req->headers };
+   my $res     = $self->_ua->request('POST', $req->uri, $params);
+   my $args    = ["${user}", $options->{subject}];
+   my $context = { args => $args, leader => 'CLI.send_notification' };
 
-   return TRUE if $res->{success};
+   return $self->info('Notified [_1] of [_2]', $context) if $res->{success};
 
    my $message = $res->{content} // 'No response content';
 
@@ -642,8 +626,7 @@ sub _send_notification {
 
    my $error = ($res->{reason} ? $res->{reason} . ': ' : NUL) . $message;
 
-   $self->error($error, { name => 'CLI.send_notification' });
-
+   $self->error($error, $context);
    return FALSE;
 }
 

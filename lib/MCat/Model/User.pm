@@ -23,11 +23,9 @@ sub user : Auth('view') Capture(1) {
    my ($self, $context, $userid) = @_;
 
    my $session = $context->session;
-   my $args = {
-      username => $userid,
-      options  => { prefetch => ['profile', 'role'] },
-   };
-   my $user = $context->find_user($args, $session->realm);
+   my $options = { prefetch => ['profile', 'role'] };
+   my $args    = { username => $userid, options => $options };
+   my $user    = $context->find_user($args, $session->realm);
 
    return $self->error($context, UnknownUser, [$userid]) unless $user;
 
@@ -49,11 +47,10 @@ sub create : Auth('admin') Nav('Create User') {
    my $form    = $self->new_form('User', $options);
 
    if ($form->process(posted => $context->posted)) {
-      my $userid    = $form->item->id;
-      my $user_view = $context->uri_for_action('user/view', [$userid]);
-      my $message   = ['User [_1] created', $form->item->name];
+      my $view    = $context->uri_for_action('user/view', [$form->item->id]);
+      my $message = 'User [_1] created';
 
-      $context->stash(redirect $user_view, $message);
+      $context->stash(redirect $view, [$message, $form->item->name]);
    }
 
    $context->stash(form => $form);
@@ -70,9 +67,9 @@ sub delete : Auth('admin') Nav('Delete User') {
 
    $user->delete;
 
-   my $user_list = $context->uri_for_action('user/list');
+   my $list = $context->uri_for_action('user/list');
 
-   $context->stash(redirect $user_list, ['User [_1] deleted', $name]);
+   $context->stash(redirect $list, ['User [_1] deleted', $name]);
    return;
 }
 
@@ -99,18 +96,19 @@ sub profile : Auth('view') Nav('Settings') {
 
    my $user = $context->stash('user');
 
-   return $self->error($context, UnauthorisedAccess)
-      if $context->posted && !$user->is_authorised($context->session,['admin']);
+   return $self->error($context, UnauthorisedAccess) if $context->posted
+      && !$user->is_authorised($context->session, ['admin', 'manager']);
 
-   my $form = $self->new_form('Profile', { context => $context, user => $user});
+   my $options = { context => $context, user => $user };
+   my $form    = $self->new_form('Profile', $options);
 
    if ($form->process(posted => $context->posted)) {
       my $action   = $self->config->default_actions->{profile};
       my $location = $context->uri_for_action($action, [$user->id]);
-      my $message  = ['User [_1] profile updated', $user->name];
-      my $options  = { http_headers => { 'X-Force-Reload' => 'true' }};
+      my $params   = { http_headers => { 'X-Force-Reload' => 'true' }};
+      my $message  = 'User [_1] profile updated';
 
-      $context->stash(redirect $location, $message, $options);
+      $context->stash(redirect $location, [$message, $user->name], $params);
    }
 
    $context->stash(form => $form);
@@ -144,7 +142,7 @@ sub remove : Auth('admin') {
    return;
 }
 
-sub totp : Auth('view') Nav('View TOTP') {
+sub totp : Auth('view') Nav('View OTP') {
    my ($self, $context) = @_;
 
    my $user = $context->stash('user');

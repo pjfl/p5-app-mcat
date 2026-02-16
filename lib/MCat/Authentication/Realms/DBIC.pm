@@ -35,8 +35,7 @@ sub authenticate {
    my $user   = $args->{user};
    my $method = $self->validate_ip_method;
 
-   $user->$method($args->{address})
-      if $args->{address} && $user->can($method);
+   $user->$method($args->{address}) if $args->{address} && $user->can($method);
 
    $method = $self->authenticate_method;
    $user->$method($args->{password}, $args->{code});
