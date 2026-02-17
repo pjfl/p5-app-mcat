@@ -48,15 +48,6 @@ Defines the following attributes;
 
 =over 3
 
-=item C<redis_client_name>
-
-An immutable string which defaults to B<notification>. Used as part of the
-Redis caching key
-
-=cut
-
-has '+redis_client_name' => is => 'ro', default => 'notification';
-
 =item C<assetdir>
 
 Subdirectory of the document root containing image files
@@ -128,7 +119,7 @@ has '_pusher' =>
       my $self   = shift;
       my $pusher = HTTP::Request::Webpush->new;
 
-      if (my $json = $self->redis_client->get('ecc-keys')) {
+      if (my $json = $self->redis_client->get('service-worker-keys')) {
          my $keys = $self->json_parser->decode($json);
 
          $pusher->authbase64($keys->{public}, $keys->{private});
@@ -472,7 +463,7 @@ sub _load_stash {
    my $options  = $self->options;
    my $quote    = $self->next_argv ? TRUE : $options->{quote} ? TRUE : FALSE;
    my $token    = $options->{token} or throw Unspecified, ['token'];
-   my $encoded  = $self->redis_client->get($token)
+   my $encoded  = $self->redis_client->get("send_message-${token}")
       or throw UnknownToken, [$token];
    my $stash    = $self->json_parser->decode($encoded);
    my $template = delete $stash->{template};
@@ -489,6 +480,7 @@ sub _load_stash {
    unlink $template if $tempdir eq substr $template, 0, length $tempdir;
 
    $stash->{quote} = $quote;
+   $stash->{token} = $token;
    return $stash;
 }
 
@@ -583,6 +575,9 @@ sub _send_email {
 
       $success = FALSE unless $self->_send_email_single($stash, $attaches);
    }
+
+   $self->redis_client->del('send_message-' . $stash->{token})
+      if $success && $stash->{token};
 
    return $success;
 }

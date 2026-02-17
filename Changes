@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Reworked Redis key usage. Set ttl on most keys
           - OAuth validates request token
           - Adds Google OAuth authentication
           - Adds push notification service worker

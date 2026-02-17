@@ -14,8 +14,6 @@ extends 'MCat::Authentication::Realms::DBIC';
 with    'MCat::Role::JSONParser';
 with    'MCat::Role::Redis';
 
-has '+redis_client_name' => is => 'ro', default => 'notification';
-
 has 'config' =>
    is       => 'ro',
    isa      => class_type('MCat::Config'),
@@ -119,8 +117,7 @@ sub _redirect_oauth_provider {
    my $token = create_token;
    my $key   = "oauth-${token}";
 
-   $self->redis_client->set($key, $user->id);
-   $self->redis_client->expire($key, 180);
+   $self->redis_client->set_with_ttl($key, $user->id, 180);
 
    my $method = '_redirect_oauth_' . $provider->{name};
    my $uri    = $self->$method($provider, $token);

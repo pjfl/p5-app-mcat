@@ -22,10 +22,9 @@ has 'user' =>
 with 'MCat::Role::Redis';
 with 'MCat::Role::JSONParser';
 
-has '+info_message'      => default => 'Answer the security questions';
-has '+name'              => default => 'TOTP_Reset';
-has '+redis_client_name' => default => 'notification';
-has '+title'             => default => 'OTP Reset';
+has '+info_message' => default => 'Answer the security questions';
+has '+name'         => default => 'TOTP_Reset';
+has '+title'        => default => 'OTP Reset';
 
 has_field 'name' => type => 'Display', label => 'User Name';
 
@@ -109,14 +108,18 @@ sub update_model {
    my $context = $self->context;
    my $actionp = 'misc/totp_reset';
    my $link    = $context->uri_for_action($actionp, [$user->id, $token]);
-
-   $self->redis_client->set($token, $self->json_parser->encode({
+   my $params  = {
       application => $self->config->name,
       link        => "${link}",
       recipients  => [$user->id],
       subject     => '2FA Authenticator Reset',
       template    => 'totp_reset.md',
-   }));
+   };
+   my $payload = $self->json_parser->encode($params);
+   my $cache   = $self->redis_client;
+
+   $cache->set_with_ttl("totp_reset-${token}", $payload, 86400);
+   $cache->set_with_ttl("send_message-${token}", $payload, 1800);
 
    my $prefix  = $self->config->prefix;
    my $program = $self->config->bin->catfile("${prefix}-cli");

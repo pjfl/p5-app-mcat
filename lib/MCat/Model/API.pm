@@ -19,8 +19,6 @@ with    'MCat::Role::JSONParser';
 
 has '+moniker' => default => 'api';
 
-has '+redis_client_name' => default => 'notification';
-
 has '_ecc' =>
    is      => 'lazy',
    isa     => class_type('Crypt::PK::ECC'),
@@ -29,7 +27,7 @@ has '_ecc' =>
       my $ecc   = Crypt::PK::ECC->new;
       my $curve = 'prime256v1';
 
-      if (my $encoded = $self->redis_client->get('ecc-keys')) {
+      if (my $encoded = $self->redis_client->get('service-worker-keys')) {
          my $keys    = $self->json_parser->decode($encoded);
          my $private = decode_base64url $keys->{private};
          my $public  = decode_base64url $keys->{public};
@@ -45,7 +43,7 @@ has '_ecc' =>
          my $keys    = { public => $public, private => $private };
          my $encoded = $self->json_parser->encode($keys);
 
-         $self->redis_client->set('ecc-keys', $encoded);
+         $self->redis_client->set('service-worker-keys', $encoded);
       }
 
       return $ecc;

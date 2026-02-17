@@ -122,8 +122,11 @@ sub _create_email {
       template    => 'register_user.md',
       username    => $name->value,
    };
+   my $payload = $self->json_parser->encode($options);
+   my $cache   = $self->redis_client;
 
-   $self->redis_client->set($token, $self->json_parser->encode($options));
+   $cache->set_with_ttl("create_user-${token}", $payload, 259200);
+   $cache->set_with_ttl("send_message-${token}", $payload, 1800);
 
    my $prefix  = $config->prefix;
    my $program = $config->bin->catfile("${prefix}-cli");

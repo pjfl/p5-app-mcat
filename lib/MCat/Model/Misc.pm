@@ -18,8 +18,6 @@ with    'MCat::Role::JSONParser';
 
 has '+moniker' => default => 'misc';
 
-has '+redis_client_name' => is => 'ro', default => 'notification';
-
 sub base : Auth('none') {
    my ($self, $context) = @_;
 
@@ -51,11 +49,11 @@ sub contact : Auth('none') Nav('Contact') {
 sub create_user : Auth('none') {
    my ($self, $context, $token) = @_;
 
-   my $stash = $self->redis_client->get($token);
+   my $stash = $self->redis_client->get("create_user-${token}");
 
    return $self->error($context, UnknownToken, [$token]) unless $stash;
 
-   $self->redis_client->del($token);
+   $self->redis_client->del("create_user-${token}");
 
    my $user = $context->model('User')->create({
       email            => $stash->{email},
@@ -233,11 +231,11 @@ sub password_reset : Auth('none') {
 sub password_update : Auth('none') {
    my ($self, $context, $token) = @_;
 
-   my $stash = $self->redis_client->get($token);
+   my $stash = $self->redis_client->get("password_reset-${token}");
 
    return $self->error($context, UnknownToken, [$token]) unless $stash;
 
-   $self->redis_client->del($token);
+   $self->redis_client->del("password_reset-${token}");
 
    my $user = $context->stash('user');
 
@@ -278,9 +276,9 @@ sub totp : Auth('none') {
    my ($self, $context, $token) = @_;
 
    return $self->error($context, UnknownToken, [$token])
-      unless $self->redis_client->get($token);
+      unless $self->redis_client->get("totp_reset-${token}");
 
-   $self->redis_client->del($token);
+   $self->redis_client->del("totp_reset-${token}");
 
    my $options = { context => $context, user => $context->stash('user') };
 
@@ -331,8 +329,11 @@ sub _create_reset_email {
       subject     => 'Password Reset',
       template    => 'password_reset.md',
    };
+   my $payload = $self->json_parser->encode($params);
+   my $cache   = $self->redis_client;
 
-   $self->redis_client->set($token, $self->json_parser->encode($params));
+   $cache->set_with_ttl("password_reset-${token}", $payload, 86400);
+   $cache->set_with_ttl("send_message-${token}", $payload, 1800);
 
    my $prefix  = $self->config->prefix;
    my $program = $self->config->bin->catfile("${prefix}-cli");
