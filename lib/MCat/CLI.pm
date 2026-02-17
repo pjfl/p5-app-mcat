@@ -59,6 +59,8 @@ has '+redis_client_name' => is => 'ro', default => 'notification';
 
 =item C<assetdir>
 
+Subdirectory of the document root containing image files
+
 =cut
 
 has 'assetdir' =>
@@ -68,6 +70,9 @@ has 'assetdir' =>
 
 =item C<formatter>
 
+An instance of the application subclass of L<Text::MultiMarkdown>. A markdown
+formatter
+
 =cut
 
 has 'formatter' =>
@@ -76,6 +81,10 @@ has 'formatter' =>
    default => sub { MCat::Markdown->new( tab_width => 3 ) };
 
 =item C<projects>
+
+A list of projects which contain the JS and LESS files used in this
+application. Local copies of these files are made before processing and
+saving under the document root
 
 =cut
 
@@ -87,6 +96,8 @@ has 'projects' =>
    };
 
 =item C<templatedir>
+
+Directory containing email templates in Markdown format
 
 =cut
 
@@ -101,6 +112,15 @@ has 'templatedir' =>
       return $vardir->catdir('templates', $config->skin, 'site', 'email');
    };
 
+=item C<ua_timeout>
+
+Defaults to 30seconds. How long should the HTTP user agent wait for responses
+
+=cut
+
+has 'ua_timeout' => is => 'ro', isa => Int, default => 30;
+
+# Private attributes
 has '_pusher' =>
    is      => 'lazy',
    isa     => class_type('HTTP::Request::Webpush'),
@@ -120,17 +140,19 @@ has '_pusher' =>
 has '_ua' =>
    is      => 'lazy',
    isa     => class_type('HTTP::Tiny'),
-   default => sub { HTTP::Tiny->new(timeout => shift->_ua_timeout) };
-
-has '_ua_timeout' => is => 'ro', isa => Int, default => 30;
+   default => sub { HTTP::Tiny->new(timeout => shift->ua_timeout) };
 
 =back
 
 =head1 Subroutines/Methods
 
+Defines the following methods;
+
 =over 3
 
 =item C<BUILD>
+
+Does nothing
 
 =cut
 
@@ -296,6 +318,9 @@ sub make_less : method {
 
 =item server_restart - Restart the web application server
 
+When called restarts the development server if it was started using
+L</server_start>
+
 =cut
 
 sub server_restart : method {
@@ -316,6 +341,9 @@ sub server_restart : method {
 
 =item server_start - Start the web application server
 
+Starts the development webserver using a custom loader which will restart
+the application upon receipt of a C<SIGHUP>
+
 =cut
 
 sub server_start : method {
@@ -330,6 +358,8 @@ sub server_start : method {
 }
 
 =item server_stop - Stop the web application server
+
+Sends C<SIGTERM> the development server
 
 =cut
 
@@ -357,19 +387,18 @@ recipients/users. The SMS client is unimplemented
 =cut
 
 sub send_message : method {
-   my $self = shift;
-   my $sink = $self->next_argv or throw Unspecified, ['message sink'];
-   my $success;
+   my $self   = shift;
+   my $sink   = $self->next_argv or throw Unspecified, ['message sink'];
+   my $method = "_send_${sink}";
 
-   if ($sink eq 'email') { $success = $self->_send_emails($self->_load_stash) }
-   elsif ($sink eq 'notification') { $success = $self->_send_notification }
-   elsif ($sink eq 'sms') { $success = $self->_send_smses($self->_load_stash) }
-   else { throw 'Message sink [_1] unknown', [$sink] }
+   throw 'Message sink [_1] unknown', [$sink] unless $self->can($method);
 
-   return $success ? OK : FAILED;
+   return $self->$method() ? OK : FAILED;
 }
 
 =item update_list - Updates a list by applying a filter
+
+Will send notification on completion using Web Push
 
 =cut
 
@@ -525,6 +554,40 @@ sub _qualify_assets {
 }
 
 sub _send_email {
+   my $self       = shift;
+   my $stash      = $self->_load_stash;
+   my $attaches   = $self->_qualify_assets(delete $stash->{attachments});
+   my $user_rs    = $self->schema->resultset('User');
+   my $recipients = delete $stash->{recipients};
+   my $options    = { leader => 'CLI.send_emails' };
+   my $success    = TRUE;
+
+   for my $recipient (@{$recipients // []}) {
+      if ($recipient =~ m{ \A \d+ \z }mx) {
+         my $user = $user_rs->find($recipient);
+
+         unless ($user) {
+            $self->error("User ${recipient} unknown", $options);
+            next;
+         }
+
+         unless ($user->can_email) {
+            $self->error("User ${user} bad email address", $options);
+            next;
+         }
+
+         $stash->{email} = $user->email;
+         $stash->{username} = "${user}";
+      }
+      else { $stash->{email} = $recipient }
+
+      $success = FALSE unless $self->_send_email_single($stash, $attaches);
+   }
+
+   return $success;
+}
+
+sub _send_email_single {
    my ($self, $stash, $attaches) = @_;
 
    my $content  = $stash->{content};
@@ -555,40 +618,6 @@ sub _send_email {
    return TRUE;
 }
 
-sub _send_emails {
-   my ($self, $stash) = @_;
-
-   my $attaches   = $self->_qualify_assets(delete $stash->{attachments});
-   my $user_rs    = $self->schema->resultset('User');
-   my $recipients = delete $stash->{recipients};
-   my $options    = { leader => 'CLI.send_emails' };
-   my $success    = TRUE;
-
-   for my $recipient (@{$recipients // []}) {
-      if ($recipient =~ m{ \A \d+ \z }mx) {
-         my $user = $user_rs->find($recipient);
-
-         unless ($user) {
-            $self->error("User ${recipient} unknown", $options);
-            next;
-         }
-
-         unless ($user->can_email) {
-            $self->error("User ${user} bad email address", $options);
-            next;
-         }
-
-         $stash->{email} = $user->email;
-         $stash->{username} = "${user}";
-      }
-      else { $stash->{email} = $recipient }
-
-      $success = FALSE unless $self->_send_email($stash, $attaches);
-   }
-
-   return $success;
-}
-
 sub _send_notification {
    my $self      = shift;
    my $req       = $self->_pusher;
@@ -610,7 +639,7 @@ sub _send_notification {
    $req->remove_header('::std_case'); # Strange artifact
 
    my $params  = { content => $req->content, headers => $req->headers };
-   my $res     = $self->_ua->request('POST', $req->uri, $params);
+   my $res     = $self->_ua->post($req->uri, $params);
    my $args    = ["${user}", $options->{subject}];
    my $context = { args => $args, leader => 'CLI.send_notification' };
 
@@ -630,7 +659,9 @@ sub _send_notification {
    return FALSE;
 }
 
-sub _send_smses { ... }
+sub _send_sms { ... }
+
+sub _send_sms_single { ... }
 
 sub _strip_comments {
    my ($self, @js) = @_;

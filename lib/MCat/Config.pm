@@ -77,10 +77,14 @@ has 'authentication' =>
             OAuth => {
                providers => {
                   'gmail.com' => {
+                     name          => 'google',
+                     access_url    => 'https://oauth2.googleapis.com/token',
                      client_id     => $self->_google_client_id,
                      client_secret => $self->_google_client_secret,
-                     request_url   => 'https://accounts.google.com/o/oauth2/v2/auth',
-                     access_url    => 'https://oauth2.googleapis.com/token',
+                     request_key   => 'code',
+                     request_url   =>
+                        'https://accounts.google.com/o/oauth2/v2/auth',
+                     token_key     => 'state',
                   },
                },
             },

@@ -254,7 +254,7 @@ sub _get_realm {
 
    my ($username, $realm) = reverse split m{ : }mx, $self->field('name')->value;
 
-   $realm = 'OAuth' if $realm eq 'oauth';
+   $realm = 'OAuth' if $realm && $realm eq 'oauth';
    $realm = 'OAuth' if $self->field('password')->value eq 'oauth';
 
    return ($username, $realm);

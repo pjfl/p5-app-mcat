@@ -3,6 +3,7 @@ package MCat::Model::Misc;
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_OK );
 use MCat::Util             qw( create_token new_uri redirect );
+use Scalar::Util           qw( blessed );
 use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( PageNotFound UnauthorisedAccess
                                UnknownToken UnknownUser );
@@ -160,11 +161,9 @@ sub not_found : Auth('none') Nav('Not Found') {
 sub oauth : Auth('none') {
    my ($self, $context) = @_;
 
-   my $params = $context->request->query_parameters;
-   my $args   = {
+   my $args = {
       address => $context->request->remote_address,
-      code    => $params->{code},
-      state   => $params->{state},
+      params  => { %{$context->request->query_parameters} },
    };
 
    try {
@@ -175,10 +174,11 @@ sub oauth : Auth('none') {
       $self->_stash_login_redirect($context);
    }
    catch {
-      my $action = $self->config->default_actions->{login};
-      my $login  = $context->uri_for_action($action);
+      my $action  = $self->config->default_actions->{login};
+      my $login   = $context->uri_for_action($action);
+      my $message = blessed $_ && $_->can('original') ? $_->original : "${_}";
 
-      $context->stash(redirect $login, [$_->original]);
+      $context->stash(redirect $login, [$message]);
    };
 
    return;

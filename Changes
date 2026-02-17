@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - OAuth validates request token
           - Adds Google OAuth authentication
           - Adds push notification service worker
           - Updated list model with listname capture
