@@ -4,7 +4,7 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types     qw( CodeRef HashRef Int );
 use MCat::Util             qw( create_token new_uri );
 use Type::Utils            qw( class_type );
-use Unexpected::Functions  qw( throw RedirectToAuth UnauthorisedAccess
+use Unexpected::Functions  qw( throw RedirectToLocation UnauthorisedAccess
                                UnknownToken Unspecified );
 use Acme::JWT;
 use HTTP::Tiny;
@@ -108,7 +108,7 @@ sub _get_claim_google {
    # my $refresh_token = $content->{refresh_token};
 
    # TODO: Not happy with this shitfest
-   return Acme::JWT->decode($content->{id_token}, 'Joke', FALSE);
+   return Acme::JWT->decode($content->{id_token}, 'Unused', FALSE);
 }
 
 sub _redirect_oauth_provider {
@@ -119,10 +119,11 @@ sub _redirect_oauth_provider {
 
    $self->redis_client->set_with_ttl($key, $user->id, 180);
 
-   my $method = '_redirect_oauth_' . $provider->{name};
-   my $uri    = $self->$method($provider, $token);
+   my $method  = '_redirect_oauth_' . $provider->{name};
+   my $uri     = $self->$method($provider, $token);
+   my $message = ucfirst($provider->{name}) . ' authentication';
 
-   throw RedirectToAuth, [$uri];
+   throw RedirectToLocation, [$uri, $message];
 }
 
 sub _redirect_oauth_google {

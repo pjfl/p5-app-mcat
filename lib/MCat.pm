@@ -2,7 +2,7 @@ package MCat;
 
 use 5.010001;
 use strictures;
-use version; our $VERSION = qv(sprintf '0.3.%d', q$Rev: 29 $ =~ /\d+/gmx);
+use version; our $VERSION = qv(sprintf '0.3.%d', q$Rev: 30 $ =~ /\d+/gmx);
 
 use Class::Usul::Cmd::Util qw( ns_environment );
 
@@ -32,7 +32,7 @@ MCat - Music Catalog
 
 =head1 Version
 
-Describes version v0.3.$Rev: 29 $ of L<MCat>
+Describes version v0.3.$Rev: 30 $ of L<MCat>
 
 =head1 Synopsis
 

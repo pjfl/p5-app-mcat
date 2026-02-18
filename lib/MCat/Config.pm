@@ -76,16 +76,7 @@ has 'authentication' =>
          realms => {
             OAuth => {
                providers => {
-                  'gmail.com' => {
-                     name          => 'google',
-                     access_url    => 'https://oauth2.googleapis.com/token',
-                     client_id     => $self->_google_client_id,
-                     client_secret => $self->_google_client_secret,
-                     request_key   => 'code',
-                     request_url   =>
-                        'https://accounts.google.com/o/oauth2/v2/auth',
-                     token_key     => 'state',
-                  },
+                  'gmail.com' => $self->_google_provider_config,
                },
             },
          },
@@ -104,6 +95,24 @@ has '_default_realm' =>
    isa      => Str,
    init_arg => 'default_realm',
    default  => 'DBIC';
+
+has '_google_provider_config' =>
+   is            => 'lazy',
+   isa           => HashRef,
+   documentation => 'NoUpdate',
+   default       => sub {
+      my $self = shift;
+
+      return {
+         access_url    => 'https://oauth2.googleapis.com/token',
+         client_id     => $self->_google_client_id,
+         client_secret => $self->_google_client_secret,
+         name          => 'google',
+         request_key   => 'code',
+         request_url   => 'https://accounts.google.com/o/oauth2/v2/auth',
+         token_key     => 'state',
+      };
+   };
 
 =item _google_client_id
 
@@ -517,6 +526,14 @@ object where they are stored and the JS object where they are displayed
 
 has 'max_messages' => is => 'ro', isa => PositiveInt, default => 3;
 
+=item max_session_time
+
+Maximum session time in seconds. Defaults to one hour
+
+=cut
+
+has 'max_session_time', is => 'ro', isa => PositiveInt, default => 3_600;
+
 =item max_upload_size
 
 Maximum file upload size in bytes
@@ -669,6 +686,7 @@ has 'request' =>
 
       return {
          max_messages   => $self->max_messages,
+         max_sess_time  => $self->max_session_time,
          prefix         => $self->prefix,
          request_roles  => [ qw( L10N Session JSON Cookie Headers Compat ) ],
          serialise_attr => [ qw( address id realm role ) ],

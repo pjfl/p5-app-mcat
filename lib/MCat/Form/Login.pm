@@ -1,6 +1,6 @@
 package MCat::Form::Login;
 
-use HTML::Forms::Constants qw( FALSE META NUL TRUE );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META NUL SPC TRUE );
 use HTML::Forms::Util      qw( make_handler );
 use Class::Usul::Cmd::Util qw( includes );
 use MCat::Util             qw( redirect );
@@ -19,22 +19,23 @@ has '+name'         => default => 'Login';
 has '+title'        => default => 'Sign In';
 
 has_field 'name' =>
-   autocomplete => TRUE,
-   html_name    => '__user_name',
-   input_param  => '__user_name',
-   label        => 'User Name',
-   label_top    => TRUE,
-   required     => TRUE,
-   title        => 'Enter your user name or email address';
+   autocomplete  => TRUE,
+   element_attr  => { placeholder => SPC },
+   html_name     => '__user_name',
+   input_param   => '__user_name',
+   label         => 'User Name',
+   label_top     => TRUE,
+   required      => TRUE,
+   title         => 'Enter your user name or email address';
 
 has_field 'password' =>
-   type         => 'Password',
-   autocomplete => TRUE,
-   html_name    => '__password',
-   input_param  => '__password',
-   label_top    => TRUE,
-   required     => TRUE,
-   title        => 'Enter your password';
+   type          => 'Password',
+   autocomplete  => TRUE,
+   element_attr  => { placeholder => SPC },
+   html_name     => '__password',
+   input_param   => '__password',
+   label_top     => TRUE,
+   title         => 'Enter your password';
 
 has_field 'auth_code' =>
    type          => 'Digits',
@@ -62,15 +63,6 @@ has_field 'register' =>
    title         => 'Register for a login account',
    wrapper_class => ['input-button'];
 
-has_field 'password_reset' =>
-   type          => 'Button',
-   disabled      => TRUE,
-   element_attr  => { 'data-field-depends' => ['__user_name'] },
-   html_name     => 'submit',
-   label         => 'Password Reset',
-   title         => 'Send password reset email',
-   value         => 'password_reset';
-
 has_field 'totp_reset' =>
    type          => 'Button',
    disabled      => TRUE,
@@ -80,9 +72,21 @@ has_field 'totp_reset' =>
    title         => 'Request an OTP reset',
    value         => 'totp_reset';
 
-my $change_flds = [qw(login register password_reset totp_reset)];
-my $showif_flds = ['__auth_code','totp_reset'];
-my $unreq_flds  = ['__auth_code', '__password'];
+has_field 'password_reset' =>
+   type          => 'Button',
+   disabled      => TRUE,
+   element_attr  => { 'data-field-depends' => ['__user_name'] },
+   html_name     => 'submit',
+   label         => 'Password Reset',
+   title         => 'Send password reset email',
+   value         => 'password_reset';
+
+has_field 'oauth_login' =>
+   type          => 'Button',
+   html_name     => 'submit',
+   label         => 'OAuth Login',
+   title         => 'Login using an OAuth service provider',
+   value         => 'oauth_login';
 
 after 'after_build_fields' => sub {
    my $self    = shift;
@@ -102,9 +106,10 @@ after 'after_build_fields' => sub {
 
    if (includes 'droplets', $session->features) {
       $self->add_form_element_class('droplets');
-      $self->field('register')->add_wrapper_class('droplet');
-      $self->field('password_reset')->add_wrapper_class('droplet');
-      $self->field('totp_reset')->add_wrapper_class('droplet');
+
+      my $buttons = [qw(register password_reset totp_reset oauth_login)];
+
+      $self->_add_field_wrapper_class('droplet', $buttons);
 
       my $action = $config->default_actions->{register};
       my $uri    = $context->uri_for_action($action);
@@ -112,15 +117,15 @@ after 'after_build_fields' => sub {
       $self->field('register')->href($uri->as_string);
    }
    else {
-      for my $field_name (@{$change_flds}) {
-         $self->field($field_name)->add_wrapper_class('expand');
-      }
+      my $buttons = [qw(login register password_reset totp_reset oauth_login)];
 
+      $self->_add_field_wrapper_class('expand', $buttons);
       $self->field('register')->inactive(TRUE);
    }
 
    $self->field('register')->inactive(TRUE) unless $config->registration;
 
+   $self->field('oauth_login')->add_wrapper_class('hide');
    $self->_add_field_handlers;
    return;
 };
@@ -130,7 +135,9 @@ around 'validate_form' => sub {
 
    my @modified_fields;
 
-   if (my $field_obj = $self->field('auth_code')) {
+   for my $name (qw(auth_code password)) {
+      my $field_obj = $self->field($name);
+
       $field_obj->required(FALSE);
       push @modified_fields, $field_obj;
    }
@@ -179,19 +186,23 @@ sub validate {
 
 # Private methods
 sub _add_field_handlers {
-   my $self      = shift;
-   my $context   = $self->context;
-   my $config    = $context->config;
-   my $util      = $config->wcom_resources->{form_util};
-   my $change_js = "${util}.fieldChange";
-   my $showif_js = "${util}.showIfRequired";
-   my $unreq_js  = "${util}.unrequire";
+   my $self        = shift;
+   my $form_util   = $self->context->config->wcom_resources->{form_util};
 
-   my $action  = $config->default_actions->{fetch};
-   my $params  = { class => 'User', property => 'enable_2fa' };
-   my $uri     = $context->uri_for_action($action, ['property'], $params);
-   my $options = { id => '__user_name', url => "${uri}" };
-   my $handler = make_handler($showif_js, $options, $showif_flds);
+   my $change_js   = "${form_util}.fieldChange";
+   my $showif_js   = "${form_util}.showIfRequired";
+   my $unreq_js    = "${form_util}.unrequire";
+
+   my $change_flds = [qw(login register password_reset totp_reset)];
+   my $showif_flds = ['__auth_code','totp_reset'];
+   my $unreq_flds  = ['__auth_code', '__password'];
+
+   my $options_2fa = $self->_check_prop('__user_name', 'is_2fa_enabled');
+   my $options_oa  = $self->_check_prop('__user_name', 'is_oauth_enabled');
+   my $options_pwd = $self->_check_prop('__user_name', '!is_password_enabled');
+   my $handler     = make_handler($showif_js, $options_2fa, $showif_flds)
+            . '; ' . make_handler($showif_js, $options_oa,  ['oauth_login'])
+            . '; ' . make_handler($showif_js, $options_pwd, ['__password']);
 
    $self->field('name')->add_handler('blur', $handler);
    $handler = make_handler($change_js, { id => '__user_name' }, $change_flds);
@@ -208,7 +219,32 @@ sub _add_field_handlers {
 
    $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
    $self->field('totp_reset')->add_handler('click', $handler);
+
+   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
+   $self->field('oauth_login')->add_handler('click', $handler);
    return;
+}
+
+sub _add_field_wrapper_class {
+   my ($self, $class, $list) = @_;
+
+   for my $name (@{$list}) {
+      $self->field($name)->add_wrapper_class($class);
+   }
+
+   return;
+}
+
+sub _check_prop {
+   my ($self, $id, $property) = @_;
+
+   my $context = $self->context;
+   my $config  = $context->config;
+   my $action  = $config->default_actions->{fetch};
+   my $params  = { class => 'User', property => $property };
+   my $uri     = $context->uri_for_action($action, ['property'], $params);
+
+   return { id => $id, url => "${uri}" };
 }
 
 sub _exception_handlers {
@@ -232,7 +268,7 @@ sub _exception_handlers {
          $context->stash('redirect')->{level} = 'alert' if $self->has_log;
       },
       'Authentication' => sub { $self->add_form_error($_->original) },
-      'RedirectToAuth' => sub {
+      'RedirectToLocation' => sub {
          my $params = { http_headers => { 'X-Force-Reload' => 'true' }};
 
          $self->add_form_error($_->original);
@@ -243,8 +279,10 @@ sub _exception_handlers {
          else { $code->add_error($_->original) }
       },
       '*' => sub {
-         $self->add_form_error(blessed $_ ? $_->original : "${_}");
-         $self->log->alert($_, $context) if $self->has_log;
+         my $error = blessed $_ && $_->can('original') ? $_->original : "${_}";
+
+         $self->add_form_error($error);
+         $self->log->alert($error, $context) if $self->has_log;
       },
    ];
 }
@@ -254,6 +292,7 @@ sub _get_realm {
 
    my ($username, $realm) = reverse split m{ : }mx, $self->field('name')->value;
 
+   $realm = 'OAuth' if $self->context->button_pressed eq 'oauth_login';
    $realm = 'OAuth' if $realm && $realm eq 'oauth';
    $realm = 'OAuth' if $self->field('password')->value eq 'oauth';
 

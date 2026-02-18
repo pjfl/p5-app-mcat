@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Login checks for enabled password, 2fa, and oauth
           - Reworked Redis key usage. Set ttl on most keys
           - OAuth validates request token
           - Adds Google OAuth authentication

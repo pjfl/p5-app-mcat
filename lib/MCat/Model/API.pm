@@ -220,16 +220,20 @@ sub _fetch_property {
 
    my $request = $context->request;
    my $class   = $request->query_params->('class');
-   my $prop    = $request->query_params->('property');
+   my $prop    = $request->query_params->('property', { raw => TRUE });
    my $value   = $request->query_params->('value', { raw => TRUE });
-   my $result  = { found => json_bool FALSE };
+   my $result  = { found => json_bool($prop =~ m{ \A ! }mx ? TRUE : FALSE) };
 
    return $result unless defined $value;
 
-   my $entity = $context->model($class)->find_by_key($value);
+   $prop =~ s{ \A ! }{}mx;
 
-   $result->{found} = json_bool TRUE
-      if $entity && $entity->can('execute') && $entity->execute($prop);
+   my $entity = $context->model($class)->find_by_key($value);
+   my $res;
+
+   $res = $entity->execute($prop) if $entity && $entity->can('execute');
+
+   $result->{found} = json_bool $res if defined $res;
 
    return $result;
 }

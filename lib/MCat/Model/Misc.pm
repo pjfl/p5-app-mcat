@@ -105,7 +105,7 @@ sub login : Auth('none') Nav('Sign In') {
    my $options = { context => $context, log => $self->log };
    my $form    = $self->new_form('Login', $options);
 
-   return $self->_stash_login_redirect($context)
+   return $self->_redirect_after_login($context)
       if $form->process(posted => $context->posted);
 
    $context->stash(form => $form);
@@ -169,7 +169,7 @@ sub oauth : Auth('none') {
       $args->{user} = $context->find_user($args, 'OAuth');
       $context->authenticate($args, 'OAuth');
       $context->set_authenticated($args, 'OAuth');
-      $self->_stash_login_redirect($context);
+      $self->_redirect_after_login($context);
    }
    catch {
       my $action  = $self->config->default_actions->{login};
@@ -343,7 +343,7 @@ sub _create_reset_email {
    return $context->model('Job')->create($options);
 }
 
-sub _stash_login_redirect {
+sub _redirect_after_login {
    my ($self, $context) = @_;
 
    my $action   = $self->config->default_actions->{get};

@@ -196,7 +196,13 @@ sub encrypt_password {
 sub execute {
    my ($self, $method) = @_;
 
-   return FALSE unless exists { enable_2fa => TRUE }->{$method};
+   my $allowed = {
+      is_2fa_enabled      => TRUE,
+      is_oauth_enabled    => TRUE,
+      is_password_enabled => TRUE,
+   };
+
+   return unless exists $allowed->{$method};
 
    return $self->$method();
 }
@@ -210,6 +216,10 @@ sub insert {
    return $self->next::method;
 }
 
+sub is_2fa_enabled {
+   return shift->enable_2fa ? TRUE : FALSE;
+}
+
 sub is_authorised {
    my ($self, $session, $roles) = @_;
 
@@ -219,6 +229,19 @@ sub is_authorised {
    my $is_authorised = join NUL, grep { $_ eq $role } @{$roles // []};
 
    return $self->id == $session->id || $is_authorised ? TRUE : FALSE;
+}
+
+sub is_oauth_enabled {
+   my $self      = shift;
+   my ($domain)  = reverse split m{ @ }mx, $self->email;
+   my $realms    = $self->_config->authentication->{realms};
+   my $providers = $realms->{OAuth}->{providers};
+
+   return exists $providers->{$domain} ? TRUE : FALSE;
+}
+
+sub is_password_enabled {
+   return !_is_disabled shift->password ? TRUE : FALSE;
 }
 
 sub mobile_phone {
