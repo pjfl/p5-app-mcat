@@ -4,7 +4,6 @@ use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_OK );
 use MCat::Util             qw( create_token new_uri redirect );
 use Scalar::Util           qw( blessed );
-use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( PageNotFound UnauthorisedAccess
                                UnknownToken UnknownUser );
 use Try::Tiny;
@@ -15,6 +14,7 @@ extends 'MCat::Model';
 with    'Web::Components::Role';
 with    'MCat::Role::Redis';
 with    'MCat::Role::JSONParser';
+with    'MCat::Role::SendMessage';
 
 has '+moniker' => default => 'misc';
 
@@ -49,19 +49,21 @@ sub contact : Auth('none') Nav('Contact') {
 sub create_user : Auth('none') {
    my ($self, $context, $token) = @_;
 
-   my $stash = $self->redis_client->get("create_user-${token}");
+   my $payload = $self->redis_client->get("create_user-${token}");
 
-   return $self->error($context, UnknownToken, [$token]) unless $stash;
+   return $self->error($context, UnknownToken, [$token]) unless $payload;
 
    $self->redis_client->del("create_user-${token}");
 
-   my $user = $context->model('User')->create({
-      email            => $stash->{email},
-      name             => $stash->{username},
-      password         => $stash->{password},
+   my $params  = $self->json_parser->decode($payload);
+   my $options = {
+      email            => $params->{email},
+      name             => $params->{username},
+      password         => $params->{password},
       password_expired => TRUE,
-      role_id          => $stash->{role_id},
-   });
+      role_id          => $params->{role_id},
+   };
+   my $user    = $context->model('User')->create($options);
    my $action  = $self->config->default_actions->{password};
    my $changep = $context->uri_for_action($action, [$user->id]);
 
@@ -208,18 +210,8 @@ sub password_reset : Auth('none') {
 
    return unless $self->verify_form_post($context);
 
-   my $user = $context->stash('user');
-
-   unless ($user->can_email) {
-      my $action  = $self->config->default_actions->{login};
-      my $login   = $context->uri_for_action($action);
-      my $message = 'User [_1] no email address';
-
-      $context->stash(redirect $login, [$message, "${user}"]);
-      return;
-   }
-
-   my $job     = $self->_create_reset_email($context, $user);
+   my $user    = $context->stash('user');
+   my $job     = $self->_create_reset_email($context, $user) or return;
    my $action  = $self->config->default_actions->{password};
    my $changep = $context->uri_for_action($action, [$user->id]);
    my $message = 'User [_1] password reset request [_2] created';
@@ -231,15 +223,16 @@ sub password_reset : Auth('none') {
 sub password_update : Auth('none') {
    my ($self, $context, $token) = @_;
 
-   my $stash = $self->redis_client->get("password_reset-${token}");
+   my $payload = $self->redis_client->get("password_reset-${token}");
 
-   return $self->error($context, UnknownToken, [$token]) unless $stash;
+   return $self->error($context, UnknownToken, [$token]) unless $payload;
 
    $self->redis_client->del("password_reset-${token}");
 
-   my $user = $context->stash('user');
+   my $params = $self->json_parser->decode($payload);
+   my $user   = $context->stash('user');
 
-   $user->update({ password => $stash->{password}, password_expired => TRUE });
+   $user->update({ password => $params->{password}, password_expired => TRUE });
 
    my $action  = $self->config->default_actions->{password};
    my $changep = $context->uri_for_action($action, [$user->id]);
@@ -275,8 +268,9 @@ sub register : Auth('none') Nav('Sign Up') {
 sub totp : Auth('none') {
    my ($self, $context, $token) = @_;
 
-   return $self->error($context, UnknownToken, [$token])
-      unless $self->redis_client->get("totp_reset-${token}");
+   my $payload = $self->redis_client->get("totp_reset-${token}");
+
+   return $self->error($context, UnknownToken, [$token]) unless $payload;
 
    $self->redis_client->del("totp_reset-${token}");
 
@@ -317,11 +311,20 @@ sub unauthorised : Auth('none') {
 sub _create_reset_email {
    my ($self, $context, $user) = @_;
 
-   my $token   = create_token;
-   my $actionp = 'misc/password_reset';
-   my $link    = $context->uri_for_action($actionp, [$user->id, $token]);
-   my $passwd  = substr create_token, 0, 12;
-   my $params  = {
+   unless ($user->can_email) {
+      my $action  = $self->config->default_actions->{login};
+      my $login   = $context->uri_for_action($action);
+      my $message = 'User [_1] no email address';
+
+      $context->stash(redirect $login, [$message, "${user}"]);
+      return;
+   }
+
+   my $token  = create_token;
+   my $action = 'misc/password_reset';
+   my $link   = $context->uri_for_action($action, [$user->id, $token]);
+   my $passwd = substr create_token, 0, 12;
+   my $params = {
       application => $self->config->name,
       link        => "${link}",
       password    => $passwd,
@@ -333,14 +336,8 @@ sub _create_reset_email {
    my $cache   = $self->redis_client;
 
    $cache->set_with_ttl("password_reset-${token}", $payload, 86400);
-   $cache->set_with_ttl("send_message-${token}", $payload, 1800);
 
-   my $prefix  = $self->config->prefix;
-   my $program = $self->config->bin->catfile("${prefix}-cli");
-   my $command = "${program} -o token=${token} send_message email";
-   my $options = { command => $command, name => 'send_message' };
-
-   return $context->model('Job')->create($options);
+   return $self->send_message($context, $token, $payload);
 }
 
 sub _redirect_after_login {

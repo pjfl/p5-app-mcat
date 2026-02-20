@@ -3,7 +3,6 @@ package MCat::Model::API;
 use MCat::Constants    qw( DOT EXCEPTION_CLASS FALSE TRUE );
 use HTTP::Status       qw( HTTP_OK );
 use HTML::Forms::Util  qw( json_bool );
-use MCat::Util         qw( redirect );
 use MIME::Base64       qw( decode_base64url encode_base64url );
 use Type::Utils        qw( class_type );
 use Crypt::PK::ECC;

@@ -10,6 +10,7 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
+with    'MCat::Role::SendMessage';
 
 has '+info_message' => default => 'Answer the sign up questions';
 has '+item_class'   => default => 'User';
@@ -111,7 +112,7 @@ sub _create_email {
    my $link      = $context->uri_for_action($action, [$token]);
    my $role_name = $config->user->{default_role} // 'view';
    my $role      = $context->model('Role')->find({ name => $role_name });
-   my $options   = {
+   my $params    = {
       application => $config->name,
       email       => $email->value,
       link        => "${link}",
@@ -122,19 +123,12 @@ sub _create_email {
       template    => 'register_user.md',
       username    => $name->value,
    };
-   my $payload = $self->json_parser->encode($options);
+   my $payload = $self->json_parser->encode($params);
    my $cache   = $self->redis_client;
 
    $cache->set_with_ttl("create_user-${token}", $payload, 259200);
-   $cache->set_with_ttl("send_message-${token}", $payload, 1800);
 
-   my $prefix  = $config->prefix;
-   my $program = $config->bin->catfile("${prefix}-cli");
-   my $command = "${program} -o token=${token} send_message email";
-
-   $options = { command => $command, name => 'send_message' };
-
-   return $context->model('Job')->create($options);
+   return $self->send_message($context, $token, $payload);
 }
 
 use namespace::autoclean -except => META;

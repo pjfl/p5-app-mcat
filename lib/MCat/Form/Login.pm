@@ -216,11 +216,7 @@ sub _add_field_handlers {
 
    $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
    $self->field('password_reset')->add_handler('click', $handler);
-
-   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
    $self->field('totp_reset')->add_handler('click', $handler);
-
-   $handler = make_handler($unreq_js, { allow_default => TRUE }, $unreq_flds);
    $self->field('oauth_login')->add_handler('click', $handler);
    return;
 }
@@ -293,8 +289,8 @@ sub _get_realm {
    my ($username, $realm) = reverse split m{ : }mx, $self->field('name')->value;
 
    $realm = 'OAuth' if $self->context->button_pressed eq 'oauth_login';
-   $realm = 'OAuth' if $realm && $realm eq 'oauth';
    $realm = 'OAuth' if $self->field('password')->value eq 'oauth';
+   $realm = 'OAuth' if $realm && $realm eq 'oauth';
 
    return ($username, $realm);
 }

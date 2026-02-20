@@ -11,6 +11,7 @@ use HTML::Forms::Moo;
 
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
+with    'MCat::Role::SendMessage';
 
 has 'config' => is => 'lazy', default => sub { shift->context->config };
 
@@ -119,14 +120,7 @@ sub update_model {
    my $cache   = $self->redis_client;
 
    $cache->set_with_ttl("totp_reset-${token}", $payload, 86400);
-   $cache->set_with_ttl("send_message-${token}", $payload, 1800);
-
-   my $prefix  = $self->config->prefix;
-   my $program = $self->config->bin->catfile("${prefix}-cli");
-   my $command = "${program} -o token=${token} send_message email";
-   my $options = { command => $command, name => 'send_message' };
-
-   $context->stash(job => $context->model('Job')->create($options));
+   $context->stash(job => $self->send_message($context, $token, $payload));
    return;
 }
 

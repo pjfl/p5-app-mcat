@@ -551,7 +551,7 @@ sub _send_email {
    my $attaches   = $self->_qualify_assets(delete $stash->{attachments});
    my $user_rs    = $self->schema->resultset('User');
    my $recipients = delete $stash->{recipients};
-   my $options    = { leader => 'CLI.send_emails' };
+   my $options    = { leader => 'CLI.send_email' };
    my $success    = TRUE;
 
    for my $recipient (@{$recipients // []}) {
