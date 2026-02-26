@@ -55,6 +55,13 @@ has_field 'login' =>
    label         => 'Submit',
    value         => 'login';
 
+has_field 'oauth_login' =>
+   type          => 'Button',
+   html_name     => 'submit',
+   label         => 'OAuth Login',
+   title         => 'Login using an OAuth service provider',
+   value         => 'oauth_login';
+
 has_field 'register' =>
    type          => 'Link',
    element_attr  => { 'data-field-depends' => ['!__user_name'] },
@@ -80,13 +87,6 @@ has_field 'password_reset' =>
    label         => 'Password Reset',
    title         => 'Send password reset email',
    value         => 'password_reset';
-
-has_field 'oauth_login' =>
-   type          => 'Button',
-   html_name     => 'submit',
-   label         => 'OAuth Login',
-   title         => 'Login using an OAuth service provider',
-   value         => 'oauth_login';
 
 after 'after_build_fields' => sub {
    my $self    = shift;

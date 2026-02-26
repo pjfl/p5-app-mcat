@@ -50,6 +50,9 @@ after 'after_build_fields' => sub {
    $field->add_handler('input', make_handler($change_js, $options));
    $field->element_attr->{minlength} = $min;
    $field->element_attr->{title} = "Must be at least ${min} characters long";
+   $field->password_options($config->user->{password_options})
+      if $config->user->{password_options};
+
    return;
 };
 

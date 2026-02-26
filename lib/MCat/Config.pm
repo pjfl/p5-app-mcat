@@ -655,6 +655,10 @@ C<serialise_attr>, C<session_attr>, and C<tempdir>
 
 Maximum number of messages to display. See L</max_messages>
 
+=item max_sess_time
+
+Maximum session time. See L</max_session_time>
+
 =item prefix
 
 See L</prefix>
@@ -933,14 +937,15 @@ has 'user' =>
    isa           => HashRef,
    documentation => 'default_password=text default_role=text ' .
                     'load_factor=integer min_name_len=integer ' .
-                    'min_password_len=integer',
+                    'min_password_len=integer password_options=noupdate',
    default       => sub {
       return {
          default_password => 'welcome',
          default_role     => 'view',
          load_factor      => 14,
          min_name_len     => 3,
-         min_password_len => 3,
+         min_password_len => 6,
+         password_options => { with_numbers => TRUE },
       };
    };
 
@@ -969,7 +974,7 @@ has 'vardir' =>
    isa           => Directory,
    coerce        => TRUE,
    documentation => 'NoUpdate',
-   default       => sub { io[qw( var )] };
+   default       => sub { io['var'] };
 
 =item wcom_resources
 

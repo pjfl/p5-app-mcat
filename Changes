@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Added password validity options to Config
           - Abstracted out SendMessage role
           - Login checks for enabled password, 2fa, and oauth
           - Reworked Redis key usage. Set ttl on most keys

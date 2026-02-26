@@ -96,7 +96,7 @@ sub list : Nav('Lists') {
    return;
 }
 
-sub update : Nav('List Update') {
+sub update : Nav('Update List') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, item => $context->stash('list') };

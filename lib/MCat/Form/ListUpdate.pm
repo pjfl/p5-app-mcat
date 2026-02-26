@@ -9,13 +9,13 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms::Model::DBIC';
 with    'HTML::Forms::Role::Defaults';
 
-has '+title'              => default => 'List Update';
+has '+title'              => default => 'Update List';
 has '+form_wrapper_class' => default => sub { ['narrow'] };
 has '+info_message'       => default =>
    'Select a filter and create the update job';
 has '+no_update'          => default => TRUE;
 
-has_field 'name' => type => 'Display';
+has_field 'name' => type => 'Display', label => 'List Name';
 
 has_field 'filter' => type => 'Select', label => 'Filter', required => TRUE;
 
