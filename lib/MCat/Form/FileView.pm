@@ -12,8 +12,8 @@ with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::FileMeta';
 
 has '+do_form_wrapper' => default => FALSE;
-has '+name'            => default => 'FileView';
 has '+info_message'    => default => NUL;
+has '+name'            => default => 'FileView';
 has '+no_update'       => default => TRUE;
 has '+title'           => default => 'File Preview';
 
@@ -49,9 +49,9 @@ after 'after_build_fields' => sub {
    my $context   = $self->context;
    my $directory = $self->file->directory($self->directory);
    my $file      = $directory->catfile($self->filename);
-   my $content   = join "\n", map { "    ${_}" } $file->head(10);
+   my $method    = '_render_' . $self->_get_render_type($file);
 
-   $self->field('preview')->html($self->formatter->markdown($content));
+   $self->field('preview')->html($self->$method($file));
 
    my $args        = [$self->filename];
    my $params      = { directory => $self->directory };
@@ -61,7 +61,7 @@ after 'after_build_fields' => sub {
    my $close       = "${renderer}.tables.filemanager.modal.close()";
    my $download    = sprintf '%s("%s", "%s"); %s("%s"); %s',
       $resources->{downloadable} . '.downloader',
-      $context->uri_for_action('file/view', $args, $down_params),
+      $context->uri_for_action('file/preview', $args, $down_params),
       $self->filename,
       $resources->{navigation} . '.renderLocation',
       $context->uri_for_action('file/list', [], $params),
@@ -71,6 +71,28 @@ after 'after_build_fields' => sub {
    $self->field('cancel')->add_handler('click', $close);
    return;
 };
+
+sub _get_render_type {
+   my ($self, $file) = @_;
+
+   return 'pdf' if $file->extension eq 'pdf';
+
+   return 'markdown';
+}
+
+sub _render_markdown {
+   my ($self, $file) = @_;
+
+   my $content = join "\n", map { "    ${_}" } $file->head(10);
+
+   return $self->formatter->markdown($content);
+}
+
+sub _render_pdf {
+   my ($self, $file) = @_;
+
+   return q();
+}
 
 use namespace::autoclean -except => META;
 

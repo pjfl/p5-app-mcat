@@ -124,6 +124,9 @@ has_exception 'NoUserRole' => parents => [$class],
 has_exception 'UnauthorisedAccess' => parents => [$class],
    error   => 'Access to resource denied', rv => HTTP_UNAUTHORIZED;
 
+has_exception 'UnknownRealm' => parents => [$class],
+   error   => 'Realm [_1] not found', rv => HTTP_NOT_FOUND;
+
 has_exception 'UnknownToken' => parents => [$class],
    error   => 'Token [_1] not found', rv => HTTP_NOT_FOUND;
 

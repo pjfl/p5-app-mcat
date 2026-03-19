@@ -65,20 +65,17 @@ Configuration parameters for the plugin authentication system
 =cut
 
 has 'authentication' =>
-   is            => 'lazy',
-   isa           => HashRef,
-   init_arg      => undef,
-   default       => sub {
+   is       => 'lazy',
+   isa      => HashRef,
+   init_arg => undef,
+   default  => sub {
       my $self = shift;
 
       return {
          default_realm => $self->_default_realm,
          realms => {
-            OAuth => {
-               providers => {
-                  'gmail.com' => $self->_google_provider_config,
-               },
-            },
+            Github => { provider => $self->_github_provider_config },
+            Google => { provider => $self->_google_provider_config },
          },
       };
    };
@@ -96,6 +93,49 @@ has '_default_realm' =>
    init_arg => 'default_realm',
    default  => 'DBIC';
 
+has '_github_provider_config' =>
+   is            => 'lazy',
+   isa           => HashRef,
+   documentation => 'NoUpdate',
+   default       => sub {
+      my $self = shift;
+
+      return {
+         access_url    => 'https://github.com/login/oauth/access_token',
+         client_id     => $self->_github_client_id,
+         client_secret => $self->_github_client_secret,
+         name          => 'github',
+         request_url   => 'https://github.com/login/oauth/authorize',
+         userinfo_url  => 'https://api.github.com/user',
+      };
+   };
+
+=item _github_client_id
+
+Provided by the Github Developer Settings. The registered identity for this
+application
+
+=cut
+
+has '_github_client_id' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'github_client_id',
+   default  => 'overide_in_local_config';
+
+=item _github_client_secret
+
+Provided by the Github Developer Settings. Secret used to obtain an access
+token from the identity provider
+
+=cut
+
+has '_github_client_secret' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'github_client_secret',
+   default  => 'overide_in_local_config';
+
 has '_google_provider_config' =>
    is            => 'lazy',
    isa           => HashRef,
@@ -108,9 +148,7 @@ has '_google_provider_config' =>
          client_id     => $self->_google_client_id,
          client_secret => $self->_google_client_secret,
          name          => 'google',
-         request_key   => 'code',
          request_url   => 'https://accounts.google.com/o/oauth2/v2/auth',
-         token_key     => 'state',
       };
    };
 
@@ -124,7 +162,7 @@ application
 has '_google_client_id' =>
    is       => 'ro',
    isa      => Str,
-   init_arg => 'gmail_client_id',
+   init_arg => 'google_client_id',
    default  => 'overide_in_local_config';
 
 =item _google_client_secret
@@ -137,7 +175,7 @@ from the identity provider
 has '_google_client_secret' =>
    is       => 'ro',
    isa      => Str,
-   init_arg => 'gmail_client_secret',
+   init_arg => 'google_client_secret',
    default  => 'overide_in_local_config';
 
 =item bin
@@ -359,7 +397,7 @@ Pipe separated list of file extensions that are allowed for uploading
 
 =cut
 
-has 'extensions' => is => 'ro', isa => Str, default => 'csv|doc|png|txt';
+has 'extensions' => is => 'ro', isa => Str, default => 'csv|doc|pdf|png|txt';
 
 =item fonts
 

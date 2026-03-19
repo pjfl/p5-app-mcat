@@ -51,7 +51,7 @@ sub validate {
       'Size [_1] greater than maximum [_2]', $upload->size, $self->max_size
    ) if $self->max_size and $upload->size > $self->max_size;
 
-  my $filename = $request->query_parameters->{name} || $upload->filename;
+   my $filename = $request->query_parameters->{name} || $upload->filename;
 
    $filename = $self->file->scrub($filename);
 
