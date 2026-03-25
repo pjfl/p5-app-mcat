@@ -4,6 +4,7 @@ use attributes ();
 
 use MCat::Constants         qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Class::Usul::Cmd::Types qw( ConfigProvider Int Str );
+use Class::Usul::Cmd::Util  qw( includes );
 use HTML::Forms::Util       qw( get_token verify_token );
 use Ref::Util               qw( is_arrayref is_coderef is_hashref );
 use Scalar::Util            qw( blessed );
@@ -49,7 +50,6 @@ has '+_stash' =>
       return {
          chartlibrary       => 'js/highcharts.js',
          favicon            => 'img/favicon.ico',
-         features           => $self->session->features,
          javascript         => "js/${prefix}.js",
          session_updated    => $self->session->updated,
          skin               => $skin,
@@ -62,6 +62,12 @@ has '+_stash' =>
 
 with 'MCat::Role::Schema';
 with 'MCat::Role::Authentication';
+
+sub feature {
+   my ($self, $feature) = @_;
+
+   return includes $feature, $self->session->features;
+}
 
 sub get_attributes {
    my ($self, $action) = @_;
@@ -165,8 +171,12 @@ sub _action_path2methods {
 sub _action_path2uri {
    my ($self, $action) = @_;
 
-   for my $controller (keys %{$self->controllers}) {
-      my $map = $self->controllers->{$controller}->action_path_map;
+   for my $moniker (keys %{$self->controllers}) {
+      my $controller = $self->controllers->{$moniker};
+
+      next unless $controller->can('action_path_map');
+
+      my $map = $controller->action_path_map;
 
       return $map->{$action}->{uri} if exists $map->{$action};
    }

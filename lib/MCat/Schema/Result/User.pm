@@ -1,7 +1,7 @@
 package MCat::Schema::Result::User;
 
-use overload '""' => sub { $_[0]->_as_string },
-             '+'  => sub { $_[0]->_as_number }, fallback => 1;
+use overload '""' => sub { shift->_as_string },
+             '+'  => sub { shift->_as_number }, fallback => 1;
 
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( Bool HashRef );

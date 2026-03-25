@@ -953,6 +953,10 @@ footer .footer-container .session-time {
   line-height: 1.25rem;
   margin: 0;
 }
+.jsdocumentation {
+  width: 80vw;
+  height: 60vw;
+}
 .main .exception,
 .modal .exception {
   background: lightpink;
@@ -3318,15 +3322,6 @@ body {
 .state-table.object-view .caption {
   margin-left: 0.5rem;
 }
-.state-table.object-view .credit-control {
-  flex-direction: row;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  position: relative;
-}
-.state-table.object-view .credit-control .table-button .right {
-  right: 0;
-}
 .state-table.object-view .state-table th:first-child a {
   color: black;
 }
@@ -4107,19 +4102,6 @@ body {
 }
 .state-table .table-form a.table-button {
   padding: 0.0625rem 0.75rem 0.25rem;
-}
-.state-table .table-form .table-button.left {
-  position: absolute;
-}
-.state-table .table-form .table-button.left:nth-child(1) {
-  left: 0;
-}
-.state-table .table-form .table-button.left:nth-child(2) {
-  left: 5rem;
-}
-.state-table .table-form .table-button.right {
-  position: absolute;
-  right: 0.5rem;
 }
 .state-table .table-form .table-button[disabled=disabled],
 .state-table .table-form .table-button[disabled=disabled]::after,

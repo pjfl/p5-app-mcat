@@ -14,9 +14,8 @@ has '+moniker' => default => 'artist';
 sub base : Auth('view') {
    my ($self, $context) = @_;
 
-   my $nav = $context->stash('nav')->list('artist')->item('artist/create');
+   $context->stash('nav')->list('artist')->item('artist/create')->finalise;
 
-   $nav->finalise;
    return;
 }
 
@@ -127,13 +126,13 @@ sub view : Auth('view') Nav('View Artist') {
    };
    my $cds     = $self->new_table('Cd', $options);
    my $buttons = [{
-      action    => $context->uri_for_action('artist/list'),
+      action    => ['artist/list'],
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Artists',
    },{
-      action    => $context->uri_for_action('artist/edit', [$artist->artistid]),
+      action    => ['artist/edit', [$artist->artistid]],
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',
@@ -144,7 +143,7 @@ sub view : Auth('view') Nav('View Artist') {
       caption      => 'View Artist',
       context      => $context,
       form_buttons => $buttons,
-      result       => $artist
+      result       => $artist,
    }));
    return;
 }

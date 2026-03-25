@@ -19,9 +19,8 @@ has '_doc_viewer' =>
 sub base {
    my ($self, $context) = @_;
 
-   my $nav = $context->stash('nav')->list('doc');
+   $context->stash('nav')->list('doc')->item('doc/frontend')->finalise;
 
-   $nav->finalise;
    return;
 }
 
@@ -48,6 +47,12 @@ sub configuration : Auth('admin') Nav('Configuration') {
    my $options = { context => $context };
 
    $context->stash(form => $self->new_form('Configuration', $options));
+   return;
+}
+
+sub frontend : Nav('FE Docs') {
+   my ($self, $context) = @_;
+
    return;
 }
 

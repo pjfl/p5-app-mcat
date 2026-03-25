@@ -10,7 +10,11 @@ use Moo::Role;
 has 'json_parser' =>
    is      => 'lazy',
    isa     => class_type(JSON::MaybeXS::JSON),
-   default => sub { JSON::MaybeXS->new( convert_blessed => TRUE ) };
+   default => sub {
+      return JSON::MaybeXS->new(
+         convert_blessed => TRUE, allow_blessed => TRUE, allow_nonref => TRUE
+      );
+   };
 
 sub json_pretty_print {
    my ($self, $v) = @_;

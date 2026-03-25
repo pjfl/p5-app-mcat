@@ -202,13 +202,13 @@ sub view : Auth('view') Nav('View Bug') {
 
    my $bug = $context->stash('bug');
    my $buttons = [{
-      action    => $context->uri_for_action('bug/list'),
+      action    => ['bug/list'],
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'List',
    },{
-      action    => $context->uri_for_action('bug/edit', [$bug->id]),
+      action    => ['bug/edit', [$bug->id]],
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Update',

@@ -136,13 +136,13 @@ sub view : Auth('view') Nav('View CD') {
    my $options = { caption => NUL, context => $context, cdid => $cd->cdid };
    my $tracks  = $self->table->new_with_context('Track', $options);
    my $buttons = [{
-      action    => $context->uri_for_action('artist/view', [$cd->artistid]),
+      action    => ['artist/view', [$cd->artistid]],
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Artist',
    },{
-      action    => $context->uri_for_action('cd/edit', [$cd->cdid]),
+      action    => ['cd/edit', [$cd->cdid]],
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

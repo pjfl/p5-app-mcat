@@ -74,6 +74,7 @@ has 'authentication' =>
       return {
          default_realm => $self->_default_realm,
          realms => {
+            DBIC   => {},
             Github => { provider => $self->_github_provider_config },
             Google => { provider => $self->_google_provider_config },
          },

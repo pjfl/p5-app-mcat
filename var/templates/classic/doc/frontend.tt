@@ -1,0 +1,2 @@
+<iframe class="jsdocumentation" src="[% uri_for('js/docs/index.html') %]">
+</iframe>

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds REST API
           - Adds OAuth for Github
           - Added password validity options to Config
           - Abstracted out SendMessage role

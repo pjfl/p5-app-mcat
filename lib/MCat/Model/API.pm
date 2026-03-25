@@ -188,7 +188,7 @@ sub push_worker : Auth('none') {
    my $jsdir   = $self->config->root->catdir('js');
    my $content = $jsdir->catfile('service-worker.js')->slurp;
 
-   $context->stash(response => [200, [@headers], [$content]]);
+   $context->stash(response => [HTTP_OK, [@headers], [$content]]);
    return;
 }
 

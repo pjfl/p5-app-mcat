@@ -2,7 +2,6 @@ package MCat::Form::Login;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META NUL SPC TRUE );
 use HTML::Forms::Util      qw( make_handler );
-use Class::Usul::Cmd::Util qw( includes );
 use MCat::Util             qw( redirect );
 use Scalar::Util           qw( blessed );
 use Unexpected::Functions  qw( catch_class );
@@ -89,15 +88,14 @@ after 'after_build_fields' => sub {
 
    $self->set_form_element_attr('novalidate', 'novalidate');
 
-   $self->add_form_element_class('radar')
-      if includes 'radar', $session->features;
+   $self->add_form_element_class('radar') if $context->feature('radar');
 
    if (defined $session->enable_2fa && !$session->enable_2fa) {
       $self->field('auth_code')->add_wrapper_class('hide');
       $self->field('totp_reset')->add_wrapper_class('hide');
    }
 
-   if (includes 'droplets', $session->features) {
+   if ($context->feature('droplets')) {
       $self->add_form_element_class('droplets');
 
       my $buttons = [qw(register password_reset totp_reset)];

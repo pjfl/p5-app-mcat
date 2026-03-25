@@ -22,6 +22,9 @@ README.pod
 t/ipc_srlock*
 *.tar.gz
 MCat-*
+node_modules/
+package-lock.json
+package.json
 share/css
 share/less/wcom-0*
 share/less/wcom-1*

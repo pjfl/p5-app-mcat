@@ -136,13 +136,13 @@ sub view : Auth('view') Nav('View Track') {
    my $track   = $context->stash('track');
    my $artist  = $track->cd->artist->name;
    my $buttons = [{
-      action    => $context->uri_for_action('cd/view', [$track->cdid]),
+      action    => ['cd/view', [$track->cdid]],
       classes   => 'left',
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'CD',
    },{
-      action    => $context->uri_for_action('track/edit', [$track->trackid]),
+      action    => ['track/edit', [$track->trackid]],
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',

@@ -1,5 +1,8 @@
 package MCat::Schema::Result::Artist;
 
+use overload '""' => sub { shift->_as_string },
+             '+'  => sub { shift->_as_number }, fallback => 1;
+
 use HTML::Forms::Constants qw( FALSE NUL TRUE );
 use DBIx::Class::Moo::ResultClass;
 
@@ -59,6 +62,15 @@ $class->belongs_to(
    'import_log' => "${result}::ImportLog",
    { 'foreign.import_log_id' => 'self.import_log_id' }
 );
+
+# Private methods
+sub _as_number {
+   return shift->id;
+}
+
+sub _as_string {
+   return shift->name;
+}
 
 # Private functions
 sub _import_log_link {

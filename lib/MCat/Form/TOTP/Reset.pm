@@ -1,7 +1,6 @@
 package MCat::Form::TOTP::Reset;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META NUL TRUE );
-use Class::Usul::Cmd::Util qw( includes );
 use MCat::Util             qw( create_token redirect );
 use Type::Utils            qw( class_type );
 use Unexpected::Functions  qw( catch_class );
@@ -72,12 +71,8 @@ after 'after_build_fields' => sub {
    my $session = $self->context->session;
 
    $self->add_form_wrapper_class('narrow');
-
-   $self->add_form_element_class('droplets')
-      if includes 'droplets', $session->features;
-
-   $self->add_form_element_class('radar')
-      if includes 'radar', $session->features;
+   $self->add_form_element_class('droplets') if $context->feature('droplets');
+   $self->add_form_element_class('radar') if $context->feature('radar');
 
    return;
 };
