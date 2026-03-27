@@ -36,7 +36,13 @@ sub dispatch : Auth('none') {
    return;
 }
 
-# TODO: Implement refresh endpoint
+sub refresh : Auth('none') {
+   my ($self, $context) = @_;
+
+   my $api = $context->controllers->{rest}->api;
+
+   $self->_stash_result($context, $api->refresh($context));
+}
 
 # Private methods
 sub _stash_result {

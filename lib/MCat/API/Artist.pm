@@ -1,12 +1,15 @@
 package MCat::API::Artist;
 
-use MCat::Constants qw( API_META FALSE TRUE );
-use HTTP::Status    qw( HTTP_CREATED );
+use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE TRUE );
+use HTTP::Status          qw( HTTP_CREATED HTTP_UNAUTHORIZED );
+use Unexpected::Functions qw( throw );
 use Moo;
 use MCat::API::Moo;
 
 extends 'MCat::API::Base';
 with    'Web::Components::Role';
+
+my $class = __PACKAGE__;
 
 has '+moniker' => default => 'artist';
 
@@ -51,10 +54,13 @@ has_api_method 'search' =>
    action      => 'search',
    description => '',
    in_args     => [{
-      name        => '',
-      type        => '',
-      description => '',
-   }],
+      name        => 'search',
+      type        => 'hash',
+      description => 'Query string representing the values on which to '
+                   . 'search for matching artists.',
+      location    => 'query',
+      fields      => 'search',
+   }, $class->arguments_pageing],
    out_arg     => {},
    examples    => [{}];
 
@@ -107,6 +113,42 @@ has_api_method 'delete' =>
    in_args      => [{}],
    out_arg      => {},
    examples     => [{}];
+
+sub check_create_permission {
+   my ($self, $context) = @_;
+
+   throw 'No create permission', rv => HTTP_UNAUTHORIZED
+      unless $self->_is_authorised($context, 'artist/create');
+
+   return;
+}
+
+sub check_delete_permission {
+   my ($self, $context) = @_;
+
+   throw 'No delete permission', rv => HTTP_UNAUTHORIZED
+      unless $self->_is_authorised($context, 'artist/delete');
+
+   return;
+}
+
+sub check_search_permission {
+   my ($self, $context) = @_;
+
+   throw 'No search permission', rv => HTTP_UNAUTHORIZED
+      unless $self->_is_authorised($context, 'artist/list');
+
+   return;
+}
+
+sub check_update_permission {
+   my ($self, $context) = @_;
+
+   throw 'No update permission', rv => HTTP_UNAUTHORIZED
+      unless $self->_is_authorised($context, 'artist/edit');
+
+   return;
+}
 
 use namespace::autoclean -except => API_META;
 

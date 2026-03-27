@@ -14,14 +14,20 @@ has 'api' =>
    isa     => class_type('MCat::API'),
    default => sub {
       my $self = shift;
+      my $args = {
+         config => $self->config, log => $self->log, secret => $self->secret,
+      };
 
-      return MCat::API->new(config => $self->config, log => $self->log);
+      return MCat::API->new($args);
    };
+
+has 'secret' => is => 'lazy', default => q();
 
 sub dispatch_request {
    build_routes shift->api->routes,
    'POST + /api/access_token + ?*' => 'rest/access_token',
    'POST + /api/authorise + ?*'    => 'rest/authorise',
+   'POST + /api/refresh + ?*'      => 'rest/refresh',
 }
 
 1;

@@ -1051,6 +1051,9 @@ has 'web_components' =>
       my $self = shift;
 
       return {
+         'Controller::REST' => {
+            secret => $self->db_password,
+         },
          'Model::Bug' => {
             file_extensions => $self->extensions,
             file_home       => $self->vardir->catdir('bugs'),

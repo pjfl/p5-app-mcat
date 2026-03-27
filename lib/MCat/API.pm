@@ -1,18 +1,24 @@
 package MCat::API;
 
-use MCat::Constants       qw( EXCEPTION_CLASS FALSE TRUE );
-use HTTP::Status          qw( HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_FOUND HTTP_OK
-                              HTTP_UNAUTHORIZED );
-use Unexpected::Types     qw( HashRef );
-use MCat::Util            qw( create_token );
-use Type::Utils           qw( class_type );
-use Web::Components::Util qw( load_components );
-use Unexpected::Functions qw( throw );
+use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
+use HTTP::Status           qw( HTTP_EXPECTATION_FAILED
+                               HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_FOUND HTTP_OK
+                               HTTP_UNAUTHORIZED );
+use Unexpected::Types      qw( HashRef Int Str );
+use Class::Usul::Cmd::Util qw( includes );
+use List::Util             qw( first );
+use MCat::Util             qw( create_token digest );
+use MIME::Base64           qw( decode_base64url encode_base64url );
+use Scalar::Util           qw( blessed );
+use Type::Utils            qw( class_type );
+use Web::Components::Util  qw( load_components );
+use Unexpected::Functions  qw( throw );
 use Try::Tiny;
 use Moo;
 
 with 'MCat::Role::Schema';
 with 'MCat::Role::Redis';
+with 'MCat::Role::JSONParser';
 
 has 'config' => is => 'ro', required => TRUE;
 
@@ -28,23 +34,28 @@ has 'entities' =>
 
 has 'log' => is => 'ro', required => TRUE;
 
+has 'max_token_time' => is => 'ro', isa => Int, default => 7_200;
+
+has 'secret' => is => 'lazy', isa => Str, default => NUL;
+
 sub access_token {
    my ($self, $context) = @_;
 
    my $token = $context->body_parameters->{request_token};
 
-   return [HTTP_NOT_FOUND, { message => 'No request token' } ] unless $token;
+   return [HTTP_NOT_FOUND, { message => 'Request token' }] unless $token;
 
-   my $user_id = $self->redis_client->get("api_request-${token}");
+   my $userid = $self->redis_client->get("api_request-${token}");
 
-   return [HTTP_NOT_FOUND, { message => 'Request token not found' }]
-      unless $user_id;
+   return [HTTP_NOT_FOUND, { message => 'Cached token' }] unless $userid;
 
    $self->redis_client->del("api_request-${token}");
-   $token = create_token;
-   $self->redis_client->set_with_ttl("api_access-${token}", $user_id, 7200);
 
-   return [HTTP_OK, { access_token => $token }];
+   my $user = $context->find_user({ username => $userid });
+
+   return [HTTP_NOT_FOUND, { message => 'User ID' }] unless $user;
+
+   return [HTTP_OK, { access_token => $self->_create_access_token($user) }];
 }
 
 sub authorise {
@@ -62,10 +73,10 @@ sub authorise {
       $options->{user} = $context->find_user($options);
       $context->authenticate($options);
 
-      my $token   = create_token;
-      my $user_id = $options->{user}->id;
+      my $token  = create_token;
+      my $userid = $options->{user}->id;
 
-      $self->redis_client->set_with_ttl("api_request-${token}", $user_id, 180);
+      $self->redis_client->set_with_ttl("api_request-${token}", $userid, 180);
       $result = [HTTP_OK, { request_token => $token }];
    }
    catch { $result = [HTTP_UNAUTHORIZED, { message => "${_}" }] };
@@ -76,28 +87,49 @@ sub authorise {
 sub dispatch {
    my ($self, $context, @args) = @_;
 
-   my $header = $context->request->header('Authorization')
-      or return [HTTP_NOT_FOUND, { message => 'Authorization header'}];
+   my $result = $self->_is_authorised($context);
 
-   my ($type, $token) = split m{ [ ]+ }mx, $header;
+   return $result if $result->[0] > 299;
 
-   return [HTTP_NOT_FOUND, { message => 'Access token' }] unless $token;
+   my $claim = $result->[1];
 
-   return [HTTP_UNAUTHORIZED, { message => 'Permission denied' }]
-      unless $self->redis_client->get("api_access-${token}");
-
-   my $result;
+   $self->_update_session($context, $claim);
 
    try {
       my $chain = $context->stash('method_chain');
       my (undef, $moniker, $action) = split m{ / }mx, $chain;
       my $entity = $self->entities->{$moniker};
 
-      $result = $entity->$action($context, @args);
+      $result = $self->_is_allowed($claim, $entity, $action);
+      $result = $entity->$action($context, @args) unless $result;
    }
-   catch { $result = [HTTP_INTERNAL_SERVER_ERROR, { message => "${_}" }] };
+   catch {
+      my $rv      = HTTP_INTERNAL_SERVER_ERROR;
+      my $message = blessed $_ && $_->can('original') ? $_->original : "${_}";
+      my $code    = blessed $_ && $_->can('rv') && $_->rv > 99 ? $_->rv : $rv;
+
+      chomp $message;
+      $result = [$code, { message => $message }];
+   };
 
    return $result;
+}
+
+# TODO: Add documentation
+sub documentation {
+   my $self = shift;
+}
+
+sub refresh {
+   my ($self, $context) = @_;
+
+   my $result = $self->_is_authorised($context);
+
+   return $result if $result->[0] > 299;
+
+   my $claim = $result->[1];
+
+   return [HTTP_OK, { access_token => $self->_encode_access_token($claim) }];
 }
 
 sub routes {
@@ -117,6 +149,103 @@ sub routes {
    }
 
    return @routes;
+}
+
+# Private methods
+sub _create_access_token {
+   my ($self, $user) = @_;
+
+   my $role = $user->role->name;
+
+   return $self->_encode_access_token({ id => $user->id, role => $role });
+}
+
+sub _decode_access_token {
+   my ($self, $token) = @_;
+
+   my ($payload, $verify) = split m{ \. }mx, $token;
+   my $secret = $self->secret;
+   my $calculated = _jwt_hash("${payload}${secret}");
+
+   return {} unless $verify eq $calculated;
+
+   return $self->json_parser->decode(decode_base64url($payload));
+}
+
+sub _encode_access_token {
+   my ($self, $claim) = @_;
+
+   $claim->{time} = time;
+
+   my $payload = encode_base64url($self->json_parser->encode($claim));
+   my $secret  = $self->secret;
+   my $verify  = _jwt_hash("${payload}${secret}");
+
+   return "${payload}.${verify}";
+}
+
+sub _is_allowed {
+   my ($self, $claim, $entity, $action) = @_;
+
+   my $method = first { $_->{name} eq $action } @{$entity->method_list};
+
+   return [HTTP_NOT_FOUND, { message => 'API method' }] unless $method;
+
+   $method->{access} //= { read => TRUE, write => FALSE };
+
+   if ($method->{access}->{read}) {
+      my $can_read = includes $claim->{role}, [qw(view edit manager admin)];
+
+      return [HTTP_UNAUTHORIZED, { message => 'Read access' }] unless $can_read;
+   }
+
+   if ($method->{access}->{write}) {
+      my $can_write = includes $claim->{role}, [qw(edit manager admin)];
+
+      return [HTTP_UNAUTHORIZED, { message => 'Write access' }]
+         unless $can_write;
+   }
+
+   return;
+}
+
+sub _is_authorised {
+   my ($self, $context) = @_;
+
+   my $header = $context->request->header('Authorization')
+      or return [HTTP_NOT_FOUND, { message => 'Authorization header'}];
+
+   my ($type, $token) = split m{ [ ]+ }mx, $header;
+
+   return [HTTP_NOT_FOUND, { message => 'Access token' }] unless $token;
+
+   my $claim = $self->_decode_access_token($token);
+
+   return [HTTP_UNAUTHORIZED, { message => 'Token verify'}] unless $claim->{id};
+
+   my $elapsed = time - $claim->{time};
+
+   return [HTTP_EXPECTATION_FAILED, { message => 'Token too old' }]
+      unless $elapsed < $self->max_token_time;
+
+   return [HTTP_OK, $claim];
+}
+
+sub _update_session {
+   my ($self, $context, $claim) = @_;
+
+   my $session = $context->session;
+
+   $session->address($context->request->remote_address);
+   $session->authenticated(TRUE);
+   $session->id($claim->{id});
+   $session->role($claim->{role});
+   return;
+}
+
+# Private functions
+sub _jwt_hash {
+   return substr digest(shift)->hexdigest, 0, 32;
 }
 
 use namespace::autoclean;

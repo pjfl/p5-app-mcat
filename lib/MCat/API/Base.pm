@@ -1,8 +1,8 @@
 package MCat::API::Base;
 
-use MCat::Constants       qw( API_META FALSE NUL TRUE );
+use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status          qw( HTTP_NOT_FOUND HTTP_OK );
-use Unexpected::Types     qw( ArrayRef Str );
+use Unexpected::Types     qw( ArrayRef Int Str );
 use HTML::Forms::Util     qw( json_bool );
 use List::Util            qw( first );
 use Ref::Util             qw( is_arrayref is_hashref is_scalarref );
@@ -14,7 +14,34 @@ use Moo;
 has 'column_list' =>
    is      => 'lazy',
    isa     => ArrayRef,
-   default => sub { shift->_get_meta->column_list };
+   default => sub {
+      my $self = shift;
+
+      return [{
+         name        => 'page',
+         type        => 'Int',
+         description => 'Page number',
+         location    => 'query',
+         methods     => { pagination => TRUE },
+      }, {
+         name        => 'page_size',
+         type        => 'Int',
+         description => 'Page size',
+         location    => 'query',
+         methods     => { pagination => TRUE },
+      }, {
+         name        => 'sort_by',
+         type        => 'Str',
+         description => 'Sort order',
+         location    => 'query',
+         methods     => { pagination => TRUE },
+      }, @{$self->_get_meta->column_list}];
+   };
+
+has 'max_page_size' =>
+   is      => 'ro',
+   isa     => Int,
+   default => 250;
 
 has 'method_list' =>
    is      => 'lazy',
@@ -37,11 +64,27 @@ has 'resultset' =>
       return $self->schema->resultset($self->result_class);
    };
 
+# TODO: Validation
+sub arguments_pageing {
+   return {
+      name        => 'paging',
+      type        => 'hash',
+      description => 'Optional query string containing pagination options.',
+      location    => 'query',
+      fields      => 'pagination',
+   };
+}
+
 sub create {
    my ($self, $context) = @_;
 
+   $self->check_create_permission($context);
+
    my $params  = $context->body_parameters;
    my $options = $self->_filter_params($context, 'create', $params);
+
+   $self->_validate_constraints('create', $options);
+
    my $result  = $self->resultset->create($options);
    my $code    = $self->_success_code('create');
 
@@ -54,10 +97,10 @@ sub create {
 sub delete {
    my ($self, $context, @args) = @_;
 
-   my $id     = $args[0];
-   my $result = $self->resultset->find_by_key($id);
+   $self->check_delete_permission($context);
 
-   return $self->_not_found unless $result;
+   my $id     = $args[0];
+   my $result = $self->resultset->find_by_key($id) or $self->_not_found($id);
 
    $result->delete;
 
@@ -71,21 +114,21 @@ sub get {
    my ($self, $context, @args) = @_;
 
    my $id     = $args[0];
-   my $result = $self->resultset->find_by_key($id);
-   my $code   = $self->_success_code('get');
+   my $result = $self->resultset->find_by_key($id) or $self->_not_found($id);
 
-   return $self->_not_found unless $result;
-
-   return [$code, $self->_serialise('get', $result)];
+   return [$self->_success_code('get'), $self->_serialise('get', $result)];
 }
 
 sub search {
    my ($self, $context) = @_;
 
-   my $params = $context->request->query_parameters;
-   my $where  = $self->_build_where($context, $params);
-   my $rs     = $self->resultset->search($where);
-   my $code   = $self->_success_code('search');
+   $self->check_search_permission($context);
+
+   my $params  = $context->request->query_parameters;
+   my $where   = $self->_build_where($context, $params);
+   my $options = $self->_build_options($context, $params);
+   my $rs      = $self->resultset->search($where, $options);
+   my $code    = $self->_success_code('search');
 
    return [$code, $self->_serialise('search', $rs)];
 }
@@ -93,14 +136,15 @@ sub search {
 sub update {
    my ($self, $context, @args) = @_;
 
-   my $id     = $args[0];
-   my $result = $self->resultset->find_by_key($id);
+   $self->check_update_permission($context);
 
-   return $self->_not_found unless $result;
+   my $id      = $args[0];
+   my $result  = $self->resultset->find_by_key($id) or $self->_not_found($id);
+   my $params  = $context->body_parameters;
+   my $options = $self->_filter_params($context, 'update', $params);
 
-   my $params = $context->body_parameters;
-
-   $result->update($self->_filter_params($context, 'update', $params));
+   $self->_validate_constraints('update', $options);
+   $result->update($options);
    $result->discard_changes;
 
    return $self->get($context, $id);
@@ -126,6 +170,41 @@ sub _build_clause {
    }
 
    return ("${table}.${col}" => $value);
+}
+
+sub _build_options {
+   my ($self, $context, $params) = @_;
+
+   my $max_size = $self->max_page_size;
+
+   $max_size = $context->max_page_size if $context->can('max_page_size');
+
+   my $page = $params->{page} // 1;
+   my $size = $params->{page_size} // $max_size;
+   my $order;
+
+   throw 'Argument [_1] invalid', ['page']
+      unless $page =~ m{ \A [0-9]+ \z }mx && $page > 0;
+
+   throw 'Argument [_1] invalid', ['page_size']
+      unless $size =~ m{ \A [0-9]+ \z }mx && $size >= 1 && $size <= $max_size;
+
+   if ($params->{sort_by}) {
+      my ($column, $dirn) = split m{ [ ] }mx, $params->{sort_by};
+
+      $dirn = 'asc' unless $dirn;
+
+      throw 'Argument [_1] invalid', ['sort_by']
+         unless $column && $dirn =~ m{ \A (asc)|(desc) \z }imx;
+
+      $order = { "-${dirn}" => "me.${column}" };
+   }
+
+   my $options = { page => $page, rows => $size };
+
+   $options->{order_by} = $order if $order;
+
+   return $options;
 }
 
 sub _build_where {
@@ -183,9 +262,7 @@ sub _filter_params {
    my %record;
 
    for my $column_name (keys %{$params}) {
-      my $col = $self->_find_column($column_name, $api_role);
-
-      throw 'Column [_1] invalid', [$column_name] unless $col;
+      my $col = $self->_find_column($column_name, $api_role) or next;
 
       # Special case 1: If the column is declared as int, and
       # the Perl value is false and is NOT explicitly zero, then
@@ -197,9 +274,9 @@ sub _filter_params {
       # then it's a user field that can be an ID /or/ en email.
       # Look it up if it's an email.
       if ($col->{type} eq 'Int|Str') {
-         # my $user = $self->_find_user($context, $params->{$column_name});
+         my $user = $context->find_user({ username => $params->{$column_name}});
 
-         # $params->{$column_name} = $user->id;
+         $params->{$column_name} = $user->id;
       }
 
       my $value = $params->{$column_name} // NUL;
@@ -220,10 +297,23 @@ sub _find_column {
                @{$self->column_list};
 }
 
-sub _not_found {
-   my $self = shift;
+sub _is_authorised {
+   my ($self, $context, $actionp) = @_;
 
-   return [HTTP_NOT_FOUND, { message => 'Not found' }];
+   my ($moniker)  = split m{ / }mx, $actionp;
+   my $model      = $context->models->{$moniker};
+   my $authorised = $model->is_authorised($context, $actionp);
+
+   $context->clear_redirect;
+   return $authorised;
+}
+
+sub _not_found {
+   my ($self, $id) = @_;
+
+   my $class = $self->result_class;
+
+   throw "${class} [_1] not found", args => [$id], rv => HTTP_NOT_FOUND;
 }
 
 sub _serialise {
@@ -296,6 +386,26 @@ sub _success_code {
    my $method = first { $_->{name} eq $name } @{$self->method_list};
 
    return $method->{success_code} // HTTP_OK;
+}
+
+sub _validate_constraints {
+   my ($self, $method, $options) = @_;
+
+   my @constrained = grep { $_->{constraints} && $_->{methods}->{$method} }
+                         @{ $self->column_list };
+
+   for my $column (@constrained) {
+      my $constraints = $column->{constraints};
+      my $name        = $column->{name};
+      my $value       = $options->{$name};
+
+      for my $type (keys %{$constraints}) {
+         my $criteria = $constraints->{$type};
+         # TODO: Hook up Data::Validation
+      }
+   }
+
+   return;
 }
 
 # Private functions
