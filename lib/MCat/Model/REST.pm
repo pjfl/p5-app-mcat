@@ -36,6 +36,17 @@ sub dispatch : Auth('none') {
    return;
 }
 
+sub documentation : Auth('none') {
+   my ($self, $context) = @_;
+
+   my $api    = $context->controllers->{rest}->api;
+   my $prefix = $context->request->uri_for($api->route_prefix);
+
+   $context->stash(entity => $api->documentation('artist'));
+   $context->stash(route_prefix => $prefix);
+   return;
+}
+
 sub refresh : Auth('none') {
    my ($self, $context) = @_;
 

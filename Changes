@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds REST documentation
           - Adds REST refresh. Permission checks
           - Adds REST API
           - Adds OAuth for Github

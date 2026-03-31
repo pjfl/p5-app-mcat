@@ -7,6 +7,8 @@ use MCat::Constants       qw( EXCEPTION_CLASS FALSE API_META TRUE );
 use Ref::Util             qw( is_arrayref );
 use Sub::Install          qw( install_sub );
 use Unexpected::Functions qw( throw );
+use MCat::API::Column;
+use MCat::API::Method;
 use MCat::API::Meta;
 
 my @banished_keywords = ( API_META );
@@ -49,7 +51,10 @@ sub import {
 
       for my $name (@{$names}) {
          _assert_no_banished_keywords($target, $name);
-         $meta->add_to_column_list({ name => $name, %attributes });
+
+         my $object = MCat::API::Column->new({ name => $name, %attributes });
+
+         $meta->add_to_column_list($object);
       }
 
       return;
@@ -66,7 +71,10 @@ sub import {
 
       for my $name (@{$names}) {
          _assert_no_banished_keywords($target, $name);
-         $meta->add_to_method_list({ name => $name, %attributes });
+
+         my $object = MCat::API::Method->new({ name => $name, %attributes });
+
+         $meta->add_to_method_list($object);
       }
 
       return;

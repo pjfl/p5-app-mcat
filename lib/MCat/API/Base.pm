@@ -1,7 +1,7 @@
 package MCat::API::Base;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status          qw( HTTP_NOT_FOUND HTTP_OK );
+use HTTP::Status          qw( HTTP_NOT_FOUND );
 use Unexpected::Types     qw( ArrayRef Int Str );
 use HTML::Forms::Util     qw( json_bool );
 use List::Util            qw( first );
@@ -9,6 +9,7 @@ use Ref::Util             qw( is_arrayref is_hashref is_scalarref );
 use Scalar::Util          qw( blessed );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( throw );
+use MCat::API::Column;
 use Moo;
 
 has 'column_list' =>
@@ -17,25 +18,25 @@ has 'column_list' =>
    default => sub {
       my $self = shift;
 
-      return [{
+      return [MCat::API::Column->new({
          name        => 'page',
-         type        => 'Int',
+         type        => 'int',
          description => 'Page number',
          location    => 'query',
          methods     => { pagination => TRUE },
-      }, {
+      }), MCat::API::Column->new({
          name        => 'page_size',
-         type        => 'Int',
+         type        => 'int',
          description => 'Page size',
          location    => 'query',
          methods     => { pagination => TRUE },
-      }, {
+      }), MCat::API::Column->new({
          name        => 'sort_by',
-         type        => 'Str',
+         type        => 'str',
          description => 'Sort order',
          location    => 'query',
          methods     => { pagination => TRUE },
-      }, @{$self->_get_meta->column_list}];
+      }), @{$self->_get_meta->column_list}];
    };
 
 has 'max_page_size' =>
@@ -69,9 +70,11 @@ sub arguments_pageing {
    return {
       name        => 'paging',
       type        => 'hash',
-      description => 'Optional query string containing pagination options.',
-      location    => 'query',
+      description => q(
+         Optional [% transport_type %] containing pagination options.
+      ),
       fields      => 'pagination',
+      location    => 'query',
    };
 }
 
@@ -107,7 +110,7 @@ sub delete {
    my $code  = $self->_success_code('delete');
    my $class = $self->result_class;
 
-   return [$code, { message => "${class} ${id} deleted" }];
+   return [$code, {}];
 }
 
 sub get {
@@ -148,6 +151,19 @@ sub update {
    $result->discard_changes;
 
    return $self->get($context, $id);
+}
+
+sub fields {
+   my ($self, $object) = @_;
+
+   my $name = $object->fields or return [];
+   my @columns;
+
+   for my $column (@{$self->column_list}) {
+      push @columns, $column if $column->methods->{$name};
+   }
+
+   return \@columns;
 }
 
 # Private methods
@@ -268,12 +284,12 @@ sub _filter_params {
       # the Perl value is false and is NOT explicitly zero, then
       # the caller probably means NULL, so set the value to undef.
       # This enables, for example, searching on a NULL workspace_id
-      my $column_nullable = $col->{type} eq 'Int' ? TRUE : FALSE;
+      my $column_nullable = $col->type eq 'int' ? TRUE : FALSE;
 
       # Special case 2: If the column is declared as int/str
       # then it's a user field that can be an ID /or/ en email.
       # Look it up if it's an email.
-      if ($col->{type} eq 'Int|Str') {
+      if ($col->type eq 'int|str') {
          my $user = $context->find_user({ username => $params->{$column_name}});
 
          $params->{$column_name} = $user->id;
@@ -293,7 +309,7 @@ sub _filter_params {
 sub _find_column {
    my ($self, $name, $role) = @_;
 
-   return first { $_->{name} eq $name && $_->{methods}->{$role} }
+   return first { $_->name eq $name && $_->methods->{$role} }
                @{$self->column_list};
 }
 
@@ -330,15 +346,15 @@ sub _serialise {
          my $obj_columns = {};
 
          for my $col (@{$self->column_list}) {
-            next unless $col->{methods}->{$method};
+            next unless $col->methods->{$method};
 
-            my $field_name = $col->{name};
+            my $field_name = $col->name;
             my $value;
 
-            if ($col->{has_getter}) { $value = $col->{getter}->($object) }
+            if ($col->has_getter) { $value = $col->getter->($object) }
             else { $value = $object->$field_name }
 
-            $value = json_bool $value if $col->{type} && $col->{type} eq 'Bool';
+            $value = json_bool $value if $col->type && $col->type eq 'Bool';
 
             $obj_columns->{$field_name} = $value;
          }
@@ -383,20 +399,20 @@ sub _serialise {
 sub _success_code {
    my ($self, $name) = @_;
 
-   my $method = first { $_->{name} eq $name } @{$self->method_list};
+   my $method = first { $_->name eq $name } @{$self->method_list};
 
-   return $method->{success_code} // HTTP_OK;
+   return $method->success_code;
 }
 
 sub _validate_constraints {
    my ($self, $method, $options) = @_;
 
-   my @constrained = grep { $_->{constraints} && $_->{methods}->{$method} }
+   my @constrained = grep { $_->has_constraints && $_->methods->{$method} }
                          @{ $self->column_list };
 
    for my $column (@constrained) {
-      my $constraints = $column->{constraints};
-      my $name        = $column->{name};
+      my $constraints = $column->constraints;
+      my $name        = $column->name;
       my $value       = $options->{$name};
 
       for my $type (keys %{$constraints}) {

@@ -1,7 +1,7 @@
 package MCat::API::Artist;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE TRUE );
-use HTTP::Status          qw( HTTP_CREATED HTTP_UNAUTHORIZED );
+use HTTP::Status          qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
 use Unexpected::Functions qw( throw );
 use Moo;
 use MCat::API::Moo;
@@ -16,53 +16,76 @@ has '+moniker' => default => 'artist';
 has '+result_class' => default => 'Artist';
 
 has_api_column 'artistid' =>
-   type        => 'Int',
+   type        => 'int',
    description => 'The unique identifier for this artist.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_column 'name' =>
-   type        => 'Str',
+   type        => 'str',
    description => 'The name of the artist.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_column 'name' =>
-   type        => 'Str',
+   type        => 'str',
    description => 'The name of the artist. Maximum 255 characters.',
    methods     => { create => TRUE, update => TRUE };
 
 has_api_column 'active' =>
-   type        => 'Bool',
+   type        => 'bool',
    description => 'Is this artist still active.',
    methods     => {
       get => TRUE, search => TRUE, create => TRUE, update => TRUE
    };
 
 has_api_column 'upvotes' =>
-   type        => 'Int',
+   type        => 'int',
    description => 'Number of upvotes recieved by this artist.',
    methods     => {
       get => TRUE, search => TRUE, create => TRUE, update => TRUE
    };
 
 has_api_column 'import_log_id' =>
-   type        => 'Int',
+   type        => 'int',
    description => 'Unique import ID assigned if this artist was imported.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_method 'search' =>
    route       => '/artist',
    action      => 'search',
-   description => '',
+   description => q(
+      Searches all artists, returning those matching your specified
+      criteria as [% transport_type('array_of_hash') | indefinite_article %].
+      You can supply any number of search criteria from the list shown.
+
+      Optionally, you can paginate the output by passing page and page_size
+      parameters.
+   ),
    in_args     => [{
       name        => 'search',
       type        => 'hash',
-      description => 'Query string representing the values on which to '
-                   . 'search for matching artists.',
-      location    => 'query',
+      description => q(
+         [% transport_type | ucfirst %] representing the values on which to
+         search for matching artists.
+      ),
       fields      => 'search',
+      location    => 'query',
    }, $class->arguments_pageing],
-   out_arg     => {},
-   examples    => [{}];
+   out_arg      => {
+      name        => 'artists',
+      type        => 'array',
+      description => q(
+         Returns the found artists as
+         [% transport_type('array_of_hash') | indefinite_article %].
+      ),
+      fields      => 'get',
+   },
+   examples    => [{
+      request => {
+         name => 'Get all artists',
+      },
+      response => {
+      }
+   }];
 
 has_api_method 'create' =>
    access       => { write => TRUE, read => FALSE },
@@ -70,54 +93,106 @@ has_api_method 'create' =>
    route        => '/artist',
    action       => 'create',
    success_code => HTTP_CREATED,
-   description  => '',
-   in_args      => [{}],
-   out_arg      => {},
-   examples     => [{}];
+   description  => q(
+      Creates a new artist. The return value is
+      [% transport_type('hash') | indefinite_article %] containing your new
+      artist, including its unique ID.
+    ),
+   in_args      => [{
+      name        => 'create',
+      type        => 'hash',
+      description => 'Initial values for your new artist.',
+      fields      => 'create',
+      location    => 'body',
+   }],
+   out_arg      => {
+      name        => 'artist',
+      type        => 'hash',
+      description => q(
+         [% transport_type | indefinite_article | ucfirst %] representing
+         the artist matching the given ID.
+      ),
+      fields      => 'get',
+   },
+   examples     => [];
 
 has_api_method 'get' =>
-   route       => '/artist/*',
+   route       => '/artist/{artistid:[0-9]+}',
    action      => 'get',
-   description => 'Fetches an artist by ID, and returns JSON containing'
-                . 'the details of that artist.',
+   description => q(
+      Fetches a artist by ID, and returns
+      [% transport_type('hash') | indefinite_article %] containing the details
+      of that artist.
+   ),
    in_args     => [{
       name        => 'artistid',
-      type        => 'Int',
+      type        => 'int',
       description => 'ID of the artist.',
       location    => 'path',
    }],
    out_arg     => {
-      name       => 'artist',
-      type       => 'HashRef',
-      desciption => 'JSON representing the artist matching the given ID.',
-      fields     => 'get',
+      name        => 'artist',
+      type        => 'hash',
+      description => q(
+         [% transport_type | indefinite_article | ucfirst %] representing
+         the artist matching the given ID.
+      ),
+      fields      => 'get',
    },
-   examples    => [{}];
+   examples    => [];
 
 has_api_method 'update' =>
    access      => { write => TRUE, read => FALSE },
    method      => 'PUT',
-   route       => '/artist/*',
+   route       => '/artist/{artistid:[0-9]+}',
    action      => 'update',
-   description => '',
-   in_args     => [{}],
-   out_arg     => {},
-   examples    => [{}];
+   description => 'Updates one or more values for a given artist.',
+   in_args     => [{
+      name        => 'artistid',
+      type        => 'int',
+      description => 'ID of the artist you wish to update.',
+      location    => 'path',
+   },{
+      name        => 'update',
+      type        => 'hash',
+      description => q(
+         New values for the fields of your artist which you wish to
+         change. Any values not present in this [% transport_type %] will be
+         left unaltered.
+      ),
+      fields      => 'update',
+      location    => 'body',
+   }],
+   out_arg     => {
+      name        => 'artist',
+      type        => 'hash',
+      description => q(
+         [% transport_type | indefinite_article | ucfirst %] representing
+         the artist matching the given ID.
+      ),
+      fields      => 'get',
+   },
+   examples    => [];
 
 has_api_method 'delete' =>
    access       => { write => TRUE, read => FALSE },
    method       => 'DELETE',
-   route        => '/artist/*',
+   route        => '/artist/{artistid:[0-9]+}',
    action       => 'delete',
-   description  => '',
-   in_args      => [{}],
-   out_arg      => {},
-   examples     => [{}];
+   success_code => HTTP_NO_CONTENT,
+   description  => 'Delete the specified artist.',
+   in_args      => [{
+      name        => 'artistid',
+      type        => 'int',
+      description => 'ID of the artist you wish to delete.',
+      location    => 'path',
+   }],
+   examples     => [];
 
 sub check_create_permission {
    my ($self, $context) = @_;
 
-   throw 'No create permission', rv => HTTP_UNAUTHORIZED
+   throw 'No create permission', rv => HTTP_FORBIDDEN
       unless $self->_is_authorised($context, 'artist/create');
 
    return;
@@ -126,7 +201,7 @@ sub check_create_permission {
 sub check_delete_permission {
    my ($self, $context) = @_;
 
-   throw 'No delete permission', rv => HTTP_UNAUTHORIZED
+   throw 'No delete permission', rv => HTTP_FORBIDDEN
       unless $self->_is_authorised($context, 'artist/delete');
 
    return;
@@ -135,7 +210,7 @@ sub check_delete_permission {
 sub check_search_permission {
    my ($self, $context) = @_;
 
-   throw 'No search permission', rv => HTTP_UNAUTHORIZED
+   throw 'No search permission', rv => HTTP_FORBIDDEN
       unless $self->_is_authorised($context, 'artist/list');
 
    return;
@@ -144,7 +219,7 @@ sub check_search_permission {
 sub check_update_permission {
    my ($self, $context) = @_;
 
-   throw 'No update permission', rv => HTTP_UNAUTHORIZED
+   throw 'No update permission', rv => HTTP_FORBIDDEN
       unless $self->_is_authorised($context, 'artist/edit');
 
    return;

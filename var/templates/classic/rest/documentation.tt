@@ -1,0 +1,163 @@
+<div class="documentation">
+[% header('', entity.result_class) %]
+   <h3><code>API Methods</code></h3>
+   <table class="contents-list">
+      <tr><th>Name</th><th>Request Method</th><th>Path</th></tr>
+[% FOR method IN entity.method_list %]
+   [% NEXT UNLESS method.route %]
+      <tr>
+         [% href = entity.moniker _ '-' _ method.name %]
+         [% label = method.name | ucfirst %]
+         <td><a target="_self" href="#[% href %]">[% label %]</a></td>
+         <td><code>[% method.method %]</code></td>
+         <td><code>[% method.route | html %]</code></td>
+      </tr>
+[% END %]
+   </table>
+[% FOR method IN entity.method_list %]
+   [% NEXT UNLESS method.route %]
+   <div class="method">
+      <h3 id="[% entity.moniker %]-[% method.name %]">
+         <code>[% method.name | ucfirst %]</code>
+      </h3>
+      [% method.description | html | html_para %]
+      [% INCLUDE render_access_required %]
+      <div class="request">
+         <h4>Request</h4>
+         <h5>Method</h5><code>[% method.method %]</code>
+         <h5>URL</h5><code>[% route_prefix _ method.route_display %]</code>
+         [% INCLUDE render_in_args %]
+         [% INCLUDE render_additional %]
+      </div>
+      <div class="response">
+         <h4>Response</h4>
+         <h5>Code</h5><code>[% method.success_code %]</code>
+         [% INCLUDE render_out_arg %]
+      </div>
+      <div class="examples">
+         [% INCLUDE render_examples %]
+      </div>
+   </div>
+[% END %]
+</div>
+
+[% BLOCK render_access_required;
+   '<h4>Access Required</h4>';
+   access_list = [];
+   access_list.push('Read') IF method.access.read;
+   access_list.push('Write') IF method.access.write;
+   '<p>' _ access_list.join(' + ') _ '</p>';
+END %]
+
+[% BLOCK render_in_args;
+   FOR location IN ['path', 'query', 'body'];
+      NEXT UNLESS method.has_in_args(location);
+      '<h5>'; location | ucfirst | html; ' Parameters'; '</h5>';
+      '<table class="argument-list">';
+         FOR object IN method.in_args;
+            IF object.location == location;
+               IF object.type.match('^hash$');
+                  object.description | html | html_para;
+                  INCLUDE argument_list arguments = entity.fields(object);
+               ELSE;
+                  INCLUDE argument_headers;
+                  INCLUDE argument;
+               END;
+            END;
+         END;
+      '</table>';
+   END;
+END %]
+
+[% BLOCK render_additional;
+   FOR additional IN method.additional_docs;
+      IF additional.title;
+         title = additional.title | lower | replace('\s', '_') | html;
+         id = entity.result_class _ '-' _ method.name _ '-' _ title;
+         '<h4 id="${id}">'; additional.title | html; '</h4>';
+      END;
+      additional.content | html | html_para;
+      additional.raw_content;
+   END;
+END %]
+
+[% BLOCK render_out_arg;
+   '<h5>Content</h5>';
+   IF method.out_arg;
+      method.out_arg.description | html | html_para;
+      IF method.out_arg.type.match('^hash$');
+         INCLUDE argument_list arguments = entity.fields(method.out_arg);
+      ELSIF method.out_arg.type.match('^array$');
+         INCLUDE argument_list arguments = entity.fields(method.out_arg);
+      END;
+   ELSE;
+      '<p>Empty</p>';
+   END;
+END %]
+
+[% BLOCK render_examples %]
+   [% FOR example IN method.examples; %]
+      [% req = example.request %]
+      [% resp = example.response %]
+      <h4>Example - [% req.name %]</h4>
+      [% IF req.description %][% req.description | html | html_para %][% END %]
+      <h5>Request</h5>
+      <pre><code>curl -X [% method.method %] -H 'Authorization: Bearer [Access Token]' [% route_prefix _ method.route_display %][% IF req.body %] --data '[% encode_json( req.body ) | html %]'[% END %]</code></pre>
+      <h5>Response</h5>
+      [% IF method.success_code == '204' || !method.has_out_arg %]
+         <pre><code>HTTP/1.0 [% INCLUDE status code = method.success_code %]</code></pre>
+      [% ELSIF resp.defined %]
+         <pre><code>HTTP/1.0 [% INCLUDE status code = method.success_code %]
+Content-Type: application/json
+Content-Length: [% encode_json(resp).length %]
+[% encode_json( resp, {pretty => 1} ) | html %]</code></pre>
+      [% ELSE %]
+         <pre><code>HTTP/1.0 [% INCLUDE status code = 204 %]
+Content-Type: application/json</code></pre>
+      [% END %]
+   [% END %]
+[% END %]
+
+[% BLOCK argument %]
+   <tr>
+      <td>[% object.name | html %]</td>
+      <td>[% object.type | html %]</td>
+      <td>[% object.description | html %]</td>
+   </tr>
+[% END %]
+
+[% BLOCK argument_headers %]
+   <tr>
+      <th class="name">Name</th>
+      <th class="type">Type</th>
+      <th class="description">Description</th>
+   </tr>
+[% END %]
+
+[% BLOCK argument_list;
+   IF arguments.size;
+      '<table class="argument-list">';
+      INCLUDE argument_headers;
+      FOR object IN arguments;
+         INCLUDE argument;
+      END;
+      '</table>';
+   ELSE;
+      '<p>None</p>';
+   END;
+END; %]
+
+[% BLOCK status;
+   code;
+   IF code == 200;
+      ' OK';
+   ELSIF code == 201;
+      ' Created';
+    ELSIF code == 202;
+      ' Accepted';
+   ELSIF code == 204;
+      ' No Content';
+   ELSE;
+      ' Unknown';
+   END;
+END %]

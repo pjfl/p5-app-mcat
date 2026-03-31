@@ -1,9 +1,9 @@
 package MCat::API;
 
 use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status           qw( HTTP_EXPECTATION_FAILED
-                               HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_FOUND HTTP_OK
-                               HTTP_UNAUTHORIZED );
+use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_FORBIDDEN
+                               HTTP_INTERNAL_SERVER_ERROR HTTP_OK
+                               HTTP_UNAUTHORIZED HTTP_UNPROCESSABLE_ENTITY );
 use Unexpected::Types      qw( HashRef Int Str );
 use Class::Usul::Cmd::Util qw( includes );
 use List::Util             qw( first );
@@ -20,6 +20,8 @@ with 'MCat::Role::Schema';
 with 'MCat::Role::Redis';
 with 'MCat::Role::JSONParser';
 
+has 'access_token_lifetime' => is => 'ro', isa => Int, default => 7_200;
+
 has 'config' => is => 'ro', required => TRUE;
 
 has 'entities' =>
@@ -34,7 +36,10 @@ has 'entities' =>
 
 has 'log' => is => 'ro', required => TRUE;
 
-has 'max_token_time' => is => 'ro', isa => Int, default => 7_200;
+has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
+
+# TODO: API versioning
+has 'route_prefix' => is => 'ro', isa => Str, default => 'api/v1';
 
 has 'secret' => is => 'lazy', isa => Str, default => NUL;
 
@@ -43,17 +48,18 @@ sub access_token {
 
    my $token = $context->body_parameters->{request_token};
 
-   return [HTTP_NOT_FOUND, { message => 'Request token' }] unless $token;
+   return [HTTP_UNAUTHORIZED, { message => 'No request token' }] unless $token;
 
    my $userid = $self->redis_client->get("api_request-${token}");
 
-   return [HTTP_NOT_FOUND, { message => 'Cached token' }] unless $userid;
+   return [HTTP_UNAUTHORIZED, { message => 'No cached token' }] unless $userid;
 
    $self->redis_client->del("api_request-${token}");
 
    my $user = $context->find_user({ username => $userid });
 
-   return [HTTP_NOT_FOUND, { message => 'User ID' }] unless $user;
+   return [HTTP_UNAUTHORIZED, { message => "User ${userid} not found" }]
+      unless $user;
 
    return [HTTP_OK, { access_token => $self->_create_access_token($user) }];
 }
@@ -73,10 +79,12 @@ sub authorise {
       $options->{user} = $context->find_user($options);
       $context->authenticate($options);
 
-      my $token  = create_token;
-      my $userid = $options->{user}->id;
+      my $token    = create_token;
+      my $userid   = $options->{user}->id;
+      my $lifetime = $self->request_token_lifetime;
+      my $key      = "api_request-${token}";
 
-      $self->redis_client->set_with_ttl("api_request-${token}", $userid, 180);
+      $self->redis_client->set_with_ttl($key, $userid, $lifetime);
       $result = [HTTP_OK, { request_token => $token }];
    }
    catch { $result = [HTTP_UNAUTHORIZED, { message => "${_}" }] };
@@ -115,9 +123,11 @@ sub dispatch {
    return $result;
 }
 
-# TODO: Add documentation
+# TODO: Add documentation index
 sub documentation {
-   my $self = shift;
+   my ($self, $moniker) = @_;
+
+   return $self->entities->{$moniker};
 }
 
 sub refresh {
@@ -134,15 +144,16 @@ sub refresh {
 
 sub routes {
    my $self   = shift;
+   my $prefix = $self->route_prefix;
    my @routes = ();
 
    for my $moniker (keys %{$self->entities}) {
       my $entity = $self->entities->{$moniker};
 
       for my $method (@{$entity->method_list}) {
-         my $route = ($method->{method} // 'GET')
-            . ' + /api/v1' . $method->{route} . ' + ?*';
-         my $action = $method->{action};
+         my $match  = $method->route_match;
+         my $route  = $method->method . " + /${prefix}${match} + ?*";
+         my $action = $method->action;
 
          push @routes, $route, "rest/dispatch/${moniker}/${action}";
       }
@@ -187,22 +198,21 @@ sub _encode_access_token {
 sub _is_allowed {
    my ($self, $claim, $entity, $action) = @_;
 
-   my $method = first { $_->{name} eq $action } @{$entity->method_list};
+   my $method = first { $_->name eq $action } @{$entity->method_list};
 
-   return [HTTP_NOT_FOUND, { message => 'API method' }] unless $method;
+   return [HTTP_UNPROCESSABLE_ENTITY, { message => "Method ${action} unknown" }]
+      unless $method;
 
-   $method->{access} //= { read => TRUE, write => FALSE };
-
-   if ($method->{access}->{read}) {
+   if ($method->access->{read}) {
       my $can_read = includes $claim->{role}, [qw(view edit manager admin)];
 
-      return [HTTP_UNAUTHORIZED, { message => 'Read access' }] unless $can_read;
+      return [HTTP_FORBIDDEN, { message => 'No read access' }] unless $can_read;
    }
 
-   if ($method->{access}->{write}) {
+   if ($method->access->{write}) {
       my $can_write = includes $claim->{role}, [qw(edit manager admin)];
 
-      return [HTTP_UNAUTHORIZED, { message => 'Write access' }]
+      return [HTTP_FORBIDDEN, { message => 'No write access' }]
          unless $can_write;
    }
 
@@ -212,21 +222,24 @@ sub _is_allowed {
 sub _is_authorised {
    my ($self, $context) = @_;
 
-   my $header = $context->request->header('Authorization')
-      or return [HTTP_NOT_FOUND, { message => 'Authorization header'}];
+   my $header = $context->request->header('Authorization');
+
+   return [HTTP_BAD_REQUEST, { message => 'No authorization header'}]
+      unless $header;
 
    my ($type, $token) = split m{ [ ]+ }mx, $header;
 
-   return [HTTP_NOT_FOUND, { message => 'Access token' }] unless $token;
+   return [HTTP_BAD_REQUEST, { message => 'No access token' }] unless $token;
 
    my $claim = $self->_decode_access_token($token);
 
-   return [HTTP_UNAUTHORIZED, { message => 'Token verify'}] unless $claim->{id};
+   return [HTTP_UNAUTHORIZED, { message => 'Token verification failed'}]
+      unless $claim->{id};
 
    my $elapsed = time - $claim->{time};
 
-   return [HTTP_EXPECTATION_FAILED, { message => 'Token too old' }]
-      unless $elapsed < $self->max_token_time;
+   return [HTTP_UNAUTHORIZED, { message => 'Token too old' }]
+      unless $elapsed < $self->access_token_lifetime;
 
    return [HTTP_OK, $claim];
 }

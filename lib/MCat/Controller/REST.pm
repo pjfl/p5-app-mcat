@@ -6,6 +6,7 @@ use MCat::API;
 use Web::Simple;
 
 with 'Web::Components::Role';
+with 'Web::Components::ReverseMap';
 
 has '+moniker' => default => 'rest';
 
@@ -23,11 +24,12 @@ has 'api' =>
 
 has 'secret' => is => 'lazy', default => q();
 
-sub dispatch_request {
-   build_routes shift->api->routes,
-   'POST + /api/access_token + ?*' => 'rest/access_token',
-   'POST + /api/authorise + ?*'    => 'rest/authorise',
-   'POST + /api/refresh + ?*'      => 'rest/refresh',
+sub dispatch_request { build_routes
+   shift->api->routes,
+   'POST + /api/access_token + ?*'  => 'rest/access_token',
+   'GET  + /api/documentation + ?*' => 'rest/root/documentation',
+   'POST + /api/authorise + ?*'     => 'rest/authorise',
+   'POST + /api/refresh + ?*'       => 'rest/refresh',
 }
 
 1;
