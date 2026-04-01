@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds remaining REST entities
           - REST API validation constraints
           - REST documentation examples
           - Adds REST documentation

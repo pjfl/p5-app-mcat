@@ -1,4 +1,4 @@
-package MCat::API::Artist;
+package MCat::API::Track;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status          qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
@@ -11,23 +11,30 @@ with    'Web::Components::Role';
 
 my $class = __PACKAGE__;
 
-has '+moniker' => default => 'artist';
+has '+moniker' => default => 'track';
 
-has '+result_class' => default => 'Artist';
+has '+result_class' => default => 'Track';
 
-has_api_column 'artistid' =>
+has_api_column 'trackid' =>
    type        => 'int',
-   description => 'The unique identifier for this artist.',
+   description => 'The unique identifier for this track.',
    methods     => { get => TRUE, search => TRUE };
 
-has_api_column 'name' =>
+has_api_column 'cdid' =>
+   type        => 'int',
+   description => 'The unique identifier for this CD.',
+   methods     => {
+      create => TRUE, get => TRUE, search => TRUE, update => TRUE,
+   };
+
+has_api_column 'title' =>
    type        => 'str',
-   description => 'The name of the artist.',
+   description => 'The title of the track.',
    methods     => { get => TRUE, search => TRUE };
 
-has_api_column 'name' =>
+has_api_column 'title' =>
    type        => 'str',
-   description => 'The name of the artist. Maximum 255 characters.',
+   description => 'The title of the track. Maximum 255 characters.',
    methods     => { create => TRUE, update => TRUE },
    constraints => {
       options  => {
@@ -40,32 +47,18 @@ has_api_column 'name' =>
       },
    };
 
-has_api_column 'active' =>
-   type        => 'bool',
-   description => 'Is this artist still active.',
-   methods     => {
-      get => TRUE, search => TRUE, create => TRUE, update => TRUE
-   };
-
-has_api_column 'upvotes' =>
-   type        => 'int',
-   description => 'Number of upvotes recieved by this artist.',
-   methods     => {
-      get => TRUE, search => TRUE, create => TRUE, update => TRUE
-   };
-
 has_api_column 'import_log_id' =>
    type        => 'int',
-   description => 'Unique import ID assigned if this artist was imported.',
+   description => 'unique import id assigned if this track was imported.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_method 'search' =>
-   route       => '/artist',
+   route       => '/track',
    action      => 'search',
    description => q(
-      Searches all artists, returning those matching your specified
+      Searches all tracks, returning those matching your specified
       criteria as [% transport_type('array_of_hash') | indefinite_article %].
-      You can supply any number of search criteria from the list shown.
+      you can supply any number of search criteria from the list shown.
 
       Optionally, you can paginate the output by passing page and page_size
       parameters.
@@ -75,29 +68,28 @@ has_api_method 'search' =>
       type        => 'hash',
       description => q(
          [% transport_type | ucfirst %] representing the values on which to
-         search for matching artists.
+         search for matching tracks.
       ),
       fields      => 'search',
       location    => 'query',
    }, $class->arguments_pageing],
    out_arg      => {
-      name        => 'artists',
+      name        => 'tracks',
       type        => 'array',
       description => q(
-         Returns the found artists as
+         Returns the found tracks as
          [% transport_type('array_of_hash') | indefinite_article %].
       ),
       fields      => 'get',
    },
    examples    => [{
-      name        => 'Get All Artists',
-      description => 'Get all artists, limited to 1 per page',
-      url         => '/artist?page_size=1',
+      name        => 'Get All Tracks',
+      description => 'Get all tracks, limited to 1 per page',
+      url         => '/track?page_size=1',
       response    => [{
-         artistid      => 1,
-         name          => 'Deep Purple',
-         active        => \1,
-         upvotes       => 70,
+         trackid       => 1,
+         cdid          => 1,
+         title         => 'Generic Track Title',
          import_log_id => NUL,
       }],
    }];
@@ -105,77 +97,74 @@ has_api_method 'search' =>
 has_api_method 'create' =>
    access       => { write => TRUE, read => FALSE },
    method       => 'POST',
-   route        => '/artist',
+   route        => '/track',
    action       => 'create',
    success_code => HTTP_CREATED,
    description  => q(
-      Creates a new artist. The return value is
+      Creates a new track. The return value is
       [% transport_type('hash') | indefinite_article %] containing your new
-      artist, including its unique ID.
-    ),
+      track, including its unique ID.
+   ),
    in_args      => [{
       name        => 'create',
       type        => 'hash',
-      description => 'Initial values for your new artist.',
+      description => 'Initial values for your new track.',
       fields      => 'create',
       location    => 'body',
    }],
    out_arg      => {
-      name        => 'artist',
+      name        => 'track',
       type        => 'hash',
       description => q(
          [% transport_type | indefinite_article | ucfirst %] representing
-         the artist matching the given ID.
+         the track matching the given ID.
       ),
       fields      => 'get',
    },
    examples     => [{
-      name     => 'Create an Artist',
+      name     => 'Create a track',
       body     => {
-         name    => 'Hawkwind',
-         active  => \1,
-         upvotes => 50,
+         cdid  => 1,
+         title => 'Generic Track Title',
       },
       response => {
-         artist_id     => 2,
-         name          => 'Hawkwind',
-         active        => \1,
-         upvotes       => 50,
+         trackid       => 1,
+         cdid          => 1,
+         title         => 'Generic Track Title',
          import_log_id => NUL,
       },
    }];
 
 has_api_method 'get' =>
-   route       => '/artist/{artistid:[0-9]+}',
+   route       => '/track/{trackid:[0-9]+}',
    action      => 'get',
    description => q(
-      Fetches an artist by ID, and returns
+      Fetches a track by ID, and returns
       [% transport_type('hash') | indefinite_article %] containing the details
-      of that artist.
+      of that track.
    ),
    in_args     => [{
-      name        => 'artistid',
+      name        => 'trackid',
       type        => 'int',
-      description => 'ID of the artist.',
+      description => 'ID of the track.',
       location    => 'path',
    }],
    out_arg     => {
-      name        => 'artist',
+      name        => 'track',
       type        => 'hash',
       description => q(
          [% transport_type | indefinite_article | ucfirst %] representing
-         the artist matching the given ID.
+         the track matching the given ID.
       ),
       fields      => 'get',
    },
    examples    => [{
-      name        => 'Get Artist ID 1',
-      url         => '/artist/1',
+      name        => 'Get track ID 1',
+      url         => '/track/1',
       response    => {
-         artistid      => 1,
-         name          => 'Deep Purple',
-         active        => \1,
-         upvotes       => 70,
+         trackid       => 1,
+         cdid          => 1,
+         title         => 'Generic Track Title',
          import_log_id => NUL,
       },
    }];
@@ -183,19 +172,19 @@ has_api_method 'get' =>
 has_api_method 'update' =>
    access      => { write => TRUE, read => FALSE },
    method      => 'PUT',
-   route       => '/artist/{artistid:[0-9]+}',
+   route       => '/track/{trackid:[0-9]+}',
    action      => 'update',
-   description => 'Updates one or more values for a given artist.',
+   description => 'Updates one or more values for a given track.',
    in_args     => [{
-      name        => 'artistid',
+      name        => 'trackid',
       type        => 'int',
-      description => 'ID of the artist you wish to update.',
+      description => 'ID of the track you wish to update.',
       location    => 'path',
    },{
       name        => 'update',
       type        => 'hash',
       description => q(
-         New values for the fields of your artist which you wish to
+         New values for the fields of your track which you wish to
          change. Any values not present in this [% transport_type %] will be
          left unaltered.
       ),
@@ -203,23 +192,22 @@ has_api_method 'update' =>
       location    => 'body',
    }],
    out_arg     => {
-      name        => 'artist',
+      name        => 'track',
       type        => 'hash',
       description => q(
          [% transport_type | indefinite_article | ucfirst %] representing
-         the artist matching the given ID.
+         the track matching the given ID.
       ),
       fields      => 'get',
    },
    examples    => [{
-      name     => 'Update an Artist',
-      url      => '/artist/2',
-      body     => { upvotes => 90 },
+      name     => 'Update a track',
+      url      => '/track/2',
+      body     => { title => 'Number 2 Snigger' },
       response => {
-         artist_id     => 2,
-         name          => 'Hawkwind',
-         active        => \1,
-         upvotes       => 90,
+         trackid       => 2,
+         cdid          => 1,
+         title         => 'Number 2 Snigger',
          import_log_id => NUL,
       },
    }];
@@ -227,26 +215,26 @@ has_api_method 'update' =>
 has_api_method 'delete' =>
    access       => { write => TRUE, read => FALSE },
    method       => 'DELETE',
-   route        => '/artist/{artistid:[0-9]+}',
+   route        => '/track/{trackid:[0-9]+}',
    action       => 'delete',
    success_code => HTTP_NO_CONTENT,
-   description  => 'Delete the specified artist.',
+   description  => 'Delete the specified track.',
    in_args      => [{
-      name        => 'artistid',
+      name        => 'trackid',
       type        => 'int',
-      description => 'ID of the artist you wish to delete.',
+      description => 'ID of the track you wish to delete.',
       location    => 'path',
    }],
    examples     => [{
-      name => 'Delete an Artist',
-      url  => '/artist/2',
+      name => 'Delete a track',
+      url  => '/track/2',
    }];
 
 sub check_create_permission {
    my ($self, $context) = @_;
 
    throw 'No create permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/create');
+      unless $self->_is_authorised($context, 'track/create');
 
    return;
 }
@@ -255,7 +243,7 @@ sub check_delete_permission {
    my ($self, $context) = @_;
 
    throw 'No delete permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/delete');
+      unless $self->_is_authorised($context, 'track/delete');
 
    return;
 }
@@ -264,7 +252,7 @@ sub check_search_permission {
    my ($self, $context) = @_;
 
    throw 'No search permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/list');
+      unless $self->_is_authorised($context, 'track/list');
 
    return;
 }
@@ -273,7 +261,7 @@ sub check_update_permission {
    my ($self, $context) = @_;
 
    throw 'No update permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/edit');
+      unless $self->_is_authorised($context, 'track/edit');
 
    return;
 }

@@ -1,5 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.46
+ * @version 0.13.47
  */
 /* Breaks */
 /* Colours */
@@ -8,10 +8,10 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.46
+ * @version 0.13.47
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.46
+ * @version 0.13.47
  */
 /* Breaks */
 /* Colours */
@@ -924,21 +924,6 @@ footer .footer-container .session-time {
   counter-reset: docheader;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
 }
-.documentation:not(.input-field) h1 {
-  font-size: 2rem;
-}
-.documentation:not(.input-field) h2 {
-  font-size: 1.75rem;
-}
-.documentation:not(.input-field) h3 {
-  font-size: 1.5rem;
-}
-.documentation:not(.input-field) h4 {
-  font-size: 1.25rem;
-}
-.documentation:not(.input-field) h5 {
-  font-size: 1rem;
-}
 .documentation a {
   color: seagreen;
 }
@@ -961,8 +946,26 @@ footer .footer-container .session-time {
   font-family: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
   font-size: 0.8rem;
 }
-.documentation .argument-list,
-.documentation .contents-list {
+.documentation.restapi {
+  display: flex;
+}
+.documentation.restapi h1 {
+  font-size: 2rem;
+}
+.documentation.restapi h2 {
+  font-size: 1.75rem;
+}
+.documentation.restapi h3 {
+  font-size: 1.5rem;
+}
+.documentation.restapi h4 {
+  font-size: 1.25rem;
+}
+.documentation.restapi h5 {
+  font-size: 1rem;
+}
+.documentation.restapi .argument-list,
+.documentation.restapi .contents-list {
   background: var(--bg-light);
   border: 1px solid gray;
   border-radius: 5px;
@@ -970,7 +973,13 @@ footer .footer-container .session-time {
   text-align: left;
   margin-bottom: 0.5rem;
 }
-.documentation .method {
+.documentation.restapi .entity-index {
+  min-width: 10rem;
+}
+.documentation.restapi .entity-index .contents-list {
+  width: 100%;
+}
+.documentation.restapi .method {
   border-top: 1px solid gray;
 }
 .file-preview p,
@@ -1248,21 +1257,6 @@ footer .footer-container .session-time {
 .modal-outer-wrapper .modal .modal-loader .loading {
   margin: 1rem;
 }
-.restapi.documentation {
-  display: flex;
-}
-.restapi.documentation .entity h2 {
-  counter-increment: docheader;
-}
-.restapi.documentation .entity h2::before {
-  content: counter(docheader) '. ';
-}
-.restapi.documentation .entity-index {
-  min-width: 10rem;
-}
-.restapi.documentation .entity-index .contents-list {
-  width: 100%;
-}
 .flame-container {
   display: inline-block;
   width: 60px;
@@ -1356,7 +1350,7 @@ footer .footer-container .session-time {
  * @version 0.2.15
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.46
+ * @version 0.13.47
  */
 /* Breaks */
 /* Colours */
@@ -2792,7 +2786,7 @@ form.classic .tooltip p a {
  * @version 0.1.23
  * Colours */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.46
+ * @version 0.13.47
  */
 /* Breaks */
 /* Colours */
@@ -3313,7 +3307,7 @@ form.classic .tooltip p a {
  * @version 0.2.31
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.46
+ * @version 0.13.47
  */
 /* Breaks */
 /* Colours */

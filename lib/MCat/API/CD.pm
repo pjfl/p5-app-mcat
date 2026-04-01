@@ -1,4 +1,4 @@
-package MCat::API::Artist;
+package MCat::API::CD;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status          qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
@@ -11,23 +11,30 @@ with    'Web::Components::Role';
 
 my $class = __PACKAGE__;
 
-has '+moniker' => default => 'artist';
+has '+moniker' => default => 'cd';
 
-has '+result_class' => default => 'Artist';
+has '+result_class' => default => 'Cd';
+
+has_api_column 'cdid' =>
+   type        => 'int',
+   description => 'The unique identifier for this CD.',
+   methods     => { get => TRUE, search => TRUE };
 
 has_api_column 'artistid' =>
    type        => 'int',
    description => 'The unique identifier for this artist.',
+   methods     => {
+      create => TRUE, get => TRUE, search => TRUE, update => TRUE,
+   };
+
+has_api_column 'title' =>
+   type        => 'str',
+   description => 'The title of the CD.',
    methods     => { get => TRUE, search => TRUE };
 
-has_api_column 'name' =>
+has_api_column 'title' =>
    type        => 'str',
-   description => 'The name of the artist.',
-   methods     => { get => TRUE, search => TRUE };
-
-has_api_column 'name' =>
-   type        => 'str',
-   description => 'The name of the artist. Maximum 255 characters.',
+   description => 'The title of the CD. Maximum 255 characters.',
    methods     => { create => TRUE, update => TRUE },
    constraints => {
       options  => {
@@ -40,30 +47,23 @@ has_api_column 'name' =>
       },
    };
 
-has_api_column 'active' =>
-   type        => 'bool',
-   description => 'Is this artist still active.',
+has_api_column 'year' =>
+   type        => 'datetime',
+   description => 'The year in which the CD was released.',
    methods     => {
-      get => TRUE, search => TRUE, create => TRUE, update => TRUE
-   };
-
-has_api_column 'upvotes' =>
-   type        => 'int',
-   description => 'Number of upvotes recieved by this artist.',
-   methods     => {
-      get => TRUE, search => TRUE, create => TRUE, update => TRUE
+      create => TRUE, get => TRUE, search => TRUE, update => TRUE,
    };
 
 has_api_column 'import_log_id' =>
    type        => 'int',
-   description => 'Unique import ID assigned if this artist was imported.',
+   description => 'Unique import ID assigned if this CD was imported.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_method 'search' =>
-   route       => '/artist',
+   route       => '/cd',
    action      => 'search',
    description => q(
-      Searches all artists, returning those matching your specified
+      Searches all CDs, returning those matching your specified
       criteria as [% transport_type('array_of_hash') | indefinite_article %].
       You can supply any number of search criteria from the list shown.
 
@@ -75,29 +75,29 @@ has_api_method 'search' =>
       type        => 'hash',
       description => q(
          [% transport_type | ucfirst %] representing the values on which to
-         search for matching artists.
+         search for matching CDs.
       ),
       fields      => 'search',
       location    => 'query',
    }, $class->arguments_pageing],
    out_arg      => {
-      name        => 'artists',
+      name        => 'cds',
       type        => 'array',
       description => q(
-         Returns the found artists as
+         Returns the found CDs as
          [% transport_type('array_of_hash') | indefinite_article %].
       ),
       fields      => 'get',
    },
    examples    => [{
-      name        => 'Get All Artists',
-      description => 'Get all artists, limited to 1 per page',
-      url         => '/artist?page_size=1',
+      name        => 'Get All CDs',
+      description => 'Get all CDs, limited to 1 per page',
+      url         => '/cd?page_size=1',
       response    => [{
+         cdid          => 1,
          artistid      => 1,
-         name          => 'Deep Purple',
-         active        => \1,
-         upvotes       => 70,
+         title         => 'White Albumn',
+         year          => '2023-02-16T00:00:00',
          import_log_id => NUL,
       }],
    }];
@@ -105,77 +105,77 @@ has_api_method 'search' =>
 has_api_method 'create' =>
    access       => { write => TRUE, read => FALSE },
    method       => 'POST',
-   route        => '/artist',
+   route        => '/cd',
    action       => 'create',
    success_code => HTTP_CREATED,
    description  => q(
-      Creates a new artist. The return value is
+      Creates a new CD. The return value is
       [% transport_type('hash') | indefinite_article %] containing your new
-      artist, including its unique ID.
-    ),
+      CD, including its unique ID.
+   ),
    in_args      => [{
       name        => 'create',
       type        => 'hash',
-      description => 'Initial values for your new artist.',
+      description => 'Initial values for your new CD.',
       fields      => 'create',
       location    => 'body',
    }],
    out_arg      => {
-      name        => 'artist',
+      name        => 'cd',
       type        => 'hash',
       description => q(
          [% transport_type | indefinite_article | ucfirst %] representing
-         the artist matching the given ID.
+         the CD matching the given ID.
       ),
       fields      => 'get',
    },
    examples     => [{
-      name     => 'Create an Artist',
+      name     => 'Create a CD',
       body     => {
-         name    => 'Hawkwind',
-         active  => \1,
-         upvotes => 50,
+         artistid => 1,
+         title    => 'White Albumn',
+         year     => '2023-02-16',
       },
       response => {
-         artist_id     => 2,
-         name          => 'Hawkwind',
-         active        => \1,
-         upvotes       => 50,
+         cdid          => 1,
+         artistid      => 1,
+         title         => 'White Albumn',
+         year          => '2023-02-16T00:00:00',
          import_log_id => NUL,
       },
    }];
 
 has_api_method 'get' =>
-   route       => '/artist/{artistid:[0-9]+}',
+   route       => '/cd/{cdid:[0-9]+}',
    action      => 'get',
    description => q(
-      Fetches an artist by ID, and returns
+      Fetches a CD by ID, and returns
       [% transport_type('hash') | indefinite_article %] containing the details
-      of that artist.
+      of that CD.
    ),
    in_args     => [{
-      name        => 'artistid',
+      name        => 'cdid',
       type        => 'int',
-      description => 'ID of the artist.',
+      description => 'ID of the CD.',
       location    => 'path',
    }],
    out_arg     => {
-      name        => 'artist',
+      name        => 'cd',
       type        => 'hash',
       description => q(
          [% transport_type | indefinite_article | ucfirst %] representing
-         the artist matching the given ID.
+         the CD matching the given ID.
       ),
       fields      => 'get',
    },
    examples    => [{
-      name        => 'Get Artist ID 1',
-      url         => '/artist/1',
+      name        => 'Get CD ID 1',
+      url         => '/cd/1',
       response    => {
+         cdid          => 1,
          artistid      => 1,
-         name          => 'Deep Purple',
-         active        => \1,
-         upvotes       => 70,
+         title         => 'White Albumn',
+         year          => '2023-02-16T00:00:00',
          import_log_id => NUL,
       },
    }];
@@ -183,19 +183,19 @@ has_api_method 'get' =>
 has_api_method 'update' =>
    access      => { write => TRUE, read => FALSE },
    method      => 'PUT',
-   route       => '/artist/{artistid:[0-9]+}',
+   route       => '/cd/{cdid:[0-9]+}',
    action      => 'update',
-   description => 'Updates one or more values for a given artist.',
+   description => 'Updates one or more values for a given CD.',
    in_args     => [{
-      name        => 'artistid',
+      name        => 'cdid',
       type        => 'int',
-      description => 'ID of the artist you wish to update.',
+      description => 'ID of the CD you wish to update.',
       location    => 'path',
    },{
       name        => 'update',
       type        => 'hash',
       description => q(
-         New values for the fields of your artist which you wish to
+         New values for the fields of your CD which you wish to
          change. Any values not present in this [% transport_type %] will be
          left unaltered.
       ),
@@ -203,23 +203,23 @@ has_api_method 'update' =>
       location    => 'body',
    }],
    out_arg     => {
-      name        => 'artist',
+      name        => 'cd',
       type        => 'hash',
       description => q(
          [% transport_type | indefinite_article | ucfirst %] representing
-         the artist matching the given ID.
+         the CD matching the given ID.
       ),
       fields      => 'get',
    },
    examples    => [{
-      name     => 'Update an Artist',
-      url      => '/artist/2',
-      body     => { upvotes => 90 },
+      name     => 'Update a CD',
+      url      => '/cd/2',
+      body     => { title => 'Blue Albumn' },
       response => {
-         artist_id     => 2,
-         name          => 'Hawkwind',
-         active        => \1,
-         upvotes       => 90,
+         cdid          => 2,
+         artistid      => 1,
+         title         => 'Blue Albumn',
+         year          => '2023-02-16T00:00:00',
          import_log_id => NUL,
       },
    }];
@@ -227,26 +227,26 @@ has_api_method 'update' =>
 has_api_method 'delete' =>
    access       => { write => TRUE, read => FALSE },
    method       => 'DELETE',
-   route        => '/artist/{artistid:[0-9]+}',
+   route        => '/cd/{cdid:[0-9]+}',
    action       => 'delete',
    success_code => HTTP_NO_CONTENT,
-   description  => 'Delete the specified artist.',
+   description  => 'Delete the specified CD.',
    in_args      => [{
-      name        => 'artistid',
+      name        => 'cdid',
       type        => 'int',
-      description => 'ID of the artist you wish to delete.',
+      description => 'ID of the CD you wish to delete.',
       location    => 'path',
    }],
    examples     => [{
-      name => 'Delete an Artist',
-      url  => '/artist/2',
+      name => 'Delete a CD',
+      url  => '/cd/2',
    }];
 
 sub check_create_permission {
    my ($self, $context) = @_;
 
    throw 'No create permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/create');
+      unless $self->_is_authorised($context, 'cd/create');
 
    return;
 }
@@ -255,7 +255,7 @@ sub check_delete_permission {
    my ($self, $context) = @_;
 
    throw 'No delete permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/delete');
+      unless $self->_is_authorised($context, 'cd/delete');
 
    return;
 }
@@ -264,7 +264,7 @@ sub check_search_permission {
    my ($self, $context) = @_;
 
    throw 'No search permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/list');
+      unless $self->_is_authorised($context, 'cd/list');
 
    return;
 }
@@ -273,7 +273,7 @@ sub check_update_permission {
    my ($self, $context) = @_;
 
    throw 'No update permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'artist/edit');
+      unless $self->_is_authorised($context, 'cd/edit');
 
    return;
 }

@@ -1,7 +1,7 @@
 package MCat::Controller::REST;
 
-use Web::Components::Util qw( build_routes );
 use Unexpected::Types     qw( HashRef );
+use Web::Components::Util qw( build_routes );
 use Type::Utils           qw( class_type );
 use MCat::API;
 use Web::Simple;
@@ -28,11 +28,11 @@ has 'api' =>
 has 'rest_config' => is => 'lazy', isa => HashRef, default => sub { {} };
 
 sub dispatch_request { build_routes
-   'POST + /api/access_token + ?*'  => 'rest/access_token',
    'GET  + /api/documentation | /api/documentation/* + ?*'
-                                    => 'rest/root/base/documentation',
-   'POST + /api/authorise + ?*'     => 'rest/authorise',
-   'POST + /api/refresh + ?*'       => 'rest/refresh',
+                                   => 'rest/root/base/documentation',
+   'POST + /api/authorise + ?*'    => 'rest/authorise',
+   'POST + /api/access_token + ?*' => 'rest/access_token',
+   'POST + /api/refresh + ?*'      => 'rest/refresh',
    shift->api->routes,
 }
 

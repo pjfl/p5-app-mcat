@@ -17,33 +17,6 @@ sub base {
    return;
 }
 
-sub access_token : Auth('none') {
-   my ($self, $context) = @_;
-
-   my $api = $context->controllers->{rest}->api;
-
-   $self->_stash_result($context, $api->access_token($context));
-   return;
-}
-
-sub authorise : Auth('none') {
-   my ($self, $context) = @_;
-
-   my $api = $context->controllers->{rest}->api;
-
-   $self->_stash_result($context, $api->authorise($context));
-   return;
-}
-
-sub dispatch : Auth('none') {
-   my ($self, $context, @args) = @_;
-
-   my $api = $context->controllers->{rest}->api;
-
-   $self->_stash_result($context, $api->dispatch($context, @args));
-   return;
-}
-
 sub documentation : Nav('API Docs') {
    my ($self, $context, $entity_name) = @_;
 
@@ -56,12 +29,39 @@ sub documentation : Nav('API Docs') {
    return;
 }
 
+sub authorise : Auth('none') {
+   my ($self, $context) = @_;
+
+   my $api = $context->controllers->{rest}->api;
+
+   $self->_stash_result($context, $api->authorise($context));
+   return;
+}
+
+sub access_token : Auth('none') {
+   my ($self, $context) = @_;
+
+   my $api = $context->controllers->{rest}->api;
+
+   $self->_stash_result($context, $api->access_token($context));
+   return;
+}
+
 sub refresh : Auth('none') {
    my ($self, $context) = @_;
 
    my $api = $context->controllers->{rest}->api;
 
    $self->_stash_result($context, $api->refresh($context));
+}
+
+sub dispatch : Auth('none') {
+   my ($self, $context, @args) = @_;
+
+   my $api = $context->controllers->{rest}->api;
+
+   $self->_stash_result($context, $api->dispatch($context, @args));
+   return;
 }
 
 # Private methods

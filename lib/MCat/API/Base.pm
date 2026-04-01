@@ -409,6 +409,8 @@ sub _success_code {
 
    my $method = first { $_->name eq $name } @{$self->method_list};
 
+   throw 'Method [_1] unknown. No success code', [$name] unless $method;
+
    return $method->success_code;
 }
 
@@ -418,11 +420,17 @@ sub _validate_constraints {
    my @constrained = grep { $_->has_constraints && $_->methods->{$method} }
                          @{ $self->column_list };
 
+
    for my $column (@constrained) {
       my $constraints = $column->constraints;
       my $name        = $column->name;
       my $value       = $options->{$name};
-      my $dv_obj      = Data::Validation->new($constraints);
+      my $args        = {
+         constraints => { $name => $constraints->{options} // {} },
+         fields      => { $name => $constraints->{actions} // {} },
+         filters     => { $name => $constraints->{filters} // {} },
+      };
+      my $dv_obj      = Data::Validation->new($args);
 
       $value = $dv_obj->check_field($name, $value);
       $options->{$name} = $value;
