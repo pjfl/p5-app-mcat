@@ -81,7 +81,7 @@ END %]
 END %]
 
 [% BLOCK render_additional;
-   FOR additional IN method.additional_docs;
+   FOR additional IN method.additionally;
       IF additional.title;
          title = additional.title | lower | replace('\s', '_') | html;
          id = entity.result_class _ '-' _ method.name _ '-' _ title;
@@ -133,6 +133,7 @@ Content-Type: application/json</code></pre>
       <td>[% object.name | html %]</td>
       <td>[% object.type | html %]</td>
       <td>[% object.description | html %]</td>
+      <td>[% object.constraints_display %]</td>
    </tr>
 [% END %]
 
@@ -141,6 +142,7 @@ Content-Type: application/json</code></pre>
       <th class="name">Name</th>
       <th class="type">Type</th>
       <th class="description">Description</th>
+      <th class="constraints">Constraints</th>
    </tr>
 [% END %]
 

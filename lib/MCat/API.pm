@@ -1,7 +1,7 @@
 package MCat::API;
 
 use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_FORBIDDEN
+use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_CONFLICT HTTP_FORBIDDEN
                                HTTP_INTERNAL_SERVER_ERROR HTTP_OK
                                HTTP_UNAUTHORIZED HTTP_UNPROCESSABLE_ENTITY );
 use Unexpected::Types      qw( ArrayRef HashRef Int Str );
@@ -36,12 +36,18 @@ has 'entities' =>
    isa     => HashRef[class_type('MCat::API::Base')],
    default => sub {
       my $self = shift;
-      my @args = (application => $self, schema => $self->schema);
+      my $args = {
+         application   => $self,
+         max_page_size => $self->max_page_size,
+         schema        => $self->schema,
+      };
 
-      return load_components 'API', @args;
+      return load_components 'API', $args;
    };
 
 has 'log' => is => 'ro', required => TRUE;
+
+has 'max_page_size' => is => 'ro', isa => Int, default => 250;
 
 has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
 
@@ -113,7 +119,6 @@ sub authorise {
    return $result;
 }
 
-# TODO: Trap duplicate key exception
 sub dispatch {
    my ($self, $context, @args) = @_;
 
@@ -143,11 +148,14 @@ sub dispatch {
       my $code    = HTTP_INTERNAL_SERVER_ERROR;
 
       if (blessed $error && $error->can('rv')) {
-         $code    = $error->rv if $error->rv > 99;
+         $code    = $error->rv > 99 ? $error->rv : HTTP_UNPROCESSABLE_ENTITY;
          $message = $error->original;
       }
       else {
-         
+         if ($message =~ m{ duplicate \s key \s value }mx) {
+            $message = 'Duplicate key';
+            $code    = HTTP_CONFLICT;
+         }
       }
 
       $result = [$code, { message => $message }];
@@ -210,8 +218,7 @@ sub _decode_access_token {
    my ($self, $token) = @_;
 
    my ($payload, $verify) = split m{ \. }mx, $token;
-   my $secret = $self->secret;
-   my $calculated = _jwt_hash("${payload}${secret}");
+   my $calculated = $self->_jwt_hash($payload);
 
    return {} unless $verify eq $calculated;
 
@@ -224,8 +231,7 @@ sub _encode_access_token {
    $claim->{time} = time;
 
    my $payload = encode_base64url($self->json_parser->encode($claim));
-   my $secret  = $self->secret;
-   my $verify  = _jwt_hash("${payload}${secret}");
+   my $verify  = $self->_jwt_hash($payload);
 
    return "${payload}.${verify}";
 }
@@ -279,6 +285,14 @@ sub _is_authorised {
    return [HTTP_OK, $claim];
 }
 
+sub _jwt_hash {
+   my ($self, $payload) = @_;
+
+   my $secret = $self->secret;
+
+   return substr digest("${payload}${secret}")->hexdigest, 0, 32;
+}
+
 sub _update_session {
    my ($self, $context, $claim) = @_;
 
@@ -311,11 +325,6 @@ sub _versioned_method {
    }
 
    return $action;
-}
-
-# Private functions
-sub _jwt_hash {
-   return substr digest(shift)->hexdigest, 0, 32;
 }
 
 use namespace::autoclean;

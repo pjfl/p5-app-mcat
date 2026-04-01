@@ -28,7 +28,21 @@ has_api_column 'name' =>
 has_api_column 'name' =>
    type        => 'str',
    description => 'The name of the artist. Maximum 255 characters.',
-   methods     => { create => TRUE, update => TRUE };
+   methods     => { create => TRUE, update => TRUE },
+   constraints => {
+      constraints      => {
+         name          => {
+            max_length => 255,
+            min_length => 3,
+            pattern    => '\A [0-9A-Za-z_ ]+ \z',
+         },
+      },
+      fields           => {
+         name          => {
+            validate   => 'isMandatory isMatchingRegex isValidLength',
+         },
+      },
+   };
 
 has_api_column 'active' =>
    type        => 'bool',

@@ -1,7 +1,7 @@
 package MCat::API::Base;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status          qw( HTTP_NOT_FOUND );
+use HTTP::Status          qw( HTTP_NOT_FOUND HTTP_UNPROCESSABLE_ENTITY );
 use Unexpected::Types     qw( ArrayRef Int Str );
 use HTML::Forms::Util     qw( json_bool );
 use List::Util            qw( first );
@@ -9,6 +9,7 @@ use Ref::Util             qw( is_arrayref is_hashref is_scalarref );
 use Scalar::Util          qw( blessed );
 use Type::Utils           qw( class_type );
 use Unexpected::Functions qw( throw );
+use Data::Validation;
 use MCat::API::Column;
 use Moo;
 
@@ -54,7 +55,7 @@ has 'schema' =>
    isa      => class_type('DBIx::Class::Schema'),
    required => TRUE;
 
-has 'result_class' => is => 'ro', isa => Str;
+has 'result_class' => is => 'ro', isa => Str, required => TRUE;
 
 has 'resultset' =>
    is      => 'lazy',
@@ -65,7 +66,6 @@ has 'resultset' =>
       return $self->schema->resultset($self->result_class);
    };
 
-# TODO: Validation
 sub arguments_pageing {
    return {
       name        => 'paging',
@@ -197,12 +197,13 @@ sub _build_options {
 
    my $page = $params->{page} // 1;
    my $size = $params->{page_size} // $max_size;
+   my $rv   = HTTP_UNPROCESSABLE_ENTITY;
    my $order;
 
-   throw 'Argument [_1] invalid', ['page']
+   throw 'Argument [_1] invalid', args => ['page'], rv => $rv
       unless $page =~ m{ \A [0-9]+ \z }mx && $page > 0;
 
-   throw 'Argument [_1] invalid', ['page_size']
+   throw 'Argument [_1] invalid', args => ['page_size'], rv => $rv
       unless $size =~ m{ \A [0-9]+ \z }mx && $size >= 1 && $size <= $max_size;
 
    if ($params->{sort_by}) {
@@ -210,7 +211,7 @@ sub _build_options {
 
       $dirn = 'asc' unless $dirn;
 
-      throw 'Argument [_1] invalid', ['sort_by']
+      throw 'Argument [_1] invalid', args => ['sort_by'], rv => $rv
          unless $column && $dirn =~ m{ \A (asc)|(desc) \z }imx;
 
       $order = { "-${dirn}" => "me.${column}" };
@@ -245,7 +246,11 @@ sub _build_where {
 
             push @clauses, $self->_combine_clauses('OR', \@sub_clauses);
          }
-         else { throw 'Argument [_1] invalid', [$col] }
+         else {
+            my $rv = HTTP_UNPROCESSABLE_ENTITY;
+
+            throw 'Argument [_1] invalid', args => [$col], rv => $rv;
+         }
       }
       else { push @clauses, $self->_build_clause($name, $col, $value) }
    }
@@ -354,7 +359,7 @@ sub _serialise {
             if ($col->has_getter) { $value = $col->getter->($object) }
             else { $value = $object->$field_name }
 
-            $value = json_bool $value if $col->type && $col->type eq 'Bool';
+            $value = json_bool $value if $col->type && $col->type eq 'bool';
 
             $obj_columns->{$field_name} = $value;
          }
@@ -372,7 +377,10 @@ sub _serialise {
          return $object;
       }
 
-      throw 'Object [_1] cannot serialise', [blessed $object];
+      my $rv   = HTTP_UNPROCESSABLE_ENTITY;
+      my $args = [blessed $object];
+
+      throw 'Object [_1] cannot serialise', args => $args, rv => $rv;
    }
    elsif (is_arrayref $object) {
       return [ map { $self->_serialise($method, $_) } @{$object} ];
@@ -414,11 +422,10 @@ sub _validate_constraints {
       my $constraints = $column->constraints;
       my $name        = $column->name;
       my $value       = $options->{$name};
+      my $dv_obj      = Data::Validation->new($constraints);
 
-      for my $type (keys %{$constraints}) {
-         my $criteria = $constraints->{$type};
-         # TODO: Hook up Data::Validation
-      }
+      $value = $dv_obj->check_field($name, $value);
+      $options->{$name} = $value;
    }
 
    return;
@@ -428,9 +435,15 @@ sub _validate_constraints {
 sub _quote_column_name {
    my @parts = @_;
 
+   my $rv = HTTP_UNPROCESSABLE_ENTITY;
+
    for my $part (@parts) {
-      throw 'Invalid column name: Column must not be empty' unless $part;
-      throw 'Invalid column name: found double quote' if $part =~ m{ " }mx;
+      throw 'Invalid column name. Column must not be empty', rv => $rv
+         unless $part;
+
+      throw 'Invalid column name. Found double quote', rv => $rv
+         if $part =~ m{ " }mx;
+
       $part = sprintf '"%s"', $part;
    }
 

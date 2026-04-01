@@ -15,6 +15,8 @@ has 'access' =>
 
 has 'action' => is => 'ro', isa => Str, required => TRUE;
 
+has 'additionally' => is => 'ro', isa => HashRef, default => sub { {} };
+
 has 'description' =>
    is        => 'lazy',
    isa       => Str,

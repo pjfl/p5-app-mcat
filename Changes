@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - REST API validation constraints
           - REST documentation examples
           - Adds REST documentation
           - Adds REST refresh. Permission checks

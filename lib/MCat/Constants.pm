@@ -5,6 +5,7 @@ use parent 'Exporter::Tiny';
 
 use MCat::Exception;
 use Class::Usul::Cmd::Constants       qw( );
+use Data::Validation::Constants       qw( );
 use HTML::StateTable::Constants       qw( );
 use HTML::Forms::Constants            qw( );
 use Web::ComposableRequest::Constants qw( );
@@ -12,6 +13,7 @@ use Web::ComposableRequest::Constants qw( );
 my $exception_class = 'MCat::Exception';
 
 Class::Usul::Cmd::Constants->Exception_Class($exception_class);
+Data::Validation::Constants->Exception_Class($exception_class);
 HTML::StateTable::Constants->Exception_Class($exception_class);
 HTML::Forms::Constants->Exception_Class($exception_class);
 Web::ComposableRequest::Constants->Exception_Class($exception_class);
