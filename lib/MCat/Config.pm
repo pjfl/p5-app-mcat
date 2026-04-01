@@ -1052,7 +1052,10 @@ has 'web_components' =>
 
       return {
          'Controller::REST' => {
-            secret => $self->db_password,
+            rest_config => {
+               secret   => $self->db_password,
+               versions => [1],
+            },
          },
          'Model::Bug' => {
             file_extensions => $self->extensions,

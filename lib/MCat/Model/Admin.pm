@@ -14,10 +14,11 @@ sub menu : Auth('admin') Nav('Admin|img/admin.svg') {
    my $nav = $context->stash('nav');
 
    $nav->list('configuration')->item('doc/config_edit');
+   $nav->list('documentation')->item('doc/frontend')->item('rest/documentation');
 
    $nav->list('admin');
    $nav->menu('configuration')->item('doc/configuration');
-   $nav->menu('doc')->item('doc/list');
+   $nav->menu('documentation')->item('doc/list');
    $nav->menu('job')->item('job/status');
    $nav->menu('logfile')->item('logfile/list');
    return;

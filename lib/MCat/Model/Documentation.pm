@@ -19,7 +19,7 @@ has '_doc_viewer' =>
 sub base {
    my ($self, $context) = @_;
 
-   $context->stash('nav')->list('doc')->item('doc/frontend')->finalise;
+   $context->stash('nav')->finalise;
 
    return;
 }

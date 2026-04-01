@@ -4,7 +4,7 @@ use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_FORBIDDEN
                                HTTP_INTERNAL_SERVER_ERROR HTTP_OK
                                HTTP_UNAUTHORIZED HTTP_UNPROCESSABLE_ENTITY );
-use Unexpected::Types      qw( HashRef Int Str );
+use Unexpected::Types      qw( ArrayRef HashRef Int Str );
 use Class::Usul::Cmd::Util qw( includes );
 use List::Util             qw( first );
 use MCat::Util             qw( create_token digest );
@@ -24,6 +24,13 @@ has 'access_token_lifetime' => is => 'ro', isa => Int, default => 7_200;
 
 has 'config' => is => 'ro', required => TRUE;
 
+has 'dispatch_prefix' => is => 'ro', isa => Str, default => 'rest/dispatch';
+
+has 'entity_list' =>
+   is      => 'lazy',
+   isa     => ArrayRef,
+   default => sub { [ sort keys %{shift->entities} ] };
+
 has 'entities' =>
    is      => 'lazy',
    isa     => HashRef[class_type('MCat::API::Base')],
@@ -38,10 +45,24 @@ has 'log' => is => 'ro', required => TRUE;
 
 has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
 
-# TODO: API versioning
-has 'route_prefix' => is => 'ro', isa => Str, default => 'api/v1';
+has 'rest_config' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'secret' => is => 'lazy', isa => Str, default => NUL;
+has 'route_match_prefix' => is => 'ro', isa => Str, default => '/api/*';
+
+has 'route_prefix' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { 'api/v' . shift->versions->[-1] };
+
+has 'secret' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { shift->rest_config->{secret} // NUL };
+
+has 'versions' =>
+   is      => 'lazy',
+   isa     => ArrayRef,
+   default => sub { shift->rest_config->{versions} // [1] };
 
 sub access_token {
    my ($self, $context) = @_;
@@ -92,10 +113,12 @@ sub authorise {
    return $result;
 }
 
+# TODO: Trap duplicate key exception
 sub dispatch {
    my ($self, $context, @args) = @_;
 
-   my $result = $self->_is_authorised($context);
+   my $version = shift @args;
+   my $result  = $self->_is_authorised($context);
 
    return $result if $result->[0] > 299;
 
@@ -108,24 +131,35 @@ sub dispatch {
       my (undef, $moniker, $action) = split m{ / }mx, $chain;
       my $entity = $self->entities->{$moniker};
 
-      $result = $self->_is_allowed($claim, $entity, $action);
-      $result = $entity->$action($context, @args) unless $result;
+      $result = $self->_is_allowed($entity, $action, $claim);
+
+      my $method = $self->_versioned_method($entity, $action, $version);
+
+      $result = $entity->$method($context, @args) unless $result;
    }
    catch {
-      my $rv      = HTTP_INTERNAL_SERVER_ERROR;
-      my $message = blessed $_ && $_->can('original') ? $_->original : "${_}";
-      my $code    = blessed $_ && $_->can('rv') && $_->rv > 99 ? $_->rv : $rv;
+      my $error   = $_;
+      my $message = "${error}"; chomp $message;
+      my $code    = HTTP_INTERNAL_SERVER_ERROR;
 
-      chomp $message;
+      if (blessed $error && $error->can('rv')) {
+         $code    = $error->rv if $error->rv > 99;
+         $message = $error->original;
+      }
+      else {
+         
+      }
+
       $result = [$code, { message => $message }];
    };
 
    return $result;
 }
 
-# TODO: Add documentation index
-sub documentation {
+sub get_entity {
    my ($self, $moniker) = @_;
+
+   $moniker //= $self->entity_list->[0];
 
    return $self->entities->{$moniker};
 }
@@ -144,7 +178,8 @@ sub refresh {
 
 sub routes {
    my $self   = shift;
-   my $prefix = $self->route_prefix;
+   my $dpref  = $self->dispatch_prefix;
+   my $mpref  = $self->route_match_prefix;
    my @routes = ();
 
    for my $moniker (keys %{$self->entities}) {
@@ -152,10 +187,10 @@ sub routes {
 
       for my $method (@{$entity->method_list}) {
          my $match  = $method->route_match;
-         my $route  = $method->method . " + /${prefix}${match} + ?*";
+         my $route  = $method->method . " + ${mpref}${match} + ?*";
          my $action = $method->action;
 
-         push @routes, $route, "rest/dispatch/${moniker}/${action}";
+         push @routes, $route, "${dpref}/${moniker}/${action}";
       }
    }
 
@@ -196,7 +231,7 @@ sub _encode_access_token {
 }
 
 sub _is_allowed {
-   my ($self, $claim, $entity, $action) = @_;
+   my ($self, $entity, $action, $claim) = @_;
 
    my $method = first { $_->name eq $action } @{$entity->method_list};
 
@@ -254,6 +289,28 @@ sub _update_session {
    $session->id($claim->{id});
    $session->role($claim->{role});
    return;
+}
+
+sub _versioned_method {
+   my ($self, $entity, $action, $version) = @_;
+
+   (my $wanted = $version) =~ s{ \A v }{}mx;
+   my $current = $self->versions->[-1];
+
+   return $action if $wanted == $current;
+
+   throw "Version ${version} unknown", rv => HTTP_BAD_REQUEST
+      if $wanted > $current;
+
+   for my $candidate (@{$self->versions}) {
+      next if $candidate < $wanted;
+
+      my $method = "${action}_v{$candidate}";
+
+      return $method if $entity->can($method);
+   }
+
+   return $action;
 }
 
 # Private functions

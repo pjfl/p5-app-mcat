@@ -913,9 +913,31 @@ footer .footer-container .session-time {
   display: flex;
   column-gap: 0.5rem;
 }
+.input-field.documentation h2 {
+  counter-increment: docheader;
+  font-size: 1rem;
+}
+.input-field.documentation h2::before {
+  content: counter(docheader) '. ';
+}
 .documentation {
   counter-reset: docheader;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
+}
+.documentation:not(.input-field) h1 {
+  font-size: 2rem;
+}
+.documentation:not(.input-field) h2 {
+  font-size: 1.75rem;
+}
+.documentation:not(.input-field) h3 {
+  font-size: 1.5rem;
+}
+.documentation:not(.input-field) h4 {
+  font-size: 1.25rem;
+}
+.documentation:not(.input-field) h5 {
+  font-size: 1rem;
 }
 .documentation a {
   color: seagreen;
@@ -926,25 +948,6 @@ footer .footer-container .session-time {
 .documentation h4,
 .documentation h5 {
   margin: 0.25rem 0;
-}
-.documentation h1 {
-  font-size: 2rem;
-}
-.documentation h2 {
-  counter-increment: docheader;
-  font-size: 1.75rem;
-}
-.documentation h2::before {
-  content: counter(docheader) '. ';
-}
-.documentation h3 {
-  font-size: 1.5rem;
-}
-.documentation h4 {
-  font-size: 1.25rem;
-}
-.documentation h5 {
-  font-size: 1rem;
 }
 .documentation p,
 .documentation ul {
@@ -1244,6 +1247,21 @@ footer .footer-container .session-time {
 }
 .modal-outer-wrapper .modal .modal-loader .loading {
   margin: 1rem;
+}
+.restapi.documentation {
+  display: flex;
+}
+.restapi.documentation .entity h2 {
+  counter-increment: docheader;
+}
+.restapi.documentation .entity h2::before {
+  content: counter(docheader) '. ';
+}
+.restapi.documentation .entity-index {
+  min-width: 10rem;
+}
+.restapi.documentation .entity-index .contents-list {
+  width: 100%;
 }
 .flame-container {
   display: inline-block;

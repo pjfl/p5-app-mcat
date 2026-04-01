@@ -1,6 +1,6 @@
 package MCat::API::Artist;
 
-use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE TRUE );
+use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status          qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
 use Unexpected::Functions qw( throw );
 use Moo;
@@ -80,11 +80,16 @@ has_api_method 'search' =>
       fields      => 'get',
    },
    examples    => [{
-      request => {
-         name => 'Get all artists',
-      },
-      response => {
-      }
+      name        => 'Get All Artists',
+      description => 'Get all artists, limited to 1 per page',
+      url         => '/artist?page_size=1',
+      response    => [{
+         artistid      => 1,
+         name          => 'Deep Purple',
+         active        => \1,
+         upvotes       => 70,
+         import_log_id => NUL,
+      }],
    }];
 
 has_api_method 'create' =>
@@ -114,7 +119,21 @@ has_api_method 'create' =>
       ),
       fields      => 'get',
    },
-   examples     => [];
+   examples     => [{
+      name     => 'Create an Artist',
+      body     => {
+         name    => 'Hawkwind',
+         active  => \1,
+         upvotes => 50,
+      },
+      response => {
+         artist_id     => 2,
+         name          => 'Hawkwind',
+         active        => \1,
+         upvotes       => 50,
+         import_log_id => NUL,
+      },
+   }];
 
 has_api_method 'get' =>
    route       => '/artist/{artistid:[0-9]+}',
@@ -139,7 +158,17 @@ has_api_method 'get' =>
       ),
       fields      => 'get',
    },
-   examples    => [];
+   examples    => [{
+      name        => 'Get Artist ID 1',
+      url         => '/artist/1',
+      response    => {
+         artistid      => 1,
+         name          => 'Deep Purple',
+         active        => \1,
+         upvotes       => 70,
+         import_log_id => NUL,
+      },
+   }];
 
 has_api_method 'update' =>
    access      => { write => TRUE, read => FALSE },
@@ -172,7 +201,18 @@ has_api_method 'update' =>
       ),
       fields      => 'get',
    },
-   examples    => [];
+   examples    => [{
+      name     => 'Update an Artist',
+      url      => '/artist/2',
+      body     => { upvotes => 90 },
+      response => {
+         artist_id     => 2,
+         name          => 'Hawkwind',
+         active        => \1,
+         upvotes       => 90,
+         import_log_id => NUL,
+      },
+   }];
 
 has_api_method 'delete' =>
    access       => { write => TRUE, read => FALSE },
@@ -187,7 +227,10 @@ has_api_method 'delete' =>
       description => 'ID of the artist you wish to delete.',
       location    => 'path',
    }],
-   examples     => [];
+   examples     => [{
+      name => 'Delete an Artist',
+      url  => '/artist/2',
+   }];
 
 sub check_create_permission {
    my ($self, $context) = @_;

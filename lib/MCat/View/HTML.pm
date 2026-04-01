@@ -11,6 +11,7 @@ use Moo;
 
 with 'Web::Components::Role';
 with 'Web::Components::Role::TT';
+with 'MCat::Role::JSONParser';
 
 has '+moniker' => default => 'html';
 
@@ -49,20 +50,23 @@ sub _add_tt_functions {
 
    weaken $context;
 
-   my $tz = $context->time_zone;
+   my $parser = $self->json_parser;
+   my $tz     = $context->time_zone;
 
    return {
       %{$context->stash},
-      dt_from_epoch   => sub { dt_from_epoch shift, $tz },
-      dt_human        => \&dt_human,
-      dt_user         => sub { my $dt = shift; $dt->set_time_zone($tz); $dt },
-      encode_entities => \&encode_entities,
-      encode_for_html => \&encode_for_html,
-      feature         => sub { $context->feature(@_) },
-      process_attrs   => \&process_attrs,
-      status_message  => \&status_message,
-      uri_for         => sub { $context->request->uri_for(@_) },
-      uri_for_action  => sub { $context->uri_for_action(@_) },
+      dt_from_epoch      => sub { dt_from_epoch shift, $tz },
+      dt_human           => \&dt_human,
+      dt_user            => sub { my $dt = shift; $dt->set_time_zone($tz); $dt},
+      encode_entities    => \&encode_entities,
+      encode_for_html    => \&encode_for_html,
+      encode_json        => sub { $parser->encode(@_) },
+      encode_json_pretty => sub { $parser->pretty->encode(@_) },
+      feature            => sub { $context->feature(@_) },
+      process_attrs      => \&process_attrs,
+      status_message     => \&status_message,
+      uri_for            => sub { $context->request->uri_for(@_) },
+      uri_for_action     => sub { $context->uri_for_action(@_) },
    };
 }
 

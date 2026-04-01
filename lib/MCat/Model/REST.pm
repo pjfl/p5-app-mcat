@@ -9,6 +9,14 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'rest';
 
+sub base {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->finalise;
+
+   return;
+}
+
 sub access_token : Auth('none') {
    my ($self, $context) = @_;
 
@@ -36,13 +44,14 @@ sub dispatch : Auth('none') {
    return;
 }
 
-sub documentation : Auth('none') {
-   my ($self, $context) = @_;
+sub documentation : Nav('API Docs') {
+   my ($self, $context, $entity_name) = @_;
 
    my $api    = $context->controllers->{rest}->api;
    my $prefix = $context->request->uri_for($api->route_prefix);
 
-   $context->stash(entity => $api->documentation('artist'));
+   $context->stash(entity_list  => $api->entity_list);
+   $context->stash(entity       => $api->get_entity($entity_name));
    $context->stash(route_prefix => $prefix);
    return;
 }
