@@ -22,7 +22,8 @@
             <code>[% method.name | ucfirst %]</code>
          </h3>
          [% method.description | html | html_para %]
-         [% INCLUDE render_access_required %]
+         <h4>Access Required</h4>
+         <p>[% method.access %]</p>
          <div class="request">
             <h4>Request</h4>
             <h5>Method</h5><code>[% method.method %]</code>
@@ -51,14 +52,6 @@
       </table>
    </div>
 </div>
-
-[% BLOCK render_access_required;
-   '<h4>Access Required</h4>';
-   access_list = [];
-   access_list.push('Read') IF method.access.read;
-   access_list.push('Write') IF method.access.write;
-   '<p>' _ access_list.join(' + ') _ '</p>';
-END %]
 
 [% BLOCK render_in_args;
    FOR location IN ['path', 'query', 'body'];

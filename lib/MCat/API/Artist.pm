@@ -62,6 +62,7 @@ has_api_column 'import_log_id' =>
 has_api_method 'search' =>
    route       => '/artist',
    action      => 'search',
+   access      => 'artist/list',
    description => q(
       Searches all artists, returning those matching your specified
       criteria as [% transport_type('array_of_hash') | indefinite_article %].
@@ -103,10 +104,10 @@ has_api_method 'search' =>
    }];
 
 has_api_method 'create' =>
-   access       => { write => TRUE, read => FALSE },
    method       => 'POST',
    route        => '/artist',
    action       => 'create',
+   access       => 'artist/create',
    success_code => HTTP_CREATED,
    description  => q(
       Creates a new artist. The return value is
@@ -148,6 +149,7 @@ has_api_method 'create' =>
 has_api_method 'get' =>
    route       => '/artist/{artistid:[0-9]+}',
    action      => 'get',
+   access      => 'artist/view',
    description => q(
       Fetches an artist by ID, and returns
       [% transport_type('hash') | indefinite_article %] containing the details
@@ -181,10 +183,10 @@ has_api_method 'get' =>
    }];
 
 has_api_method 'update' =>
-   access      => { write => TRUE, read => FALSE },
    method      => 'PUT',
    route       => '/artist/{artistid:[0-9]+}',
    action      => 'update',
+   access      => 'artist/edit',
    description => 'Updates one or more values for a given artist.',
    in_args     => [{
       name        => 'artistid',
@@ -225,10 +227,10 @@ has_api_method 'update' =>
    }];
 
 has_api_method 'delete' =>
-   access       => { write => TRUE, read => FALSE },
    method       => 'DELETE',
    route        => '/artist/{artistid:[0-9]+}',
    action       => 'delete',
+   access       => 'artist/delete',
    success_code => HTTP_NO_CONTENT,
    description  => 'Delete the specified artist.',
    in_args      => [{
@@ -241,36 +243,6 @@ has_api_method 'delete' =>
       name => 'Delete an Artist',
       url  => '/artist/2',
    }];
-
-sub check_create_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'artist/create');
-}
-
-sub check_delete_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'artist/delete');
-}
-
-sub check_get_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'artist/view');
-}
-
-sub check_search_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'artist/list');
-}
-
-sub check_update_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'artist/edit');
-}
 
 use namespace::autoclean -except => API_META;
 

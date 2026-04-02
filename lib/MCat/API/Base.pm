@@ -82,7 +82,7 @@ sub arguments_pageing {
 sub create {
    my ($self, $context) = @_;
 
-   $self->check_create_permission($context);
+   $self->_check_permission($context, 'create');
 
    my $params  = $context->body_parameters;
    my $options = $self->_filter_params($context, 'create', $params);
@@ -101,23 +101,20 @@ sub create {
 sub delete {
    my ($self, $context, @args) = @_;
 
-   $self->check_delete_permission($context);
+   $self->_check_permission($context, 'delete');
 
    my $id     = $args[0];
    my $result = $self->resultset->find_by_key($id) or $self->_not_found($id);
 
    $result->delete;
 
-   my $code  = $self->_success_code('delete');
-   my $class = $self->result_class;
-
-   return [$code, {}];
+   return [$self->_success_code('delete'), {}];
 }
 
 sub get {
    my ($self, $context, @args) = @_;
 
-   $self->check_get_permission($context);
+   $self->_check_permission($context, 'get');
 
    my $id     = $args[0];
    my $result = $self->resultset->find_by_key($id) or $self->_not_found($id);
@@ -128,7 +125,7 @@ sub get {
 sub search {
    my ($self, $context) = @_;
 
-   $self->check_search_permission($context);
+   $self->_check_permission($context, 'search');
 
    my $params  = $context->request->query_parameters;
    my $where   = $self->_build_where($context, $params);
@@ -142,7 +139,7 @@ sub search {
 sub update {
    my ($self, $context, @args) = @_;
 
-   $self->check_update_permission($context);
+   $self->_check_permission($context, 'update');
 
    my $id      = $args[0];
    my $result  = $self->resultset->find_by_key($id) or $self->_not_found($id);
@@ -262,12 +259,14 @@ sub _build_where {
 }
 
 sub _check_permission {
-   my ($self, $context, $actionp) = @_;
+   my ($self, $context, $method_name) = @_;
 
-   my ($moniker, $method) = split m{ / }mx, $actionp;
+   my $api_method = first { $_->name eq $method_name } @{$self->method_list};
 
-   throw 'No [_1] permission', args => [$method], rv => HTTP_FORBIDDEN
-      unless $context->is_authorised($actionp);
+   throw 'Method [_1] unknown', [$method_name] unless $api_method;
+
+   throw 'No [_1] permission', args => [$method_name], rv => HTTP_FORBIDDEN
+      unless $context->is_authorised($api_method->access);
 
    return;
 }
@@ -292,12 +291,12 @@ sub _get_meta {
 }
 
 sub _filter_params {
-   my ($self, $context, $api_role, $params) = @_;
+   my ($self, $context, $method_name, $params) = @_;
 
    my %record;
 
    for my $column_name (keys %{$params}) {
-      my $col = $self->_find_column($column_name, $api_role) or next;
+      my $col = $self->_find_column($column_name, $method_name) or next;
 
       # Special case 1: If the column is declared as int, and
       # the Perl value is false and is NOT explicitly zero, then
@@ -326,9 +325,9 @@ sub _filter_params {
 }
 
 sub _find_column {
-   my ($self, $name, $role) = @_;
+   my ($self, $column_name, $method_name) = @_;
 
-   return first { $_->name eq $name && $_->methods->{$role} }
+   return first { $_->name eq $column_name && $_->methods->{$method_name} }
                @{$self->column_list};
 }
 
@@ -341,20 +340,20 @@ sub _not_found {
 }
 
 sub _serialise {
-   my ($self, $method, $object) = @_;
+   my ($self, $method_name, $object) = @_;
 
    if (blessed $object) {
       if ($object->can('serialise_api')) {
-         return $self->_serialise($method, $object->serialise_api);
+         return $self->_serialise($method_name, $object->serialise_api);
       }
       elsif ($object->isa('DBIx::Class::ResultSet')) {
-         return $self->_serialise($method, [$object->all]);
+         return $self->_serialise($method_name, [$object->all]);
       }
       elsif ($object->isa('DBIx::Class')) {
          my $obj_columns = {};
 
          for my $col (@{$self->column_list}) {
-            next unless $col->methods->{$method};
+            next unless $col->methods->{$method_name};
 
             my $field_name = $col->name;
             my $value;
@@ -367,7 +366,7 @@ sub _serialise {
             $obj_columns->{$field_name} = $value;
          }
 
-         return $self->_serialise($method, $obj_columns);
+         return $self->_serialise($method_name, $obj_columns);
       }
       elsif ($object->isa('DateTime')) {
          $object->set_time_zone('UTC');
@@ -386,13 +385,13 @@ sub _serialise {
       throw 'Object [_1] cannot serialise', args => $args, rv => $rv;
    }
    elsif (is_arrayref $object) {
-      return [ map { $self->_serialise($method, $_) } @{$object} ];
+      return [ map { $self->_serialise($method_name, $_) } @{$object} ];
    }
    elsif (is_hashref $object) {
       my %hash;
 
       for my $key (keys %{$object}){
-         $hash{$key} = $self->_serialise($method, $object->{$key});
+         $hash{$key} = $self->_serialise($method_name, $object->{$key});
       }
 
       return \%hash;
@@ -410,36 +409,35 @@ sub _serialise {
 sub _success_code {
    my ($self, $name) = @_;
 
-   my $method = first { $_->name eq $name } @{$self->method_list};
+   my $api_method = first { $_->name eq $name } @{$self->method_list};
 
-   throw 'Method [_1] unknown. No success code', [$name] unless $method;
+   throw 'Method [_1] unknown. No success code', [$name] unless $api_method;
 
-   return $method->success_code;
+   return $api_method->success_code;
 }
 
 sub _validate_constraints {
-   my ($self, $method, $options) = @_;
+   my ($self, $method_name, $options) = @_;
 
-   my @constrained = grep { $_->has_constraints && $_->methods->{$method} }
+   my @constrained = grep { $_->has_constraints && $_->methods->{$method_name} }
                          @{ $self->column_list };
-
 
    for my $column (@constrained) {
       my $constraints = $column->constraints;
-      my $name        = $column->name;
-      my $value       = $options->{$name};
+      my $col_name    = $column->name;
+      my $value       = $options->{$col_name};
 
-      next unless defined $value || $method eq 'create';
+      next unless defined $value || $method_name eq 'create';
 
       my $args   = {
-         constraints => { $name => $constraints->{options} // {} },
-         fields      => { $name => $constraints->{actions} // {} },
-         filters     => { $name => $constraints->{filters} // {} },
+         constraints => { $col_name => $constraints->{options} // {} },
+         fields      => { $col_name => $constraints->{actions} // {} },
+         filters     => { $col_name => $constraints->{filters} // {} },
       };
       my $dv_obj = Data::Validation->new($args);
 
-      $value = $dv_obj->check_field($name, $value);
-      $options->{$name} = $value;
+      $value = $dv_obj->check_field($col_name, $value);
+      $options->{$col_name} = $value;
    }
 
    return;

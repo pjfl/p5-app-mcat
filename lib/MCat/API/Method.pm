@@ -8,10 +8,7 @@ use MCat::API::Argument;
 use MCat::API::Description;
 use Moo;
 
-has 'access' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub { { read => TRUE, write => FALSE } };
+has 'access' => is => 'ro', isa => Str, required => TRUE;
 
 has 'action' => is => 'ro', isa => Str, required => TRUE;
 

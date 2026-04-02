@@ -62,6 +62,7 @@ has_api_column 'import_log_id' =>
 has_api_method 'search' =>
    route       => '/cd',
    action      => 'search',
+   access      => 'cd/list',
    description => q(
       Searches all CDs, returning those matching your specified
       criteria as [% transport_type('array_of_hash') | indefinite_article %].
@@ -103,10 +104,10 @@ has_api_method 'search' =>
    }];
 
 has_api_method 'create' =>
-   access       => { write => TRUE, read => FALSE },
    method       => 'POST',
    route        => '/cd',
    action       => 'create',
+   access       => 'cd/create',
    success_code => HTTP_CREATED,
    description  => q(
       Creates a new CD. The return value is
@@ -148,6 +149,7 @@ has_api_method 'create' =>
 has_api_method 'get' =>
    route       => '/cd/{cdid:[0-9]+}',
    action      => 'get',
+   access      => 'cd/view',
    description => q(
       Fetches a CD by ID, and returns
       [% transport_type('hash') | indefinite_article %] containing the details
@@ -181,10 +183,10 @@ has_api_method 'get' =>
    }];
 
 has_api_method 'update' =>
-   access      => { write => TRUE, read => FALSE },
    method      => 'PUT',
    route       => '/cd/{cdid:[0-9]+}',
    action      => 'update',
+   access      => 'cd/edit',
    description => 'Updates one or more values for a given CD.',
    in_args     => [{
       name        => 'cdid',
@@ -225,10 +227,10 @@ has_api_method 'update' =>
    }];
 
 has_api_method 'delete' =>
-   access       => { write => TRUE, read => FALSE },
    method       => 'DELETE',
    route        => '/cd/{cdid:[0-9]+}',
    action       => 'delete',
+   access       => 'cd/delete',
    success_code => HTTP_NO_CONTENT,
    description  => 'Delete the specified CD.',
    in_args      => [{
@@ -241,36 +243,6 @@ has_api_method 'delete' =>
       name => 'Delete a CD',
       url  => '/cd/2',
    }];
-
-sub check_create_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'cd/create');
-}
-
-sub check_delete_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'cd/delete');
-}
-
-sub check_get_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'cd/view');
-}
-
-sub check_search_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'cd/list');
-}
-
-sub check_update_permission {
-   my ($self, $context) = @_;
-
-   return $self->_check_permission($context, 'cd/edit');
-}
 
 use namespace::autoclean -except => API_META;
 
