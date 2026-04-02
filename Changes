@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moves API authorisation testing to Context
           - Adds remaining REST entities
           - REST API validation constraints
           - REST documentation examples

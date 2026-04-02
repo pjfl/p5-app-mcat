@@ -1,7 +1,7 @@
 package MCat::API::Track;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status          qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
+use HTTP::Status          qw( HTTP_CREATED HTTP_NO_CONTENT );
 use Unexpected::Functions qw( throw );
 use Moo;
 use MCat::API::Moo;
@@ -233,37 +233,31 @@ has_api_method 'delete' =>
 sub check_create_permission {
    my ($self, $context) = @_;
 
-   throw 'No create permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'track/create');
-
-   return;
+   return $self->_check_permission($context, 'track/create');
 }
 
 sub check_delete_permission {
    my ($self, $context) = @_;
 
-   throw 'No delete permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'track/delete');
+   return $self->_check_permission($context, 'track/delete');
+}
 
-   return;
+sub check_get_permission {
+   my ($self, $context) = @_;
+
+   return $self->_check_permission($context, 'track/view');
 }
 
 sub check_search_permission {
    my ($self, $context) = @_;
 
-   throw 'No search permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'track/list');
-
-   return;
+   return $self->_check_permission($context, 'track/list');
 }
 
 sub check_update_permission {
    my ($self, $context) = @_;
 
-   throw 'No update permission', rv => HTTP_FORBIDDEN
-      unless $self->_is_authorised($context, 'track/edit');
-
-   return;
+   return $self->_check_permission($context, 'track/edit');
 }
 
 use namespace::autoclean -except => API_META;

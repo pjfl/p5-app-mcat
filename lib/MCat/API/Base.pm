@@ -1,7 +1,8 @@
 package MCat::API::Base;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status          qw( HTTP_NOT_FOUND HTTP_UNPROCESSABLE_ENTITY );
+use HTTP::Status          qw( HTTP_FORBIDDEN HTTP_NOT_FOUND
+                              HTTP_UNPROCESSABLE_ENTITY );
 use Unexpected::Types     qw( ArrayRef Int Str );
 use HTML::Forms::Util     qw( json_bool );
 use List::Util            qw( first );
@@ -115,6 +116,8 @@ sub delete {
 
 sub get {
    my ($self, $context, @args) = @_;
+
+   $self->check_get_permission($context);
 
    my $id     = $args[0];
    my $result = $self->resultset->find_by_key($id) or $self->_not_found($id);
@@ -258,6 +261,17 @@ sub _build_where {
    return scalar @clauses ? $self->_combine_clauses('AND', \@clauses) : {};
 }
 
+sub _check_permission {
+   my ($self, $context, $actionp) = @_;
+
+   my ($moniker, $method) = split m{ / }mx, $actionp;
+
+   throw 'No [_1] permission', args => [$method], rv => HTTP_FORBIDDEN
+      unless $context->is_authorised($actionp);
+
+   return;
+}
+
 sub _combine_clauses {
    my ($self, $operator, $clauses) = @_;
 
@@ -316,17 +330,6 @@ sub _find_column {
 
    return first { $_->name eq $name && $_->methods->{$role} }
                @{$self->column_list};
-}
-
-sub _is_authorised {
-   my ($self, $context, $actionp) = @_;
-
-   my ($moniker)  = split m{ / }mx, $actionp;
-   my $model      = $context->models->{$moniker};
-   my $authorised = $model->is_authorised($context, $actionp);
-
-   $context->clear_redirect;
-   return $authorised;
 }
 
 sub _not_found {
@@ -425,12 +428,15 @@ sub _validate_constraints {
       my $constraints = $column->constraints;
       my $name        = $column->name;
       my $value       = $options->{$name};
-      my $args        = {
+
+      next unless defined $value || $method eq 'create';
+
+      my $args   = {
          constraints => { $name => $constraints->{options} // {} },
          fields      => { $name => $constraints->{actions} // {} },
          filters     => { $name => $constraints->{filters} // {} },
       };
-      my $dv_obj      = Data::Validation->new($args);
+      my $dv_obj = Data::Validation->new($args);
 
       $value = $dv_obj->check_field($name, $value);
       $options->{$name} = $value;

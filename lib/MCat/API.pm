@@ -1,5 +1,6 @@
 package MCat::API;
 
+# TODO: Move to own distro Web::Components::API
 use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_CONFLICT HTTP_FORBIDDEN
                                HTTP_INTERNAL_SERVER_ERROR HTTP_OK
@@ -135,12 +136,9 @@ sub dispatch {
       my $chain = $context->stash('method_chain');
       my (undef, $moniker, $action) = split m{ / }mx, $chain;
       my $entity = $self->entities->{$moniker};
-
-      $result = $self->_is_allowed($entity, $action, $claim);
-
       my $method = $self->_versioned_method($entity, $action, $version);
 
-      $result = $entity->$method($context, @args) unless $result;
+      $result = $entity->$method($context, @args);
    }
    catch {
       my $error   = $_;
@@ -217,8 +215,8 @@ sub _create_access_token {
 sub _decode_access_token {
    my ($self, $token) = @_;
 
-   my ($payload, $verify) = split m{ \. }mx, $token;
-   my $calculated = $self->_jwt_hash($payload);
+   my ($salt, $payload, $verify) = split m{ \. }mx, $token;
+   my $calculated = $self->_jwt_hash("${salt}${payload}");
 
    return {} unless $verify eq $calculated;
 
@@ -230,34 +228,11 @@ sub _encode_access_token {
 
    $claim->{time} = time;
 
+   my $salt    = encode_base64url(pack('H*', create_token));
    my $payload = encode_base64url($self->json_parser->encode($claim));
-   my $verify  = $self->_jwt_hash($payload);
+   my $verify  = $self->_jwt_hash("${salt}${payload}");
 
-   return "${payload}.${verify}";
-}
-
-sub _is_allowed {
-   my ($self, $entity, $action, $claim) = @_;
-
-   my $method = first { $_->name eq $action } @{$entity->method_list};
-
-   return [HTTP_UNPROCESSABLE_ENTITY, { message => "Method ${action} unknown" }]
-      unless $method;
-
-   if ($method->access->{read}) {
-      my $can_read = includes $claim->{role}, [qw(view edit manager admin)];
-
-      return [HTTP_FORBIDDEN, { message => 'No read access' }] unless $can_read;
-   }
-
-   if ($method->access->{write}) {
-      my $can_write = includes $claim->{role}, [qw(edit manager admin)];
-
-      return [HTTP_FORBIDDEN, { message => 'No write access' }]
-         unless $can_write;
-   }
-
-   return;
+   return "${salt}.${payload}.${verify}";
 }
 
 sub _is_authorised {

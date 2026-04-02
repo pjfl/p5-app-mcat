@@ -88,6 +88,17 @@ sub get_attributes {
    return attributes::get($coderef) // {};
 }
 
+sub is_authorised {
+   my ($self, $actionp) = @_;
+
+   my ($moniker)  = split m{ / }mx, $actionp;
+   my $model      = $self->models->{$moniker};
+   my $authorised = $model->is_authorised($self, $actionp);
+
+   $self->clear_redirect;
+   return $authorised;
+}
+
 sub method_chain {
    my ($self, $action) = @_;
 
