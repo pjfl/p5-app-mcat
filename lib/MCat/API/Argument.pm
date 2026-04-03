@@ -1,9 +1,13 @@
 package MCat::API::Argument;
 
 use MCat::Constants qw( FALSE TRUE );
-use Unexpected::Types qw( HashRef Str );
+use Unexpected::Types qw( Enum HashRef NonEmptySimpleStr Str );
 use MCat::API::Description;
 use Moo;
+
+my $locations = Enum[qw(body path query)];
+my $types     = Enum[qw(array array_of_hash array_of_int bool datetime dbl
+                        hash hash/array_of_hash int int/str str )];
 
 has 'description' =>
    is        => 'lazy',
@@ -24,13 +28,13 @@ has '_description' =>
    init_arg => 'description',
    default  => 'Undocumented';
 
-has 'location' => is => 'ro', isa => Str, default => 'query';
+has 'location' => is => 'ro', isa => $locations, default => 'query';
 
-has 'name' => is => 'ro', isa => Str, required => TRUE;
+has 'name' => is => 'ro', isa => NonEmptySimpleStr, required => TRUE;
 
 has 'fields' => is => 'ro', isa => Str, predicate => TRUE;
 
-has 'type' => is => 'ro', isa => Str, required => TRUE;
+has 'type' => is => 'ro', isa => $types, required => TRUE;
 
 use namespace::autoclean;
 

@@ -114,7 +114,7 @@ has_api_method 'create' =>
       Creates a new artist. The return value is
       [% transport_type('hash') | indefinite_article %] containing your new
       artist, including its unique ID.
-    ),
+   ),
    in_args      => [{
       name        => 'create',
       type        => 'hash',
@@ -220,7 +220,7 @@ has_api_method 'update' =>
       url      => '/artist/2',
       body     => { upvotes => 90 },
       response => {
-         artist_id     => 2,
+         artistid      => 2,
          name          => 'Hawkwind',
          active        => \1,
          upvotes       => 90,

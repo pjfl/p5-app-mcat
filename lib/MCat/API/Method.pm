@@ -1,18 +1,28 @@
 package MCat::API::Method;
 
 use MCat::Constants   qw( FALSE NUL TRUE );
-use HTTP::Status      qw( HTTP_OK );
-use Unexpected::Types qw( ArrayRef HashRef Int Maybe Object Str );
+use HTTP::Status      qw( HTTP_OK status_message );
+use Unexpected::Types qw( ArrayRef Dict Enum HashRef Int Maybe
+                          NonEmptySimpleStr Object Optional Str );
 use Type::Utils       qw( class_type );
 use MCat::API::Argument;
 use MCat::API::Description;
 use Moo;
 
+my $http_methods = Enum[qw( GET PUT POST DELETE )];
+my $http_status  = Int->where( defined status_message($_) );
+
 has 'access' => is => 'ro', isa => Str, required => TRUE;
 
 has 'action' => is => 'ro', isa => Str, required => TRUE;
 
-has 'additionally' => is => 'ro', isa => HashRef, default => sub { {} };
+has 'additionally' =>
+   is  => 'ro',
+   isa => Maybe[Dict[
+      content     => Str,
+      content_raw => Optional[Str],
+      title       => Optional[Str],
+   ]];
 
 has 'description' =>
    is        => 'lazy',
@@ -32,7 +42,18 @@ has '_description' =>
    init_arg => 'description',
    default  => 'Undocumented';
 
-has 'examples' => is => 'ro', isa => ArrayRef[HashRef], default => sub { [] };
+has 'examples' =>
+   is      => 'ro',
+   isa     => ArrayRef[
+      Optional[Dict[
+         name        => Str,
+         body        => Optional[HashRef],
+         description => Optional[Str],
+         response    => Optional[ArrayRef[HashRef]|HashRef],
+         url         => Optional[Str],
+      ]]
+   ],
+   default => sub { [] };
 
 has 'in_args' =>
    is       => 'lazy',
@@ -52,9 +73,9 @@ has '_in_args' =>
 
 has 'message' => is => 'ro', isa => Str, default => NUL;
 
-has 'method' => is => 'ro', isa => Str, default => 'GET';
+has 'method' => is => 'ro', isa => $http_methods, default => 'GET';
 
-has 'name' => is => 'ro', isa => Str, required => TRUE;
+has 'name' => is => 'ro', isa => NonEmptySimpleStr, required => TRUE;
 
 has 'out_arg' =>
    is       => 'lazy',
@@ -71,9 +92,14 @@ has '_out_arg' =>
    isa      => Maybe[HashRef],
    init_arg => 'out_arg';
 
-has 'route'  => is => 'ro', isa => Str, required => TRUE;
+has 'route'  => is => 'ro', isa => NonEmptySimpleStr, required => TRUE;
 
-has 'success_code' => is => 'ro', isa => Int, default => HTTP_OK;
+has 'success_code' => is => 'ro', isa => $http_status, default => HTTP_OK;
+
+has 'success_message' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { status_message(shift->success_code) };
 
 sub BUILD {
    my $self = shift;

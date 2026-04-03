@@ -33,7 +33,8 @@
          </div>
          <div class="response">
             <h4>Response</h4>
-            <h5>Code</h5><code>[% method.success_code %]</code>
+            <h5>Code</h5>
+            <code>[% method.success_code %] [% method.success_message %]</code>
             [% INCLUDE render_out_arg %]
          </div>
          <div class="examples">
@@ -100,6 +101,7 @@ END %]
 END %]
 
 [% BLOCK render_examples %]
+   [% success = method.success_code _ ' ' _ method.success_message %]
    [% FOR req IN method.examples %]
       [% resp = req.response %]
       <h4>Example - [% req.name %]</h4>
@@ -108,15 +110,14 @@ END %]
       <pre><code>curl -X [% method.method %] -H 'Authorization: Bearer [Access Token]' [% route_prefix _ (req.url || method.route_display) %][% IF req.body %] --data '[% encode_json(req.body) | html %]'[% END %]</code></pre>
       <h5>Response</h5>
       [% IF method.success_code == '204' %]
-         <pre><code>HTTP/1.0 [% INCLUDE status code = method.success_code %]</code></pre>
+         <pre><code>HTTP/1.0 [% success %]</code></pre>
       [% ELSIF resp.defined %]
-         <pre><code>HTTP/1.0 [% INCLUDE status code = method.success_code %]
+         <pre><code>HTTP/1.0 [% success %]
 Content-Type: application/json
 Content-Length: [% encode_json(resp).length %]
 [% encode_json_pretty(resp) | html %]</code></pre>
       [% ELSE %]
-         <pre><code>HTTP/1.0 [% INCLUDE status code = 204 %]
-Content-Type: application/json</code></pre>
+         <pre><code>Response undefined</code></pre>
       [% END %]
    [% END %]
 [% END %]
@@ -149,20 +150,5 @@ Content-Type: application/json</code></pre>
       '</table>';
    ELSE;
       '<p>None</p>';
-   END;
-END; %]
-
-[% BLOCK status;
-   code;
-   IF code == 200;
-      ' OK';
-   ELSIF code == 201;
-      ' Created';
-    ELSIF code == 202;
-      ' Accepted';
-   ELSIF code == 204;
-      ' No Content';
-   ELSE;
-      ' Unknown';
    END;
 END %]

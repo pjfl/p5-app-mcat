@@ -35,29 +35,29 @@ has '_transport_types' =>
    };
 
 sub _as_string {
-   my $self           = shift;
-   my $translations   = $self->_transport_types;
-   my $placeholder_re = qr{ \[%\s*([^\]]*)%\] }mx;
-   my $desc = $self->text;
-   my @todo = $desc =~ m{ $placeholder_re }gmx;
+   my $self         = shift;
+   my $desc         = $self->text;
+   my $translations = $self->_transport_types;
+   my $directive_re = qr{ \[%\s*([^\]]*)%\] }mx;
+   my @directives   = $desc =~ m{ $directive_re }gmx;
 
-   for my $todo (@todo) {
-      $todo =~ s{ \A \s+|\s+ \z }{}gmx;
+   for my $directive (@directives) {
+      $directive =~ s{ \A \s+|\s+ \z }{}gmx;
 
-      my ($inline_type) = $todo =~ m{ transport_type\('([^']*)'\) }mx;
+      my ($inline_type) = $directive =~ m{ transport_type\('([^']*)'\) }mx;
       my $type   = $inline_type || $self->type;
       my $output = $translations->{$type}->{text}
                 || $translations->{$type}->{name};
 
-      if ($todo =~ m{ indefinite_article }mx) {
+      if ($directive =~ m{ indefinite_article }mx) {
          my $article = $output =~ m{ ^[aeiou] }imx ? 'an' : 'a';
 
          $output = "${article} ${output}";
       }
 
-      $output = ucfirst $output if $todo =~ m{ ucfirst }mx;
+      $output = ucfirst $output if $directive =~ m{ ucfirst }mx;
 
-      $desc =~ s{ $placeholder_re }{$output}mx;
+      $desc =~ s{ $directive_re }{$output}mx;
    }
 
    return $desc;

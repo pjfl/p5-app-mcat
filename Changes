@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Enhanced type checking of API objects
           - API logs errors and data change messages
           - REST entities entirely declarative
           - Moves API authorisation testing to Context

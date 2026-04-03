@@ -4,7 +4,8 @@ package MCat::API;
 use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_CONFLICT HTTP_FORBIDDEN
                                HTTP_INTERNAL_SERVER_ERROR HTTP_OK
-                               HTTP_UNAUTHORIZED HTTP_UNPROCESSABLE_ENTITY );
+                               HTTP_UNAUTHORIZED HTTP_UNPROCESSABLE_ENTITY
+                               is_error status_message );
 use Unexpected::Types      qw( ArrayRef HashRef Int Str );
 use Class::Usul::Cmd::Util qw( includes );
 use List::Util             qw( first );
@@ -132,7 +133,7 @@ sub dispatch {
    my $version = shift @args;
    my $result  = $self->_is_authorised($context);
 
-   return $result if $result->[0] > 299;
+   return $result if is_error($result->[0]);
 
    my $claim = $result->[1];
 
@@ -168,7 +169,7 @@ sub refresh {
 
    my $result = $self->_is_authorised($context);
 
-   return $result if $result->[0] > 299;
+   return $result if is_error($result->[0]);
 
    my $claim = $result->[1];
 
@@ -235,7 +236,8 @@ sub _handle_errors {
    my $code    = HTTP_INTERNAL_SERVER_ERROR;
 
    if (blessed $error && $error->can('rv')) {
-      $code    = $error->rv > 99 ? $error->rv : HTTP_UNPROCESSABLE_ENTITY;
+      $code    = HTTP_UNPROCESSABLE_ENTITY;
+      $code    = $error->rv if status_message($error->rv);
       $message = $error->original;
    }
    else {

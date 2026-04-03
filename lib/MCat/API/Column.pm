@@ -1,14 +1,23 @@
 package MCat::API::Column;
 
 use MCat::Constants   qw( FALSE TRUE );
-use Unexpected::Types qw( ArrayRef Bool CodeRef HashRef Str );
+use Unexpected::Types qw( ArrayRef Bool CodeRef Dict Enum HashRef
+                          NonEmptySimpleStr Optional Str );
 use MCat::API::Description;
 use Moo;
 use MooX::HandlesVia;
 
+my $locations = Enum[qw(body path query)];
+my $types     = Enum[qw(array array_of_hash array_of_int bool datetime dbl
+                        hash hash/array_of_hash int int/str str )];
+
 has 'constraints' =>
    is          => 'ro',
-   isa         => HashRef,
+   isa         => Dict[
+      actions => Optional[Dict[ validate => Str ]],
+      filters => Optional[HashRef],
+      options => Optional[HashRef],
+   ],
    handles_via => 'Hash',
    handles     => { has_constraints => 'count' },
    default     => sub { {} };
@@ -34,13 +43,13 @@ has '_description' =>
 
 has 'getter' => is => 'ro', isa => CodeRef, predicate => TRUE;
 
-has 'location' => is => 'ro', isa => Str, default => 'query';
+has 'location' => is => 'ro', isa => $locations, default => 'query';
 
-has 'name' => is => 'ro', isa => Str, required => TRUE;
+has 'name' => is => 'ro', isa => NonEmptySimpleStr, required => TRUE;
 
 has 'methods' => is => 'ro', isa => HashRef[Bool], default => sub { {} };
 
-has 'type' => is => 'ro', isa => Str, required => TRUE;
+has 'type' => is => 'ro', isa => $types, required => TRUE;
 
 sub constraints_display {
    my $self    = shift;

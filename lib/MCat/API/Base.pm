@@ -2,7 +2,7 @@ package MCat::API::Base;
 
 use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status          qw( HTTP_FORBIDDEN HTTP_NOT_FOUND
-                              HTTP_UNPROCESSABLE_ENTITY );
+                              HTTP_UNPROCESSABLE_ENTITY is_error );
 use Unexpected::Types     qw( ArrayRef Int Str );
 use HTML::Forms::Util     qw( json_bool );
 use List::Util            qw( first );
@@ -92,7 +92,7 @@ sub create {
 
    $result->discard_changes;
    $result = $self->get($context, $id);
-   $result = [$code, $result->[1]] if $result->[0] < 300;
+   $result = [$code, $result->[1]] unless is_error($result->[0]);
    $result->[2] = $id;
    return $result;
 }
@@ -435,20 +435,19 @@ sub _validate_constraints {
                          @{ $self->column_list };
 
    for my $column (@constrained) {
-      my $constraints = $column->constraints;
       my $col_name    = $column->name;
-      my $value       = $options->{$col_name};
 
-      next unless defined $value || $method_name eq 'create';
+      next unless exists $options->{$col_name} || $method_name eq 'create';
 
-      my $args   = {
+      my $constraints = $column->constraints;
+      my $args        = {
          constraints => { $col_name => $constraints->{options} // {} },
          fields      => { $col_name => $constraints->{actions} // {} },
          filters     => { $col_name => $constraints->{filters} // {} },
       };
       my $dv_obj = Data::Validation->new($args);
+      my $value  = $dv_obj->check_field($col_name, $options->{$col_name});
 
-      $value = $dv_obj->check_field($col_name, $value);
       $options->{$col_name} = $value;
    }
 
