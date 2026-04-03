@@ -41,10 +41,7 @@ has 'column_list' =>
       }), @{$self->_get_meta->column_list}];
    };
 
-has 'max_page_size' =>
-   is      => 'ro',
-   isa     => Int,
-   default => 250;
+has 'max_page_size' => is => 'ro', isa => Int, default => 250;
 
 has 'method_list' =>
    is      => 'lazy',
@@ -91,11 +88,13 @@ sub create {
 
    my $result  = $self->resultset->create($options);
    my $code    = $self->_success_code('create');
+   my $id      = $result->id;
 
    $result->discard_changes;
-   $result = $self->get($context, $result->id);
-
-   return $result->[0] < 300 ? [$code, $result->[1]] : $result;
+   $result = $self->get($context, $id);
+   $result = [$code, $result->[1]] if $result->[0] < 300;
+   $result->[2] = $id;
+   return $result;
 }
 
 sub delete {
@@ -108,7 +107,7 @@ sub delete {
 
    $result->delete;
 
-   return [$self->_success_code('delete'), {}];
+   return [$self->_success_code('delete'), {}, $id];
 }
 
 sub get {
@@ -149,8 +148,10 @@ sub update {
    $self->_validate_constraints('update', $options);
    $result->update($options);
    $result->discard_changes;
+   $result = $self->get($context, $id);
+   $result->[2] = $id;
 
-   return $self->get($context, $id);
+   return $result;
 }
 
 sub fields {
@@ -164,6 +165,16 @@ sub fields {
    }
 
    return \@columns;
+}
+
+sub get_message {
+   my ($self, $method_name, $id) = @_;
+
+   my $message = $self->_find_method($method_name)->message;
+
+   $message =~ s{ \[_1\] }{'$id'}mx if $id;
+
+   return $message;
 }
 
 # Private methods
@@ -192,12 +203,9 @@ sub _build_options {
    my ($self, $context, $params) = @_;
 
    my $max_size = $self->max_page_size;
-
-   $max_size = $context->max_page_size if $context->can('max_page_size');
-
-   my $page = $params->{page} // 1;
-   my $size = $params->{page_size} // $max_size;
-   my $rv   = HTTP_UNPROCESSABLE_ENTITY;
+   my $page     = $params->{page} // 1;
+   my $size     = $params->{page_size} // $max_size;
+   my $rv       = HTTP_UNPROCESSABLE_ENTITY;
    my $order;
 
    throw 'Argument [_1] invalid', args => ['page'], rv => $rv
@@ -261,9 +269,7 @@ sub _build_where {
 sub _check_permission {
    my ($self, $context, $method_name) = @_;
 
-   my $api_method = first { $_->name eq $method_name } @{$self->method_list};
-
-   throw 'Method [_1] unknown', [$method_name] unless $api_method;
+   my $api_method = $self->_find_method($method_name);
 
    throw 'No [_1] permission', args => [$method_name], rv => HTTP_FORBIDDEN
       unless $context->is_authorised($api_method->access);
@@ -282,14 +288,6 @@ sub _combine_clauses {
    return;
 }
 
-sub _get_meta {
-   my $self  = shift;
-   my $class = blessed $self || $self;
-   my $attr  = API_META;
-
-   return $class->$attr;
-}
-
 sub _filter_params {
    my ($self, $context, $method_name, $params) = @_;
 
@@ -301,7 +299,7 @@ sub _filter_params {
       # Special case 1: If the column is declared as int, and
       # the Perl value is false and is NOT explicitly zero, then
       # the caller probably means NULL, so set the value to undef.
-      # This enables, for example, searching on a NULL workspace_id
+      # This enables, for example, searching on a NULL artistid
       my $column_nullable = $col->type eq 'int' ? TRUE : FALSE;
 
       # Special case 2: If the column is declared as int/str
@@ -329,6 +327,24 @@ sub _find_column {
 
    return first { $_->name eq $column_name && $_->methods->{$method_name} }
                @{$self->column_list};
+}
+
+sub _find_method {
+   my ($self, $method_name) = @_;
+
+   my $api_method = first { $_->name eq $method_name } @{$self->method_list};
+
+   throw 'Method [_1] unknown', [$method_name] unless $api_method;
+
+   return $api_method;
+}
+
+sub _get_meta {
+   my $self  = shift;
+   my $class = blessed $self || $self;
+   my $attr  = API_META;
+
+   return $class->$attr;
 }
 
 sub _not_found {
@@ -407,13 +423,9 @@ sub _serialise {
 }
 
 sub _success_code {
-   my ($self, $name) = @_;
+   my ($self, $method_name) = @_;
 
-   my $api_method = first { $_->name eq $name } @{$self->method_list};
-
-   throw 'Method [_1] unknown. No success code', [$name] unless $api_method;
-
-   return $api_method->success_code;
+   return $self->_find_method($method_name)->success_code;
 }
 
 sub _validate_constraints {

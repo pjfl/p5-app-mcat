@@ -63,6 +63,10 @@ Thumbs.db
 # Avoid archives of this distribution
 \bMCat-v?[\d\.\_]+
 
+\bnode_modules
+\bpackage-lock.json
+\bpackage.json
+
 \bshare/js/hforms
 \bshare/js/hstatetable
 \bshare/less/hforms

@@ -1,6 +1,6 @@
 package MCat::API::Method;
 
-use MCat::Constants   qw( FALSE TRUE );
+use MCat::Constants   qw( FALSE NUL TRUE );
 use HTTP::Status      qw( HTTP_OK );
 use Unexpected::Types qw( ArrayRef HashRef Int Maybe Object Str );
 use Type::Utils       qw( class_type );
@@ -49,6 +49,8 @@ has '_in_args' =>
    isa      => ArrayRef[HashRef],
    init_arg => 'in_args',
    default  => sub { [] };
+
+has 'message' => is => 'ro', isa => Str, default => NUL;
 
 has 'method' => is => 'ro', isa => Str, default => 'GET';
 

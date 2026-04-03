@@ -109,6 +109,7 @@ has_api_method 'create' =>
    action       => 'create',
    access       => 'artist/create',
    success_code => HTTP_CREATED,
+   message      => 'Artist [_1] created',
    description  => q(
       Creates a new artist. The return value is
       [% transport_type('hash') | indefinite_article %] containing your new
@@ -187,6 +188,7 @@ has_api_method 'update' =>
    route       => '/artist/{artistid:[0-9]+}',
    action      => 'update',
    access      => 'artist/edit',
+   message     => 'Artist [_1] updated',
    description => 'Updates one or more values for a given artist.',
    in_args     => [{
       name        => 'artistid',
@@ -232,6 +234,7 @@ has_api_method 'delete' =>
    action       => 'delete',
    access       => 'artist/delete',
    success_code => HTTP_NO_CONTENT,
+   message      => 'Artist [_1] deleted',
    description  => 'Delete the specified artist.',
    in_args      => [{
       name        => 'artistid',

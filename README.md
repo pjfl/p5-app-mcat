@@ -4,7 +4,7 @@ MCat - Music Catalog
 
 # Version
 
-Describes version v0.3.$Rev: 8 $ of [MCat](https://metacpan.org/pod/MCat)
+Describes version v0.3.$Rev: 42 $ of [MCat](https://metacpan.org/pod/MCat)
 
 # Synopsis
 

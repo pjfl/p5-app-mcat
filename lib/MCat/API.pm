@@ -21,6 +21,9 @@ with 'MCat::Role::Schema';
 with 'MCat::Role::Redis';
 with 'MCat::Role::JSONParser';
 
+# Context requires: authenticate body_parameters find_user is_authorised
+# logout request session stash
+
 has 'access_token_lifetime' => is => 'ro', isa => Int, default => 7_200;
 
 has 'config' => is => 'ro', required => TRUE;
@@ -48,7 +51,10 @@ has 'entities' =>
 
 has 'log' => is => 'ro', required => TRUE;
 
-has 'max_page_size' => is => 'ro', isa => Int, default => 250;
+has 'max_page_size' =>
+   is      => 'lazy',
+   isa     => Int,
+   default => sub { shift->rest_config->{max_page_size} // 250 };
 
 has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
 
@@ -133,31 +139,18 @@ sub dispatch {
    $self->_update_session($context, $claim);
 
    try {
-      my $chain = $context->stash('method_chain');
+      my $chain  = $context->stash('method_chain');
       my (undef, $moniker, $action) = split m{ / }mx, $chain;
       my $entity = $self->entities->{$moniker};
       my $method = $self->_versioned_method($entity, $action, $version);
 
       $result = $entity->$method($context, @args);
+
+      my $message = $entity->get_message($action, $result->[2]);
+
+      $self->log->info($message, $context) if $message;
    }
-   catch {
-      my $error   = $_;
-      my $message = "${error}"; chomp $message;
-      my $code    = HTTP_INTERNAL_SERVER_ERROR;
-
-      if (blessed $error && $error->can('rv')) {
-         $code    = $error->rv > 99 ? $error->rv : HTTP_UNPROCESSABLE_ENTITY;
-         $message = $error->original;
-      }
-      else {
-         if ($message =~ m{ duplicate \s key \s value }mx) {
-            $message = 'Duplicate key';
-            $code    = HTTP_CONFLICT;
-         }
-      }
-
-      $result = [$code, { message => $message }];
-   };
+   catch { $result = $self->_handle_errors($context, $_) };
 
    return $result;
 }
@@ -233,6 +226,28 @@ sub _encode_access_token {
    my $verify  = $self->_jwt_hash("${salt}${payload}");
 
    return "${salt}.${payload}.${verify}";
+}
+
+sub _handle_errors {
+   my ($self, $context, $error) = @_;
+
+   my $message = "${error}"; chomp $message;
+   my $code    = HTTP_INTERNAL_SERVER_ERROR;
+
+   if (blessed $error && $error->can('rv')) {
+      $code    = $error->rv > 99 ? $error->rv : HTTP_UNPROCESSABLE_ENTITY;
+      $message = $error->original;
+   }
+   else {
+      if ($message =~ m{ duplicate \s key \s value }mx) {
+         $message = 'Duplicate key';
+         $code    = HTTP_CONFLICT;
+      }
+   }
+
+   $self->log->error($message, $context) if $code == HTTP_INTERNAL_SERVER_ERROR;
+
+   return [$code, { message => $message }];
 }
 
 sub _is_authorised {
