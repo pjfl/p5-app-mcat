@@ -1347,7 +1347,7 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.15
+ * @version 0.2.17
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.47
@@ -2248,6 +2248,26 @@ form.classic .input-button.right {
 }
 form.classic .input-button button {
   padding: 0.1875rem 0.75rem 0.3125rem;
+}
+form.classic .input-captcha {
+  align-items: flex-start !important;
+}
+form.classic .input-captcha img {
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-style: italic;
+  shape-margin: 1rem;
+  vertical-align: middle;
+}
+form.classic .input-captcha label {
+  padding-top: 0.5rem;
+}
+form.classic .input-captcha span {
+  display: block;
+  grid-area: selector;
+}
+form.classic .input-captcha .g-recaptcha {
+  grid-area: input;
 }
 form.classic .input-colour {
   align-items: center !important;

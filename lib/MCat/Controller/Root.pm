@@ -53,6 +53,7 @@ sub dispatch_request { build_routes
    'GET      + /logfile/*.* + ?*' => 'logfile/root/base/view',
    'GET      + /logfile + ?*'     => 'logfile/root/base/list',
 
+   'GET      + /captcha/* + ?*'    => 'misc/root/captcha',
    'GET      + /changes + ?*'      => 'misc/root/base/changes',
    'GET      + /contact + ?*'      => 'misc/root/base/contact',
    'POST     + /login + ?*'        => 'misc/root/base/login_dispatch',

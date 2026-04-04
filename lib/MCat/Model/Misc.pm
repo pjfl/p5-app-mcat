@@ -33,6 +33,17 @@ sub user : Auth('none') Capture(1) {
    return;
 }
 
+sub captcha : Auth('none') {
+   my ($self, $context, $uniq) = @_;
+
+   my $options = { context => $context, log => $self->log };
+   my $captcha = $self->new_form('Register', $options)->get_captcha;
+
+   $context->stash(body => $captcha->{image}, mime_type => $captcha->{type});
+   $context->stash(code => 200, finalised => TRUE, view => 'image');
+   return;
+}
+
 sub changes : Auth('view') Nav('Changes') {
    my ($self, $context) = @_;
 

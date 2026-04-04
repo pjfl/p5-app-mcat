@@ -10,6 +10,8 @@ use HTML::Forms::Moo;
 extends 'HTML::Forms';
 with    'HTML::Forms::Role::Defaults';
 with    'MCat::Role::SendMessage';
+with    'MCat::Role::JSONParser';
+with    'HTML::Forms::Role::Captcha';
 
 has '+info_message' => default => 'Answer the sign up questions';
 has '+item_class'   => default => 'User';
@@ -63,18 +65,38 @@ sub validate_email {
    return;
 }
 
+has_field 'captcha' => type => 'Captcha', label => 'Human?';
+
 has_field 'submit' => type => 'Button';
 
 after 'after_build_fields' => sub {
    my $self    = shift;
    my $name    = $self->field('name');
-   my $session = $self->context->session;
+   my $context = $self->context;
+   my $session = $context->session;
 
    $name->element_attr->{minlength} = $self->config->user->{min_name_len};
 
    $self->add_form_wrapper_class('narrow');
    $self->add_form_element_class('droplets') if $context->feature('droplets');
    $self->add_form_element_class('radar') if $context->feature('radar');
+
+   my $captcha = $self->config->captcha;
+
+   if ($captcha->{type} eq 'local') {
+      my $uniq = substr create_token, 0, 8;
+      my $url  = $context->uri_for_action('misc/captcha', [$uniq]);
+
+      $self->captcha_image_url($url);
+   }
+   elsif ($captcha->{type} eq 'remote') {
+      my $field = $self->field('captcha');
+
+      $field->captcha_type('remote');
+      $field->site_key($captcha->{site_key});
+      $field->secret_key($captcha->{secret_key});
+   }
+   else { $self->field('captcha')->inactive(TRUE) }
 
    return;
 };

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds Captcha to registration form
           - Enhanced type checking of API objects
           - API logs errors and data change messages
           - REST entities entirely declarative

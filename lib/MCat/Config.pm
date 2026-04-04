@@ -191,6 +191,50 @@ has 'bin' =>
    documentation => 'NoUpdate',
    default       => sub { shift->pathname->parent };
 
+=item captcha
+
+Parameters used by the Captcha field on the user registration form
+
+=cut
+
+has 'captcha' =>
+   is       => 'lazy',
+   isa      => HashRef[Str],
+   init_arg => undef,
+   default  => sub {
+      my $self = shift;
+
+      return {
+         type       => 'remote',
+         site_key   => $self->_captcha_site_key,
+         secret_key => $self->_captcha_secret_key,
+      };
+   };
+
+=item _captcha_site_key
+
+Provided by the Google Cloud Console. Key used to identify this application
+
+=cut
+
+has '_captcha_site_key' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'captcha_site_key',
+   default  => 'override_in_local_config';
+
+=item _captcha_secret_key
+
+Provided by the Google Cloud Console. Secret key used to verify the Captcha
+
+=cut
+
+has '_captcha_secret_key' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'captcha_secret_key',
+   default  => 'override_in_local_config';
+
 =item component_loader
 
 Configuration parameters used by the L<component loader|Web::Components::Loader>
