@@ -40,7 +40,7 @@ sub captcha : Auth('none') {
    my $captcha = $self->new_form('Register', $options)->get_captcha;
 
    $context->stash(body => $captcha->{image}, mime_type => $captcha->{type});
-   $context->stash(code => 200, finalised => TRUE, view => 'image');
+   $context->stash(view => 'image');
    return;
 }
 

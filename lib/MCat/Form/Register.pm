@@ -65,7 +65,7 @@ sub validate_email {
    return;
 }
 
-has_field 'captcha' => type => 'Captcha', label => 'Human?';
+has_field 'captcha' => type => 'Captcha', label => 'Sentient?';
 
 has_field 'submit' => type => 'Button';
 
@@ -85,7 +85,7 @@ after 'after_build_fields' => sub {
 
    if ($captcha->{type} eq 'local') {
       my $uniq = substr create_token, 0, 8;
-      my $url  = $context->uri_for_action('misc/captcha', [$uniq]);
+      my $url  = $context->uri_for_action($captcha->{image_action}, [$uniq]);
 
       $self->captcha_image_url($url);
    }
@@ -95,6 +95,7 @@ after 'after_build_fields' => sub {
       $field->captcha_type('remote');
       $field->site_key($captcha->{site_key});
       $field->secret_key($captcha->{secret_key});
+      $field->theme($session->theme);
    }
    else { $self->field('captcha')->inactive(TRUE) }
 

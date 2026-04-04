@@ -2260,11 +2260,12 @@ form.classic .input-captcha img {
   vertical-align: middle;
 }
 form.classic .input-captcha label {
-  padding-top: 0.5rem;
+  padding-top: 0.4375rem;
 }
 form.classic .input-captcha span {
   display: block;
   grid-area: selector;
+  line-height: 1.5rem;
 }
 form.classic .input-captcha .g-recaptcha {
   grid-area: input;

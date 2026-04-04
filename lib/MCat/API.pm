@@ -4,7 +4,8 @@ package MCat::API;
 use MCat::Constants        qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_CONFLICT HTTP_FORBIDDEN
                                HTTP_INTERNAL_SERVER_ERROR HTTP_OK
-                               HTTP_UNAUTHORIZED HTTP_UNPROCESSABLE_ENTITY
+                               HTTP_TOO_MANY_REQUESTS HTTP_UNAUTHORIZED
+                               HTTP_UNPROCESSABLE_ENTITY
                                is_error status_message );
 use Unexpected::Types      qw( ArrayRef HashRef Int Str );
 use Class::Usul::Cmd::Util qw( includes );
@@ -56,6 +57,13 @@ has 'max_page_size' =>
    is      => 'lazy',
    isa     => Int,
    default => sub { shift->rest_config->{max_page_size} // 250 };
+
+has 'max_req_per_min' =>
+   is      => 'lazy',
+   isa     => Int,
+   default => sub { shift->rest_config->{max_req_per_min} // 5 };
+
+has 'request_history' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
 
@@ -131,7 +139,11 @@ sub dispatch {
    my ($self, $context, @args) = @_;
 
    my $version = shift @args;
-   my $result  = $self->_is_authorised($context);
+   my $result  = $self->_is_throttled($context);
+
+   return $result if is_error($result->[0]);
+
+   $result = $self->_is_authorised($context);
 
    return $result if is_error($result->[0]);
 
@@ -275,6 +287,28 @@ sub _is_authorised {
       unless $elapsed < $self->access_token_lifetime;
 
    return [HTTP_OK, $claim];
+}
+
+sub _is_throttled {
+   my ($self, $context) = @_;
+
+   my $default = { stamp => 0, count => 0 };
+   my $address = $context->request->remote_address;
+   my $record  = $self->request_history->{$address} // $default;
+   my $max_rpm = $self->max_req_per_min;
+   my $message = "Maximum ${max_rpm} requests per minute";
+   my $now     = time;
+
+   $record->{count} += 1;
+
+   $record = { stamp => $now, count => 1 } if $now - $record->{stamp} > 60;
+
+   $self->request_history->{$address} = $record;
+
+   return [HTTP_TOO_MANY_REQUESTS, { message => $message } ]
+      if $record->{count} > $max_rpm;
+
+   return [HTTP_OK];
 }
 
 sub _jwt_hash {

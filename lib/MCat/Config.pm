@@ -205,9 +205,10 @@ has 'captcha' =>
       my $self = shift;
 
       return {
-         type       => 'remote',
-         site_key   => $self->_captcha_site_key,
-         secret_key => $self->_captcha_secret_key,
+         type         => 'local',
+         image_action => 'misc/captcha',
+         site_key     => $self->_captcha_site_key,
+         secret_key   => $self->_captcha_secret_key,
       };
    };
 
@@ -1097,8 +1098,9 @@ has 'web_components' =>
       return {
          'Controller::REST' => {
             rest_config => {
-               secret   => $self->db_password,
-               versions => [1],
+               max_req_per_min => 5,
+               secret          => $self->db_password,
+               versions        => [1],
             },
          },
          'Model::Bug' => {
