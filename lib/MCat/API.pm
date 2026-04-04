@@ -69,7 +69,7 @@ has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
 
 has 'rest_config' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'route_match_prefix' => is => 'ro', isa => Str, default => '/api/*';
+has 'route_match_prefix' => is => 'ro', isa => Str, default => '/*';
 
 has 'route_prefix' =>
    is      => 'lazy',

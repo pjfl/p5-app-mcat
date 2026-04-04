@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - API calls now avoid session middleware
           - Adds rate throttling to API
           - Adds Captcha to registration form
           - Enhanced type checking of API objects

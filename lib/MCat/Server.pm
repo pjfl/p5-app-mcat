@@ -31,9 +31,12 @@ around 'to_psgi_app' => sub {
          enable 'Static',
             path => qr{ \A / (?: $static) / }mx,
             root => $config->root;
-         enable 'Session', $self->session->middleware_config;
          enable 'LogDispatch', logger => $self->log;
-         $psgi_app;
+         mount '/api' => builder { $psgi_app };
+         mount '/' => builder {
+            enable 'Session', $self->session->middleware_config;
+            $psgi_app;
+         };
       };
       mount '/' => builder {
          sub { [ HTTP_FOUND, [ 'Location', $config->default_route ], [] ] }

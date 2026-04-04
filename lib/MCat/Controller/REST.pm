@@ -28,11 +28,10 @@ has 'api' =>
 has 'rest_config' => is => 'lazy', isa => HashRef, default => sub { {} };
 
 sub dispatch_request { build_routes
-   'GET  + /api/documentation | /api/documentation/* + ?*'
-                                   => 'rest/root/base/documentation',
-   'POST + /api/authorise + ?*'    => 'rest/authorise',
-   'POST + /api/access_token + ?*' => 'rest/access_token',
-   'POST + /api/refresh + ?*'      => 'rest/refresh',
+   'GET  + /doc/api | /doc/api/* + ?*' => 'rest/root/base/documentation',
+   'POST + /authorise + ?*'            => 'rest/authorise',
+   'POST + /access_token + ?*'         => 'rest/access_token',
+   'POST + /refresh + ?*'              => 'rest/refresh',
    shift->api->routes,
 }
 
