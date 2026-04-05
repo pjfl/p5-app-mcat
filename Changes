@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds Misc controller. Fixes routing problem
           - Moved footer to api from misc. Weird routing problem
           - Moved API routes to /rest to avoid collision with /api
           - API calls now avoid session middleware

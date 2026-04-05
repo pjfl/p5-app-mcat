@@ -31,7 +31,7 @@ has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
 
 has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
 
-has '+caption' => default => 'Documentation';
+has '+caption' => default => 'Server Documentation';
 
 has '+form_buttons' => default => sub { shift->_build_form_buttons };
 

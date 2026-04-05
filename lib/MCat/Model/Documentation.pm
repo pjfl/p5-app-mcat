@@ -16,7 +16,7 @@ has '_doc_viewer' =>
    is      => 'ro',
    default => sub { MCat::File::Docs::View->new() };
 
-sub base {
+sub base : Auth('view') {
    my ($self, $context) = @_;
 
    $context->stash('nav')->finalise;
@@ -50,13 +50,13 @@ sub configuration : Auth('admin') Nav('View') {
    return;
 }
 
-sub frontend : Nav('Front End') {
+sub frontend : Auth('view') Nav('Browser') {
    my ($self, $context) = @_;
 
    return;
 }
 
-sub list : Nav('Back End') {
+sub list : Auth('view') Nav('Server') {
    my ($self, $context) = @_;
 
    my $options   = {
@@ -75,7 +75,7 @@ sub list : Nav('Back End') {
    return;
 }
 
-sub view : Nav('View Docs') {
+sub view : Auth('view') Nav('View Docs') {
    my ($self, $context, $file) = @_;
 
    my $params    = $context->request->query_parameters;
