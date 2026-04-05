@@ -1,5 +1,6 @@
 package MCat::Model::Admin;
 
+use MCat::Constants qw( FALSE TRUE );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -13,14 +14,16 @@ sub menu : Auth('admin') Nav('Admin|img/admin.svg') {
 
    my $nav = $context->stash('nav');
 
-   $nav->list('configuration')->item('doc/config_edit');
-   $nav->list('documentation')->item('doc/frontend')->item('rest/documentation');
+   $nav->list('Configuration')->item('doc/configuration');
+   $nav->item('doc/config_edit');
+   $nav->list('Documentation')->item('rest/documentation')->item('doc/list');
+   $nav->item('doc/frontend');
 
    $nav->list('admin');
-   $nav->menu('configuration')->item('doc/configuration');
-   $nav->menu('documentation')->item('doc/list');
-   $nav->menu('job')->item('job/status');
-   $nav->menu('logfile')->item('logfile/list');
+   $nav->menu('Configuration', TRUE);
+   $nav->menu('Documentation', TRUE);
+   $nav->item('job/status');
+   $nav->item('logfile/list');
    return;
 }
 

@@ -81,7 +81,7 @@ sub create {
 
    $self->_check_permission($context, 'create');
 
-   my $params  = $context->body_parameters;
+   my $params  = $context->request->body_parameters;
    my $options = $self->_filter_params($context, 'create', $params);
 
    $self->_validate_constraints('create', $options);
@@ -142,7 +142,7 @@ sub update {
 
    my $id      = $args[0];
    my $result  = $self->resultset->find_by_key($id) or $self->_not_found($id);
-   my $params  = $context->body_parameters;
+   my $params  = $context->request->body_parameters;
    my $options = $self->_filter_params($context, 'update', $params);
 
    $self->_validate_constraints('update', $options);

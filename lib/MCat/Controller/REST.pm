@@ -28,10 +28,9 @@ has 'api' =>
 has 'api_config' => is => 'lazy', isa => HashRef, default => sub { {} };
 
 sub dispatch_request { build_routes
-   'GET  + /doc/api | /doc/api/* + ?*' => 'rest/root/base/documentation',
-   'POST + /authorise + ?*'            => 'rest/authorise',
-   'POST + /access_token + ?*'         => 'rest/access_token',
-   'POST + /refresh + ?*'              => 'rest/refresh',
+   'POST + /authorise + ?*'    => 'rest/authorise',
+   'POST + /access_token + ?*' => 'rest/access_token',
+   'POST + /refresh + ?*'      => 'rest/refresh',
    shift->api->routes,
 }
 

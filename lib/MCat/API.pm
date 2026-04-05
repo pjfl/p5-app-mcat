@@ -23,8 +23,8 @@ with 'MCat::Role::Schema';
 with 'MCat::Role::Redis';
 with 'MCat::Role::JSONParser';
 
-# Context requires: authenticate body_parameters find_user is_authorised
-# logout request session stash
+# Context requires: authenticate find_user is_authorised
+# request session stash
 
 has 'access_token_lifetime' =>
    is      => 'lazy',
@@ -95,7 +95,7 @@ has 'versions' =>
 sub access_token {
    my ($self, $context) = @_;
 
-   my $token = $context->body_parameters->{request_token};
+   my $token = $context->request->body_parameters->{request_token};
 
    return [HTTP_UNAUTHORIZED, { message => 'No request token' }] unless $token;
 
@@ -116,15 +116,15 @@ sub access_token {
 sub authorise {
    my ($self, $context) = @_;
 
+   my $req     = $context->request;
    my $options = {
-      address  => $context->request->remote_address,
-      username => $context->body_parameters->{username},
-      password => $context->body_parameters->{password},
+      address  => $req->remote_address,
+      username => $req->body_parameters->{username},
+      password => $req->body_parameters->{password},
    };
    my $result;
 
    try {
-      $context->logout;
       $options->{user} = $context->find_user($options);
       $context->authenticate($options);
 

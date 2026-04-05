@@ -8,7 +8,7 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.47
+ * @version 0.13.48
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.47
@@ -416,8 +416,8 @@ footer .footer-container .session-time {
 .sidebar .nav-list.context {
   width: 100%;
 }
-.navigation .nav-list.context li.context:has(> a:hover, > form:hover) > .slide-out,
-.sidebar .nav-list.context li.context:has(> a:hover, > form:hover) > .slide-out {
+.navigation .nav-list.context li.context:has(> a:hover, > form:hover, > span:hover) > .slide-out,
+.sidebar .nav-list.context li.context:has(> a:hover, > form:hover, > span:hover) > .slide-out {
   overflow-x: hidden;
   width: 8rem;
 }

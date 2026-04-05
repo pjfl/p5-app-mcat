@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moved footer to api from misc. Weird routing problem
           - Moved API routes to /rest to avoid collision with /api
           - API calls now avoid session middleware
           - Adds rate throttling to API

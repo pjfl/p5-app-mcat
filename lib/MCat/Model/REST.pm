@@ -9,7 +9,7 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'rest';
 
-sub base {
+sub base : Auth('view') {
    my ($self, $context) = @_;
 
    $context->stash('nav')->finalise;
@@ -17,7 +17,7 @@ sub base {
    return;
 }
 
-sub documentation : Nav('API Docs') {
+sub documentation : Auth('view') Nav('API') {
    my ($self, $context, $entity_name) = @_;
 
    my $api    = $context->controllers->{rest}->api;

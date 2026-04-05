@@ -9,6 +9,7 @@ with 'Web::Components::ReverseMap';
 has '+moniker' => default => 'api'; # Must sort to last place
 
 sub dispatch_request { build_routes
+   'GET      + /api/footer/** + ?*'               => 'misc/footer',
    'GET      + /api/form/*/field/*/validate + ?*' => 'api/form/field/validate',
    'POST     + /api/level/*/log + ?*'             => 'api/loglevel/logger',
    'GET      + /api/messages/collect + ?*'        => 'api/collect_messages',

@@ -24,7 +24,7 @@ sub base {
    return;
 }
 
-sub config_edit : Auth('admin') Nav('Edit Config') {
+sub config_edit : Auth('admin') Nav('Edit') {
    my ($self, $context) = @_;
 
    my $options = { context => $context };
@@ -41,7 +41,7 @@ sub config_edit : Auth('admin') Nav('Edit Config') {
    return;
 }
 
-sub configuration : Auth('admin') Nav('Configuration') {
+sub configuration : Auth('admin') Nav('View') {
    my ($self, $context) = @_;
 
    my $options = { context => $context };
@@ -50,13 +50,13 @@ sub configuration : Auth('admin') Nav('Configuration') {
    return;
 }
 
-sub frontend : Nav('FE Docs') {
+sub frontend : Nav('Front End') {
    my ($self, $context) = @_;
 
    return;
 }
 
-sub list : Nav('Documentation') {
+sub list : Nav('Back End') {
    my ($self, $context) = @_;
 
    my $options   = {

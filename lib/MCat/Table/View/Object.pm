@@ -1,6 +1,6 @@
 package MCat::Table::View::Object;
 
-use HTML::StateTable::Constants qw( FALSE SPC TABLE_META TRUE );
+use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool DBIxClass Str );
 use Scalar::Util                qw( blessed );
 use MCat::Object::View;
@@ -38,7 +38,7 @@ around '_serialise_buttons' => sub {
    my $buttons = { BottomLeft => [], BottomRight => [] };
 
    for my $button (@{$orig->($self)}) {
-      my $location = $button->{classes} eq 'left'
+      my $location = ($button->{classes} // NUL) eq 'left'
          ? 'BottomLeft' : 'BottomRight';
 
       if (blessed $button->{action}) { push @{$buttons->{$location}}, $button }

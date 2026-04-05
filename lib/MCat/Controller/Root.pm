@@ -43,6 +43,7 @@ sub dispatch_request { build_routes
    'GET      + /user/* + ?*'            => 'user/root/user/view',
    'GET      + /user + ?*'              => 'user/root/base/list',
 
+   'GET      + /doc/api | /doc/api/* + ?*'   => 'rest/root/base/documentation',
    'GET|POST + /doc/configuration/edit + ?*' => 'doc/root/base/config_edit',
    'GET      + /doc/configuration + ?*'      => 'doc/root/base/configuration',
    'GET      + /doc/frontend + ?*'           => 'doc/root/base/frontend',
@@ -63,8 +64,6 @@ sub dispatch_request { build_routes
    'GET      + /register/* + ?*'   => 'misc/root/base/create_user',
    'GET|POST + /register + ?*'     => 'misc/root/base/register',
    'GET      + /unauthorised + ?*' => 'misc/root/base/unauthorised',
-
-   'GET + /footer/** + ?*' => 'misc/footer',
 
    'GET    + /** + ?*' => 'misc/root/not_found',
    'GET    + ?*'       => 'misc/root/default',
