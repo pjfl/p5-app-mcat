@@ -17,15 +17,15 @@ has 'api' =>
    default => sub {
       my $self = shift;
       my $args = {
-         config      => $self->config,
-         log         => $self->log,
-         rest_config => $self->rest_config,
+         api_config => $self->api_config,
+         config     => $self->config,
+         log        => $self->log,
       };
 
       return MCat::API->new($args);
    };
 
-has 'rest_config' => is => 'lazy', isa => HashRef, default => sub { {} };
+has 'api_config' => is => 'lazy', isa => HashRef, default => sub { {} };
 
 sub dispatch_request { build_routes
    'GET  + /doc/api | /doc/api/* + ?*' => 'rest/root/base/documentation',

@@ -440,9 +440,10 @@ sub _validate_constraints {
       next unless exists $options->{$col_name} || $method_name eq 'create';
 
       my $constraints = $column->constraints;
+      my $actions     = _qualify_constraint_actions($constraints->{actions});
       my $args        = {
          constraints => { $col_name => $constraints->{options} // {} },
-         fields      => { $col_name => $constraints->{actions} // {} },
+         fields      => { $col_name => $actions // {} },
          filters     => { $col_name => $constraints->{filters} // {} },
       };
       my $dv_obj = Data::Validation->new($args);
@@ -455,6 +456,17 @@ sub _validate_constraints {
 }
 
 # Private functions
+sub _qualify_constraint_actions {
+   my $actions  = shift;
+   my $validate = NUL;
+
+   for my $role (split m{ [ ] }mx, $actions->{validate} // NUL) {
+      $validate .= ($validate ? q( ) : NUL) . "is${role}";
+   }
+
+   return { %{$actions}, validate => $validate };
+}
+
 sub _quote_column_name {
    my @parts = @_;
 

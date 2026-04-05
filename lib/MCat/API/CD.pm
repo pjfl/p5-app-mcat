@@ -37,13 +37,13 @@ has_api_column 'title' =>
    description => 'The title of the CD. Maximum 255 characters.',
    methods     => { create => TRUE, update => TRUE },
    constraints => {
+      actions  => {
+         validate => 'Mandatory MatchingRegex ValidLength',
+      },
       options  => {
          max_length => 255,
          min_length => 3,
          pattern    => '\A [0-9A-Za-z_ ]+ \z',
-      },
-      actions  => {
-         validate => 'isMandatory isMatchingRegex isValidLength',
       },
    };
 

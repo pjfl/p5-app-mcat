@@ -1097,7 +1097,7 @@ has 'web_components' =>
 
       return {
          'Controller::REST' => {
-            rest_config => {
+            api_config => {
                max_req_per_min => 5,
                secret          => $self->db_password,
                versions        => [1],

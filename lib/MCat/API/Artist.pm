@@ -30,13 +30,13 @@ has_api_column 'name' =>
    description => 'The name of the artist. Maximum 255 characters.',
    methods     => { create => TRUE, update => TRUE },
    constraints => {
+      actions  => {
+         validate => 'Mandatory MatchingRegex ValidLength',
+      },
       options  => {
          max_length => 255,
          min_length => 3,
          pattern    => '\A [0-9A-Za-z_ ]+ \z',
-      },
-      actions  => {
-         validate => 'isMandatory isMatchingRegex isValidLength',
       },
    };
 

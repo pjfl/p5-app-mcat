@@ -9,8 +9,8 @@ use HTTP::Status           qw( HTTP_BAD_REQUEST HTTP_CONFLICT HTTP_FORBIDDEN
                                is_error status_message );
 use Unexpected::Types      qw( ArrayRef HashRef Int Str );
 use Class::Usul::Cmd::Util qw( includes );
-use List::Util             qw( first );
 use MCat::Util             qw( create_token digest );
+use List::Util             qw( first );
 use MIME::Base64           qw( decode_base64url encode_base64url );
 use Scalar::Util           qw( blessed );
 use Type::Utils            qw( class_type );
@@ -26,7 +26,12 @@ with 'MCat::Role::JSONParser';
 # Context requires: authenticate body_parameters find_user is_authorised
 # logout request session stash
 
-has 'access_token_lifetime' => is => 'ro', isa => Int, default => 7_200;
+has 'access_token_lifetime' =>
+   is      => 'lazy',
+   isa     => Int,
+   default => sub { shift->api_config->{access_token_lifetime} // 7_200 };
+
+has 'api_config' => is => 'ro', isa => HashRef, default => sub { {} };
 
 has 'config' => is => 'ro', required => TRUE;
 
@@ -56,35 +61,36 @@ has 'log' => is => 'ro', required => TRUE;
 has 'max_page_size' =>
    is      => 'lazy',
    isa     => Int,
-   default => sub { shift->rest_config->{max_page_size} // 250 };
+   default => sub { shift->api_config->{max_page_size} // 250 };
 
 has 'max_req_per_min' =>
    is      => 'lazy',
    isa     => Int,
-   default => sub { shift->rest_config->{max_req_per_min} // 5 };
+   default => sub { shift->api_config->{max_req_per_min} // 5 };
 
 has 'request_history' => is => 'ro', isa => HashRef, default => sub { {} };
 
-has 'request_token_lifetime' => is => 'ro', isa => Int, default => 180;
-
-has 'rest_config' => is => 'ro', isa => HashRef, default => sub { {} };
+has 'request_token_lifetime' =>
+   is      => 'lazy',
+   isa     => Int,
+   default => sub { shift->api_config->{request_token_lifetime} // 180 };
 
 has 'route_match_prefix' => is => 'ro', isa => Str, default => '/*';
 
 has 'route_prefix' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub { 'api/v' . shift->versions->[-1] };
+   default => sub { 'rest/v' . shift->versions->[-1] };
 
 has 'secret' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub { shift->rest_config->{secret} // NUL };
+   default => sub { shift->api_config->{secret} // NUL };
 
 has 'versions' =>
    is      => 'lazy',
    isa     => ArrayRef,
-   default => sub { shift->rest_config->{versions} // [1] };
+   default => sub { shift->api_config->{versions} // [1] };
 
 sub access_token {
    my ($self, $context) = @_;

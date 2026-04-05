@@ -55,11 +55,7 @@ sub constraints_display {
    my $self    = shift;
    my $actions = $self->constraints->{actions} or return 'None';
 
-   return 'None' unless $actions->{validate};
-
-   (my $valids = $actions->{validate}) =~ s{ is (\w+) }{$1}gmx;
-
-   return $valids || 'None';
+   return $actions->{validate} ? $actions->{validate} : 'None';
 }
 
 use namespace::autoclean;
