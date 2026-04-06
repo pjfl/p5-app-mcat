@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Removed left over API classes
           - Moved api code to Web::Components::API
           - Adds Misc controller. Fixes routing problem
           - Moved footer to api from misc. Weird routing problem

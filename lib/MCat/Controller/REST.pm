@@ -21,6 +21,7 @@ has 'api' =>
       my $self = shift;
       my $args = {
          api_config   => $self->api_config,
+         config       => $self->config,
          json_parser  => $self->json_parser,
          log          => $self->log,
          redis_client => $self->redis_client,
