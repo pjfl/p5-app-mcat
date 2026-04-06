@@ -19,10 +19,6 @@ use Unexpected::Functions  qw( throw );
 use Try::Tiny;
 use Moo;
 
-with 'MCat::Role::Schema';
-with 'MCat::Role::Redis';
-with 'MCat::Role::JSONParser';
-
 # Context requires: authenticate find_user is_authorised
 # request session stash
 
@@ -56,6 +52,8 @@ has 'entities' =>
       return load_components 'API', $args;
    };
 
+has 'json_parser' => is => 'ro', required => TRUE;
+
 has 'log' => is => 'ro', required => TRUE;
 
 has 'max_page_size' =>
@@ -67,6 +65,8 @@ has 'max_req_per_min' =>
    is      => 'lazy',
    isa     => Int,
    default => sub { shift->api_config->{max_req_per_min} // 5 };
+
+has 'redis_client' => is => 'ro', required => TRUE;
 
 has 'request_history' => is => 'ro', isa => HashRef, default => sub { {} };
 
@@ -81,6 +81,8 @@ has 'route_prefix' =>
    is      => 'lazy',
    isa     => Str,
    default => sub { 'rest/v' . shift->versions->[-1] };
+
+has 'schema' => is => 'ro', required => TRUE;
 
 has 'secret' =>
    is      => 'lazy',

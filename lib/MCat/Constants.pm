@@ -18,7 +18,7 @@ HTML::StateTable::Constants->Exception_Class($exception_class);
 HTML::Forms::Constants->Exception_Class($exception_class);
 Web::ComposableRequest::Constants->Exception_Class($exception_class);
 
-our @EXPORT = qw( API_META BUG_STATE_ENUM SQL_FALSE SQL_NOW SQL_TRUE );
+our @EXPORT = qw( BUG_STATE_ENUM SQL_FALSE SQL_NOW SQL_TRUE );
 
 sub import {
    my $class       = shift;
@@ -35,7 +35,6 @@ sub import {
    return;
 }
 
-sub API_META       () { '_api_meta_' }
 sub BUG_STATE_ENUM () { [ qw( assigned fixed open wontfix ) ] }
 sub SQL_FALSE      () { \q{false} }
 sub SQL_NOW        () { \q{NOW()} }

@@ -1,12 +1,12 @@
 package MCat::API::CD;
 
-use MCat::Constants       qw( API_META EXCEPTION_CLASS FALSE NUL TRUE );
-use HTTP::Status          qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
-use Unexpected::Functions qw( throw );
+use Web::Components::API::Constants
+                 qw( API_META FALSE NUL TRUE );
+use HTTP::Status qw( HTTP_CREATED HTTP_FORBIDDEN HTTP_NO_CONTENT );
 use Moo;
-use MCat::API::Moo;
+use Web::Components::API::Moo;
 
-extends 'MCat::API::Base';
+extends 'Web::Components::API::Base';
 with    'Web::Components::Role';
 
 my $class = __PACKAGE__;

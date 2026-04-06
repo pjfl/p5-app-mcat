@@ -6,7 +6,7 @@ use Web::Simple;
 with 'Web::Components::Role';
 with 'Web::Components::ReverseMap';
 
-has '+moniker' => default => 'api'; # Must sort to last place
+has '+moniker' => default => 'api';
 
 sub dispatch_request { build_routes
    'GET      + /api/footer/** + ?*'               => 'misc/footer',
