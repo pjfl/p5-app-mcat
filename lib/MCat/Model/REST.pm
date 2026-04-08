@@ -1,6 +1,6 @@
 package MCat::Model::REST;
 
-use MCat::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use MCat::Constants qw( FALSE TRUE );
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
@@ -34,7 +34,7 @@ sub authorise : Auth('none') {
 
    my $api = $context->controllers->{rest}->api;
 
-   $self->_stash_result($context, $api->authorise($context));
+   $self->_stash_response($context, $api->authorise($context));
    return;
 }
 
@@ -43,7 +43,7 @@ sub access_token : Auth('none') {
 
    my $api = $context->controllers->{rest}->api;
 
-   $self->_stash_result($context, $api->access_token($context));
+   $self->_stash_response($context, $api->access_token($context));
    return;
 }
 
@@ -52,7 +52,8 @@ sub refresh : Auth('none') {
 
    my $api = $context->controllers->{rest}->api;
 
-   $self->_stash_result($context, $api->refresh($context));
+   $self->_stash_response($context, $api->refresh($context));
+   return;
 }
 
 sub dispatch : Auth('none') {
@@ -60,15 +61,15 @@ sub dispatch : Auth('none') {
 
    my $api = $context->controllers->{rest}->api;
 
-   $self->_stash_result($context, $api->dispatch($context, @args));
+   $self->_stash_response($context, $api->dispatch($context, @args));
    return;
 }
 
 # Private methods
-sub _stash_result {
-   my ($self, $context, $result) = @_;
+sub _stash_response {
+   my ($self, $context, $response) = @_;
 
-   $context->stash(code => $result->[0], json => $result->[1]);
+   $context->stash(code => $response->[0], json => $response->[1]);
    $context->stash(finalised => TRUE, view => 'json');
    return;
 }

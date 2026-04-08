@@ -929,7 +929,7 @@ footer .footer-container .session-time {
 }
 .documentation h1,
 .documentation h2,
-.documentation h2,
+.documentation h3,
 .documentation h4,
 .documentation h5 {
   margin: 0.25rem 0;
@@ -951,15 +951,19 @@ footer .footer-container .session-time {
 }
 .documentation.restapi h1 {
   font-size: 2rem;
+  margin: 2rem 0;
 }
 .documentation.restapi h2 {
   font-size: 1.75rem;
+  margin: 1.75rem 0;
 }
 .documentation.restapi h3 {
   font-size: 1.5rem;
+  margin: 0.75rem 0;
 }
 .documentation.restapi h4 {
   font-size: 1.25rem;
+  margin: 0.6125rem 0;
 }
 .documentation.restapi h5 {
   font-size: 1rem;
@@ -989,8 +993,8 @@ footer .footer-container .session-time {
   margin: 0;
 }
 .jsdocumentation {
-  width: 80vw;
-  height: 60vw;
+  width: calc(100vw - 7rem);
+  height: calc(100vh - 7rem);
 }
 .main .exception,
 .modal .exception {

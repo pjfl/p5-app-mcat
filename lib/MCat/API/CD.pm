@@ -80,7 +80,7 @@ has_api_method 'search' =>
       ),
       fields      => 'search',
       location    => 'query',
-   }, $class->arguments_pageing],
+   }, $class->pagination_arguments],
    out_arg      => {
       name        => 'cds',
       type        => 'array',

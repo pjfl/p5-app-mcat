@@ -3,41 +3,38 @@
       [% header('', entity.result_class) %]
       <h3><code>API Methods</code></h3>
       <table class="contents-list">
-         <tr><th>Name</th><th>Request Method</th><th>Path</th></tr>
-      [% FOR method IN entity.method_list %]
-         [% NEXT UNLESS method.route %]
+         <tr><th>Name</th><th>HTTP Method</th><th>Path</th></tr>
+[%    FOR method IN entity.method_list -%]
          <tr>
-         [% href = entity.moniker _ '-' _ method.name %]
-         [% label = method.name | ucfirst %]
+[%       href = entity.moniker _ '-' _ method.name -%]
+[%       label = method.name | ucfirst -%]
             <td><a target="_self" href="#[% href %]">[% label %]</a></td>
             <td><code>[% method.method %]</code></td>
             <td><code>[% method.route | html %]</code></td>
          </tr>
-      [% END %]
+[%    END -%]
       </table>
-   [% FOR method IN entity.method_list %]
-      [% NEXT UNLESS method.route %]
+[%    FOR method IN entity.method_list -%]
       <div class="method">
          [% INCLUDE render_method %]
       </div>
-   [% END %]
+[%    END -%]
    </div>
    [% INCLUDE render_index %]
 </div>
 
 [% BLOCK render_method %]
-   <h3 id="[% entity.moniker %]-[% method.name %]">
-      <code>[% method.name | ucfirst %]</code>
-   </h3>
-   [% method.description | html | html_para %]
+[% id = entity.moniker _ '-' _ method.name -%]
+   <h3 id="[% id %]"><code>[% method.name | ucfirst %]</code></h3>
+   [% method.description | html | html_para -%]
    <h4>Access Required</h4>
    <p>[% method.access %]</p>
    <div class="request">
       <h4>Request</h4>
-      <h5>Method</h5><code>[% method.method %]</code>
+      <h5>HTTP Method</h5><code>[% method.method %]</code>
       <h5>URL</h5><code>[% route_prefix _ method.route_display %]</code>
       [% INCLUDE render_in_args %]
-      [% INCLUDE render_additional %]
+[%    IF method.additionally; INCLUDE render_additional; END -%]
    </div>
    <div class="response">
       <h4>Response</h4>
@@ -54,12 +51,12 @@
    <div class="entity-index">
       <h2>API Entities</h2>
       <table class="contents-list">
-      [% FOR entity_name IN entity_list %]
-         [% href = uri_for_action('rest/documentation', [entity_name]) %]
+[%    FOR entity_name IN entity_list -%]
+[%       href = uri_for_action('rest/documentation', [entity_name]) -%]
          <tr><td>
             <a href="[% href %]">[% entity_name | ucfirst %]</a>
          </td></tr>
-      [% END %]
+[%    END -%]
       </table>
    </div>
 [% END %]
@@ -84,52 +81,52 @@
    END;
 END %]
 
-[% BLOCK render_additional;
-   FOR additional IN method.additionally;
-      IF additional.title;
-         title = additional.title | lower | replace('\s', '_') | html;
-         id = entity.result_class _ '-' _ method.name _ '-' _ title;
-         '<h4 id="'; id; '">'; additional.title | html; '</h4>';
-      END;
-      additional.content | html | html_para;
-      additional.raw_content;
-   END;
-END %]
+[% BLOCK render_additional %]
+[%    FOR additional IN method.additionally -%]
+[%       IF additional.title -%]
+[%          title = additional.title | lower | replace('\s', '_') | html -%]
+[%          id = entity.result_class _ '-' _ method.name _ '-' _ title -%]
+            <h4 id="[% id %]">[% additional.title | html %]</h4>
+[%       END -%]
+[%       additional.content | html | html_para %]
+[%       additional.raw_content %]
+[%    END -%]
+[% END %]
 
-[% BLOCK render_out_arg;
-   '<h5>Content</h5>';
-   IF method.out_arg;
-      method.out_arg.description | html | html_para;
-      IF method.out_arg.type.match('^hash$');
-         INCLUDE argument_list arguments = entity.fields(method.out_arg);
-      ELSIF method.out_arg.type.match('^array$');
-         INCLUDE argument_list arguments = entity.fields(method.out_arg);
-      END;
-   ELSE;
-      '<p>Empty</p>';
-   END;
-END %]
+[% BLOCK render_out_arg %]
+     <h5>Content</h5>
+[%   IF method.out_arg -%]
+[%      method.out_arg.description | html | html_para %]
+[%      IF method.out_arg.type.match('^hash$') %]
+[%         INCLUDE argument_list arguments = entity.fields(method.out_arg) -%]
+[%      ELSIF method.out_arg.type.match('^array$') -%]
+[%         INCLUDE argument_list arguments = entity.fields(method.out_arg) -%]
+[%      END -%]
+[%   ELSE -%]
+        <p>Empty</p>
+[%   END -%]
+[% END %]
 
 [% BLOCK render_examples %]
-   [% success = method.success_code _ ' ' _ method.success_message %]
-   [% FOR req IN method.examples %]
-      [% resp = req.response %]
+[%    success = method.success_code _ ' ' _ method.success_message -%]
+[%    FOR req IN method.examples -%]
+[%       resp = req.response -%]
       <h4>Example - [% req.name %]</h4>
-      [% IF req.description %][% req.description | html | html_para %][% END %]
+[%       IF req.description %][% req.description | html | html_para %][% END -%]
       <h5>Request</h5>
-      <pre><code>curl -X [% method.method %] -H 'Authorization: Bearer [Access Token]' [% route_prefix _ (req.url || method.route_display) %][% IF req.body %] --data '[% encode_json(req.body) -%]'[% END %]</code></pre>
+      <pre><code>curl -X [% method.method %] -H 'Authorization: Bearer [Access Token]' [% route_prefix _ (req.url || method.route_display) %][% IF req.body %] --data '[% encode_json(req.body) | trim %]'[% END %]</code></pre>
       <h5>Response</h5>
-      [% IF method.success_code == '204' %]
-         <pre><code>HTTP/1.0 [% success %]</code></pre>
-      [% ELSIF resp.defined %]
-         <pre><code>HTTP/1.0 [% success %]
+[%       IF method.success_code == '204' -%]
+      <pre><code>HTTP/1.0 [% success %]</code></pre>
+[%       ELSIF resp.defined -%]
+      <pre><code>HTTP/1.0 [% success %]
 Content-Type: application/json
 Content-Length: [% encode_json(resp).length %]
 [% encode_json_pretty(resp) | html %]</code></pre>
-      [% ELSE %]
-         <pre><code>Response undefined</code></pre>
-      [% END %]
-   [% END %]
+[%       ELSE -%]
+      <pre><code>Response undefined</code></pre>
+[%       END -%]
+[%    END -%]
 [% END %]
 
 [% BLOCK argument %]
@@ -150,15 +147,15 @@ Content-Length: [% encode_json(resp).length %]
    </tr>
 [% END %]
 
-[% BLOCK argument_list;
-   IF arguments.size;
-      '<table class="argument-list">';
-      INCLUDE argument_headers;
-      FOR object IN arguments;
-         INCLUDE argument;
-      END;
-      '</table>';
-   ELSE;
-      '<p>None</p>';
-   END;
-END %]
+[% BLOCK argument_list %]
+[%    IF arguments.size -%]
+         <table class="argument-list">
+   [%    INCLUDE argument_headers %]
+[%       FOR object IN arguments -%]
+   [%       INCLUDE argument %]
+[%       END -%]
+         </table>
+[%    ELSE -%]
+         <p>None</p>
+[%    END -%]
+[% END %]

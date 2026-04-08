@@ -15,9 +15,21 @@ has '+moniker' => default => 'artist';
 
 has '+result_class' => default => 'Artist';
 
+has_api_column 'active' =>
+   type        => 'bool',
+   description => 'Is this artist still active.',
+   methods     => {
+      get => TRUE, search => TRUE, create => TRUE, update => TRUE
+   };
+
 has_api_column 'artistid' =>
    type        => 'int',
    description => 'The unique identifier for this artist.',
+   methods     => { get => TRUE, search => TRUE };
+
+has_api_column 'import_log_id' =>
+   type        => 'int',
+   description => 'Unique import ID assigned if this artist was imported.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_column 'name' =>
@@ -40,13 +52,6 @@ has_api_column 'name' =>
       },
    };
 
-has_api_column 'active' =>
-   type        => 'bool',
-   description => 'Is this artist still active.',
-   methods     => {
-      get => TRUE, search => TRUE, create => TRUE, update => TRUE
-   };
-
 has_api_column 'upvotes' =>
    type        => 'int',
    description => 'Number of upvotes recieved by this artist.',
@@ -54,9 +59,10 @@ has_api_column 'upvotes' =>
       get => TRUE, search => TRUE, create => TRUE, update => TRUE
    };
 
-has_api_column 'import_log_id' =>
-   type        => 'int',
-   description => 'Unique import ID assigned if this artist was imported.',
+has_api_column 'cds' =>
+   related     => 'cd',
+   type        => 'array_of_hash',
+   description => 'CDS related to the artist.',
    methods     => { get => TRUE, search => TRUE };
 
 has_api_method 'search' =>
@@ -80,7 +86,7 @@ has_api_method 'search' =>
       ),
       fields      => 'search',
       location    => 'query',
-   }, $class->arguments_pageing],
+   }, $class->content_arguments, $class->pagination_arguments],
    out_arg      => {
       name        => 'artists',
       type        => 'array',
