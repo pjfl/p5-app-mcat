@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds make-js-docs CLI method
           - Documentation template improvements
           - Removed left over API classes
           - Moved api code to Web::Components::API

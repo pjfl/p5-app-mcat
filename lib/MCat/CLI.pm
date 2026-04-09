@@ -105,11 +105,16 @@ has 'templatedir' =>
 
 =item C<ua_timeout>
 
-Defaults to 30seconds. How long should the HTTP user agent wait for responses
+Defaults to 30 seconds. How long should the HTTP user agent wait for responses
 
 =cut
 
-has 'ua_timeout' => is => 'ro', isa => Int, default => 30;
+option 'ua_timeout' =>
+   is            => 'ro',
+   isa           => Int,
+   documentation => 'Time to wait for UA response. Default 30secs',
+   default       => 30,
+   format        => 'i';
 
 # Private attributes
 has '_pusher' =>
@@ -277,6 +282,23 @@ sub make_js : method {
                    sort { $a->name cmp $b->name } @files;
 
    $self->info("Concatenated ${count} files to ${file}");
+   return OK;
+}
+
+=item make_js_docs - Create the JS documentation files
+
+Create the JS documentation files
+
+=cut
+
+sub make_js_docs : method {
+   my $self = shift;
+   my $cmd  = 'node_modules/.bin/jsdoc';
+   my $in   = io['share', 'js'];
+   my $out  = $self->config->root->catdir('js')->catdir('docs');
+   my $opts = { err => 'stderr', out => 'stdout' };
+
+   $self->run_cmd([$cmd, '-d', "${out}", "${in}"], $opts);
    return OK;
 }
 

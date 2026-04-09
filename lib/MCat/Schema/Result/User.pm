@@ -138,6 +138,12 @@ sub _new_salt ($$) {
 }
 
 # Public methods
+sub api_claim {
+   my $self = shift;
+
+   return { id => $self->id, role => $self->role->name };
+}
+
 sub assert_can_email {
    my $self = shift;
 
