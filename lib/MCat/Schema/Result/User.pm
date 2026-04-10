@@ -5,6 +5,7 @@ use overload '""' => sub { shift->_as_string },
 
 use HTML::Forms::Constants     qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use HTML::Forms::Types         qw( Bool HashRef );
+use Class::Usul::Cmd::Util     qw( includes );
 use Crypt::Eksblowfish::Bcrypt qw( bcrypt en_base64 );
 use MCat::Util                 qw( create_token create_totp_token truncate );
 use Net::IP::Match::Regexp     qw( create_iprange_regexp match_ip );
@@ -212,6 +213,10 @@ sub execute {
    return $self->$method();
 }
 
+sub groups {
+   my ($self, $value) = @_; return $self->_profile('groups', $value);
+}
+
 sub insert {
    my $self    = shift;
    my $columns = { $self->get_inflated_columns };
@@ -230,10 +235,15 @@ sub is_authorised {
 
    return FALSE unless $session;
 
-   my $role          = $session->role;
-   my $is_authorised = join NUL, grep { $_ eq $role } @{$roles // []};
+   my $role = $session->role;
 
-   return $self->id == $session->id || $is_authorised ? TRUE : FALSE;
+   return TRUE if $self->id == $session->id || includes $role, $roles;
+
+   for my $group (@{$session->groups // []}) {
+      return TRUE if includes $group, $roles;
+   }
+
+   return FALSE;
 }
 
 sub is_password_enabled {

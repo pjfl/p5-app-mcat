@@ -115,7 +115,7 @@ sub profile : Auth('view') Nav('Settings') {
    return;
 }
 
-sub list : Auth('manager') Nav('Users') {
+sub list : Auth('edit') Auth('manager') Nav('Users') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, resultset => $context->model('User') };
@@ -148,7 +148,7 @@ sub totp : Auth('view') Nav('View OTP') {
    my $user = $context->stash('user');
 
    return $self->error($context, UnauthorisedAccess)
-      unless $user->is_authorised($context->session, ['admin']);
+      unless $user->is_authorised($context->session, ['admin', 'manager']);
 
    my $options = { context => $context, user => $user };
 
@@ -156,7 +156,7 @@ sub totp : Auth('view') Nav('View OTP') {
    return;
 }
 
-sub view : Auth('manager') Nav('View User') {
+sub view : Auth('edit') Auth('manager') Nav('View User') {
    my ($self, $context) = @_;
 
    my $options = { context => $context, result => $context->stash('user') };

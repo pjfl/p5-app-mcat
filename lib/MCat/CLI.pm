@@ -88,7 +88,7 @@ has 'projects' =>
 
 =item C<templatedir>
 
-Directory containing email templates in Markdown format
+Directory containing templates
 
 =cut
 
@@ -100,7 +100,7 @@ has 'templatedir' =>
       my $config = $self->config;
       my $vardir = $config->vardir;
 
-      return $vardir->catdir('templates', $config->skin, 'site', 'email');
+      return $vardir->catdir('templates', $config->skin);
    };
 
 =item C<ua_timeout>
@@ -292,13 +292,14 @@ Create the JS documentation files
 =cut
 
 sub make_js_docs : method {
-   my $self = shift;
-   my $cmd  = 'node_modules/.bin/jsdoc';
-   my $in   = io['share', 'js'];
-   my $out  = $self->config->root->catdir('js')->catdir('docs');
-   my $opts = { err => 'stderr', out => 'stdout' };
+   my $self     = shift;
+   my $cmd      = 'node_modules/.bin/jsdoc';
+   my $template = $self->templatedir->catdir('jsdoc');
+   my $out      = $self->config->root->catdir('js', 'docs');
+   my $in       = io['share', 'js'];
+   my $opts     = { err => 'stderr', out => 'stdout' };
 
-   $self->run_cmd([$cmd, '-d', "${out}", "${in}"], $opts);
+   $self->run_cmd([$cmd, '-t', "${template}", '-d', "${out}", "${in}"], $opts);
    return OK;
 }
 
@@ -489,7 +490,8 @@ sub _load_stash {
       or throw UnknownToken, [$token];
    my $stash    = $self->json_parser->decode($encoded);
    my $template = delete $stash->{template};
-   my $path     = $self->templatedir->catfile($template);
+   my $dir      = $self->templatedir->catdir('site', 'email');
+   my $path     = $dir->catfile($template);
 
    $path = io $template unless $path->exists;
 

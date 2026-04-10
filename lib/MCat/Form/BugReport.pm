@@ -36,9 +36,8 @@ has 'is_editor' =>
       my $session = $self->context->session;
 
       return TRUE if $session->id == $self->item->user_id;
-
-      return ($session->role eq 'manager' or $session->role eq 'admin')
-         ? TRUE : FALSE;
+      return TRUE if $session->role eq 'admin';
+      return FALSE;
    };
 
 has '_icons' =>

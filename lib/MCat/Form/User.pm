@@ -101,6 +101,19 @@ has_field 'view' =>
    element_class => ['form-button pageload'],
    wrapper_class => ['input-button', 'inline'];
 
+has_field 'groups' =>
+   type             => 'Select',
+   auto_widget_size => 5,
+   multiple         => TRUE,
+   tags             => { page_break => TRUE },
+   options          => [
+      { label => 'Accounts', value => 'accounts' },
+      { label => 'Manager', value => 'manager' },
+      { label => 'Support', value => 'support' },
+   ];
+
+has_field 'submit2' => type => 'Button', value => '2';
+
 has_field 'valid_ips' =>
    type                   => 'DataStructure',
    do_label               => FALSE,
@@ -125,7 +138,7 @@ sub validate_valid_ips {
    return;
 }
 
-has_field 'submit2' => type => 'Button', value => '2';
+has_field 'submit3' => type => 'Button', value => '3';
 
 before 'before_build_fields' => sub {
    my $self = shift;
@@ -142,9 +155,10 @@ after 'after_build_fields' => sub {
    my $context = $self->context;
 
    $self->renderer_args->{current_page} = $self->current_page;
-   $self->renderer_args->{page_names}   = ['Details', 'IP Addresses'];
+   $self->renderer_args->{page_names}   = ['Details', 'Groups', 'IP Addresses'];
    $self->info_message([
       'With great power comes great responsibilty',
+      'Select additional groups to which the user belongs',
       'Enter an IP address or address range to restrict access',
    ]);
 

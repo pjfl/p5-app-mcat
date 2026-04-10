@@ -1,18 +1,24 @@
-package MCat::Model::Manager;
+package MCat::Model::System;
 
+use MCat::Constants qw( FALSE TRUE );
 use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';
 with    'Web::Components::Role';
 
-has '+moniker' => default => 'manager';
+has '+moniker' => default => 'system';
 
-sub menu : Auth('manager') Nav('Manager|img/manager.svg') {
+sub menu : Auth('view') Nav('System|img/system.svg') {
    my ($self, $context) = @_;
 
-   my $nav = $context->stash('nav')->list('manager');
+   my $nav = $context->stash('nav');
 
+   $nav->list('Documentation')->item('rest/documentation');
+   $nav->item('doc/frontend')->item('doc/list');
+
+   $nav->list('system');
+   $nav->menu('Documentation', TRUE);
    $nav->menu('filemanager')->item('file/list');
    $nav->menu('filter')->item('filter/list');
    $nav->menu('import')->item('import/list');

@@ -8,32 +8,36 @@ use Moo::Role;
 sub is_authorised {
    my ($self, $context, $action) = @_;
 
-   return $self->_redirect2unauthorised($context, 'No action ' . caller)
-      unless $action;
+   return $self->_unauthorised($context, 'No action ' . caller) unless $action;
 
-   my $auth = _get_action_auth($context, $action) // 'edit';
+   my $code_groups = _get_auth_for_action($context, $action);
+   my $code_role   = shift @{$code_groups} || 'edit';
 
-   return TRUE if $auth eq 'none';
+   return TRUE if $code_role eq 'none';
 
    my $session = $context->session;
 
    return $self->_redirect2login($context) unless $session->authenticated;
 
-   return $self->_redirect2unauthorised($context, 'Bad IP Address')
-      unless $self->_valid_ip($context);
+   my $valid_ip = $self->_validate_ip($context);
 
-   return TRUE if $auth eq 'view';
+   return $self->_unauthorised($context, 'Bad IP Address') unless $valid_ip;
 
    my $user_role = $session->role;
 
-   return $self->_redirect2unauthorised($context, 'No user role')
-      unless $user_role;
+   return $self->_unauthorised($context, 'No user role') unless $user_role;
 
    return TRUE if $user_role eq 'admin';
-   return TRUE if $user_role eq 'manager' and $auth eq 'edit';
-   return TRUE if $user_role eq $auth;
 
-   return $self->_redirect2unauthorised($context, 'Not Allowed');
+   if ($code_role eq 'view' or $code_role eq $user_role) {
+      return TRUE unless $code_groups->[0];
+
+      for my $code_group (@{$code_groups}) {
+         return TRUE if includes $code_group, $session->groups;
+      }
+   }
+
+   return $self->_unauthorised($context, 'Not Allowed');
 }
 
 sub method_args {
@@ -76,7 +80,7 @@ sub _redirect2login {
    return FALSE;
 }
 
-sub _redirect2unauthorised {
+sub _unauthorised {
    my ($self, $context, $reason) = @_;
 
    my $action = $self->config->default_actions->{unauthorised};
@@ -86,7 +90,7 @@ sub _redirect2unauthorised {
    return FALSE;
 }
 
-sub _valid_ip {
+sub _validate_ip {
    my ($self, $context) = @_;
 
    my $request = $context->request;
@@ -98,16 +102,14 @@ sub _valid_ip {
 }
 
 # Private functions
-sub _get_action_auth {
+sub _get_auth_for_action {
    my ($context, $action) = @_;
-
-   return unless $action;
 
    my $attr = eval { $context->get_attributes($action) };
 
-   return $attr->{Auth}->[-1] if $attr && defined $attr->{Auth};
+   return [@{$attr->{Auth}}] if $attr && defined $attr->{Auth};
 
-   return;
+   return [];
 }
 
 sub _get_captures {

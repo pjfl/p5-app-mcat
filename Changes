@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Use classic jsdoc template. Adds user groups
           - Adds make-js-docs CLI method
           - Documentation template improvements
           - Removed left over API classes

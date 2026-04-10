@@ -1,6 +1,6 @@
 package MCat::Table::View::User;
 
-use HTML::StateTable::Constants qw( FALSE TRUE );
+use HTML::StateTable::Constants qw( FALSE SPC TRUE );
 use Moo;
 
 extends 'MCat::Table::View::Object';
@@ -42,6 +42,8 @@ sub BUILD {
    };
    push @{$self->add_columns}, 'Time Zone' => $self->result->timezone;
 
+   push @{$self->add_columns}, 'Groups' =>
+      join SPC, map { ucfirst } @{$self->result->groups // []};
    return;
 }
 

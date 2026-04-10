@@ -8,7 +8,7 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.48
+ * @version 0.13.49
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.47
@@ -947,7 +947,8 @@ footer .footer-container .session-time {
   font-size: 0.8rem;
 }
 .documentation.restapi {
-  display: flex;
+  margin-left: 19rem;
+  padding-right: 0.5rem;
 }
 .documentation.restapi h1 {
   font-size: 2rem;
@@ -956,6 +957,8 @@ footer .footer-container .session-time {
 .documentation.restapi h2 {
   font-size: 1.75rem;
   margin: 1.75rem 0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 .documentation.restapi h3 {
   font-size: 1.5rem;
@@ -978,7 +981,8 @@ footer .footer-container .session-time {
   margin-bottom: 0.5rem;
 }
 .documentation.restapi .entity-index {
-  min-width: 10rem;
+  position: fixed;
+  transform: translateX(-105%);
 }
 .documentation.restapi .entity-index .contents-list {
   width: 100%;
@@ -1351,7 +1355,7 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.17
+ * @version 0.2.18
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.47

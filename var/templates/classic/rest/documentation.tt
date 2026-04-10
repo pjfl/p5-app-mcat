@@ -1,4 +1,5 @@
 <div class="restapi documentation">
+   [% INCLUDE render_index %]
    <div class="entity">
       [% header('', entity.result_class) %]
       <h3><code>API Methods</code></h3>
@@ -20,8 +21,22 @@
       </div>
 [%    END -%]
    </div>
-   [% INCLUDE render_index %]
 </div>
+
+[% BLOCK render_index %]
+   <div class="entity-index">
+      <h2>API Documentation</h2>
+      <h3><code>Index</code></h3>
+      <table class="contents-list">
+[%    FOR entity_name IN entity_list -%]
+[%       href = uri_for_action('rest/documentation', [entity_name]) -%]
+         <tr><td>
+            <a href="[% href %]">[% entity_name | ucfirst %]</a>
+         </td></tr>
+[%    END -%]
+      </table>
+   </div>
+[% END %]
 
 [% BLOCK render_method %]
 [% id = entity.moniker _ '-' _ method.name -%]
@@ -44,20 +59,6 @@
    </div>
    <div class="examples">
       [% INCLUDE render_examples %]
-   </div>
-[% END %]
-
-[% BLOCK render_index %]
-   <div class="entity-index">
-      <h2>API Entities</h2>
-      <table class="contents-list">
-[%    FOR entity_name IN entity_list -%]
-[%       href = uri_for_action('rest/documentation', [entity_name]) -%]
-         <tr><td>
-            <a href="[% href %]">[% entity_name | ucfirst %]</a>
-         </td></tr>
-[%    END -%]
-      </table>
    </div>
 [% END %]
 

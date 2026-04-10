@@ -663,7 +663,7 @@ has 'navigation' =>
          title_abbrev => $self->appclass,
          %{$self->_navigation},
          global       => [
-            qw( artist/list cd/list track/list manager/menu admin/menu )
+            qw( artist/list cd/list track/list system/menu admin/menu )
          ],
       };
    };
@@ -785,6 +785,7 @@ has 'request' =>
             email         => [ Str, NUL ],
             enable_2fa    => [ Bool, FALSE ],
             features      => [ ArrayRef, sub { [] } ],
+            groups        => [ ArrayRef, sub { [] } ],
             id            => [ PositiveInt, 0 ],
             link_display  => [ Str, 'both' ],
             menu_location => [ Str, 'header' ],

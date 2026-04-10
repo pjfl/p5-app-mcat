@@ -91,8 +91,16 @@ sub get_attributes {
 sub is_authorised {
    my ($self, $actionp) = @_;
 
-   my ($moniker)  = split m{ / }mx, $actionp;
-   my $model      = $self->models->{$moniker};
+   return FALSE unless $actionp;
+
+   my ($moniker) = split m{ / }mx, $actionp;
+
+   return FALSE unless $moniker;
+
+   my $model = $self->models->{$moniker};
+
+   return FALSE unless $model;
+
    my $authorised = $model->is_authorised($self, $actionp);
 
    $self->clear_redirect;
@@ -170,8 +178,12 @@ sub verify_form_post {
 sub _action_path2methods {
    my ($self, $action) = @_;
 
-   for my $controller (keys %{$self->controllers}) {
-      my $map = $self->controllers->{$controller}->action_path_map;
+   for my $moniker (keys %{$self->controllers}) {
+      my $controller = $self->controllers->{$moniker};
+
+      next unless $controller->can('action_path_map');
+
+      my $map = $controller->action_path_map;
 
       return $map->{$action}->{methods} if exists $map->{$action};
    }

@@ -67,6 +67,9 @@ has_column 'role_id' =>
    title       => 'Sort by role',
    value       => 'role.name';
 
+has_column 'groups' =>
+   value => sub { join SPC, map { ucfirst } @{shift->result->groups // []} };
+
 has_column 'timezone' =>
    value => sub {
       my $self    = shift;
