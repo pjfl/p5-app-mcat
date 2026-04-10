@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - User api_claim checks for api in user groups
           - Use classic jsdoc template. Adds user groups
           - Adds make-js-docs CLI method
           - Documentation template improvements

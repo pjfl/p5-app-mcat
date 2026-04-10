@@ -142,6 +142,8 @@ sub _new_salt ($$) {
 sub api_claim {
    my $self = shift;
 
+   return unless includes 'api', $self->groups;
+
    return { id => $self->id, role => $self->role->name };
 }
 

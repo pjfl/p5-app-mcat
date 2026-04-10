@@ -43,13 +43,13 @@ sub is_authorised {
 sub method_args {
    my ($self, $context, $action, $uri_args) = @_;
 
-   my $captures = _get_captures($context, $action);
+   my $capture = _get_capture_for_action($context, $action);
 
-   return $uri_args unless $captures;
+   return $uri_args unless $capture;
 
    my $method_args = [];
 
-   for (1 .. $captures) {
+   for (1 .. $capture) {
       my $arg = shift @{$uri_args};
 
       last unless defined $arg;
@@ -72,7 +72,7 @@ sub _redirect2login {
    # Redirect to wanted on successful login. Only set wanted to "legit" uris
    $session->wanted("${wanted}") if !$session->wanted
       && !$wanted->query_form('navigation')
-      && _get_nav_label($context, $self->can($context->endpoint // NUL))
+      && _get_nav_for_action($context, $self->can($context->endpoint // NUL))
       && !includes $context->endpoint, [qw(login logout register)];
 
    $context->stash(redirect $login, ['Authentication required']);
@@ -112,7 +112,7 @@ sub _get_auth_for_action {
    return [];
 }
 
-sub _get_captures {
+sub _get_capture_for_action {
    my ($context, $action) = @_;
 
    return unless $action;
@@ -124,7 +124,7 @@ sub _get_captures {
    return;
 }
 
-sub _get_nav_label {
+sub _get_nav_for_action {
    my ($context, $action) = @_;
 
    return unless $action;

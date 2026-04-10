@@ -107,9 +107,10 @@ has_field 'groups' =>
    multiple         => TRUE,
    tags             => { page_break => TRUE },
    options          => [
+      { label => 'API',      value => 'api' },
       { label => 'Accounts', value => 'accounts' },
-      { label => 'Manager', value => 'manager' },
-      { label => 'Support', value => 'support' },
+      { label => 'Manager',  value => 'manager' },
+      { label => 'Support',  value => 'support' },
    ];
 
 has_field 'submit2' => type => 'Button', value => '2';

@@ -110,7 +110,7 @@ sub is_authorised {
 sub method_chain {
    my ($self, $action) = @_;
 
-   return $self->_action_path2methods($action);
+   return $self->_action_lookup($action, 'methods');
 }
 
 sub model {
@@ -124,7 +124,7 @@ sub res { shift->response }
 sub uri_for_action {
    my ($self, $action, $args, @params) = @_;
 
-   my $uri    = $self->_action_path2uri($action) // $action;
+   my $uri    = $self->_action_lookup($action, 'uri');
    my $uris   = is_arrayref $uri ? $uri : [ $uri ];
    my $params = is_hashref $params[0] ? $params[0] : {@params};
 
@@ -175,8 +175,8 @@ sub verify_form_post {
 }
 
 # Private methods
-sub _action_path2methods {
-   my ($self, $action) = @_;
+sub _action_lookup {
+   my ($self, $action, $key) = @_;
 
    for my $moniker (keys %{$self->controllers}) {
       my $controller = $self->controllers->{$moniker};
@@ -185,26 +185,10 @@ sub _action_path2methods {
 
       my $map = $controller->action_path_map;
 
-      return $map->{$action}->{methods} if exists $map->{$action};
+      return $map->{$action}->{$key} if exists $map->{$action};
    }
 
    return $action;
-}
-
-sub _action_path2uri {
-   my ($self, $action) = @_;
-
-   for my $moniker (keys %{$self->controllers}) {
-      my $controller = $self->controllers->{$moniker};
-
-      next unless $controller->can('action_path_map');
-
-      my $map = $controller->action_path_map;
-
-      return $map->{$action}->{uri} if exists $map->{$action};
-   }
-
-   return;
 }
 
 use namespace::autoclean;
