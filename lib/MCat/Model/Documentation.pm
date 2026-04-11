@@ -1,6 +1,7 @@
 package MCat::Model::Documentation;
 
 use MCat::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use File::DataClass::IO qw( io );
 use MCat::Util      qw( redirect );
 use MCat::File::Docs::View;
 use Moo;
@@ -24,6 +25,15 @@ sub base : Auth('view') {
    return;
 }
 
+sub configuration : Auth('admin') Nav('View') {
+   my ($self, $context) = @_;
+
+   my $options = { context => $context };
+
+   $context->stash(form => $self->new_form('Configuration', $options));
+   return;
+}
+
 sub config_edit : Auth('admin') Nav('Edit') {
    my ($self, $context) = @_;
 
@@ -41,22 +51,46 @@ sub config_edit : Auth('admin') Nav('Edit') {
    return;
 }
 
-sub configuration : Auth('admin') Nav('View') {
-   my ($self, $context) = @_;
-
-   my $options = { context => $context };
-
-   $context->stash(form => $self->new_form('Configuration', $options));
-   return;
-}
-
 sub frontend : Auth('view') Nav('Browser') {
    my ($self, $context) = @_;
 
    return;
 }
 
-sub list : Auth('view') Nav('Server') {
+sub library : Auth('view') Nav('Server Library') {
+   my ($self, $context, $file) = @_;
+
+   my $home   = io((split m{ : }mx, $ENV{PERL5LIB})[1]);
+   my $params = $context->request->query_parameters;
+
+   if ($file) {
+      my $directory = $home->catdir($self->file->to_path($params->{directory}));
+      my $markup    = $self->_doc_viewer->get($directory->catfile($file));
+
+      $context->stash(documentation => $markup);
+   }
+   else {
+      my $options = {
+         action      => 'doc/library',
+         action_view => 'doc/library',
+         caption     => 'Server Library Documentation',
+         context     => $context,
+         file_home   => $home,
+         file_share  => $self->file_share,
+      };
+      my $directory = $params->{directory};
+      my $selected  = $params->{selected};
+
+      $options->{directory} = $directory if $directory;
+      $options->{selected}  = $selected  if $selected;
+
+      $context->stash(table => $self->new_table('Docs', $options));
+   }
+
+   return;
+}
+
+sub list : Auth('view') Nav('Application') {
    my ($self, $context) = @_;
 
    my $options   = {

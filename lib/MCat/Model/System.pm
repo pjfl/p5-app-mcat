@@ -15,7 +15,7 @@ sub menu : Auth('view') Nav('System|img/system.svg') {
    my $nav = $context->stash('nav');
 
    $nav->list('Documentation')->item('rest/documentation');
-   $nav->item('doc/frontend')->item('doc/list');
+   $nav->item('doc/list')->item('doc/frontend')->item('doc/library');
 
    $nav->list('system');
    $nav->menu('Documentation', TRUE);

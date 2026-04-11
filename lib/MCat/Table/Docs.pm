@@ -13,6 +13,21 @@ with    'HTML::StateTable::Role::HighlightRow';
 with    'HTML::StateTable::Role::Tag';
 with    'MCat::Role::FileMeta';
 
+has 'action' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub {
+      my $self    = shift;
+      my $moniker = $self->moniker;
+
+      return $self->selectonly ? "${moniker}/select" : "${moniker}/list";
+   };
+
+has 'action_view' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { my $moniker = shift->moniker; "${moniker}/view" };
+
 has 'directory' =>
    is       => 'lazy',
    isa      => Directory,
@@ -31,7 +46,7 @@ has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
 
 has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
 
-has '+caption' => default => 'Server Documentation';
+has '+caption' => default => 'Application Documentation';
 
 has '+form_buttons' => default => sub { shift->_build_form_buttons };
 
@@ -51,13 +66,6 @@ has '+tag_direction' => default => 'right';
 has '+tag_names' => default => sub { shift->_build_tag_names };
 
 has '+title_location' => default => 'outer';
-
-has '_action' => is => 'lazy', isa => Str, default => sub {
-   my $self    = shift;
-   my $moniker = $self->moniker;
-
-   return $self->selectonly ? "${moniker}/select" : "${moniker}/list";
-};
 
 has '_directory' => is => 'ro', isa => Str, init_arg => 'directory';
 
@@ -154,17 +162,16 @@ sub _build_name_link {
       $params->{extensions} = $self->extensions if $self->extensions;
       $params->{selected}   = $selected if $selected;
 
-      return $self->context->uri_for_action($self->_action, [], $params);
+      return $self->context->uri_for_action($self->action, [], $params);
    }
    elsif ($result->type eq 'file') {
-      my $action = $self->moniker . '/view';
-      my $args   = [$result->uri_arg];
-      my $dir    = $self->_qualified_directory;
+      my $args = [$result->uri_arg];
+      my $dir  = $self->_qualified_directory;
 
       $params->{directory} = $dir if $dir;
       $params->{modal} = 'true';
 
-      return $self->context->uri_for_action($action, $args, $params);
+      return $self->context->uri_for_action($self->action_view, $args, $params);
    }
 
    return;
@@ -191,7 +198,7 @@ sub _build_tag_names {
       $params->{extensions} = $self->extensions if $self->extensions;
       $params->{selected} = $self->selected if $self->has_selected;
 
-      my $uri = $self->context->uri_for_action($self->_action, [], $params);
+      my $uri = $self->context->uri_for_action($self->action, [], $params);
 
       push @{$tuples}, [$name, $uri];
    }

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds server library documentation reader
           - User api_claim checks for api in user groups
           - Use classic jsdoc template. Adds user groups
           - Adds make-js-docs CLI method
