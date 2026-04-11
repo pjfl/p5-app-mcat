@@ -8,11 +8,13 @@ has 'jobdaemon' =>
    is      => 'lazy',
    isa     => class_type('MCat::JobServer'),
    default => sub {
-      my $self = shift;
+      my $self   = shift;
+      my $config = $self->config;
+      my $prefix = $config->prefix;
 
       return MCat::JobServer->new(config => {
-         appclass => $self->config->appclass,
-         pathname => $self->config->bin->catfile('mcat-jobserver'),
+         appclass => $config->appclass,
+         pathname => $config->bin->catfile("${prefix}-jobserver"),
       });
    };
 
@@ -21,10 +23,11 @@ has 'schema' =>
    isa     => class_type('DBIx::Class::Schema'),
    default => sub {
       my $self   = shift;
-      my $class  = $self->config->schema_class;
-      my $schema = $class->connect(@{$self->config->connect_info});
+      my $config = $self->config;
+      my $class  = $config->schema_class;
+      my $schema = $class->connect(@{$config->connect_info});
 
-      $class->config($self->config) if $class->can('config');
+      $class->config($config) if $class->can('config');
 
       $schema->jobdaemon($self->jobdaemon) if $schema->can('jobdaemon');
 

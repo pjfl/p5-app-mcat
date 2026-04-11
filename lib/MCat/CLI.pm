@@ -2,7 +2,7 @@ package MCat::CLI;
 
 use MCat;
 use MCat::Constants        qw( EXCEPTION_CLASS FAILED FALSE NUL OK TRUE );
-use File::DataClass::Types qw( ArrayRef Directory Int );
+use File::DataClass::Types qw( ArrayRef Directory Int Str );
 use Class::Usul::Cmd::Util qw( ensure_class_loaded );
 use English                qw( -no_match_vars );
 use File::DataClass::IO    qw( io );
@@ -85,6 +85,17 @@ has 'projects' =>
    default => sub {
       return [qw(HTML-Filter HTML-Forms HTML-StateTable Web-Components)];
    };
+
+=item C<server_pid_file>
+
+File name where the web server stores it's PID
+
+=cut
+
+has 'server_pid_file' =>
+   is      => 'lazy',
+   isa     => Str,
+   default => sub { shift->config->prefix . '-webserver.pid' };
 
 =item C<templatedir>
 
@@ -339,7 +350,7 @@ L</server_start>
 
 sub server_restart : method {
    my $self    = shift;
-   my $pidfile = $self->config->rundir->catfile('web_server.pid');
+   my $pidfile = $self->config->rundir->catfile($self->server_pid_file);
    my $pid;
 
    $pid = $pidfile->getline if $pidfile->exists;
@@ -362,7 +373,7 @@ the application upon receipt of a C<SIGHUP>
 
 sub server_start : method {
    my $self    = shift;
-   my $pidfile = $self->config->rundir->catfile('web_server.pid');
+   my $pidfile = $self->config->rundir->catfile($self->server_pid_file);
    my $runner  = Plack::Runner->new;
 
    $ENV{PLACK_PIDFILE} = "${pidfile}";
@@ -379,7 +390,7 @@ Sends C<SIGTERM> the development server
 
 sub server_stop : method {
    my $self    = shift;
-   my $pidfile = $self->config->rundir->catfile('web_server.pid');
+   my $pidfile = $self->config->rundir->catfile($self->server_pid_file);
    my $pid;
 
    $pid = $pidfile->getline if $pidfile->exists;

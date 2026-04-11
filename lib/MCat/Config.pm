@@ -253,6 +253,19 @@ has 'component_loader' =>
       };
    };
 
+=item connect_extra
+
+Extra database connection parameters
+
+=cut
+
+has 'connect_extra' =>
+   is      => 'ro',
+   isa     => HashRef,
+   default => sub {
+      return { on_connect_do => "set time zone 'GMT'" };
+   };
+
 =item connect_info
 
 Used to connect to the database, the 'dsn', 'db_username', and 'db_password'
@@ -265,10 +278,13 @@ has 'connect_info' =>
    is      => 'lazy',
    isa     => ArrayRef,
    default => sub {
-      my $self     = shift;
-      my $password = decrypt NUL, $self->db_password;
+      my $self       = shift;
+      my $username   = $self->db_username;
+      my $password   = decrypt NUL, $self->db_password;
+      my $attributes = $self->dbi_attributes;
+      my $extra      = $self->connect_extra;
 
-      return [$self->dsn, $self->db_username, $password, $self->db_extra];
+      return [$self->dsn, $username, $password, $attributes, $extra];
    };
 
 =item context_class
@@ -295,22 +311,6 @@ has 'copyright_year' =>
    isa     => PositiveInt,
    default => sub { now_dt->strftime('%Y') };
 
-=item db_extra
-
-Additional attributes passed to the database connection method
-
-=cut
-
-has 'db_extra' =>
-   is            => 'ro',
-   isa           => HashRef,
-   documentation => 'AutoCommit=boolean',
-   default       => sub {
-      return {
-         AutoCommit => TRUE,
-      };
-   };
-
 =item db_password
 
 Password used to connect to the database. This has no default. It should be
@@ -328,6 +328,22 @@ The username used to connect to the database
 =cut
 
 has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
+
+=item dbi_attributes
+
+Additional attributes passed to the database connection method
+
+=cut
+
+has 'dbi_attributes' =>
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'AutoCommit=boolean',
+   default       => sub {
+      return {
+         AutoCommit => TRUE,
+      };
+   };
 
 =item default_actions
 
@@ -663,7 +679,7 @@ has 'navigation' =>
          title_abbrev => $self->appclass,
          %{$self->_navigation},
          global       => [
-            qw( artist/list cd/list track/list system/menu admin/menu )
+            qw( system/menu artist/list cd/list track/list admin/menu )
          ],
       };
    };

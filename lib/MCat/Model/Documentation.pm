@@ -51,7 +51,7 @@ sub config_edit : Auth('admin') Nav('Edit') {
    return;
 }
 
-sub frontend : Auth('view') Nav('Browser') {
+sub frontend : Auth('view') Nav('Browser Library') {
    my ($self, $context) = @_;
 
    return;

@@ -613,7 +613,7 @@ exports.publish = (taffyData, opts, tutorials) => {
     files = find({kind: 'file'});
     packages = find({kind: 'package'});
 
-    generate('Browser Documentation',
+    generate('Browser Library Documentation',
         packages.concat(
             [{
                 kind: 'mainpage',
