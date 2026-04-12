@@ -29,11 +29,11 @@ sub is_authorised {
 
    return TRUE if $user_role eq 'admin';
 
-   if ($code_role eq 'view' or $code_role eq $user_role) {
+   if ($code_role eq 'view' or $user_role eq $code_role) {
       return TRUE unless $code_groups->[0];
 
-      for my $code_group (@{$code_groups}) {
-         return TRUE if includes $code_group, $session->groups;
+      for my $user_group (@{$session->groups}) {
+         return TRUE if includes $user_group, $code_groups;
       }
    }
 

@@ -54,7 +54,7 @@ sub BUILD {
    my $port   = $class->env_var('port') // 5_000;
    my $info   = 'v' . $class->VERSION . " started on port ${port}";
 
-   $self->log->info("LISTENER: ${class} ${server} ${info}");
+   $self->log->info("WebServer: ${class} ${server} ${info}");
    return;
 }
 

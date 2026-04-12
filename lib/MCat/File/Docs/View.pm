@@ -12,11 +12,12 @@ sub get {
    $parser->output_string(\my $markdown);
    $parser->parse_file($path->as_string);
 
-   my $formatter = MCat::Markdown->new();
-
-   $markdown =~ s{\\}{}gmx;
+   $markdown =~ s{ \\ }{}gmx;
+   $markdown =~ s{ [ ]_(\w+) }{ $1}gmx;
 
    $markdown = 'Nothing found' if length $markdown < 2;
+
+   my $formatter = MCat::Markdown->new();
 
    return $formatter->markdown($markdown);
 }

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Document endpoint renames
           - Sets database connection session time zone
           - Adds server library documentation reader
           - User api_claim checks for api in user groups

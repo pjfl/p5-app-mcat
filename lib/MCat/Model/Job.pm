@@ -51,7 +51,7 @@ sub remove {
    return;
 }
 
-sub status : Auth('admin') Nav('Job Status') {
+sub status : Auth('admin') Nav('Job System') {
    my ($self, $context) = @_;
 
    return $self->_status_button_handler($context) if $context->posted;

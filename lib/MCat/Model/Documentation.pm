@@ -51,13 +51,13 @@ sub config_edit : Auth('admin') Nav('Edit') {
    return;
 }
 
-sub frontend : Auth('view') Nav('Browser Library') {
+sub browser : Auth('view') Nav('Browser Library') {
    my ($self, $context) = @_;
 
    return;
 }
 
-sub library : Auth('view') Nav('Server Library') {
+sub server : Auth('view') Nav('Server Library') {
    my ($self, $context, $file) = @_;
 
    my $home   = io((split m{ : }mx, $ENV{PERL5LIB})[1]);
@@ -71,8 +71,8 @@ sub library : Auth('view') Nav('Server Library') {
    }
    else {
       my $options = {
-         action      => 'doc/library',
-         action_view => 'doc/library',
+         action      => 'doc/server',
+         action_view => 'doc/server',
          caption     => 'Server Library Documentation',
          context     => $context,
          file_home   => $home,
