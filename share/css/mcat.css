@@ -987,6 +987,14 @@ footer .footer-container .session-time {
 .documentation.restapi .entity-index .contents-list {
   width: 100%;
 }
+.documentation.restapi .index-label {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+}
+.documentation.restapi .index-label h3 {
+  margin-top: 0;
+}
 .documentation.restapi .method {
   border-top: 1px solid gray;
 }

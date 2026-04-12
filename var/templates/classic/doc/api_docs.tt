@@ -1,4 +1,4 @@
-<div class="restapi documentation">
+<div id="top" class="restapi documentation">
    [% INCLUDE render_index %]
    <div class="entity">
       [% header('', entity.result_class) %]
@@ -26,10 +26,13 @@
 [% BLOCK render_index %]
    <div class="entity-index">
       <h2>API Documentation</h2>
-      <h3><code>Index</code></h3>
+      <div class="index-label">
+         <h3><code>Index</code></h3>
+         <a target="_self" href="#top">Top</a>
+      </div>
       <table class="contents-list">
 [%    FOR entity_name IN entity_list -%]
-[%       href = uri_for_action('rest/documentation', [entity_name]) -%]
+[%       href = uri_for_action('doc/api_docs', [], { entity => entity_name}) -%]
          <tr><td>
             <a href="[% href %]">[% entity_name | ucfirst %]</a>
          </td></tr>

@@ -41,7 +41,7 @@ sub dispatch_request { build_routes
    'GET      + /user/* + ?*'            => 'user/root/user/view',
    'GET      + /user + ?*'              => 'user/root/base/list',
 
-   'GET      + /doc/api/* | /doc/api + ?*'   => 'rest/root/base/documentation',
+   'GET      + /doc/api + ?*'                => 'doc/root/base/api_docs',
    'GET      + /doc/browser + ?*'            => 'doc/root/base/browser',
    'GET|POST + /doc/configuration/edit + ?*' => 'doc/root/base/config_edit',
    'GET      + /doc/configuration + ?*'      => 'doc/root/base/configuration',

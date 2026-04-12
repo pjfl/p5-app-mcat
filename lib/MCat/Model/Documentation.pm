@@ -25,6 +25,19 @@ sub base : Auth('view') {
    return;
 }
 
+sub api_docs : Auth('view') Nav('API') {
+   my ($self, $context) = @_;
+
+   my $api    = $context->controllers->{rest}->api;
+   my $prefix = $context->request->uri_for($api->route_prefix);
+   my $name   = $context->request->query_parameters->{entity};
+
+   $context->stash(entity_list  => $api->entity_list);
+   $context->stash(entity       => $api->get_entity($name));
+   $context->stash(route_prefix => $prefix);
+   return;
+}
+
 sub configuration : Auth('admin') Nav('View') {
    my ($self, $context) = @_;
 

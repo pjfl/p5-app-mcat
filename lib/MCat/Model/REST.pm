@@ -9,26 +9,6 @@ with    'Web::Components::Role';
 
 has '+moniker' => default => 'rest';
 
-sub base : Auth('view') {
-   my ($self, $context) = @_;
-
-   $context->stash('nav')->finalise;
-
-   return;
-}
-
-sub documentation : Auth('view') Nav('API') {
-   my ($self, $context, $entity_name) = @_;
-
-   my $api    = $context->controllers->{rest}->api;
-   my $prefix = $context->request->uri_for($api->route_prefix);
-
-   $context->stash(entity_list  => $api->entity_list);
-   $context->stash(entity       => $api->get_entity($entity_name));
-   $context->stash(route_prefix => $prefix);
-   return;
-}
-
 sub authorise : Auth('none') {
    my ($self, $context) = @_;
 
