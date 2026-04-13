@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Server documentation uses query string for file attribute
           - Documentation styling improvements
           - API documentation navigation fixes
           - Document endpoint renames

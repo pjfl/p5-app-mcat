@@ -14,7 +14,7 @@ with    'MCat::Role::FileMeta';
 
 has '+moniker' => default => 'doc';
 
-has 'library_home' =>
+has 'local_library' =>
    is      => 'ro',
    isa     => Path,
    default => sub { io((split m{ : }mx, $ENV{PERL5LIB})[1]) };
@@ -45,7 +45,7 @@ sub api : Auth('view') Nav('API') {
 }
 
 sub application : Auth('view') Nav('Application') {
-   my ($self, $context, $file) = @_;
+   my ($self, $context) = @_;
 
    my $options   = {
       caption    => 'Application Documentation',
@@ -61,6 +61,8 @@ sub application : Auth('view') Nav('Application') {
    $options->{selected}  = $selected  if $selected;
 
    $context->stash(table => $self->new_table('Docs', $options));
+
+   my $file = $params->{file};
 
    $file = 'MCat.pm' unless $directory;
 
@@ -83,9 +85,9 @@ sub client : Auth('view') Nav('Client') {
 sub configuration : Auth('admin') Nav('View') {
    my ($self, $context) = @_;
 
-   my $options = { context => $context };
+   my $form = $self->new_form('Configuration', { context => $context });
 
-   $context->stash(form => $self->new_form('Configuration', $options));
+   $context->stash(form => $form);
    return;
 }
 
@@ -107,16 +109,16 @@ sub config_edit : Auth('admin') Nav('Edit') {
 }
 
 sub server : Auth('view') Nav('Server') {
-   my ($self, $context, $file) = @_;
+   my ($self, $context) = @_;
 
-   my $home    = $self->library_home;
-   my $params  = $context->request->query_parameters;
-   my $options = {
+   my $locallib = $self->local_library;
+   my $params   = $context->request->query_parameters;
+   my $options  = {
       action      => 'doc/server',
       action_view => 'doc/server',
       caption     => 'Server Documentation',
       context     => $context,
-      file_home   => $home,
+      file_home   => $locallib,
       file_share  => $self->file_share,
    };
    my $directory = $params->{directory};
@@ -127,9 +129,11 @@ sub server : Auth('view') Nav('Server') {
 
    $context->stash(table => $self->new_table('Docs', $options));
 
-   $directory = $home->catdir($self->file->to_path($params->{directory}));
+   my $file = $params->{file};
 
    return unless $file;
+
+   $directory = $locallib->catdir($self->file->to_path($params->{directory}));
 
    my $markup = $self->_doc_viewer->get($directory->catfile($file));
 

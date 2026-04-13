@@ -15,7 +15,7 @@ sub get {
    $markdown =~ s{ \\ }{}gmx;
    $markdown =~ s{ [ ]_(\w+) }{ $1}gmx;
 
-   $markdown = 'Nothing found' if length $markdown < 2;
+   return '<h1>Nothing Found</h1>' unless length $markdown > 2;
 
    my $formatter = MCat::Markdown->new();
 

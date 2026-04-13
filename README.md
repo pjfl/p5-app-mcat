@@ -4,7 +4,7 @@ MCat - Music Catalog
 
 # Version
 
-Describes version v0.3.$Rev: 54 $ of [MCat](https://metacpan.org/pod/MCat)
+Describes version v0.3.$Rev: 61 $ of [MCat](https://metacpan.org/pod/MCat)
 
 # Synopsis
 
@@ -176,7 +176,7 @@ Larry Wall - For the Perl programming language
 
 # Author
 
-Peter Flanigan, `<lazarus@roxsoft.co.uk>`
+Peter Flanigan, `<pjfl@cpan.org>`
 
 # License and Copyright
 

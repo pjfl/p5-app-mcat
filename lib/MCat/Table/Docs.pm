@@ -144,12 +144,13 @@ sub _build_name_link {
       return $self->context->uri_for_action($self->action, [], $params);
    }
    elsif ($result->type eq 'file') {
-      my $args = [$result->uri_arg];
       my $dir  = $self->_qualified_directory;
+      my $file = $result->uri_arg;
 
       $params->{directory} = $dir if $dir;
+      $params->{file} = $file if $file;
 
-      return $self->context->uri_for_action($self->action_view, $args, $params);
+      return $self->context->uri_for_action($self->action_view, [], $params);
    }
 
    return;

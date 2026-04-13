@@ -45,9 +45,8 @@ sub dispatch_request { build_routes
    'GET      + /doc/client + ?*'             => 'doc/root/base/client',
    'GET|POST + /doc/configuration/edit + ?*' => 'doc/root/base/config_edit',
    'GET      + /doc/configuration + ?*'      => 'doc/root/base/configuration',
-   'GET      + /doc/server/*.* | /doc/server + ?*'
-                                             => 'doc/root/base/server',
-   'GET      + /doc/*.* | /doc + ?*'         => 'doc/root/base/application',
+   'GET      + /doc/server + ?*'             => 'doc/root/base/server',
+   'GET      + /doc + ?*'                    => 'doc/root/base/application',
 
    'GET|POST + /job/status + ?*' => 'job/root/base/status',
 

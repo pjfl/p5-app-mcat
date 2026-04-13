@@ -15,7 +15,37 @@ use Moo;
 
 extends 'Web::Components::Context';
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+MCat::Context - Per request context object
+
+=head1 Synopsis
+
+   use MCat::Context;
+
+=head1 Description
+
+Per request context object
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item config
+
+=cut
+
 has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
+
+=item icons_uri
+
+=cut
 
 has 'icons_uri' =>
    is      => 'lazy',
@@ -26,15 +56,27 @@ has 'icons_uri' =>
       return $self->request->uri_for($self->config->icons);
    };
 
+=item response
+
+=cut
+
 has 'response' =>
    is      => 'ro',
    isa     => class_type('MCat::Response'),
    default => sub { MCat::Response->new };
 
+=item time_zone
+
+=cut
+
 has 'time_zone' =>
    is      => 'lazy',
    isa     => Str,
    default => sub { shift->session->timezone };
+
+=item token_lifetime
+
+=cut
 
 has 'token_lifetime' =>
    is      => 'lazy',
@@ -63,11 +105,27 @@ has '+_stash' =>
 with 'MCat::Role::Schema';
 with 'MCat::Role::Authentication';
 
+=back
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item feature
+
+=cut
+
 sub feature {
    my ($self, $feature) = @_;
 
    return includes $feature, $self->session->features;
 }
+
+=item get_attributes
+
+=cut
 
 sub get_attributes {
    my ($self, $action) = @_;
@@ -88,6 +146,10 @@ sub get_attributes {
    return attributes::get($coderef) // {};
 }
 
+=item is_authorised
+
+=cut
+
 sub is_authorised {
    my ($self, $actionp) = @_;
 
@@ -107,11 +169,19 @@ sub is_authorised {
    return $authorised;
 }
 
+=item method_chain
+
+=cut
+
 sub method_chain {
    my ($self, $action) = @_;
 
    return $self->_action_lookup($action, 'methods');
 }
+
+=item model
+
+=cut
 
 sub model {
    my ($self, $rs_name) = @_;
@@ -119,7 +189,15 @@ sub model {
    return $rs_name ? $self->schema->resultset($rs_name) : undef;
 }
 
+=item res
+
+=cut
+
 sub res { shift->response }
+
+=item uri_for_action
+
+=cut
 
 sub uri_for_action {
    my ($self, $action, $args, @params) = @_;
@@ -161,11 +239,19 @@ sub uri_for_action {
    return $self->request->uri_for($uri, $args, $params);
 }
 
+=item verification_token
+
+=cut
+
 sub verification_token {
    my $self = shift;
 
    return get_token $self->token_lifetime, $self->session->serialise;
 }
+
+=item verify_form_post
+
+=cut
 
 sub verify_form_post {
    my $self  = shift;
@@ -194,3 +280,56 @@ sub _action_lookup {
 use namespace::autoclean;
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<Web::Components::Context>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=MCat.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <pjfl@cpan.org> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2025 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:
