@@ -1,8 +1,8 @@
 <div id="top" class="restapi documentation">
    [% INCLUDE render_index %]
    <div class="entity">
-      [% header('', entity.result_class) %]
-      <h3><code>API Methods</code></h3>
+      <h1>[% entity.result_class %]</h1>
+      <h2>API Methods</h2>
       <table class="contents-list">
          <tr><th>Name</th><th>HTTP Method</th><th>Path</th></tr>
 [%    FOR method IN entity.method_list -%]
@@ -16,7 +16,8 @@
 [%    END -%]
       </table>
 [%    FOR method IN entity.method_list -%]
-      <div class="method">
+[%       id = entity.moniker _ '-' _ method.name -%]
+      <div id="[% id %]" class="method">
          [% INCLUDE render_method %]
       </div>
 [%    END -%]
@@ -25,16 +26,16 @@
 
 [% BLOCK render_index %]
    <div class="entity-index">
-      <h2>API Documentation</h2>
+      <h1>API Documentation</h1>
       <div class="index-label">
-         <h3><code>Index</code></h3>
+         <h2>Index</h2>
          <a target="_self" href="#top">Top</a>
       </div>
       <table class="contents-list">
-[%    FOR entity_name IN entity_list -%]
-[%       href = uri_for_action('doc/api_docs', [], { entity => entity_name}) -%]
+[%    FOR name IN entity_list -%]
+[%       href = uri_for_action('doc/api', [], { entity => name }) -%]
          <tr><td>
-            <a href="[% href %]">[% entity_name | ucfirst %]</a>
+            <a href="[% href %]">[% name | ucfirst %]</a>
          </td></tr>
 [%    END -%]
       </table>
@@ -42,21 +43,20 @@
 [% END %]
 
 [% BLOCK render_method %]
-[% id = entity.moniker _ '-' _ method.name -%]
-   <h3 id="[% id %]"><code>[% method.name | ucfirst %]</code></h3>
+   <h2>[% entity.result_class %].[% method.name | ucfirst %]</h2>
    [% method.description | html | html_para -%]
-   <h4>Access Required</h4>
+   <h3>Access Required</h3>
    <p>[% method.access %]</p>
    <div class="request">
-      <h4>Request</h4>
-      <h5>HTTP Method</h5><code>[% method.method %]</code>
-      <h5>URL</h5><code>[% route_prefix _ method.route_display %]</code>
+      <h3>Request</h3>
+      <h4>HTTP Method</h4><code>[% method.method %]</code>
+      <h4>URL</h4><code>[% route_prefix _ method.route_display %]</code>
       [% INCLUDE render_in_args %]
 [%    IF method.additionally; INCLUDE render_additional; END -%]
    </div>
    <div class="response">
-      <h4>Response</h4>
-      <h5>Code</h5>
+      <h3>Response</h3>
+      <h4>Code</h4>
       <code>[% method.success_code %] [% method.success_message %]</code>
       [% INCLUDE render_out_arg %]
    </div>
@@ -68,7 +68,7 @@
 [% BLOCK render_in_args;
    FOR location IN ['path', 'query', 'body'];
       NEXT UNLESS method.has_in_args(location);
-      '<h5>'; location | ucfirst | html; ' Parameters</h5>';
+      '<h4>'; location | ucfirst | html; ' Parameters</h4>';
       '<table class="argument-list">';
          FOR object IN method.in_args;
             IF object.location == location;
@@ -90,7 +90,7 @@ END %]
 [%       IF additional.title -%]
 [%          title = additional.title | lower | replace('\s', '_') | html -%]
 [%          id = entity.result_class _ '-' _ method.name _ '-' _ title -%]
-            <h4 id="[% id %]">[% additional.title | html %]</h4>
+            <h3 id="[% id %]">[% additional.title | html %]</h3>
 [%       END -%]
 [%       additional.content | html | html_para %]
 [%       additional.raw_content %]
@@ -98,7 +98,7 @@ END %]
 [% END %]
 
 [% BLOCK render_out_arg %]
-     <h5>Content</h5>
+     <h4>Content</h4>
 [%   IF method.out_arg -%]
 [%      method.out_arg.description | html | html_para %]
 [%      IF method.out_arg.type.match('^hash$') %]
@@ -115,11 +115,11 @@ END %]
 [%    success = method.success_code _ ' ' _ method.success_message -%]
 [%    FOR req IN method.examples -%]
 [%       resp = req.response -%]
-      <h4>Example - [% req.name %]</h4>
+      <h3>Example - [% req.name %]</h3>
 [%       IF req.description %][% req.description | html | html_para %][% END -%]
-      <h5>Request</h5>
+      <h4>Request</h4>
       <pre><code>curl -X [% method.method %] -H 'Authorization: Bearer [Access Token]' [% route_prefix _ (req.url || method.route_display) %][% IF req.body %] --data '[% encode_json(req.body) | trim %]'[% END %]</code></pre>
-      <h5>Response</h5>
+      <h4>Response</h4>
 [%       IF method.success_code == '204' -%]
       <pre><code>HTTP/1.0 [% success %]</code></pre>
 [%       ELSIF resp.defined -%]

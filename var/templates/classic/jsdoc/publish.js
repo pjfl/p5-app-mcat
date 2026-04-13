@@ -354,10 +354,10 @@ function linktoExternal(longName, name) {
  * @return {string} The HTML for the navigation sidebar.
  */
 function buildNav(members) {
-    let globalNav;
-    let nav = '<h2><a href="index.html">Index</a></h2>';
-    const seen = {};
-    const seenTutorials = {};
+   let globalNav;
+   let nav = '<h1 class="index">Client Documentation</h1><h2><a href="index.html">Index</a></h2>';
+   const seen = {};
+   const seenTutorials = {};
 
     nav += buildMemberNav(members.modules, 'Modules', {}, linkto);
     nav += buildMemberNav(members.externals, 'Externals', seen, linktoExternal);
@@ -613,7 +613,7 @@ exports.publish = (taffyData, opts, tutorials) => {
     files = find({kind: 'file'});
     packages = find({kind: 'package'});
 
-    generate('Browser Library Documentation',
+    generate('Source Files',
         packages.concat(
             [{
                 kind: 'mainpage',

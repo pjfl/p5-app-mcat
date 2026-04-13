@@ -1,8 +1,9 @@
 package MCat::Model::Documentation;
 
-use MCat::Constants qw( EXCEPTION_CLASS FALSE TRUE );
-use File::DataClass::IO qw( io );
-use MCat::Util      qw( redirect );
+use MCat::Constants        qw( EXCEPTION_CLASS FALSE TRUE );
+use File::DataClass::Types qw( Path );
+use File::DataClass::IO    qw( io );
+use MCat::Util             qw( redirect );
 use MCat::File::Docs::View;
 use Moo;
 use MCat::Navigation::Attributes; # Will do cleaning
@@ -12,6 +13,11 @@ with    'Web::Components::Role';
 with    'MCat::Role::FileMeta';
 
 has '+moniker' => default => 'doc';
+
+has 'library_home' =>
+   is      => 'ro',
+   isa     => Path,
+   default => sub { io((split m{ : }mx, $ENV{PERL5LIB})[1]) };
 
 has '_doc_viewer' =>
    is      => 'ro',
@@ -25,7 +31,7 @@ sub base : Auth('view') {
    return;
 }
 
-sub api_docs : Auth('view') Nav('API') {
+sub api : Auth('view') Nav('API') {
    my ($self, $context) = @_;
 
    my $api    = $context->controllers->{rest}->api;
@@ -35,6 +41,42 @@ sub api_docs : Auth('view') Nav('API') {
    $context->stash(entity_list  => $api->entity_list);
    $context->stash(entity       => $api->get_entity($name));
    $context->stash(route_prefix => $prefix);
+   return;
+}
+
+sub application : Auth('view') Nav('Application') {
+   my ($self, $context, $file) = @_;
+
+   my $options   = {
+      caption    => 'Application Documentation',
+      context    => $context,
+      file_home  => $self->file_home,
+      file_share => $self->file_share,
+   };
+   my $params    = $context->request->query_parameters;
+   my $directory = $params->{directory};
+   my $selected  = $params->{selected};
+
+   $options->{directory} = $directory if $directory;
+   $options->{selected}  = $selected  if $selected;
+
+   $context->stash(table => $self->new_table('Docs', $options));
+
+   $file = 'MCat.pm' unless $directory;
+
+   return unless $file;
+
+   $directory = $self->file->directory($directory);
+
+   my $markup = $self->_doc_viewer->get($directory->catfile($file));
+
+   $context->stash(documentation => $markup);
+   return;
+}
+
+sub client : Auth('view') Nav('Client') {
+   my ($self, $context) = @_;
+
    return;
 }
 
@@ -64,54 +106,19 @@ sub config_edit : Auth('admin') Nav('Edit') {
    return;
 }
 
-sub browser : Auth('view') Nav('Browser Library') {
-   my ($self, $context) = @_;
-
-   return;
-}
-
-sub server : Auth('view') Nav('Server Library') {
+sub server : Auth('view') Nav('Server') {
    my ($self, $context, $file) = @_;
 
-   my $home   = io((split m{ : }mx, $ENV{PERL5LIB})[1]);
-   my $params = $context->request->query_parameters;
-
-   if ($file) {
-      my $directory = $home->catdir($self->file->to_path($params->{directory}));
-      my $markup    = $self->_doc_viewer->get($directory->catfile($file));
-
-      $context->stash(documentation => $markup);
-   }
-   else {
-      my $options = {
-         action      => 'doc/server',
-         action_view => 'doc/server',
-         caption     => 'Server Library Documentation',
-         context     => $context,
-         file_home   => $home,
-         file_share  => $self->file_share,
-      };
-      my $directory = $params->{directory};
-      my $selected  = $params->{selected};
-
-      $options->{directory} = $directory if $directory;
-      $options->{selected}  = $selected  if $selected;
-
-      $context->stash(table => $self->new_table('Docs', $options));
-   }
-
-   return;
-}
-
-sub list : Auth('view') Nav('Application') {
-   my ($self, $context) = @_;
-
-   my $options   = {
-      context    => $context,
-      file_home  => $self->file_home,
-      file_share => $self->file_share,
+   my $home    = $self->library_home;
+   my $params  = $context->request->query_parameters;
+   my $options = {
+      action      => 'doc/server',
+      action_view => 'doc/server',
+      caption     => 'Server Documentation',
+      context     => $context,
+      file_home   => $home,
+      file_share  => $self->file_share,
    };
-   my $params    = $context->request->query_parameters;
    my $directory = $params->{directory};
    my $selected  = $params->{selected};
 
@@ -119,15 +126,12 @@ sub list : Auth('view') Nav('Application') {
    $options->{selected}  = $selected  if $selected;
 
    $context->stash(table => $self->new_table('Docs', $options));
-   return;
-}
 
-sub view : Auth('view') Nav('View Docs') {
-   my ($self, $context, $file) = @_;
+   $directory = $home->catdir($self->file->to_path($params->{directory}));
 
-   my $params    = $context->request->query_parameters;
-   my $directory = $self->file->directory($params->{directory});
-   my $markup    = $self->_doc_viewer->get($directory->catfile($file));
+   return unless $file;
+
+   my $markup = $self->_doc_viewer->get($directory->catfile($file));
 
    $context->stash(documentation => $markup);
    return;

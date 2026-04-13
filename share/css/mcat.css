@@ -8,7 +8,7 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.49
+ * @version 0.13.50
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.47
@@ -926,6 +926,10 @@ footer .footer-container .session-time {
 }
 .documentation a {
   color: seagreen;
+  text-decoration: none;
+}
+.documentation a:hover {
+  font-style: italic;
 }
 .documentation h1,
 .documentation h2,
@@ -946,32 +950,66 @@ footer .footer-container .session-time {
   font-family: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
   font-size: 0.8rem;
 }
+.documentation.application,
 .documentation.restapi {
-  margin-left: 19rem;
+  display: flex;
+  justify-content: space-between;
   padding-right: 0.5rem;
 }
-.documentation.restapi h1 {
-  font-size: 2rem;
-  margin: 2rem 0;
-}
-.documentation.restapi h2 {
-  font-size: 1.75rem;
-  margin: 1.75rem 0;
-  text-transform: uppercase;
+.documentation.application h1,
+.documentation.restapi h1,
+.documentation.application h2,
+.documentation.restapi h2,
+.documentation.application h3,
+.documentation.restapi h3,
+.documentation.application h4,
+.documentation.restapi h4 {
+  font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
+  font-weight: normal;
+  margin: 0;
   white-space: nowrap;
 }
+.documentation.application h1,
+.documentation.restapi h1 {
+  font-size: 2.25rem;
+  font-weight: 200;
+  letter-spacing: -0.125rem;
+  margin: 0.75rem 1.5rem 1.25rem;
+}
+.documentation.application h1.index,
+.documentation.restapi h1.index {
+  margin: 0.75rem 1rem 1.25rem 0;
+}
+.documentation.application h2,
+.documentation.restapi h2 {
+  font-size: 2rem;
+  letter-spacing: -0.0625rem;
+  margin-bottom: 0.75rem;
+}
+.documentation.application h3,
 .documentation.restapi h3 {
   font-size: 1.5rem;
-  margin: 0.75rem 0;
+  font-weight: 500;
+  letter-spacing: -0.03125rem;
+  margin-bottom: 0.75rem;
 }
+.documentation.application h4,
 .documentation.restapi h4 {
   font-size: 1.25rem;
-  margin: 0.6125rem 0;
+  font-weight: 400;
+  letter-spacing: -0.0208rem;
+  margin-bottom: 0.5rem;
 }
+.documentation.application h5,
 .documentation.restapi h5 {
-  font-size: 1rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  letter-spacing: -0.01rem;
+  margin: 0.5rem 0 0.25rem 0;
 }
+.documentation.application .argument-list,
 .documentation.restapi .argument-list,
+.documentation.application .contents-list,
 .documentation.restapi .contents-list {
   background: var(--bg-light);
   border: 1px solid gray;
@@ -980,23 +1018,64 @@ footer .footer-container .session-time {
   text-align: left;
   margin-bottom: 0.5rem;
 }
-.documentation.restapi .entity-index {
-  position: fixed;
-  transform: translateX(-105%);
+.documentation.application .contents-list td,
+.documentation.restapi .contents-list td {
+  min-width: 5.5rem;
 }
+.documentation.application .entity,
+.documentation.restapi .entity {
+  padding-left: 0.5rem;
+  margin-left: 18rem;
+  max-width: calc(100% - 18rem);
+}
+.documentation.application .entity h1,
+.documentation.restapi .entity h1 {
+  margin-left: 0;
+  margin-top: 1.25rem;
+}
+.documentation.application .entity .package,
+.documentation.restapi .entity .package {
+  width: calc(100vw - 24rem);
+  overflow: hidden;
+}
+.documentation.application .entity-index,
+.documentation.restapi .entity-index {
+  padding: 0 0.5rem;
+  max-height: 100%;
+  max-width: 18rem;
+  overflow-y: auto;
+  position: fixed;
+}
+.documentation.application .entity-index h1,
+.documentation.restapi .entity-index h1 {
+  margin-left: 0;
+  margin-right: 0;
+}
+.documentation.application .entity-index .contents-list,
 .documentation.restapi .entity-index .contents-list {
   width: 100%;
 }
+.documentation.application .index-label,
 .documentation.restapi .index-label {
   align-items: baseline;
   display: flex;
   justify-content: space-between;
 }
+.documentation.application .index-label h3,
 .documentation.restapi .index-label h3 {
   margin-top: 0;
 }
+.documentation.application .method,
 .documentation.restapi .method {
   border-top: 1px solid gray;
+  padding-top: 1.4375rem;
+}
+.documentation.application .method code,
+.documentation.restapi .method code,
+.documentation.application .method p,
+.documentation.restapi .method p {
+  display: inline-block;
+  margin-bottom: 0.75rem;
 }
 .file-preview p,
 .file-preview pre {
@@ -1005,8 +1084,10 @@ footer .footer-container .session-time {
   margin: 0;
 }
 .jsdocumentation {
-  width: calc(100vw - 7rem);
+  border: 0;
+  border-radius: 10px;
   height: calc(100vh - 7rem);
+  width: calc(100vw - 7rem);
 }
 .main .exception,
 .modal .exception {

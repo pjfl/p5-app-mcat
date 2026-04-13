@@ -16,17 +16,12 @@ with    'MCat::Role::FileMeta';
 has 'action' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub {
-      my $self    = shift;
-      my $moniker = $self->moniker;
-
-      return $self->selectonly ? "${moniker}/select" : "${moniker}/list";
-   };
+   default => sub { my $moniker = shift->moniker; "${moniker}/application" };
 
 has 'action_view' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub { my $moniker = shift->moniker; "${moniker}/view" };
+   default => sub { my $moniker = shift->moniker; "${moniker}/application" };
 
 has 'directory' =>
    is       => 'lazy',
@@ -45,8 +40,6 @@ has 'moniker' => is => 'ro', isa => Str, default => 'doc';
 has 'selected' => is => 'ro', isa => Str, predicate => 'has_selected';
 
 has 'selectonly' => is => 'ro', isa => Bool, default => FALSE;
-
-has '+caption' => default => 'Application Documentation';
 
 has '+form_buttons' => default => sub { shift->_build_form_buttons };
 
@@ -91,34 +84,20 @@ set_table_name 'documentation';
 has_column 'icon' => cell_traits => ['Icon'], label => 'Type';
 
 has_column 'name' =>
-   cell_traits => ['Modal'],
-   sortable    => TRUE,
-   link        => sub {
+   sortable => TRUE,
+   link     => sub {
       my $cell = shift; return $cell->table->_build_name_link($cell);
-   },
-   options => {
-      'constraints'   => { top => 36, left => 56 },
-      'title'         => 'Documentation',
-      'trigger-modal' => 'modal',
    };
 
-has_column 'size' =>
-   cell_traits => ['Numeric'],
-   value       => sub {
-      my $cell = shift;
+# has_column 'size' =>
+#    cell_traits => ['Numeric'],
+#    value       => sub {
+#       my $cell = shift;
 
-      return $cell->table->_format_number->base2($cell->result->size);
-   };
+#       return $cell->table->_format_number->base2($cell->result->size);
+#    };
 
-has_column 'modified' => cell_traits => ['DateTime'], sortable => TRUE;
-
-after 'BUILD' => sub {
-   my $self = shift;
-
-   $self->get_column('name')->add_option('modal-icons', $self->icons);
-
-   return;
-};
+# has_column 'modified' => cell_traits => ['DateTime'], sortable => TRUE;
 
 sub highlight_row {
    my ($self, $row) = @_;
@@ -169,7 +148,6 @@ sub _build_name_link {
       my $dir  = $self->_qualified_directory;
 
       $params->{directory} = $dir if $dir;
-      $params->{modal} = 'true';
 
       return $self->context->uri_for_action($self->action_view, $args, $params);
    }

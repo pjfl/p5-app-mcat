@@ -263,7 +263,7 @@ has 'connect_extra' =>
    is      => 'ro',
    isa     => HashRef,
    default => sub {
-      return { on_connect_do => "set time zone 'GMT'" };
+      return { on_connect_do => "set time zone 'UTC'" };
    };
 
 =item connect_info

@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Documentation styling improvements
           - API documentation navigation fixes
           - Document endpoint renames
           - Sets database connection session time zone
