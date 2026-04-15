@@ -50,10 +50,12 @@ sub root : Auth('none') {
    my $session = $context->session;
    my $actions = $self->config->default_actions;
    my $nav     = Web::Components::Navigation->new({
-      context       => $context,
-      footer_action => $actions->{footer},
-      logger_action => $actions->{logger},
-      model         => $self,
+      context        => $context,
+      footer_action  => $actions->{footer},
+      logger_action  => $actions->{logger},
+      message_action => $actions->{message},
+      tabs_action    => $actions->{tabs},
+      model          => $self,
    });
 
    $nav->list('bugs')->item('bug/create');

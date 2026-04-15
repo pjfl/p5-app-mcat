@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Adds Tabs preference internal api endpoint
           - Server documentation uses query string for file attribute
           - Documentation styling improvements
           - API documentation navigation fixes

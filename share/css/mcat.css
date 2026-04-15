@@ -763,13 +763,74 @@ footer .footer-container .session-time {
   top: -0.5rem;
   width: 100%;
 }
+.navigation .nav-tab-bar {
+  display: flex;
+}
+.navigation .nav-tab-bar .icon-wrapper {
+  cursor: pointer;
+  display: inline-block;
+  height: 24px;
+  width: 24px;
+}
+.navigation .nav-tab-bar .icon-wrapper .nav-tab-closeicon {
+  color: firebrick;
+  padding-top: 0.125rem;
+}
+.navigation .nav-tab,
+.navigation .nav-title {
+  background: linear-gradient(180deg, var(--bg-base) 0.4375rem, hsl(from gray h s l / 0.5), transparent 0.53125rem);
+}
+.navigation .nav-tab::after,
+.navigation .nav-title::after {
+  background: linear-gradient(70deg, transparent 48%, hsl(from gray h s l / 0.5), var(--bg-base) 52%);
+  content: '';
+  display: inline-block;
+  height: 2.5rem;
+  transform: translate(0, 0.2rem);
+  width: 1rem;
+}
+.navigation .nav-tab {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+.navigation .nav-tab::before {
+  background: linear-gradient(110deg, var(--bg-base) 48%, hsl(from gray h s l / 0.5), transparent 52%);
+  content: '';
+  display: inline-block;
+  height: 2.5rem;
+  transform: translate(0, 0.2rem);
+  width: 1rem;
+}
+.navigation .nav-tab.unselected {
+  background: var(--bg-base);
+  border: 0;
+  border-bottom: 1px solid hsl(from gray h s l / 0.25);
+}
+.navigation .nav-tab.unselected::before {
+  background: linear-gradient(110deg, var(--bg-base) 50%, transparent 50%);
+}
+.navigation .nav-tab.unselected::after {
+  background: linear-gradient(70deg, transparent 50%, var(--bg-base) 50%);
+}
+.navigation .nav-tab a {
+  color: seagreen;
+  font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
+  text-decoration: none;
+}
+.navigation .nav-tab-add {
+  align-items: center;
+  background: var(--bg-base);
+  border-bottom: 1px solid hsl(from gray h s l / 0.25);
+  display: flex;
+}
 .navigation .nav-title {
   align-items: center;
-  background: linear-gradient(180deg, var(--bg-base) 0.4375rem, hsl(from gray h s l / 0.5), transparent 0.53125rem);
   column-gap: 0.25rem;
   display: flex;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
-  font-size: larger;
+  font-size: 1.25rem;
+  font-weight: normal;
   height: 3rem;
   justify-content: center;
 }
@@ -784,13 +845,8 @@ footer .footer-container .session-time {
   width: 0.5rem;
   transform: translate(-0.0635rem, 0.2rem);
 }
-.navigation .nav-title::after {
-  background: linear-gradient(70deg, transparent 48%, hsl(from gray h s l / 0.5), var(--bg-base) 52%);
-  content: '';
-  display: inline-block;
-  height: 2.5rem;
-  transform: translate(0, 0.2rem);
-  width: 1rem;
+.navigation .nav-title .title-text {
+  white-space: nowrap;
 }
 .sidebar::after {
   background: linear-gradient(to bottom, hsl(from gray h s l / 0.25), transparent), linear-gradient(to bottom, var(--bg-base), transparent), linear-gradient(to bottom, hsl(from gray h s l / 0.25), transparent);

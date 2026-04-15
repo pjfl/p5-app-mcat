@@ -88,7 +88,7 @@ sub object : Auth('none') Capture(1) {
 sub table : Auth('none') Capture(1) {
    my ($self, $context, $arg) = @_;
 
-   $context->stash(table_name => $arg);
+   $context->stash(entity_name => $arg);
    return;
 }
 
@@ -135,6 +135,26 @@ sub fetch : Auth('none') {
    return;
 }
 
+sub footer : Auth('none') {
+   my ($self, $context, $moniker, $method) = @_;
+
+   my $session   = $context->session;
+   my $templates = $context->views->{html}->templates;
+
+   $context->stash(page => { layout => 'site/footer' });
+
+   my $action = "${moniker}/footer";
+   my $footer = $templates->catdir($session->skin)->catfile("${action}.tt");
+
+   $context->stash(page => { layout => $action }) if $footer->exists;
+
+   $action = "${moniker}/${method}_footer";
+   $footer = $templates->catdir($session->skin)->catfile("${action}.tt");
+
+   $context->stash(page => { layout => $action }) if $footer->exists;
+   return;
+}
+
 sub logger : Auth('view') {
    my ($self, $context) = @_;
 
@@ -152,9 +172,8 @@ sub logger : Auth('view') {
 sub preference : Auth('view') {
    my ($self, $context) = @_;
 
-   my $name  = $self->_preference_name($context);
    my $value = $context->body_parameters->{data} if $context->posted;
-   my $pref  = $self->_preference($context, $name, $value);
+   my $pref  = $self->_preference($context, 'table', $value);
 
    $self->_stash_response($context, $pref ? $pref->value : {});
    return;
@@ -189,6 +208,18 @@ sub push_worker : Auth('none') {
    my $content = $jsdir->catfile('service-worker.js')->slurp;
 
    $context->stash(response => [HTTP_OK, [@headers], [$content]]);
+   return;
+}
+
+sub tabs_preference : Auth('view') {
+   my ($self, $context) = @_;
+
+   $context->stash(entity_name => 'tabs');
+
+   my $value = $context->body_parameters->{data} if $context->posted;
+   my $pref  = $self->_preference($context, 'navigation', $value);
+
+   $self->_stash_response($context, $pref ? $pref->value : {});
    return;
 }
 
@@ -242,11 +273,11 @@ sub _fetch_timezones {
 }
 
 sub _preference { # Accessor/mutator with builtin clearer. Store "" to delete
-   my ($self, $context, $name, $value) = @_;
+   my ($self, $context, $entity, $value) = @_;
 
-   return unless $name;
-
-   my $rs = $context->model('Preference');
+   my $entity_name = $context->stash('entity_name') or return;
+   my $name        = $entity . DOT . $entity_name . DOT . 'preference';
+   my $rs          = $context->model('Preference');
 
    return $rs->update_or_create({ # Mutator
       name => $name, user_id => $context->session->id, value => $value
@@ -259,12 +290,6 @@ sub _preference { # Accessor/mutator with builtin clearer. Store "" to delete
    return $pref->delete if defined $pref && defined $value; # Clearer
 
    return $pref;
-}
-
-sub _preference_name {
-   my ($self, $context) = @_;
-
-   return 'table' . DOT . $context->stash('table_name') . DOT . 'preference';
 }
 
 sub _stash_response {

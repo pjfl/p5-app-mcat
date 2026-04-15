@@ -9,7 +9,7 @@ with 'Web::Components::ReverseMap';
 has '+moniker' => default => 'api';
 
 sub dispatch_request { build_routes
-   'GET      + /api/footer/** + ?*'               => 'misc/footer',
+   'GET      + /api/footer/** + ?*'               => 'api/footer',
    'GET      + /api/form/*/field/*/validate + ?*' => 'api/form/field/validate',
    'POST     + /api/level/*/log + ?*'             => 'api/loglevel/logger',
    'GET      + /api/messages/collect + ?*'        => 'api/collect_messages',
@@ -19,6 +19,7 @@ sub dispatch_request { build_routes
    'GET      + /service-worker'                   => 'api/push_worker',
    'POST     + /api/table/*/action + ?*'          => 'api/table/action',
    'GET|POST + /api/table/*/preference + ?*'      => 'api/table/preference',
+   'GET|POST + /api/tabs/preference + ?*'         => 'api/tabs_preference',
 }
 
 1;
