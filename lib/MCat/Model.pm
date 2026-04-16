@@ -47,19 +47,13 @@ has 'table' =>
 sub root : Auth('none') {
    my ($self, $context) = @_;
 
-   my $session = $context->session;
+   my $options = { context => $context, model => $self };
+   my $nav     = Web::Components::Navigation->new($options);
    my $actions = $self->config->default_actions;
-   my $nav     = Web::Components::Navigation->new({
-      context        => $context,
-      footer_action  => $actions->{footer},
-      logger_action  => $actions->{logger},
-      message_action => $actions->{message},
-      tabs_action    => $actions->{tabs},
-      model          => $self,
-   });
+   my $session = $context->session;
 
-   $nav->list('bugs')->item('bug/create');
-   $nav->list('_control');
+   $context->stash($self->navigation_key => $nav);
+   $nav->list('bugs')->item('bug/create')->list('_control');
 
    if ($session->authenticated) {
       $nav->menu('bugs')->item('bug/list');
@@ -75,7 +69,6 @@ sub root : Auth('none') {
       $nav->item($actions->{password}, [$session->id]);
    }
 
-   $context->stash($self->navigation_key => $nav);
    return;
 }
 

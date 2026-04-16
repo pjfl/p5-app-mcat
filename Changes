@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Moves Navigation config to Config object
           - Adds Tabs preference internal api endpoint
           - Server documentation uses query string for file attribute
           - Documentation styling improvements

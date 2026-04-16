@@ -673,14 +673,19 @@ has 'navigation' =>
    init_arg      => undef,
    documentation => 'NoUpdate',
    default       => sub {
-      my $self = shift;
+      my $self    = shift;
+      my $actions = $self->default_actions;
 
       return {
-         messages     => { 'buffer-limit' => $self->max_messages },
-         title        => $self->name,
-         title_abbrev => $self->appclass,
+         footer_action  => $actions->{footer},
+         logger_action  => $actions->{logger},
+         message_action => $actions->{message},
+         messages       => { 'buffer-limit' => $self->max_messages },
+         tabs_action    => $actions->{tabs},
+         title          => $self->name,
+         title_abbrev   => $self->appclass,
          %{$self->_navigation},
-         global       => [
+         global         => [
             qw( system/menu artist/list cd/list track/list admin/menu )
          ],
       };
