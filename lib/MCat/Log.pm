@@ -12,7 +12,42 @@ use Moo;
 
 with 'MCat::Role::CSVParser';
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+MCat::Log - Logging class
+
+=head1 Synopsis
+
+   use MCat::Log;
+
+=head1 Description
+
+Logs messages in CSV format
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item C<config>
+
+A required reference to L<MCat::Config>
+
+=cut
+
 has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
+
+=item C<logfile>
+
+L<File object|File::DataClass::IO> for the log file. Provided by the C<config>
+object. If undefined then will warn to C<stderr> instead
+
+=cut
 
 has 'logfile' =>
    is      => 'lazy',
@@ -36,22 +71,29 @@ has '_debug' =>
       return defined $debug ? !!$debug : FALSE;
    };
 
-around 'BUILDARGS' => sub {
-   my ($orig, $self, @args) = @_;
+=back
 
-   my $attr = $orig->($self, @args);
+=head1 Subroutines/Methods
 
-   if (my $builder = delete $attr->{builder}) {
-      $attr->{config} //= $builder->config;
-      $attr->{debug} //= $builder->debug;
-   }
+Defines the following methods;
 
-   return $attr;
-};
+=over 3
+
+=item C<alert>
+
+   $true = $self->alert($message, $context?);
+
+=cut
 
 sub alert {
    return shift->_log('ALERT', NUL, @_);
 }
+
+=item C<debug>
+
+   $true = $self->debug($message, $context?);
+
+=cut
 
 sub debug {
    my $self = shift;
@@ -61,17 +103,51 @@ sub debug {
    return $self->_log('DEBUG', NUL, @_);
 }
 
+=item C<error>
+
+   $true = $self->error($message, $context?);
+
+=cut
+
 sub error {
    return shift->_log('ERROR', NUL, @_);
 }
+
+=item C<fatal>
+
+   $true = $self->fatal($message, $context?);
+
+=cut
 
 sub fatal {
    return shift->_log('FATAL', NUL, @_);
 }
 
+=item C<info>
+
+    $true = $self->info($message, $context?);
+
+=cut
+
 sub info {
    return shift->_log('INFO', NUL, @_);
 }
+
+=item C<warn>
+
+    $true = $self->warn($message, $context?);
+
+=cut
+
+sub warn {
+   return shift->_log('WARNING', NUL, @_);
+}
+
+=item C<log>
+
+   $true = $self->log(%args);
+
+=cut
 
 sub log { # For benefit of P::M::LogDispatch
    my ($self, %args) = @_;
@@ -86,10 +162,6 @@ sub log { # For benefit of P::M::LogDispatch
    $message = is_arrayref $message ? $message->[0] : $message;
 
    return $self->_log($level, $leader, $message);
-}
-
-sub warn {
-   return shift->_log('WARNING', NUL, @_);
 }
 
 # Private methods
@@ -161,3 +233,56 @@ sub _log {
 use namespace::autoclean;
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<MCat::Role::CSVParser>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=MCat.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <pjfl@cpan.org> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2026 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

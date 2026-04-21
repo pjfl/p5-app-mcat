@@ -37,13 +37,17 @@ Defines the following attributes;
 
 =over 3
 
-=item config
+=item C<config>
+
+A required reference to L<MCat::Config>
 
 =cut
 
 has 'config' => is => 'ro', isa => ConfigProvider, required => TRUE;
 
-=item icons_uri
+=item C<icons_uri>
+
+URI for the C<icons.svg> symbols file
 
 =cut
 
@@ -56,7 +60,9 @@ has 'icons_uri' =>
       return $self->request->uri_for($self->config->icons);
    };
 
-=item response
+=item C<response>
+
+An instance of L<MCat::Response>
 
 =cut
 
@@ -65,7 +71,10 @@ has 'response' =>
    isa     => class_type('MCat::Response'),
    default => sub { MCat::Response->new };
 
-=item time_zone
+=item C<time_zone>
+
+The user's time zone. Taken from the L<session|Web::ComposableRequest::Session>
+object
 
 =cut
 
@@ -74,7 +83,9 @@ has 'time_zone' =>
    isa     => Str,
    default => sub { shift->session->timezone };
 
-=item token_lifetime
+=item C<token_lifetime>
+
+How long in seconds should the CSRF last for
 
 =cut
 
@@ -113,7 +124,11 @@ Defines the following methods;
 
 =over 3
 
-=item feature
+=item C<feature>
+
+   $name = $self->feature($name);
+
+Returns the feature name iff the user has the feature turned on
 
 =cut
 
@@ -123,7 +138,12 @@ sub feature {
    return includes $feature, $self->session->features;
 }
 
-=item get_attributes
+=item C<get_attributes>
+
+   $attribute_hash = $self->get_attributes($action);
+
+Returns the subroutine attributes associated with the given action. The action
+can be either an action path (moniker/method) or a code reference
 
 =cut
 
@@ -146,7 +166,12 @@ sub get_attributes {
    return attributes::get($coderef) // {};
 }
 
-=item is_authorised
+=item C<is_authorised>
+
+   $bool = $self->is_authorised($action);
+
+Returns true of false depending on whether the user has access to the action.
+The action should be an action path (moniker/method)
 
 =cut
 
@@ -169,7 +194,11 @@ sub is_authorised {
    return $authorised;
 }
 
-=item method_chain
+=item C<method_chain>
+
+   $chain = $self->method_chain($action);
+
+Returns the moniker/method_dispatch_chain for the given action
 
 =cut
 
@@ -179,7 +208,11 @@ sub method_chain {
    return $self->_action_lookup($action, 'methods');
 }
 
-=item model
+=item C<model>
+
+   $resultset = $self->model($name);
+
+Returns the resultset form the given name
 
 =cut
 
@@ -189,13 +222,23 @@ sub model {
    return $rs_name ? $self->schema->resultset($rs_name) : undef;
 }
 
-=item res
+=item C<res>
+
+   $response = $self->res;
+
+Returns the response object
 
 =cut
 
 sub res { shift->response }
 
-=item uri_for_action
+=item C<uri_for_action>
+
+   $uri = $self->uri_for_action($action, $args?, @params?);
+
+Returns the URI for the given action. Optional array reference of positionals
+arguments should be provided if required. Options hash reference of query
+string keys and value may be provided
 
 =cut
 
@@ -239,7 +282,11 @@ sub uri_for_action {
    return $self->request->uri_for($uri, $args, $params);
 }
 
-=item verification_token
+=item C<verification_token>
+
+   $token = $self->verification_token;
+
+Returns a freshly minted CSRF token
 
 =cut
 
@@ -249,7 +296,12 @@ sub verification_token {
    return get_token $self->token_lifetime, $self->session->serialise;
 }
 
-=item verify_form_post
+=item C<verify_form_post>
+
+   $reason = $self->verify_form_post;
+
+Returns the reason why the form post CSRF token was rejected. Returns undefined
+if the token is good
 
 =cut
 

@@ -1,38 +1,39 @@
+[% TAGS <? ?> %]
 <div class="exception">
-[% IF config.deployment == 'development' -%]
-[% header(flame, 'Exception Awarded', 'exception-header', ' ') -%]
-  <div class="line">
-    <label>Thrown by</label><span>[% exception.clean_leader | html %]</span>
-  </div>
-  <div class="line">
-    <label>Message</label><span>[% exception.original | html %]</span>
-  </div>
-[%    IF exception.class == 'ValidationErrors' -%]
-[%       FOR error IN exception.args -%]
-  <div class="line">
-    <label></label><span>[% error | html %]</span>
-  </div>
-[%       END -%]
-[%    END -%]
-  <div class="line">
-    <label>Class</label>
-    <span>[% exception.class %] v[% exception.version %]</span>
-  </div>
-  <div class="line">
-    <label>Created</label><span>[% dt_user(exception.created) %]</span>
-  </div>
-  <div class="line">
-    <label>Status</label><span>[% status_message(exception.rv) %]</span>
-  </div>
-  <div class="line">
-    <label>Session updated</label>
-    <span>[% ucfirst(dt_human(dt_from_epoch(session_updated))) %]</span>
-  </div>
-[% ELSE -%]
-[% icon = svg_icon('standalone-error', 'error') -%]
-[% header(icon, 'Exception Awarded', 'exception-header', ' ') -%]
-  <div class="line enduser">
-[% subheader('Error', 'Something went wrong') -%]
-  </div>
-[% END -%]
+<? IF config.deployment == 'development' -?>
+<?    header(flame, 'Exception Awarded', 'exception-header', ' ') -?>
+   <div class="line">
+      <label>Thrown by</label><span><? exception.clean_leader | html ?></span>
+   </div>
+   <div class="line">
+      <label>Message</label><span><? exception.original | html ?></span>
+   </div>
+<?    IF exception.class == 'ValidationErrors' -?>
+<?       FOR error IN exception.args -?>
+   <div class="line">
+      <label></label><span><? error | html ?></span>
+   </div>
+<?       END -?>
+<?    END -?>
+   <div class="line">
+      <label>Class</label>
+      <span><? exception.class ?> v<? exception.version ?></span>
+   </div>
+   <div class="line">
+      <label>Created</label><span><? dt_user(exception.created) ?></span>
+   </div>
+   <div class="line">
+      <label>Status</label><span><? status_message(exception.rv) ?></span>
+   </div>
+   <div class="line">
+      <label>Session updated</label>
+      <span><? ucfirst(dt_human(dt_from_epoch(session_updated))) ?></span>
+   </div>
+<? ELSE -?>
+<?    icon = svg_icon('standalone-error', 'error') -?>
+<?    header(icon, 'Exception Awarded', 'exception-header', ' ') -?>
+   <div class="line enduser">
+<?    subheader('Error', 'Something went wrong') -?>
+   </div>
+<? END -?>
 </div>

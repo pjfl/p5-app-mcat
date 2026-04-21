@@ -49,6 +49,38 @@ my $index64 = sub { [
       XX XX XX XX  XX XX XX XX  XX XX XX XX  XX XX XX XX)
 ]};
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+MCat::Util - Utility functions
+
+=head1 Synopsis
+
+   use MCat::Log;
+
+=head1 Description
+
+Utility functions
+
+=head1 Configuration and Environment
+
+Defines no attributes
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item C<base64_decode>
+
+   $decoded = base64_decode $encoded;
+
+=cut
+
 sub base64_decode ($) {
    my $x = shift;
 
@@ -94,6 +126,12 @@ sub base64_decode ($) {
    return join q(), map { chr $_ } @y;
 }
 
+=item C<base64_encode>
+
+   $encoded = base64_encode $decoded;
+
+=cut
+
 sub base64_encode (;$) {
    my $x = shift;
 
@@ -130,13 +168,31 @@ sub base64_encode (;$) {
    return join q(), @y;
 }
 
+=item C<create_token>
+
+   $token = create_token;
+
+=cut
+
 sub create_token () {
    return substr digest(urandom())->hexdigest, 0, 32;
 }
 
+=item C<create_totp_token>
+
+   $token = create_totp_token;
+
+=cut
+
 sub create_totp_token () {
    return substr digest(urandom())->b64digest, 0, 16;
 }
+
+=item C<digest>
+
+   $digest = digest $seed;
+
+=cut
 
 sub digest ($) {
    my $seed = shift;
@@ -159,6 +215,12 @@ sub digest ($) {
    return $digest;
 }
 
+=item C<dt_from_epoch>
+
+   $datetime = dt_from_epoch $epoch, $timezone?;
+
+=cut
+
 sub dt_from_epoch ($;$) {
    my ($epoch, $tz) = @_;
 
@@ -166,6 +228,12 @@ sub dt_from_epoch ($;$) {
       epoch => $epoch, locale => 'en_GB', time_zone => $tz // 'UTC'
    );
 }
+
+=item C<dt_human>
+
+   $datetime = dt_human $datetime;
+
+=cut
 
 sub dt_human ($) {
    my $dt  = shift;
@@ -175,25 +243,61 @@ sub dt_human ($) {
    return $dt;
 }
 
+=item C<encode_for_html>
+
+   $encoded = encode_entities $payload;
+
+=cut
+
 sub encode_for_html ($) {
    return encode_entities(encode_json(shift));
 }
+
+=item C<formpost>
+
+   $hash_ref = formpost;
+
+=cut
 
 sub formpost () {
    return { 'method' => 'post' };
 }
 
+=item C<local_tz>
+
+   $timezone = local_tz;
+
+=cut
+
 sub local_tz () {
    return 'Europe/London';
 }
+
+=item C<new_uri>
+
+   $uri = new_uri $schema, $uri_path;
+
+=cut
 
 sub new_uri ($$) {
    my $v = uri_escape($_[1]); return bless \$v, 'URI::'.$_[0];
 }
 
+=item C<redirect>
+
+   $stash_attr = redirect $location, $message, $options?;
+
+=cut
+
 sub redirect ($$;$) {
    return redirect => {%{$_[2] // {}}, 'location' => $_[0], 'message' => $_[1]};
 }
+
+=item C<redirect2referer>
+
+   $stash_attr = redirect2referer $context, $message;
+
+=cut
 
 sub redirect2referer ($;$) {
    my ($context, $message) = @_;
@@ -203,12 +307,24 @@ sub redirect2referer ($;$) {
    return redirect $referer, $message;
 }
 
+=item C<truncate>
+
+   $truncated = truncate $string, $length?;
+
+=cut
+
 sub truncate ($;$) {
    my ($string, $length) = @_;
 
    $length //= 80;
    return substr($string, 0, $length - 1) . '…';
 }
+
+=item C<urandom>
+
+   $random = urandom $wanted?, $options?;
+
+=cut
 
 sub urandom (;$$) {
    my ($wanted, $opts) = @_;
@@ -229,6 +345,12 @@ sub urandom (;$$) {
    return substr $res, 0, $wanted;
 }
 
+=item C<uri_escape>
+
+   $escaped = uri_escape $string, $pattern?;
+
+=cut
+
 sub uri_escape ($;$) {
    my ($v, $pattern) = @_; $pattern //= $uric;
 
@@ -242,3 +364,68 @@ sub _pseudo_random {
 }
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<DateTime>
+
+=item L<DateTime::Format::Human>
+
+=item L<Digest>
+
+=item L<File::DataClass::IO>
+
+=item L<HTML::Entities>
+
+=item L<JSON::MaybeXS>
+
+=item L<URI>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=MCat.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <pjfl@cpan.org> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2026 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

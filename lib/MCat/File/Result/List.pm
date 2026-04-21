@@ -13,10 +13,7 @@ has 'directory' => is => 'ro', isa => Directory, required => TRUE;
 
 has 'extension' => is => 'ro', isa => Str, predicate => 'has_extension';
 
-has 'icon' =>
-   is      => 'lazy',
-   isa     => Str,
-   default => sub { shift->type };
+has 'icon' => is => 'lazy', isa => Str, default => sub { shift->type };
 
 has 'modified' =>
    is      => 'lazy',

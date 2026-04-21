@@ -26,7 +26,7 @@ set_table_name 'field_selector';
 has_column 'check' =>
    cell_traits => ['Checkbox'],
    label       => SPC,
-   options     => { select_one => TRUE },
+   options     => { 'select-one' => TRUE },
    value       => 'value';
 
 has_column 'name' =>

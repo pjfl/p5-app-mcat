@@ -1,15 +1,16 @@
-<header id="header">[% nav.render %]</header>
-<aside id="sidebar" class="sidebar [% nav.link_display_class %]"></aside>
-<main id="main" class="main [% feature('grid') %]">
-  <div class="[% nav.container_name %]-container">
-    <div id="[% nav.container_name %]" class="[% nav.container_class %]">
-      <div id="[% nav.content_name %]" class="[% nav.content_class %]">
-[% content %]
+[% TAGS <? ?> %]
+<header id="header"><? nav.render ?></header>
+<aside id="sidebar" class="sidebar <? nav.link_display_class ?>"></aside>
+<main id="main" class="main <? feature('grid') ?>">
+  <div class="<? nav.container_name ?>-container">
+    <div id="<? nav.container_name ?>" class="<? nav.container_class ?>">
+      <div id="<? nav.content_name ?>" class="<? nav.content_class ?>">
+<? content ?>
       </div>
     </div>
-    <footer id="[% nav.footer_id %]" class="footer">
+    <footer id="<? nav.footer_id ?>" class="footer">
       <div class="footer-container">
-[% footer = skin _ '/site/footer.tt'; INCLUDE $footer %]
+<? footer = nav.footer_template; INCLUDE $footer ?>
       </div>
     </footer>
   </div>

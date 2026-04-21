@@ -1,12 +1,13 @@
 package MCat::Schema::Result::Import;
 
-use overload '""' => sub { $_[0]->_as_string },
-             '+'  => sub { $_[0]->_as_number }, fallback => 1;
+use overload '""' => sub { shift->_as_string },
+             '+'  => sub { shift->_as_number }, fallback => 1;
 
 use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE NUL TRUE );
 use Class::Usul::Cmd::Util qw( now_dt );
 use JSON::MaybeXS          qw( decode_json encode_json );
 use Unexpected::Functions  qw( throw PathNotFound );
+use MCat::File;
 use Try::Tiny;
 use DBIx::Class::Moo::ResultClass;
 
@@ -143,7 +144,7 @@ sub process {
 
 # Private methods
 sub _as_number {
-   return $_[0]->id;
+   return shift->id;
 }
 
 sub _as_string {

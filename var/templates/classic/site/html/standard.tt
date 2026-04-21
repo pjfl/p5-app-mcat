@@ -1,21 +1,22 @@
+[% TAGS <? ?> %]
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="[% config.encoding %]">
+    <meta charset="<? config.encoding ?>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="description" content="[% config.name %] v[% version %]">
-    <meta name="keywords" content="[% config.keywords %]">
-    <meta name="generator" content="[% ucfirst(config.deployment) %]">
-    <title>[% nav.title_abbrev _ ' - ' _ nav.title_entry %]</title>
-    <link rel="shortcut icon" href="[% uri_for(favicon) %]">
-    [% fonts(config.fonts) %]
-    <link rel="stylesheet" href="[% uri_for(stylesheet) %]" type="text/css">
-    <script src="[% uri_for(javascript) %]"></script>
-    <script src="[% uri_for(chartlibrary) %]"></script>
+    <meta name="description" content="<? config.name ?> v<? version ?>">
+    <meta name="keywords" content="<? config.keywords ?>">
+    <meta name="generator" content="<? ucfirst(config.deployment) ?>">
+    <title><? nav.title_abbrev _ ' - ' _ nav.title_entry ?></title>
+    <link rel="shortcut icon" href="<? uri_for(favicon) ?>">
+    <? fonts(config.fonts) ?>
+    <link rel="stylesheet" href="<? uri_for(stylesheet) ?>" type="text/css">
+    <script src="<? uri_for(javascript) ?>"></script>
+    <script src="<? uri_for(chartlibrary) ?>"></script>
   </head>
-  <body id="body" class="[% theme %] [% feature('relative') %]">
-[% content -%]
+  <body id="body" class="<? theme ?> <? feature('relative') ?>">
+<? content -?>
   </body>
 </html>
