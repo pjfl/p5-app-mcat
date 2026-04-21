@@ -13,6 +13,40 @@ extends 'Web::Components::Model';
 with    'MCat::Role::Authorisation';
 with    'MCat::Role::Schema';
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+MCat::Model - Model base class
+
+=head1 Synopsis
+
+   use Moo;
+
+   extends 'MCat::Model';
+
+=head1 Description
+
+Model base class
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item C<form>
+
+An instance of the L<form factory|HTML::Forms::Manager> class
+
+=item C<new_form>
+
+Creates new L<forms|HTML::Forms>
+
+=cut
+
 has 'form' =>
    is      => 'lazy',
    isa     => class_type('HTML::Forms::Manager'),
@@ -27,6 +61,16 @@ has 'form' =>
          schema         => $self->schema,
       });
    };
+
+=item C<table>
+
+An instance of the L<table factory|HTML::StateTable::Manager> class
+
+=item C<new_table>
+
+Creates new L<tables|HTML::StateTable>
+
+=cut
 
 has 'table' =>
    is      => 'lazy',
@@ -43,7 +87,25 @@ has 'table' =>
       });
    };
 
-# Public methods
+=back
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item C<root>
+
+Creates and stashes an instance of L<Web::Components::Navigation>
+
+Navigation methods C<menu>, C<list>, and C<item> are used to build the
+context sensitive menu data
+
+This method adds menu items for the C<control> menu
+
+=cut
+
 sub root : Auth('none') {
    my ($self, $context) = @_;
 
@@ -73,3 +135,60 @@ sub root : Auth('none') {
 }
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<HTML::Forms::Manager>
+
+=item L<HTML::StateTable::Manager>
+
+=item L<Web::Components::Navigation>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=MCat.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <pjfl@cpan.org> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2025 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

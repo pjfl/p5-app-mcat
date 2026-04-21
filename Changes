@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Still more POD. MCat/* modules have placeholders
           - More POD
           - Moves Navigation config to Config object
           - Adds Tabs preference internal api endpoint

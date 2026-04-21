@@ -106,18 +106,18 @@ has_exception 'APIMethodFailed', parents => [$class],
    error   => 'API class [_1] method [_2] call failed: [_3]',
    rv      => HTTP_BAD_REQUEST;
 
+=item C<Authentication>
+
+=cut
+
+has_exception 'Authentication' => parents => [$class];
+
 =item C<AccountInactive>
 
 =cut
 
 has_exception 'AccountInactive' => parents => ['Authentication'],
    error   => 'User [_1] account inactive';
-
-=item C<Authentication>
-
-=cut
-
-has_exception 'Authentication' => parents => [$class];
 
 =item C<AuthenticationRequired>
 
