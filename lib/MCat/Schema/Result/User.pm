@@ -193,6 +193,24 @@ sub enable_2fa {
    my ($self, $value) = @_; return $self->_profile('enable_2fa', $value);
 }
 
+sub enable_advanced {
+   my ($self, $value) = @_;
+
+   my $features = $self->features;
+   my $included = includes 'advanced', $features;
+
+   if (defined $value && !$value && $included) {
+      $features = [ grep { $_ ne 'advanced' } @{$features} ];
+      $self->features($features);
+   }
+   elsif ($value && !$included) {
+      push @{$features}, 'advanced';
+      $self->features($features);
+   }
+
+   return includes('advanced', $features) ? TRUE : FALSE;
+}
+
 sub encrypt_password {
    my ($self, $password, $stored) = @_;
 
@@ -213,6 +231,10 @@ sub execute {
    return unless exists $allowed->{$method};
 
    return $self->$method();
+}
+
+sub features {
+   my ($self, $value) = @_; return $self->_profile('features', $value);
 }
 
 sub groups {

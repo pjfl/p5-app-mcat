@@ -40,10 +40,17 @@ sub BUILD {
       cell_traits => ['Bool'],
       value       => $self->result->enable_2fa,
    };
+
+   push @{$self->add_columns}, 'Advanced' => {
+      cell_traits => ['Bool'],
+      value       => $self->result->enable_advanced,
+   };
+
    push @{$self->add_columns}, 'Time Zone' => $self->result->timezone;
 
    push @{$self->add_columns}, 'Groups' =>
       join SPC, map { ucfirst } @{$self->result->groups // []};
+
    return;
 }
 

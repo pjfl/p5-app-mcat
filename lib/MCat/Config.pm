@@ -1,6 +1,6 @@
 package MCat::Config;
 
-use MCat::Constants        qw( FALSE NUL TRUE );
+use MCat::Constants        qw( FALSE LOCAL_TZ NUL TRUE );
 use IO::Socket::SSL        qw( SSL_VERIFY_NONE );
 use File::DataClass::Types qw( ArrayRef Bool Directory File HashRef
                                LoadableClass Object OctalNum Path
@@ -555,7 +555,7 @@ The applications local time zone
 
 =cut
 
-has 'local_tz' => is => 'ro', isa => Str, default => 'Europe/London';
+has 'local_tz' => is => 'ro', isa => Str, default => LOCAL_TZ;
 
 =item lock_attributes
 

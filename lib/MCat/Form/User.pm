@@ -2,6 +2,7 @@ package MCat::Form::User;
 
 use HTML::Forms::Constants qw( FALSE META TRUE );
 use HTML::Forms::Types     qw( Int Str );
+use Class::Usul::Cmd::Util qw( includes );
 use Data::Validate::IP     qw( is_ip );
 use Moo;
 use HTML::Forms::Moo;
@@ -93,6 +94,11 @@ sub default_password {
 
 has_field 'password_expired' => type => 'Boolean', default => TRUE;
 
+has_field 'enable_advanced' =>
+   type    => 'Boolean',
+   default => FALSE,
+   label   => 'Enabled Advanced';
+
 has_field 'submit1' => type => 'Button', value => '1';
 
 has_field 'view' =>
@@ -164,14 +170,22 @@ after 'after_build_fields' => sub {
    ]);
 
    if ($self->item) {
+      $self->field('submit1')->add_wrapper_class(['inline', 'right']);
+
       my $view = $context->uri_for_action('user/view', [$self->item->id]);
 
       $self->field('view')->href($view->as_string);
-      $self->field('submit1')->add_wrapper_class(['inline', 'right']);
    }
    else { $self->field('view')->inactive(TRUE) }
 
    $self->field('valid_ips')->icons($self->_icons);
+   return;
+};
+
+after 'update_model' => sub {
+   my $self = shift;
+
+   $self->context->session->features($self->item->features) if $self->item;
    return;
 };
 

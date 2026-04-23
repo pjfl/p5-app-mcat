@@ -18,7 +18,7 @@ HTML::StateTable::Constants->Exception_Class($exception_class);
 HTML::Forms::Constants->Exception_Class($exception_class);
 Web::ComposableRequest::Constants->Exception_Class($exception_class);
 
-our @EXPORT = qw( BUG_STATE_ENUM SQL_FALSE SQL_NOW SQL_TRUE );
+our @EXPORT = qw( BUG_STATE_ENUM LOCAL_TZ SQL_FALSE SQL_NOW SQL_TRUE );
 
 =pod
 
@@ -46,7 +46,7 @@ Defines the following methods;
 
 =over 3
 
-=item import
+=item C<import>
 
 =cut
 
@@ -65,25 +65,31 @@ sub import {
    return;
 }
 
-=item BUG_STATE_ENUM
+=item C<BUG_STATE_ENUM>
 
 =cut
 
 sub BUG_STATE_ENUM () { [ qw( assigned fixed open wontfix ) ] }
 
-=item SQL_FALSE
+=item C<LOCAL_TZ>
+
+=cut
+
+sub LOCAL_TZ () { 'Europe/London' }
+
+=item C<SQL_FALSE>
 
 =cut
 
 sub SQL_FALSE () { \q{false} }
 
-=item SQL_NOW
+=item C<SQL_NOW>
 
 =cut
 
 sub SQL_NOW () { \q{NOW()} }
 
-=item SQL_TRUE
+=item C<SQL_TRUE>
 
 =cut
 

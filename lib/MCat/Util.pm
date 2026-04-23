@@ -19,8 +19,8 @@ use DateTime::Format::Human;
 
 our @EXPORT = qw( base64_decode base64_encode create_token create_totp_token
                   digest dt_from_epoch dt_human encode_for_html formpost
-                  local_tz new_uri redirect redirect2referer
-                  truncate urandom uri_escape );
+                  new_uri redirect redirect2referer truncate urandom
+                  uri_escape );
 
 my $digest_cache;
 my $reserved   = q(;/?:@&=+$,[]);
@@ -261,16 +261,6 @@ sub encode_for_html ($) {
 
 sub formpost () {
    return { 'method' => 'post' };
-}
-
-=item C<local_tz>
-
-   $timezone = local_tz;
-
-=cut
-
-sub local_tz () {
-   return 'Europe/London';
 }
 
 =item C<new_uri>

@@ -2,6 +2,7 @@ package MCat::Form::Profile;
 
 use HTML::Forms::Constants qw( FALSE META NUL TRUE );
 use HTML::Forms::Types     qw( HashRef Object );
+use Class::Usul::Cmd::Util qw( includes );
 use HTML::Forms::Util      qw( json_bool );
 use Type::Utils            qw( class_type );
 use Moo;
@@ -143,8 +144,9 @@ has_field 'view' =>
    wrapper_class => ['input-button', 'inline'];
 
 after 'after_build_fields' => sub {
-   my $self    = shift;
-   my $context = $self->context;
+   my $self     = shift;
+   my $context  = $self->context;
+   my $features = $self->user->features;
 
    unless ($self->user->enable_2fa) {
       $self->field('enable_2fa')->hide_info(TRUE);
@@ -153,7 +155,7 @@ after 'after_build_fields' => sub {
    }
 
    $self->field('advanced_options')->inactive(TRUE)
-      unless $context->config->enable_advanced;
+      if !$context->config->enable_advanced || !includes 'advanced', $features;
 
    my $field  = $self->field('base_colour');
    my $colour = $context->config->default_base_colour;
@@ -170,15 +172,18 @@ after 'after_build_fields' => sub {
 };
 
 sub update_model {
-   my $self   = shift;
-   my $user   = $self->user;
-   my $value  = $user->profile_value;
-   my @fields = (qw(base_colour enable_2fa features link_display menu_location
-                    mobile_phone postcode skin theme timezone));
+   my $self     = shift;
+   my $user     = $self->user;
+   my $value    = $user->profile_value;
+   my @fields   = (qw(base_colour enable_2fa features link_display menu_location
+                      mobile_phone postcode skin theme timezone));
+   my $advanced = includes 'advanced', $value->{features};
 
    for my $field_name (@fields) {
       $value->{$field_name} = $self->field($field_name)->value;
    }
+
+   push @{$value->{features}}, 'advanced' if $advanced;
 
    my $session = $self->context->session;
 

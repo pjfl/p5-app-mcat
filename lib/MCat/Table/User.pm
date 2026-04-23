@@ -1,7 +1,6 @@
 package MCat::Table::User;
 
 use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
-use MCat::Util                  qw( local_tz );
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -72,10 +71,11 @@ has_column 'groups' =>
 
 has_column 'timezone' =>
    value => sub {
-      my $self    = shift;
-      my $profile = $self->result->profile;
+      my $self     = shift;
+      my $profile  = $self->result->profile;
+      my $local_tz = $self->table->context->config->local_tz;
 
-      return $profile ? $profile->preference('timezone') : local_tz;
+      return $profile ? $profile->preference('timezone') : $local_tz;
    },
    width => '15rem';
 
