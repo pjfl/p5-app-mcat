@@ -144,7 +144,9 @@ sub api_claim {
 
    return unless includes 'api', $self->groups;
 
-   return { id => $self->id, role => $self->role->name };
+   my $role = $self->role->name;
+   # Username used by the logger. Role/groups used by context.is_authorised
+   return { username => $self->name, role => $role, groups => $self->groups };
 }
 
 sub assert_can_email {

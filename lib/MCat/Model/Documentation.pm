@@ -57,20 +57,18 @@ sub application : Auth('view') Nav('Application') {
    my $directory = $params->{directory};
    my $selected  = $params->{selected};
 
+   $selected = 'MCat.pm' unless $directory || $selected;
+
    $options->{directory} = $directory if $directory;
    $options->{selected}  = $selected  if $selected;
 
    $context->stash(table => $self->new_table('Docs', $options));
 
-   my $file = $params->{file};
-
-   $file = 'MCat.pm' unless $directory;
-
-   return unless $file;
+   return unless $selected;
 
    $directory = $self->file->directory($directory);
 
-   my $markup = $self->_doc_viewer->get($directory->catfile($file));
+   my $markup = $self->_doc_viewer->get($directory->catfile($selected));
 
    $context->stash(documentation => $markup);
    return;
@@ -129,13 +127,11 @@ sub server : Auth('view') Nav('Server') {
 
    $context->stash(table => $self->new_table('Docs', $options));
 
-   my $file = $params->{file};
-
-   return unless $file;
+   return unless $selected;
 
    $directory = $locallib->catdir($self->file->to_path($params->{directory}));
 
-   my $markup = $self->_doc_viewer->get($directory->catfile($file));
+   my $markup = $self->_doc_viewer->get($directory->catfile($selected));
 
    $context->stash(documentation => $markup);
    return;

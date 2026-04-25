@@ -27,8 +27,10 @@ $class->add_columns(
    name => { data_type => 'text', is_nullable => FALSE },
    description => { data_type => 'text', is_nullable => TRUE },
    owner_user_id => {
-      data_type   => 'integer', is_nullable => FALSE, label => 'Owner',
-      cell_traits => ['Capitalise'], display => 'owner.name'
+      data_type   => 'integer',
+      is_nullable => FALSE,
+      label       => 'Owner',
+      display     => 'owner.name',
    },
    table_id => {
       data_type => 'integer', is_nullable => FALSE, label => 'Table',

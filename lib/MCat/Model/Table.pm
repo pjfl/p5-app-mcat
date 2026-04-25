@@ -1,6 +1,6 @@
 package MCat::Model::Table;
 
-use HTML::Forms::Constants qw( EXCEPTION_CLASS );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS NUL );
 use MCat::Util             qw( redirect );
 use Unexpected::Functions  qw( UnknownTable Unspecified );
 use Web::Simple;
@@ -12,20 +12,26 @@ with    'Web::Components::Role';
 has '+moniker' => default => 'table';
 
 sub base {
+   my ($self, $context) = @_;
+
+   $context->stash('nav')->list('table')->item('table/create')->finalise;
+
+   return;
+}
+
+sub tableid : Capture(1) {
    my ($self, $context, $tableid) = @_;
+
+   my $table = $context->model('Table')->find($tableid);
+
+   return $self->error($context, UnknownTable, [$tableid]) unless $table;
+
+   $context->stash(core_table => $table);
 
    my $nav = $context->stash('nav')->list('table')->item('table/create');
 
-   if ($tableid) {
-      my $table = $context->model('Table')->find($tableid);
+   $nav->crud('table', $table->id)->finalise;
 
-      return $self->error($context, UnknownTable, [$tableid]) unless $table;
-
-      $context->stash( table => $table );
-      $nav->crud('table', $tableid);
-   }
-
-   $nav->finalise;
    return;
 }
 
@@ -48,15 +54,12 @@ sub create : Nav('Create Table') {
 }
 
 sub delete : Nav('Delete Table') {
-   my ($self, $context, $tableid) = @_;
+   my ($self, $context) = @_;
 
    return unless $self->verify_form_post($context);
 
-   my $table = $context->model('Table')->find($tableid);
-
-   return $self->error($context, UnknownTable, [$tableid]) unless $table;
-
-   my $name = $table->name;
+   my $table = $context->stash('core_table');
+   my $name  = $table->name;
 
    $table->delete;
 
@@ -67,19 +70,20 @@ sub delete : Nav('Delete Table') {
 }
 
 sub edit : Nav('Edit Table') {
-   my ($self, $context, $tableid) = @_;
+   my ($self, $context) = @_;
 
-   my $form = $self->new_form('Table', {
+   my $table = $context->stash('core_table');
+   my $form  = $self->new_form('Table', {
       context => $context,
-      item    => $context->stash('table'),
+      item    => $table,
       title   => 'Edit table'
    });
 
    if ($form->process( posted => $context->posted )) {
-      my $table_view = $context->uri_for_action('table/view', [$tableid]);
-      my $message    = ['Table [_1] updated', $form->item->name];
+      my $table_view = $context->uri_for_action('table/view', [$table->id]);
+      my $message    = 'Table [_1] updated';
 
-      $context->stash( redirect $table_view, $message );
+      $context->stash(redirect $table_view, [$message, $table->name]);
    }
 
    $context->stash( form => $form );
@@ -94,8 +98,9 @@ sub list : Nav('Tables') {
 }
 
 sub view : Nav('View Table') {
-   my ($self, $context, $tableid) = @_;
+   my ($self, $context) = @_;
 
+   my $table   = $context->stash('core_table');
    my $buttons = [{
       action    => $context->uri_for_action('table/list'),
       classes   => 'left',
@@ -103,17 +108,20 @@ sub view : Nav('View Table') {
       selection => 'disable_on_select',
       value     => 'Tables',
    },{
-      action    => $context->uri_for_action('table/edit', [$tableid]),
+      action    => $context->uri_for_action('table/edit', [$table->id]),
       method    => 'get',
       selection => 'disable_on_select',
       value     => 'Edit',
    }];
+   my $options = { caption => NUL, context => $context, table => $table };
+   my $lists   = $self->new_table('List', $options);
 
    $context->stash(table => $self->new_table('View::Object', {
+      add_columns  => [ 'Lists' => $lists ],
       caption      => 'View Table',
       context      => $context,
       form_buttons => $buttons,
-      result       => $context->stash('table')
+      result       => $table,
    }));
    return;
 }

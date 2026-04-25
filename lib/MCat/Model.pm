@@ -41,10 +41,6 @@ Defines the following attributes;
 
 An instance of the L<form factory|HTML::Forms::Manager> class
 
-=item C<new_form>
-
-Creates new L<forms|HTML::Forms>
-
 =cut
 
 has 'form' =>
@@ -65,10 +61,6 @@ has 'form' =>
 =item C<table>
 
 An instance of the L<table factory|HTML::StateTable::Manager> class
-
-=item C<new_table>
-
-Creates new L<tables|HTML::StateTable>
 
 =cut
 
@@ -95,7 +87,21 @@ Defines the following methods;
 
 =over 3
 
+=item C<new_form>
+
+   $form = $self->new_form('MyForm', { context => $context });
+
+Creates new L<forms|HTML::Forms>
+
+=item C<new_table>
+
+   $table = $self->new_table('MyTable', { context => $context });
+
+Creates new L<tables|HTML::StateTable>
+
 =item C<root>
+
+   $self->root($context);
 
 Creates and stashes an instance of L<Web::Components::Navigation>
 

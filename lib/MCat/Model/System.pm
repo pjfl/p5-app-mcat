@@ -20,10 +20,10 @@ sub menu : Auth('view') Nav('System|img/system.svg') {
    $nav->list('system');
    $nav->menu('Documentation', TRUE);
    $nav->menu('filemanager')->item('file/list');
-   $nav->menu('filter')->item('filter/list');
    $nav->menu('import')->item('import/list');
    $nav->menu('importlog')->item('importlog/list');
    $nav->menu('list')->item('list/list');
+   $nav->menu('filter')->item('filter/list');
    $nav->menu('table')->item('table/list');
    $nav->menu('tag')->item('tag/list');
    $nav->menu('user')->item('user/list');

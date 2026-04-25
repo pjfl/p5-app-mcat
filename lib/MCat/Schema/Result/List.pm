@@ -33,7 +33,7 @@ $class->add_columns(
    },
    table_id      => {
       data_type   => 'integer',
-      display     => 'core_table.name',
+      display     => \&_table_link,
       is_nullable => FALSE,
       label       => 'Table',
    },
@@ -170,6 +170,14 @@ sub _filter_link {
    my $link   = $table->context->uri_for_action('filter/view', [$filter->id]);
 
    return MCat::Object::Link->new({ link => $link , value => $filter->name });
+}
+
+sub _table_link {
+   my $table = shift;
+   my $core  = $table->result->core_table or return NUL;
+   my $link  = $table->context->uri_for_action('table/view', [$core->id]);
+
+   return MCat::Object::Link->new({ link => $link , value => $core->name });
 }
 
 1;

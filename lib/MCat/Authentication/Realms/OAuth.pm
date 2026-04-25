@@ -225,7 +225,7 @@ sub decode_tokens {
 
    $claim = $self->get_claim($tokens);
 
-Use the C<tokens>.C<access_token> to fetch the user claim from the OAuth
+Use C<tokens>.C<access_token> to fetch the user claim from the OAuth
 provider
 
 Returns a hash reference which must contain an C<email> key

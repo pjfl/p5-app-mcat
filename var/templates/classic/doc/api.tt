@@ -2,20 +2,6 @@
 <div id="top" class="restapi documentation">
    <? INCLUDE render_index ?>
    <div class="entity">
-      <h1><? entity.result_class ?></h1>
-      <h2>API Methods</h2>
-      <table class="contents-list">
-         <tr><th>Name</th><th>HTTP Method</th><th>Path</th></tr>
-<? FOR method IN entity.method_list -?>
-<?    href = entity.moniker _ '-' _ method.name -?>
-<?    label = method.name | ucfirst -?>
-         <tr>
-            <td><a target="_self" href="#<? href ?>"><? label ?></a></td>
-            <td><code><? method.method ?></code></td>
-            <td><code><? method.route | html ?></code></td>
-         </tr>
-<? END -?>
-      </table>
 <? FOR method IN entity.method_list -?>
 <?    id = entity.moniker _ '-' _ method.name -?>
       <div id="<? id ?>" class="method">
@@ -28,10 +14,7 @@
 <? BLOCK render_index ?>
    <div class="entity-index">
       <h1>API Documentation</h1>
-      <div class="index-label">
-         <h2>Index</h2>
-         <a target="_self" href="#top">Top</a>
-      </div>
+      <h2>Index</h2>
       <table class="contents-list">
 <?    FOR name IN entity_list -?>
 <?       href = uri_for_action('doc/api', [], { entity => name }) -?>
@@ -39,6 +22,22 @@
             <a href="<? href ?>"><? name | ucfirst ?></a>
          </td></tr>
 <?    END -?>
+      </table>
+      <div class="index-label">
+         <h2>API Methods</h2>
+         <a target="_self" href="#top">Top</a>
+      </div>
+      <table class="contents-list">
+         <tr><th>Name</th><th>HTTP Method</th><th>Path</th></tr>
+<? FOR method IN entity.method_list -?>
+<?    href = entity.moniker _ '-' _ method.name -?>
+<?    label = method.name | ucfirst -?>
+         <tr>
+            <td><a target="_self" href="#<? href ?>"><? label ?></a></td>
+            <td><code><? method.method ?></code></td>
+            <td><code><? method.route | html ?></code></td>
+         </tr>
+<? END -?>
       </table>
    </div>
 <? END ?>

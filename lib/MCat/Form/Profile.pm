@@ -21,7 +21,7 @@ has '+init_object' => default => sub {
    my $self    = shift;
    my $user    = $self->user;
    my $profile = $user->profile;
-   my $value   = $profile ? $profile->value : {};
+   my $value   = $profile ? { %{$profile->value} } : {};
 
    $value->{name} = $user->name;
    $value->{email} = $user->email;
@@ -115,14 +115,13 @@ has_field 'advanced_options' => type => 'Group', info => 'Advanced Options';
 
 has_field 'features' =>
    type             => 'Select',
-   auto_widget_size => 8,
+   auto_widget_size => 7,
    field_group      => 'advanced_options',
    multiple         => TRUE,
    options          => [
       { label => 'Animation',        value => 'animation' },
       { label => 'Droplets',         value => 'droplets' },
       { label => 'Grid',             value => 'grid' },
-      { label => 'Notifications',    value => 'notifications' },
       { label => 'Radar',            value => 'radar' },
       { label => 'Relative Colours', value => 'relative' },
       { label => 'Navigation Tabs',  value => 'tabs' },
@@ -146,6 +145,7 @@ has_field 'view' =>
 after 'after_build_fields' => sub {
    my $self     = shift;
    my $context  = $self->context;
+   my $config   = $context->config;
    my $features = $self->user->features;
 
    unless ($self->user->enable_2fa) {
@@ -155,13 +155,12 @@ after 'after_build_fields' => sub {
    }
 
    $self->field('advanced_options')->inactive(TRUE)
-      if !$context->config->enable_advanced || !includes 'advanced', $features;
+      unless $config->enable_advanced || includes 'advanced', $features;
 
-   my $field  = $self->field('base_colour');
-   my $colour = $context->config->default_base_colour;
+   my $field = $self->field('base_colour');
 
-   $field->default($colour);
-   push @{$field->options}, { value => $colour };
+   $field->default($config->default_base_colour);
+   push @{$field->options}, { value => $config->default_base_colour };
 
    my $view = $context->uri_for_action('user/view', [$self->user->id]);
 

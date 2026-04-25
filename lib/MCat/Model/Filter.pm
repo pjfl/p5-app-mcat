@@ -132,11 +132,13 @@ sub selector {
 sub view : Nav('View Filter') {
    my ($self, $context) = @_;
 
-   my $filter = $context->stash('filter');
-   my $query  = $filter->filter_json ? $filter->to_sql : [ NUL, NUL ];
+   my $filter  = $context->stash('filter');
+   my $query   = $filter->filter_json ? $filter->to_sql : [ NUL, NUL ];
+   my $options = { caption => NUL, context => $context, filter => $filter };
+   my $lists   = $self->new_table('List', $options);
 
    $context->stash(table => $self->new_table('View::Filter', {
-      add_columns => [ 'SQL' => $query->[0] ],
+      add_columns => [ 'SQL' => $query->[0], 'Lists' => $lists ],
       caption     => 'Filter View',
       context     => $context,
       result      => $filter

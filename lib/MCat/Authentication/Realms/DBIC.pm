@@ -101,7 +101,7 @@ Defines the following methods;
 
    $user_object = $self->find_user($args);
 
-Finds a user object
+Finds a user object from the username/userid/email provided
 
 The C<args> hash reference keys are;
 
@@ -110,7 +110,14 @@ The C<args> hash reference keys are;
 =item username
 
 The name of the user to find. Can be a user ID, a user name, or an email
-address
+address. Required
+
+=item options
+
+An optional hash reference of additional options passed the find user method on
+the resultset
+
+Will add C<< prefetch => 'role' >> if no other C<prefetch> has been set
 
 =back
 
@@ -195,7 +202,7 @@ The C<args> hash reference keys are;
 
 =item address
 
-This IP address of the originating request. Optional
+The IP address of the originating request. Optional
 
 =item session
 

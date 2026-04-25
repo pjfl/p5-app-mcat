@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Better links between List Filter and Table
           - Can turn on/off advanced user settings from user edit form
           - Still more POD. MCat/* modules have placeholders
           - More POD

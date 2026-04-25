@@ -253,19 +253,6 @@ has 'component_loader' =>
       };
    };
 
-=item connect_extra
-
-Extra database connection parameters
-
-=cut
-
-has 'connect_extra' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub {
-      return { on_connect_do => "set time zone 'UTC'" };
-   };
-
 =item connect_info
 
 Used to connect to the database, the 'dsn', 'db_username', and 'db_password'
@@ -281,10 +268,10 @@ has 'connect_info' =>
       my $self       = shift;
       my $username   = $self->db_username;
       my $password   = decrypt NUL, $self->db_password;
-      my $attributes = $self->dbi_attributes;
-      my $extra      = $self->connect_extra;
+      my $attributes = $self->db_attributes;
+      my $extra      = $self->db_connect_extra;
 
-      return [$self->dsn, $username, $password, $attributes, $extra];
+      return [$self->db_dsn, $username, $password, $attributes, $extra];
    };
 
 =item context_class
@@ -311,6 +298,43 @@ has 'copyright_year' =>
    isa     => PositiveInt,
    default => sub { now_dt->strftime('%Y') };
 
+=item db_attributes
+
+Additional attributes passed to the database connection method
+
+=cut
+
+has 'db_attributes' =>
+   is            => 'ro',
+   isa           => HashRef,
+   documentation => 'AutoCommit=boolean',
+   default       => sub {
+      return {
+         AutoCommit => TRUE,
+      };
+   };
+
+=item db_connect_extra
+
+Extra database connection parameters
+
+=cut
+
+has 'db_connect_extra' =>
+   is      => 'ro',
+   isa     => HashRef,
+   default => sub {
+      return { on_connect_do => "set time zone 'UTC'" };
+   };
+
+=item db_dsn
+
+String used to select a database driver and a specific database by name
+
+=cut
+
+has 'db_dsn' => is => 'ro', isa => Str, default => 'dbi:Pg:dbname=mcat';
+
 =item db_password
 
 Password used to connect to the database. This has no default. It should be
@@ -328,22 +352,6 @@ The username used to connect to the database
 =cut
 
 has 'db_username' => is => 'ro', isa => Str, default => 'mcat';
-
-=item dbi_attributes
-
-Additional attributes passed to the database connection method
-
-=cut
-
-has 'dbi_attributes' =>
-   is            => 'ro',
-   isa           => HashRef,
-   documentation => 'AutoCommit=boolean',
-   default       => sub {
-      return {
-         AutoCommit => TRUE,
-      };
-   };
 
 =item default_actions
 
@@ -430,18 +438,10 @@ of an exception to the end user with a more suitable one
 
 has 'deployment' => is => 'ro', isa => Str, default => 'development';
 
-=item dsn
-
-String used to select a database driver and a specific database by name
-
-=cut
-
-has 'dsn' => is => 'ro', isa => Str, default => 'dbi:Pg:dbname=mcat';
-
 =item enable_advanced
 
 Boolean which defaults to B<false>. If true the F<Profile> form will show the
-advanced options
+advanced options for all users
 
 =cut
 

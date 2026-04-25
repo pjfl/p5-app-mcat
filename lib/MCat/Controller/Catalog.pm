@@ -55,9 +55,9 @@ sub dispatch_request { build_routes
    'GET      + /filter + ?*'            => 'filter/root/base/list',
 
    'GET|POST + /table/create + ?*'   => 'table/root/base/create',
-   'GET|POST + /table/*/edit + ?*'   => 'table/root/base/edit',
-   'POST     + /table/*/delete + ?*' => 'table/root/base/delete',
-   'GET      + /table/* + ?*'        => 'table/root/base/view',
+   'GET|POST + /table/*/edit + ?*'   => 'table/root/tableid/edit',
+   'POST     + /table/*/delete + ?*' => 'table/root/tableid/delete',
+   'GET      + /table/* + ?*'        => 'table/root/tableid/view',
    'GET      + /table + ?*'          => 'table/root/base/list',
 
    'GET|POST + /tag/create + ?*'   => 'tag/root/base/create',

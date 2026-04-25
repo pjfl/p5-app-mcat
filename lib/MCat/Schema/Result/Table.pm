@@ -11,6 +11,7 @@ $class->table('tables');
 $class->add_columns(
    id => {
       data_type         => 'integer',
+      hidden            => TRUE,
       is_auto_increment => TRUE,
       is_nullable       => FALSE,
       label             => 'Table ID',

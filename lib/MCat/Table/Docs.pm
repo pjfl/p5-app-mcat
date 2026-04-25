@@ -102,7 +102,7 @@ has_column 'name' =>
 sub highlight_row {
    my ($self, $row) = @_;
 
-   return FALSE unless $self->selected;
+   return FALSE unless $self->has_selected;
 
    return $self->selected eq $row->result->name ? TRUE : FALSE;
 }
@@ -139,7 +139,6 @@ sub _build_name_link {
 
       $params->{directory}  = $self->_qualified_directory($result);
       $params->{extensions} = $self->extensions if $self->extensions;
-      $params->{selected}   = $selected if $selected;
 
       return $self->context->uri_for_action($self->action, [], $params);
    }
@@ -147,8 +146,8 @@ sub _build_name_link {
       my $dir  = $self->_qualified_directory;
       my $file = $result->uri_arg;
 
-      $params->{directory} = $dir if $dir;
-      $params->{file} = $file if $file;
+      $params->{directory} = $dir  if $dir;
+      $params->{selected}  = $file if $file;
 
       return $self->context->uri_for_action($self->action_view, [], $params);
    }
@@ -175,7 +174,6 @@ sub _build_tag_names {
       }
 
       $params->{extensions} = $self->extensions if $self->extensions;
-      $params->{selected} = $self->selected if $self->has_selected;
 
       my $uri = $self->context->uri_for_action($self->action, [], $params);
 

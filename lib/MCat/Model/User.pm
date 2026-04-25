@@ -34,9 +34,9 @@ sub user : Auth('view') Capture(1) {
 
    $context->stash(user => $user);
 
-   my $nav = $context->stash('nav')->list('user')->item('user/create');
+   my $nav = $context->stash('nav')->list('user');
 
-   $nav->crud('user', $user->id)->finalise;
+   $nav->item('user/create')->crud('user', $user->id)->finalise;
    return;
 }
 
@@ -105,7 +105,7 @@ sub profile : Auth('view') Nav('Settings') {
    if ($form->process(posted => $context->posted)) {
       my $action   = $self->config->default_actions->{profile};
       my $location = $context->uri_for_action($action, [$user->id]);
-      my $params   = { http_headers => { 'X-Force-Reload' => 'true' }};
+      my $params   = { http_headers => { 'X-Force-Reload' => 'true' } };
       my $message  = 'User [_1] profile updated';
 
       $context->stash(redirect $location, [$message, $user->name], $params);
