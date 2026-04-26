@@ -4,10 +4,10 @@
       [ "Privacy", "https://www.openrightsgroup.org", true ],
       [ "Security", "https://github.com/pjfl/p5-app-mcat/security", true ],
       [ "Community", "https://github.com/pjfl/p5-app-mcat/wiki", true ],
+      [ "Docs", "doc/application" ],
       [ "Issues", "bug/list" ],
-      [ "Docs", "doc/list" ],
-      [ "Contact", "misc/contact" ],
-      [ "Not Found", "after_an_extensive_search" ]
+      [ "Changes", "misc/changes" ],
+      [ "Contact", "misc/contact" ]
    ],
    "google_fonts": ["Roboto:ital,wght@0,100..900;1,100..900"],
    "local_config_file": "mcat-local.json",

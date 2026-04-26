@@ -14,11 +14,7 @@ sub menu : Auth('view') Nav('System|img/system.svg') {
 
    my $nav = $context->stash('nav');
 
-   $nav->list('Documentation')->item('doc/api')->item('doc/application');
-   $nav->item('doc/client')->item('doc/server');
-
    $nav->list('system');
-   $nav->menu('Documentation', TRUE);
    $nav->menu('filemanager')->item('file/list');
    $nav->menu('import')->item('import/list');
    $nav->menu('importlog')->item('importlog/list');

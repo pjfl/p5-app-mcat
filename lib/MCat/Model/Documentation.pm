@@ -68,7 +68,8 @@ sub application : Auth('view') Nav('Application') {
 
    $directory = $self->file->directory($directory);
 
-   my $markup = $self->_doc_viewer->get($directory->catfile($selected));
+   my $path   = $directory->catfile($selected);
+   my $markup = $self->_doc_viewer->get($context, $path);
 
    $context->stash(documentation => $markup);
    return;
@@ -131,7 +132,8 @@ sub server : Auth('view') Nav('Server') {
 
    $directory = $locallib->catdir($self->file->to_path($params->{directory}));
 
-   my $markup = $self->_doc_viewer->get($directory->catfile($selected));
+   my $path   = $directory->catfile($selected);
+   my $markup = $self->_doc_viewer->get($context, $path);
 
    $context->stash(documentation => $markup);
    return;

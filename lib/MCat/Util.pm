@@ -301,6 +301,9 @@ sub redirect2referer ($;$) {
 
    $truncated = truncate $string, $length?;
 
+Truncates the given C<string> to the specifed C<length>. Length defaults to
+eighty characters
+
 =cut
 
 sub truncate ($;$) {
@@ -313,6 +316,20 @@ sub truncate ($;$) {
 =item C<urandom>
 
    $random = urandom $wanted?, $options?;
+
+Reads random bytes from OS device file. The number of bytes C<wanted> defaults
+to sixty four
+
+The C<options> hash reference keys are;
+
+=over 3
+
+=item C<source>
+
+Specify the path to the device file. Should default correctly for Linux
+and BSD
+
+=back
 
 =cut
 

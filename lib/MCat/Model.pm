@@ -108,7 +108,7 @@ Creates and stashes an instance of L<Web::Components::Navigation>
 Navigation methods C<menu>, C<list>, and C<item> are used to build the
 context sensitive menu data
 
-This method adds menu items for the C<control> menu
+This method adds menu items for the C<Application> menu
 
 =cut
 
@@ -121,9 +121,14 @@ sub root : Auth('none') {
    my $session = $context->session;
 
    $context->stash($self->navigation_key => $nav);
-   $nav->list('bugs')->item('bug/create')->list('_control');
 
    if ($session->authenticated) {
+      $nav->list('Documentation')->item('doc/api')->item('doc/application');
+      $nav->item('doc/client')->item('doc/server');
+      $nav->list('bugs')->item('bug/create');
+
+      $nav->list('_control');
+      $nav->menu('Documentation', TRUE);
       $nav->menu('bugs')->item('bug/list');
       $nav->item($actions->{changes}) if $actions->{changes};
       $nav->item($actions->{password}, [$session->id]);
@@ -132,6 +137,7 @@ sub root : Auth('none') {
       $nav->item(formpost, $actions->{logout});
    }
    else {
+      $nav->list('_control');
       $nav->item($actions->{login});
       $nav->item($actions->{register}, []) if $self->config->registration;
       $nav->item($actions->{password}, [$session->id]);

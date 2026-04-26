@@ -8,7 +8,7 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.51
+ * @version 0.13.55
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.51
@@ -248,6 +248,7 @@ footer .footer-container .session-time {
   background: var(--bg-darker);
   border: 1px solid gray;
   border-radius: 5px;
+  color: whitesmoke;
   content: attr(data-title);
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
   font-size: 0.8rem;
@@ -308,11 +309,6 @@ footer .footer-container .session-time {
 .sidebar li.global > .drop-menu span:not(.icon-wrapper) {
   padding-left: 0.25rem;
 }
-.navigation li.global .drop-menu span,
-.sidebar li.global .drop-menu span {
-  color: gray;
-  cursor: pointer;
-}
 .navigation li.global .nav-panel,
 .sidebar li.global .nav-panel {
   background: var(--bg-light);
@@ -330,6 +326,11 @@ footer .footer-container .session-time {
   overflow-y: visible;
   max-height: 32rem;
 }
+.navigation .drop-menu span,
+.sidebar .drop-menu span {
+  color: gray;
+  cursor: pointer;
+}
 .navigation .nav-control,
 .sidebar .nav-control {
   display: inline-block;
@@ -344,6 +345,7 @@ footer .footer-container .session-time {
   background: var(--bg-darker);
   border: 1px solid gray;
   border-radius: 5px;
+  color: whitesmoke;
   content: attr(data-title);
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
   font-size: 0.8rem;
@@ -425,8 +427,8 @@ footer .footer-container .session-time {
 .sidebar .nav-list.control {
   width: 10rem;
 }
-.navigation .nav-list.control li.control:has(> a:hover, > form:hover) > .slide-out,
-.sidebar .nav-list.control li.control:has(> a:hover, > form:hover) > .slide-out {
+.navigation .nav-list.control li.control:has(> a:hover, > form:hover, > span:hover) > .slide-out,
+.sidebar .nav-list.control li.control:has(> a:hover, > form:hover, > span:hover) > .slide-out {
   overflow-x: hidden;
   width: 8rem;
 }
@@ -717,7 +719,10 @@ footer .footer-container .session-time {
   top: 0.375rem;
 }
 .navigation .nav-list.context li.context a,
-.navigation .nav-list.context li.context .drop-menu {
+.navigation .nav-list.control li.control a,
+.navigation .nav-list.context li.context .drop-menu,
+.navigation .nav-list.control li.control .drop-menu {
+  display: block;
   padding: 0.5rem !important;
 }
 .navigation .nav-list.global {
@@ -876,7 +881,9 @@ footer .footer-container .session-time {
 }
 .sidebar li.global[data-title]:hover::after {
   left: 0;
-  top: -0.4375rem;
+  min-width: 3.5rem;
+  top: -0.5rem;
+  text-align: center;
 }
 .sidebar .nav-list.context li.context.selected::before {
   background: seagreen;
@@ -896,6 +903,7 @@ footer .footer-container .session-time {
   display: flex;
   flex-direction: column;
   min-height: 2rem;
+  padding-top: 0.75rem;
 }
 .sidebar .nav-list.global li.global {
   display: block;
@@ -987,6 +995,11 @@ footer .footer-container .session-time {
 .documentation a:hover {
   font-style: italic;
 }
+.documentation code {
+  background: var(--bg-lighter);
+  font-family: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
+  font-size: 0.8rem;
+}
 .documentation h1,
 .documentation h2,
 .documentation h3,
@@ -1002,18 +1015,16 @@ footer .footer-container .session-time {
 .documentation pre {
   margin: 0 0 1rem 2rem;
 }
-.documentation pre code {
-  font-family: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
-  font-size: 0.8rem;
-}
 .documentation tr.highlight {
   background: var(--bg-dark) !important;
 }
 .documentation.application {
   --index-width: 18rem;
+  --font-weight-h2: 350;
 }
 .documentation.restapi {
   --index-width: 28rem;
+  --font-weight-h2: normal;
 }
 .documentation.application,
 .documentation.restapi {
@@ -1046,6 +1057,7 @@ footer .footer-container .session-time {
 .documentation.application h2,
 .documentation.restapi h2 {
   font-size: 2rem;
+  font-weight: var(--font-weight-h2);
   letter-spacing: -0.0625rem;
   margin-bottom: 0.75rem;
 }
@@ -1511,7 +1523,7 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.18
+ * @version 0.2.21
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.51
@@ -2780,10 +2792,10 @@ form.classic .tooltip {
   box-shadow: 3px 3px 3px gray;
   color: whitesmoke;
   font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
-  font-size: 1rem;
+  font-size: 0.8rem;
   left: 8.5rem;
-  min-width: 10rem;
-  padding: 0.5rem;
+  min-width: 5rem;
+  padding: 0.25rem 0.5rem;
   pointer-events: none;
   position: absolute;
   top: 0;
@@ -3489,7 +3501,7 @@ form.classic .tooltip p a {
   right: 0.25rem;
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.32
+ * @version 0.2.35
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.51
@@ -3614,7 +3626,6 @@ body {
 }
 .state-table table:not(.object-view, .preference-columns) th a.filter-control {
   color: gray;
-  opacity: 50%;
   position: absolute;
   right: 0;
 }
@@ -4006,6 +4017,7 @@ body {
 }
 .state-table .filter-label {
   display: inline-block;
+  opacity: 50%;
   padding-right: 0.25rem;
 }
 .state-table .filter-label.text {
@@ -4093,6 +4105,7 @@ body {
 .state-table .preference-link {
   cursor: pointer;
   display: inline-block;
+  position: relative;
 }
 .state-table .preference-link .preference-control {
   display: inline-block;
@@ -4337,6 +4350,35 @@ body {
   display: inline-flex;
   gap: 0.5rem;
   justify-content: flex-start;
+}
+.state-table .tooltip {
+  background: var(--bg-darker);
+  border: 1px solid gray;
+  border-radius: 5px;
+  box-shadow: 3px 3px 3px gray;
+  color: whitesmoke;
+  font-family: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-style: normal;
+  left: 0;
+  min-width: 5rem;
+  padding: 0.25rem 0.5rem;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  text-align: center;
+  transform: translate(-100%, -100%);
+  z-index: 10;
+}
+.state-table .tooltip.hide {
+  display: none;
+}
+.state-table .tooltip p {
+  margin: 0;
+}
+.state-table .tooltip p a {
+  color: whitesmoke;
+  text-decoration: none;
 }
 @media (max-width: 680px) {
   .state-table table:not(.object-view, .preference-columns) th,

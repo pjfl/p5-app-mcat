@@ -33,7 +33,7 @@ Defines the following attributes;
 
 =over 3
 
-=item client_name
+=item C<client_name>
 
 An immutable required string. Used as a prefix to the key space. Each instance
 of this class should use a unique value
@@ -42,7 +42,7 @@ of this class should use a unique value
 
 has 'client_name' => is => 'ro', isa => Str, required => TRUE;
 
-=item config
+=item C<config>
 
 An immutable hash reference with an empty default. Provides the L<Redis>
 client specific configuration
@@ -51,16 +51,16 @@ client specific configuration
 
 has 'config' => is => 'ro', isa => HashRef, default => sub { {} };
 
-=item redis
+=item C<redis>
 
 A lazy instance of L<Redis>
 
 =cut
 
 has 'redis' =>
-    is      => 'lazy',
-    isa     => class_type('Redis'),
-    default => sub {
+   is      => 'lazy',
+   isa     => class_type('Redis'),
+   default => sub {
       my $self = shift;
 
       throw 'No Redis config' unless scalar keys %{$self->config};
@@ -101,36 +101,38 @@ Defines the following methods;
 
 =over 3
 
-=item DEMOLISH
+=item C<DEMOLISH>
 
 Quits the L<Redis> session when this instance goes out of scope
 
 =cut
 
 sub DEMOLISH {
-    my ($self, $in_global_destruction) = @_;
+   my ($self, $in_global_destruction) = @_;
 
-    $self->redis->quit unless $in_global_destruction;
-    return;
+   $self->redis->quit unless $in_global_destruction;
+   return;
 }
 
-=item AUTOLOAD
+=item C<AUTOLOAD>
 
 Proxy all of the L<Redis> methods
 
 =cut
 
 sub AUTOLOAD {
-    my ($self, @args) = @_;
+   my ($self, @args) = @_;
 
-    throw "${self} is not an object" unless blessed $self;
+   throw "${self} is not an object" unless blessed $self;
 
-    my $name = $AUTOLOAD; $name =~ s{ \A .* :: }{}mx;
+   my $name = $AUTOLOAD; $name =~ s{ \A .* :: }{}mx;
 
-    return $self->redis->$name(@args);
+   return $self->redis->$name(@args);
 }
 
-=item set_preserve_ttl( key, value )
+=item C<set_preserve_ttl>
+
+   $self->set_preserve_ttl($key, $value);
 
 Sets the C<value> on the C<key> preserving the time to live of the original
 entry
@@ -148,7 +150,9 @@ sub set_preserve_ttl {
    return;
 }
 
-=item set_with_ttl( key, value, ttl )
+=item C<set_with_ttl>
+
+   $self->set_with_ttl($key, $value, $ttl);
 
 Sets the C<value> on the C<key>. Sets the expiry to C<ttl>
 

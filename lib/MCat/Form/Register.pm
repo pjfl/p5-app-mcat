@@ -67,6 +67,8 @@ sub validate_email {
 
 has_field 'captcha' => type => 'Captcha', label => 'Sentient?';
 
+has_field 'oauth' => type => 'Boolean', label => 'OAuth Only';
+
 has_field 'submit' => type => 'Button';
 
 after 'after_build_fields' => sub {
@@ -103,11 +105,13 @@ after 'after_build_fields' => sub {
 };
 
 sub update_model {
-   my $self  = shift;
-   my $name  = $self->field('name');
-   my $email = $self->field('email');
+   my $self    = shift;
+   my $name    = $self->field('name');
+   my $email   = $self->field('email');
+   my $oauth   = $self->field('oauth');
+   my $context = $self->context;
 
-   try { $self->context->stash(job => $self->_create_email($name, $email)) }
+   try { $context->stash(job => $self->_create_email($name, $email, $oauth)) }
    catch_class [
       '*' => sub {
          $self->add_form_error($_);
@@ -120,12 +124,12 @@ sub update_model {
 
 # Private methods
 sub _create_email {
-   my ($self, $name, $email) = @_;
+   my ($self, $name, $email, $oauth) = @_;
 
    my $token     = create_token;
    my $config    = $self->config;
    my $context   = $self->context;
-   my $passwd    = substr create_token, 0, 12;
+   my $passwd    = $oauth->value ? '*oauth*' : substr create_token, 0, 12;
    my $action    = $config->default_actions->{register};
    my $link      = $context->uri_for_action($action, [$token]);
    my $role_name = $config->user->{default_role} // 'view';

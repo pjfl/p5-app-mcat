@@ -111,12 +111,12 @@ has_field 'link_display' =>
       { label => 'Text', value => 'text' },
    ];
 
-has_field 'advanced_options' => type => 'Group', info => 'Advanced Options';
+has_field 'advanced' => type => 'Group', info => 'Advanced Options';
 
 has_field 'features' =>
    type             => 'Select',
    auto_widget_size => 7,
-   field_group      => 'advanced_options',
+   field_group      => 'advanced',
    multiple         => TRUE,
    options          => [
       { label => 'Animation',        value => 'animation' },
@@ -130,7 +130,7 @@ has_field 'features' =>
 
 has_field 'base_colour' =>
    type        => 'Colour',
-   field_group => 'advanced_options',
+   field_group => 'advanced',
    label       => 'Base Colour',
    options     => [];
 
@@ -143,10 +143,9 @@ has_field 'view' =>
    wrapper_class => ['input-button', 'inline'];
 
 after 'after_build_fields' => sub {
-   my $self     = shift;
-   my $context  = $self->context;
-   my $config   = $context->config;
-   my $features = $self->user->features;
+   my $self = shift;
+
+   $self->field('advanced')->inactive(TRUE) unless $self->_advanced_enabled;
 
    unless ($self->user->enable_2fa) {
       $self->field('enable_2fa')->hide_info(TRUE);
@@ -154,19 +153,16 @@ after 'after_build_fields' => sub {
       $self->field('postcode')->add_wrapper_class('hide');
    }
 
-   $self->field('advanced_options')->inactive(TRUE)
-      unless $config->enable_advanced || includes 'advanced', $features;
-
-   my $field = $self->field('base_colour');
+   my $config = $self->context->config;
+   my $field  = $self->field('base_colour');
 
    $field->default($config->default_base_colour);
    push @{$field->options}, { value => $config->default_base_colour };
 
-   my $view = $context->uri_for_action('user/view', [$self->user->id]);
+   my $view = $self->context->uri_for_action('user/view', [$self->user->id]);
 
    $self->field('view')->href($view->as_string);
    $self->field('submit')->add_wrapper_class(['inline', 'right']);
-
    return;
 };
 
@@ -198,6 +194,16 @@ sub update_model {
    });
 
    return;
+}
+
+# Private methods
+sub _advanced_enabled {
+   my $self = shift;
+
+   return TRUE if $self->context->session->role eq 'admin';
+   return TRUE if $self->context->config->enable_advanced;
+   return TRUE if includes 'advanced', $self->user->features;
+   return FALSE;
 }
 
 use namespace::autoclean -except => META;

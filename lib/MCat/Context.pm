@@ -39,7 +39,7 @@ Defines the following attributes;
 
 =item C<config>
 
-A required reference to L<MCat::Config>
+A required reference to the L<configuration|MCat::Config> object
 
 =cut
 
@@ -62,7 +62,7 @@ has 'icons_uri' =>
 
 =item C<response>
 
-An instance of L<MCat::Response>
+An instance of the L<response|MCat::Response> object
 
 =cut
 
