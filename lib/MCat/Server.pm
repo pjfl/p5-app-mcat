@@ -21,7 +21,9 @@ MCat::Server - Web application server
 
 =head1 Synopsis
 
-   use 'MCat::Schema';
+   use 'MCat::Server';
+
+   MCat::Server->new->run_if_script;
 
 =head1 Description
 
@@ -38,6 +40,8 @@ Defines the following methods;
 =over 3
 
 =item C<to_psgi_app>
+
+Called by L<Plack::Runner>. The web server
 
 =cut
 
@@ -76,6 +80,8 @@ around 'to_psgi_app' => sub {
 
 =item C<BUILD>
 
+Logs that the server has started
+
 =cut
 
 sub BUILD {
@@ -92,6 +98,7 @@ sub BUILD {
    return;
 }
 
+# Private methods
 sub _build__factory {
    my $self = shift;
 
@@ -118,6 +125,8 @@ None
 =over 3
 
 =item L<Plack::Builder>
+
+=item L<Web::Components>
 
 =item L<Web::Simple>
 

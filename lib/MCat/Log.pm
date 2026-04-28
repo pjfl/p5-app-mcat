@@ -26,7 +26,7 @@ MCat::Log - Logging class
 
 =head1 Description
 
-Logs messages in CSV format
+Logs messages in CSV format to the specified logfile
 
 =head1 Configuration and Environment
 
@@ -36,7 +36,7 @@ Defines the following attributes;
 
 =item C<config>
 
-A required reference to L<MCat::Config>
+A required reference to the L<configuration|MCat::Config> object
 
 =cut
 
@@ -83,6 +83,22 @@ Defines the following methods;
 
    $true = $self->alert($message, $context?);
 
+Logs C<message> at the C<alert> level
+
+Attributes of the C<context> object are;
+
+=over 3
+
+=item C<leader>
+
+=item C<action>
+
+=item C<name>
+
+=back
+
+The first of these with a value will be used as the leader for the log message
+
 =cut
 
 sub alert {
@@ -92,6 +108,9 @@ sub alert {
 =item C<debug>
 
    $true = $self->debug($message, $context?);
+
+Logs C<message> at the C<debug> level iff debug is enabled. Debug is enabled by
+setting the environment variable C<MCAT_DEBUG> to true
 
 =cut
 
@@ -107,6 +126,8 @@ sub debug {
 
    $true = $self->error($message, $context?);
 
+Logs C<message> at the C<error> level
+
 =cut
 
 sub error {
@@ -116,6 +137,8 @@ sub error {
 =item C<fatal>
 
    $true = $self->fatal($message, $context?);
+
+Logs C<message> at the C<fatal> level
 
 =cut
 
@@ -127,6 +150,8 @@ sub fatal {
 
     $true = $self->info($message, $context?);
 
+Logs C<message> at the C<info> level
+
 =cut
 
 sub info {
@@ -136,6 +161,8 @@ sub info {
 =item C<warn>
 
     $true = $self->warn($message, $context?);
+
+Logs C<message> at the C<warn> level
 
 =cut
 
@@ -147,9 +174,11 @@ sub warn {
 
    $true = $self->log(%args);
 
+For the benefit of L<Plack::Middleware::LogDispatch>
+
 =cut
 
-sub log { # For benefit of P::M::LogDispatch
+sub log {
    my ($self, %args) = @_;
 
    my $level   = uc $args{level};

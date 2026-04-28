@@ -32,7 +32,7 @@ Defines the following attributes;
 
 =item C<config>
 
-A required reference to L<MCat::Config>
+A required reference to the L<configuration|MCat::Config> object
 
 =cut
 
@@ -53,6 +53,9 @@ Defines the following methods;
 =item C<middleware_config>
 
    $session_config = $self->middleware_config;
+
+Provides configuration for the L<state cookie|Plack::Session::State::Cookie>
+and the L<session store|Plack::Session::Store::Cache>
 
 =cut
 

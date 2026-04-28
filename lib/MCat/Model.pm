@@ -23,6 +23,8 @@ MCat::Model - Model base class
 
 =head1 Synopsis
 
+   package MCat::Model::MyModel;
+
    use Moo;
 
    extends 'MCat::Model';

@@ -8,7 +8,7 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.55
+ * @version 0.13.56
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.51
@@ -1523,7 +1523,7 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.21
+ * @version 0.2.22
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.13.51
@@ -1650,7 +1650,7 @@ form.classic.droplets .droplet .tooltip {
 }
 form.classic.droplets .form-wrapper {
   border-radius: 62% 38% 24% 76% / 59% 60% 40% 41%;
-  padding: 2.75rem 2.5rem 0 2.5rem;
+  padding: 2.75rem 2.5rem 0 3.5rem;
   text-align: right;
 }
 form.classic.droplets .form-wrapper legend {

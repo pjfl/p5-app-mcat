@@ -1,11 +1,11 @@
 package MCat::Form::Configuration;
 
-use HTML::Forms::Constants      qw( EXCEPTION_CLASS FALSE META NUL SPC TRUE );
-use Class::Usul::Cmd::Util      qw( list_attr_of list_methods_of );
-use HTML::Entities              qw( encode_entities );
-use Ref::Util                   qw( is_arrayref is_plain_hashref );
-use Type::Utils                 qw( class_type );
-use HTML::Forms::Util           qw( data2markup );
+use HTML::Forms::Constants qw( EXCEPTION_CLASS FALSE META NUL SPC TRUE );
+use Class::Usul::Cmd::Util qw( list_attr_of list_methods_of );
+use HTML::Entities         qw( encode_entities );
+use Ref::Util              qw( is_arrayref is_plain_hashref );
+use Type::Utils            qw( class_type );
+use HTML::Forms::Util      qw( data2markup );
 use MCat::Markdown;
 use Pod::Markdown::Github;
 use Moo;
@@ -24,7 +24,7 @@ has '+title' => default => 'Configuration';
 has '_formatter' =>
    is      => 'lazy',
    isa     => class_type('MCat::Markdown'),
-   default => sub { MCat::Markdown->new };
+   default => sub { MCat::Markdown->new( tab_width => 3 ) };
 
 has_field 'configuration' =>
    type          => 'NonEditable',
@@ -70,6 +70,8 @@ sub _pod2markdown {
 
    $parser->output_string(\my $markdown);
    $parser->parse_string_document("=pod\n\n${pod}\n\n=cut\n");
+
+   $markdown = $self->_formatter->localise_markdown($self->context, $markdown);
 
    return "${markdown}\n";
 }

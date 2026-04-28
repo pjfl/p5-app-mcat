@@ -61,8 +61,7 @@ has 'assetdir' =>
 
 =item C<formatter>
 
-An instance of the application subclass of L<Text::MultiMarkdown>. A markdown
-formatter
+An instance of the L<markdown formatter|MCat::Markdown>
 
 =cut
 
@@ -247,8 +246,8 @@ sub make_all : method {
 
 =item make_css - Make concatenated CSS file
 
-Run automatically if L<App::Burp> is running. It calls C<make-less> and then
-concatenates multiple CSS files into a single one
+Run automatically if L<Burp|App::Burp> is running. It calls C<make-less> and
+then concatenates multiple CSS files into a single one
 
 =cut
 
@@ -273,8 +272,8 @@ sub make_css : method {
 
 =item make_js - Make concatenated JS file
 
-Run automatically if L<App::Burp> is running. It concatenates multiple JS files
-into a single one
+Run automatically if L<Burp|App::Burp> is running. It concatenates multiple JS
+files into a single one
 
 =cut
 
@@ -316,8 +315,8 @@ sub make_js_docs : method {
 
 =item make_less - Convert LESS files to CSS
 
-Run automatically if L<App::Burp> is running. Compiles LESS files down to CSS
-files
+Run automatically if L<Burp|App::Burp> is running. Compiles LESS files down to
+CSS files
 
 =cut
 

@@ -75,10 +75,10 @@ has '_dbname' =>
       my $self = shift;
       my $dbname;
 
-      if ($self->config->dsn =~ m{ dbname[=] }mx) {
+      if ($self->config->db_dsn =~ m{ dbname[=] }mx) {
          $dbname = (map  { s{ \A dbname [=] }{}mx; $_ }
                     grep { m{ \A dbname [=] }mx }
-                    split  m{           [:] }mx, $self->config->dsn)[0];
+                    split  m{           [:] }mx, $self->config->db_dsn)[0];
       }
 
       return $dbname;
@@ -100,7 +100,7 @@ has '_driver' =>
    is      => 'lazy',
    default => sub {
       my $self   = shift;
-      my $driver = (split m{ : }mx, $self->config->dsn)[1];
+      my $driver = (split m{ : }mx, $self->config->db_dsn)[1];
 
       return lc $driver;
    };
@@ -112,10 +112,10 @@ has '_host' =>
       my $host = $self->host;
 
       unless ($self->options && $self->options->{bootstrap}) {
-         if ($self->config->dsn =~ m{ host[=] }mx) {
+         if ($self->config->db_dsn =~ m{ host[=] }mx) {
             $host = (map  { s{ \A host [=] }{}mx; $_ }
                      grep { m{ \A host [=] }mx }
-                     split  m{         [;] }mx, $self->config->dsn)[0];
+                     split  m{         [;] }mx, $self->config->db_dsn)[0];
          }
       }
 

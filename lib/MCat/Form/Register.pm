@@ -98,6 +98,7 @@ after 'after_build_fields' => sub {
       $field->site_key($captcha->{site_key});
       $field->secret_key($captcha->{secret_key});
       $field->theme($session->theme);
+      $field->do_label(FALSE);
    }
    else { $self->field('captcha')->inactive(TRUE) }
 

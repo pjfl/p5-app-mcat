@@ -46,7 +46,7 @@ has '_ecc' =>
       }
 
       return $ecc;
-};
+   };
 
 sub BUILD {
    my $self = shift;
@@ -196,7 +196,7 @@ sub push_register : Auth('view') {
 
    $subscription = $self->json_parser->encode($subscription);
    $self->redis_client->set("service-worker-${key}", $subscription);
-   $self->_stash_response($context, { text => 'Service worker registered' });
+   $self->_stash_response($context, { message => 'Service worker registered' });
    return;
 }
 

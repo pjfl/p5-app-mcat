@@ -128,7 +128,7 @@ Defines the following methods;
 
    $name = $self->feature($name);
 
-Returns the feature name iff the user has the feature turned on
+Returns the feature C<name> iff the user has the feature turned on
 
 =cut
 
@@ -142,8 +142,8 @@ sub feature {
 
    $attribute_hash = $self->get_attributes($action);
 
-Returns the subroutine attributes associated with the given action. The action
-can be either an action path (moniker/method) or a code reference
+Returns the subroutine attributes associated with the given action. The
+C<action> can be either an action path (moniker/method) or a code reference
 
 =cut
 
@@ -171,7 +171,7 @@ sub get_attributes {
    $bool = $self->is_authorised($action);
 
 Returns true of false depending on whether the user has access to the action.
-The action should be an action path (moniker/method)
+The C<action> should be an action path (moniker/method)
 
 =cut
 
@@ -234,11 +234,11 @@ sub res { shift->response }
 
 =item C<uri_for_action>
 
-   $uri = $self->uri_for_action($action, $args?, @params?);
+   $uri = $self->uri_for_action($action, \@args?, \%params?);
 
-Returns the URI for the given action. Optional array reference of positionals
+Returns the URI for the given action. Optional array reference of positional
 arguments should be provided if required. Options hash reference of query
-string keys and value may be provided
+string keys and values may be provided
 
 =cut
 

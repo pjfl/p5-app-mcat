@@ -205,12 +205,24 @@ has 'captcha' =>
       my $self = shift;
 
       return {
-         type         => 'local',
+         type         => $self->_captcha_type,
          image_action => 'misc/captcha',
          site_key     => $self->_captcha_site_key,
          secret_key   => $self->_captcha_secret_key,
       };
    };
+
+=item _captcha_type
+
+Captcha type can be either C<local> or C<remote>. Defaults to C<local>
+
+=cut
+
+has '_captcha_type' =>
+   is       => 'ro',
+   isa      => Str,
+   init_arg => 'captcha_type',
+   default  => 'local';
 
 =item _captcha_site_key
 

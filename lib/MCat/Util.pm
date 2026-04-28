@@ -59,7 +59,7 @@ MCat::Util - Utility functions
 
 =head1 Synopsis
 
-   use MCat::Log;
+   use MCat::Util;
 
 =head1 Description
 
@@ -71,13 +71,15 @@ Defines no attributes
 
 =head1 Subroutines/Methods
 
-Defines the following methods;
+Defines and exports the following functions;
 
 =over 3
 
 =item C<base64_decode>
 
    $decoded = base64_decode $encoded;
+
+Decodes the C<base64> encoded string
 
 =cut
 
@@ -128,7 +130,9 @@ sub base64_decode ($) {
 
 =item C<base64_encode>
 
-   $encoded = base64_encode $decoded;
+   $encoded = base64_encode $plain;
+
+Encodes the supplied string to C<base64>
 
 =cut
 
@@ -172,6 +176,8 @@ sub base64_encode (;$) {
 
    $token = create_token;
 
+Returns thirty two random hexadecimal characters
+
 =cut
 
 sub create_token () {
@@ -182,6 +188,8 @@ sub create_token () {
 
    $token = create_totp_token;
 
+Returns sixteen random base sixty four characters
+
 =cut
 
 sub create_totp_token () {
@@ -191,6 +199,8 @@ sub create_totp_token () {
 =item C<digest>
 
    $digest = digest $seed;
+
+Returns a L<Digest> object initialised with C<seed>
 
 =cut
 
@@ -219,6 +229,9 @@ sub digest ($) {
 
    $datetime = dt_from_epoch $epoch, $timezone?;
 
+Returns a L<DateTime> object constructed from the given C<epoch> value.
+The C<timezone> defaults to C<UTC>
+
 =cut
 
 sub dt_from_epoch ($;$) {
@@ -233,6 +246,8 @@ sub dt_from_epoch ($;$) {
 
    $datetime = dt_human $datetime;
 
+Formats the L<DateTime> object for human consumption
+
 =cut
 
 sub dt_human ($) {
@@ -245,7 +260,10 @@ sub dt_human ($) {
 
 =item C<encode_for_html>
 
-   $encoded = encode_entities $payload;
+   $encoded = encode_for_html $payload;
+
+The C<payload> is JSON encoded and then the HTML entities are escaped before
+returning the encoded value
 
 =cut
 
@@ -257,6 +275,9 @@ sub encode_for_html ($) {
 
    $hash_ref = formpost;
 
+Returns a hash reference which when paired with a location causes menu items
+to be buttons on forms as opposed to just links
+
 =cut
 
 sub formpost () {
@@ -267,6 +288,8 @@ sub formpost () {
 
    $uri = new_uri $schema, $uri_path;
 
+Returns a new L<URI> object with the given C<schema> and C<uri_path>
+
 =cut
 
 sub new_uri ($$) {
@@ -275,7 +298,12 @@ sub new_uri ($$) {
 
 =item C<redirect>
 
-   $stash_attr = redirect $location, $message, $options?;
+   $stash_attr = redirect $location, $message, \%options?;
+
+Returns the key/value pair to stash so as to redirect the request to the
+specified C<location>. The C<message> is an array reference containing the
+text of the message to be displayed and any placeholder values. The C<options>
+are smeared into the returned hash reference value
 
 =cut
 
@@ -285,7 +313,10 @@ sub redirect ($$;$) {
 
 =item C<redirect2referer>
 
-   $stash_attr = redirect2referer $context, $message;
+   $stash_attr = redirect2referer $context, \@message;
+
+Returns the key/value pair to stash so as to redirect the request back to the
+referer
 
 =cut
 
@@ -315,7 +346,7 @@ sub truncate ($;$) {
 
 =item C<urandom>
 
-   $random = urandom $wanted?, $options?;
+   $random = urandom $wanted?, \%options?;
 
 Reads random bytes from OS device file. The number of bytes C<wanted> defaults
 to sixty four
