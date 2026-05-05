@@ -74,8 +74,10 @@ Replace default links with ones that point to local documentation
 sub localise_markdown {
    my ($self, $context, $markdown) = @_;
 
-#   $markdown =~ s{ \\ }{}gmx;
-   $markdown =~ s{ [ ]_(\w+) }{ $1}gmx;
+   #   $markdown =~ s{ \\ }{}gmx;
+   $markdown =~ s{ \\(\[) }{$1}gmx;
+   $markdown =~ s{ \\(\]) }{$1}gmx;
+   $markdown =~ s{ ([\` ])_(\w+) }{$1$2}gmx;
 
    return '<h1>Nothing Found</h1>' unless length $markdown > 2;
 
@@ -84,6 +86,8 @@ sub localise_markdown {
 
       $markdown =~ s{ \(($remote[^\)]*)\) }{_substitute($self,$context,$1)}gemx;
    }
+
+   $markdown =~ s{ (http://rt\.cpan\.org .* MCat) }{[RT]($1)}gmx;
 
    return $markdown;
 }
@@ -117,8 +121,8 @@ sub _DoCodeBlocks { # Add support for triple graves
 sub _H12Hash {
    my ($self, $block) = @_;
 
-   $block =~ s{ &lt; h1 [^\&]* &gt; }{\n# }mx;
-   $block =~ s{ &lt; /h1 &gt; }{}mx;
+   $block =~ s{ &lt; h1 [^\&]* &gt; }{# }gmx;
+   $block =~ s{ &lt; /h1 &gt; }{}gmx;
 
    return $block;
 }

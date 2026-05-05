@@ -11,7 +11,6 @@ use Moo;
 
 extends 'MCat::Authentication::Realms::DBIC';
 with    'MCat::Role::JSONParser';
-with    'MCat::Role::Redis';
 
 =pod
 
@@ -82,6 +81,8 @@ has '_ua' =>
    is      => 'lazy',
    isa     => class_type('HTTP::Tiny'),
    default => sub { HTTP::Tiny->new(timeout => shift->ua_timeout) };
+
+with 'MCat::Role::Redis';
 
 =back
 

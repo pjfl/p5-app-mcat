@@ -50,7 +50,7 @@ sub dispatch_request { build_routes
 
    'GET|POST + /job/status + ?*' => 'job/root/base/status',
 
-   'GET      + /logfile/*.* + ?*' => 'logfile/root/base/view',
+   'GET      + /logfile/*.* + ?*' => 'logfile/root/file/view',
    'GET      + /logfile + ?*'     => 'logfile/root/base/list',
 
    'GET      + /captcha/* + ?*'    => 'misc/root/captcha',

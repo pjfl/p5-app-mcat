@@ -135,8 +135,6 @@ sub _build_name_link {
    my $params = {};
 
    if ($result->type eq 'directory') {
-      my $selected = $self->context->request->query_parameters->{selected};
-
       $params->{directory}  = $self->_qualified_directory($result);
       $params->{extensions} = $self->extensions if $self->extensions;
 

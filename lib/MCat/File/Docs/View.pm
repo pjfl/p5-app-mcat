@@ -13,7 +13,8 @@ sub get {
    $parser->parse_file($path->as_string);
 
    my $formatter = MCat::Markdown->new( tab_width => 3 );
-   my $markdown  = $formatter->localise_markdown($context, $markdown);
+
+   $markdown = $formatter->localise_markdown($context, $markdown);
 
    return $formatter->markdown($markdown);
 }

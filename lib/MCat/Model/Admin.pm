@@ -1,7 +1,6 @@
 package MCat::Model::Admin;
 
 use MCat::Constants qw( FALSE TRUE );
-use Web::Simple;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
 
 extends 'MCat::Model';

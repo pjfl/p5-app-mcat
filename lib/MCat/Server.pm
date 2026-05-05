@@ -31,7 +31,18 @@ Web application server
 
 =head1 Configuration and Environment
 
-Defines no attributes
+Defines the following attributes;
+
+=item C<debug>
+
+Set from the application class environment debug variable
+
+=cut
+
+has 'debug' =>
+   is      => 'lazy',
+   ia      => Bool,
+   default => sub { shift->config->appclass->env_var('debug') ? TRUE : FALSE };
 
 =head1 Subroutines/Methods
 
@@ -92,9 +103,10 @@ sub BUILD {
 
    my $server = ucfirst($ENV{PLACK_ENV} // NUL);
    my $port   = $class->env_var('port') // 5_000;
-   my $info   = 'v' . $class->VERSION . " started on port ${port}";
+   my $debug  = $self->debug ? 'on' : 'off';
+   my $info   = 'v' . $class->VERSION . " port ${port} debug ${debug}";
 
-   $self->log->info("WebServer: ${class} ${server} ${info}");
+   $self->log->info("WebServer: Started ${class} ${server} ${info}");
    return;
 }
 

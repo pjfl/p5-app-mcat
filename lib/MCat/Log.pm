@@ -79,6 +79,25 @@ Defines the following methods;
 
 =over 3
 
+=item C<BUILDARGS>
+
+Sets C<config> and C<debug> from the C<builder> attribute
+
+=cut
+
+around 'BUILDARGS' => sub {
+   my ($orig, $self, @args) = @_;
+
+   my $attr = $orig->($self, @args);
+
+   if (my $builder = $attr->{builder}) {
+      $attr->{config} = $builder->config;
+      $attr->{debug}  = $builder->debug;
+   }
+
+   return $attr;
+};
+
 =item C<alert>
 
    $true = $self->alert($message, $context?);

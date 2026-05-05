@@ -4,7 +4,7 @@ use MCat::Constants       qw( EXCEPTION_CLASS FALSE TRUE );
 use Unexpected::Types     qw( HashRef );
 use Type::Utils           qw( class_type );
 use MCat::Util            qw( redirect2referer );
-use Unexpected::Functions qw( Unspecified NotFound );
+use Unexpected::Functions qw( NotFound );
 use Format::Human::Bytes;
 use Moo;
 use MCat::Navigation::Attributes; # Will do namespace cleaning
@@ -22,22 +22,29 @@ has '_format_number' => is => 'ro', default => sub { Format::Human::Bytes->new};
 has 'file_extensions' => is => 'ro', isa => HashRef, default => sub { {} };
 
 sub base : Auth('admin') {
-   my ($self, $context, $logfile) = @_;
+   my ($self, $context) = @_;
 
-   my $nav = $context->stash('nav')->list('logfile');
+   $context->stash('nav')->list('logfile')->finalise;
 
-   $nav->item('logfile/view', [$logfile]) if $logfile;
-
-   $nav->finalise;
    return;
 }
 
-sub clear_cache : Auth('admin') {
+sub file : Auth('admin') Capture(1) {
+   my ($self, $context, $arg) = @_;
+
+   my $nav = $context->stash('nav')->list('logfile');
+
+   $nav->item('logfile/view', [$arg])->finalise;
+
+   $context->stash(logfile => $arg);
+
+   return;
+}
+
+sub clear_cache : Auth('admin') Capture(1) {
    my ($self, $context, $logfile) = @_;
 
    return unless $self->verify_form_post($context);
-
-   return $self->error($context, Unspecified, ['logfile']) unless $logfile;
 
    my $path = $self->config->logsdir->catfile($logfile);
 
@@ -59,11 +66,10 @@ sub list : Auth('admin') Nav('Logfiles') {
 }
 
 sub view : Auth('admin') Nav('View Logfile') {
-   my ($self, $context, $logfile) = @_;
+   my ($self, $context) = @_;
 
-   return $self->error($context, Unspecified, ['logfile']) unless $logfile;
-
-   my $path = $self->config->logsdir->catfile($logfile);
+   my $logfile = $context->stash('logfile');
+   my $path    = $self->config->logsdir->catfile($logfile);
 
    return $self->error($context, NotFound, ["${path}"]) unless $path->exists;
 
