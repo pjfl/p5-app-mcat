@@ -2,6 +2,7 @@ package MCat::Server;
 
 use Class::Usul::Cmd::Constants qw( FALSE NUL TRUE );
 use HTTP::Status                qw( HTTP_FOUND );
+use Class::Usul::Cmd::Types     qw( Bool );
 use Class::Usul::Cmd::Util      qw( ensure_class_loaded );
 use Plack::Builder;
 use Web::Simple;
@@ -102,8 +103,8 @@ sub BUILD {
    ensure_class_loaded $class;
 
    my $server = ucfirst($ENV{PLACK_ENV} // NUL);
-   my $port   = $class->env_var('port') // 5_000;
    my $debug  = $self->debug ? 'on' : 'off';
+   my $port   = $class->env_var('port') // 5_000;
    my $info   = 'v' . $class->VERSION . " port ${port} debug ${debug}";
 
    $self->log->info("WebServer: Started ${class} ${server} ${info}");

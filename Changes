@@ -1,5 +1,6 @@
 Revision history for MCat
 
+          - Forms default validate when empty now true
           - Changes to Log class constructor call
           - Adds Config captcha_type
           - Serve docs locally for distributions not on CPAN

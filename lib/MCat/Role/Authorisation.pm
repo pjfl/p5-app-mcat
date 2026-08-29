@@ -64,16 +64,17 @@ sub method_args {
 sub _redirect2login {
    my ($self, $context) = @_;
 
-   my $action  = $self->config->default_actions->{login};
-   my $login   = $context->uri_for_action($action);
-   my $wanted  = $context->request->uri;
-   my $session = $context->session;
+   my $action   = $self->config->default_actions->{login};
+   my $login    = $context->uri_for_action($action);
+   my $endpoint = $context->endpoint // NUL;
+   my $wanted   = $context->request->uri;
+   my $session  = $context->session;
 
    # Redirect to wanted on successful login. Only set wanted to "legit" uris
    $session->wanted("${wanted}") if !$session->wanted
       && !$wanted->query_form('navigation')
-      && _get_nav_for_action($context, $self->can($context->endpoint // NUL))
-      && !includes $context->endpoint, [qw(login logout register)];
+      && !includes($endpoint, [qw(login logout register)])
+      && _get_nav_for_action($context, $self->can($endpoint));
 
    $context->stash(redirect $login, ['Authentication required']);
 

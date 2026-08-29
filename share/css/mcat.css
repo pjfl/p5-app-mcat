@@ -1,5 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.57
+ * @version 0.13.60
  */
 /* Breaks */
 /* Colours */
@@ -8,10 +8,10 @@
 /* Dimensions */
 /* Font Sizes and Weights */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.56
+ * @version 0.13.60
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.57
+ * @version 0.13.60
  */
 /* Breaks */
 /* Colours */
@@ -536,17 +536,13 @@ footer .footer-container .session-time {
 .navigation .nav-list li.control:first-child a,
 .sidebar .nav-list li.control:first-child a,
 .navigation .nav-list li.context:first-child a,
-.sidebar .nav-list li.context:first-child a,
-.navigation .nav-list .form-button:first-child span,
-.sidebar .nav-list .form-button:first-child span {
+.sidebar .nav-list li.context:first-child a {
   padding-top: 0.5rem;
 }
 .navigation .nav-list li.control:last-child a,
 .sidebar .nav-list li.control:last-child a,
 .navigation .nav-list li.context:last-child a,
-.sidebar .nav-list li.context:last-child a,
-.navigation .nav-list .form-button:last-child span,
-.sidebar .nav-list .form-button:last-child span {
+.sidebar .nav-list li.context:last-child a {
   padding-bottom: 0.5rem;
 }
 .navigation .nav-list li.context.selected::before,
@@ -629,7 +625,7 @@ footer .footer-container .session-time {
   align-items: center;
   display: flex;
   justify-content: center;
-  padding: 0.375rem 0.25rem 0.375rem 0.5rem;
+  padding: 0.375rem 0.5rem 0.375rem 0.25rem;
 }
 .navigation .nav-mobile .nav-hamburger span,
 .sidebar .nav-mobile .nav-hamburger span {
@@ -705,7 +701,7 @@ footer .footer-container .session-time {
 @media (max-width: 480px) {
   .navigation::before {
     border-bottom: 1px solid hsl(from gray h s l / 0.25);
-    width: 3.5rem !important;
+    width: 2.5rem !important;
   }
 }
 .navigation.nav-link-icon::before {
@@ -793,6 +789,12 @@ footer .footer-container .session-time {
   height: 2.5rem;
   transform: translate(0, 0.2rem);
   width: 1rem;
+}
+@media (max-width: 480px) {
+  .navigation .nav-tab,
+  .navigation .nav-tab-add {
+    display: none !important;
+  }
 }
 .navigation .nav-tab {
   align-items: center;
@@ -896,7 +898,7 @@ footer .footer-container .session-time {
 }
 .sidebar .nav-list.context li.context a,
 .sidebar .nav-list.context li.context .drop-menu {
-  padding: 0.5rem !important;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem !important;
 }
 .sidebar .nav-list.global {
   align-items: flex-start;
@@ -964,6 +966,9 @@ footer .footer-container .session-time {
     flex-direction: row;
     padding-top: 0;
   }
+}
+.sidebar .nav-list .form-button span {
+  padding-left: 0.75rem;
 }
 .sidebar .nav-menu {
   border-left: 1px solid hsl(from gray h s l / 0.25);
@@ -1239,7 +1244,7 @@ footer .footer-container .session-time {
 }
 .messages-panel .message-item {
   background: var(--bg-lighter);
-  border: 2px solid firebrick;
+  border: 2px solid seagreen;
   border-radius: 5px;
   box-shadow: 3px 3px 3px gray;
   color: black;
@@ -1251,6 +1256,9 @@ footer .footer-container .session-time {
   padding: 0.5rem;
   transition: opacity 1s;
   word-wrap: anywhere;
+}
+.messages-panel .message-item.error {
+  border-color: firebrick;
 }
 .messages-panel .message-item.fade {
   opacity: 0;
@@ -1523,10 +1531,10 @@ footer .footer-container .session-time {
   }
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.24
+ * @version 0.2.25
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.57
+ * @version 0.13.60
  */
 /* Breaks */
 /* Colours */
@@ -1715,7 +1723,7 @@ form.classic .compound-field {
   position: relative;
   row-gap: 0.5rem;
 }
-form.classic .compound-field:has(.alert-info) {
+form.classic .compound-field:has(> .alert-info) {
   margin-top: 2.5rem;
 }
 form.classic .compound-field.hide {
@@ -2985,10 +2993,10 @@ form.classic .tooltip p a {
   z-index: 3;
 }
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.1.23
+ * @version 0.1.24
  * Colours */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.57
+ * @version 0.13.60
  */
 /* Breaks */
 /* Colours */
@@ -3509,7 +3517,7 @@ form.classic .tooltip p a {
  * @version 0.2.35
  */
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.13.57
+ * @version 0.13.60
  */
 /* Breaks */
 /* Colours */
